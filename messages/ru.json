@@ -1,0 +1,62 @@
+{
+  "brand": {
+    "name": "AlemPrep",
+    "tagline": "Подготовка к ЕНТ без отвлечений"
+  },
+  "nav": {
+    "dashboard": "Дашборд",
+    "subjects": "Предметы",
+    "fullPractice": "Полный пробник",
+    "progress": "Прогресс",
+    "settings": "Настройки",
+    "signOut": "Выйти"
+  },
+  "auth": {
+    "signIn": "Войти",
+    "signInWithGoogle": "Войти через Google",
+    "signInDescription": "Начни готовиться к ЕНТ за 10 секунд",
+    "loading": "Загрузка…"
+  },
+  "dashboard": {
+    "greeting": "Привет, {name}",
+    "subtitle": "Сегодня хороший день, чтобы порешать задачи",
+    "dailyGoal": "Цель на сегодня",
+    "dailyGoalProgress": "{done} из {total} задач",
+    "activeSubjects": "Твои предметы",
+    "continuePractice": "Продолжить",
+    "startPractice": "Начать",
+    "streak": "Серия",
+    "streakDays": "{count, plural, one {# день} few {# дня} other {# дней}} подряд"
+  },
+  "subjects": {
+    "title": "Предметы",
+    "subtitle": "Выбери предмет, чтобы увидеть темы по спецификации НЦТ",
+    "math": "Математика",
+    "physics": "Физика",
+    "informatics": "Информатика",
+    "topicsCount": "{count} тем",
+    "questionsCount": "{count} задач"
+  },
+  "practice": {
+    "title": "Тренировка",
+    "question": "Вопрос {current} из {total}",
+    "checkAnswer": "Проверить",
+    "nextQuestion": "Дальше",
+    "previousQuestion": "Назад",
+    "showExplanation": "Показать разбор",
+    "explanation": "Разбор",
+    "focusMode": "Фокус-режим",
+    "exitFocusMode": "Выйти из фокус-режима",
+    "shortcuts": "Шорткаты",
+    "comingSoon": "Скоро. На Шаге 3 здесь появится тренажёр."
+  },
+  "progress": {
+    "title": "Прогресс",
+    "subtitle": "Статистика по темам и сессиям",
+    "comingSoon": "Скоро. Появится после первых сессий."
+  },
+  "common": {
+    "comingSoon": "Скоро",
+    "loading": "Загрузка…"
+  }
+}

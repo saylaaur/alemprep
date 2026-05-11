@@ -1,0 +1,62 @@
+{
+  "brand": {
+    "name": "AlemPrep",
+    "tagline": "ҰБТ-ға назар аудармай дайындалу"
+  },
+  "nav": {
+    "dashboard": "Басты бет",
+    "subjects": "Пәндер",
+    "fullPractice": "Толық сынақ",
+    "progress": "Прогресс",
+    "settings": "Баптаулар",
+    "signOut": "Шығу"
+  },
+  "auth": {
+    "signIn": "Кіру",
+    "signInWithGoogle": "Google арқылы кіру",
+    "signInDescription": "ҰБТ-ға дайындықты 10 секундта баста",
+    "loading": "Жүктелуде…"
+  },
+  "dashboard": {
+    "greeting": "Сәлем, {name}",
+    "subtitle": "Бүгін есептер шығаруға керемет күн",
+    "dailyGoal": "Бүгінгі мақсат",
+    "dailyGoalProgress": "{total} есептен {done}",
+    "activeSubjects": "Сенің пәндерің",
+    "continuePractice": "Жалғастыру",
+    "startPractice": "Бастау",
+    "streak": "Қатарынан",
+    "streakDays": "{count} күн қатарынан"
+  },
+  "subjects": {
+    "title": "Пәндер",
+    "subtitle": "Пәнді таңда — ҰБТ спецификациясы бойынша тақырыптар көрінеді",
+    "math": "Математика",
+    "physics": "Физика",
+    "informatics": "Информатика",
+    "topicsCount": "{count} тақырып",
+    "questionsCount": "{count} есеп"
+  },
+  "practice": {
+    "title": "Жаттығу",
+    "question": "{current} / {total} сұрақ",
+    "checkAnswer": "Тексеру",
+    "nextQuestion": "Келесі",
+    "previousQuestion": "Артқа",
+    "showExplanation": "Шешімін көрсету",
+    "explanation": "Шешім",
+    "focusMode": "Фокус режимі",
+    "exitFocusMode": "Фокус режимінен шығу",
+    "shortcuts": "Жылдам пернелер",
+    "comingSoon": "Жақында. 3-қадамда осы жерде жаттықтырғыш пайда болады."
+  },
+  "progress": {
+    "title": "Прогресс",
+    "subtitle": "Тақырыптар мен сессиялар бойынша статистика",
+    "comingSoon": "Жақында. Алғашқы сессиялардан кейін көрінеді."
+  },
+  "common": {
+    "comingSoon": "Жақында",
+    "loading": "Жүктелуде…"
+  }
+}
