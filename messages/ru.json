@@ -26,16 +26,19 @@
     "continuePractice": "Продолжить",
     "startPractice": "Начать",
     "streak": "Серия",
-    "streakDays": "{count, plural, one {# день} few {# дня} other {# дней}} подряд"
+    "streakDays": "{count, plural, =0 {0 дней} one {# день} few {# дня} other {# дней}} подряд"
   },
   "subjects": {
     "title": "Предметы",
     "subtitle": "Выбери предмет, чтобы увидеть темы по спецификации НЦТ",
+    "topicsSubtitle": "Темы по спецификации НЦТ",
     "math": "Математика",
     "physics": "Физика",
     "informatics": "Информатика",
-    "topicsCount": "{count} тем",
-    "questionsCount": "{count} задач"
+    "topicsCount": "{count, plural, =0 {нет тем} one {# тема} few {# темы} other {# тем}}",
+    "questionsCount": "{count, plural, =0 {нет задач} one {# задача} few {# задачи} other {# задач}}",
+    "startTopic": "Решать",
+    "comingSoon": "скоро"
   },
   "practice": {
     "title": "Тренировка",

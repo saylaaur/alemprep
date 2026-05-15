@@ -1,10 +1,18 @@
-import { useTranslations } from 'next-intl';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Link } from '@/i18n/routing';
-import { Calculator, Atom, Code2, ArrowRight, Flame } from 'lucide-react';
+import { ArrowRight, Flame } from 'lucide-react';
+import {
+  getProfile,
+  getTodayAttemptsCount,
+  getSubjectsWithCounts,
+  displayName,
+  subjectName,
+} from '@/lib/supabase/queries';
+import { getSubjectIcon } from '@/lib/icons';
+import type { Locale } from '@/types/db';
 
 export default async function DashboardPage({
   params,
@@ -13,49 +21,24 @@ export default async function DashboardPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <DashboardContent />;
-}
 
-function DashboardContent() {
-  const t = useTranslations('dashboard');
-  const tSubjects = useTranslations('subjects');
+  const [t, tSubjects, profile, todayDone, subjects] = await Promise.all([
+    getTranslations('dashboard'),
+    getTranslations('subjects'),
+    getProfile(),
+    getTodayAttemptsCount(),
+    getSubjectsWithCounts(),
+  ]);
 
-  // На Шаге 2 эти числа поедут из Supabase. Сейчас — статические заглушки.
-  const dailyDone = 0;
-  const dailyTotal = 20;
-  const progressPct = Math.round((dailyDone / dailyTotal) * 100);
-
-  const subjects = [
-    {
-      slug: 'math',
-      name: tSubjects('math'),
-      icon: Calculator,
-      topics: 12,
-      questions: 0,
-      ready: true,
-    },
-    {
-      slug: 'physics',
-      name: tSubjects('physics'),
-      icon: Atom,
-      topics: 0,
-      questions: 0,
-      ready: false,
-    },
-    {
-      slug: 'informatics',
-      name: tSubjects('informatics'),
-      icon: Code2,
-      topics: 0,
-      questions: 0,
-      ready: false,
-    },
-  ];
+  const dailyTotal = profile?.daily_goal ?? 20;
+  const progressPct = Math.min(100, Math.round((todayDone / dailyTotal) * 100));
+  const name = displayName(profile, locale as Locale);
+  const streak = profile?.current_streak ?? 0;
 
   return (
     <>
       <PageHeader
-        title={t('greeting', { name: 'Zhangirkhan' })}
+        title={t('greeting', { name })}
         subtitle={t('subtitle')}
       />
 
@@ -66,11 +49,11 @@ function DashboardContent() {
               <CardTitle>{t('dailyGoal')}</CardTitle>
               <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
                 <Flame className="h-4 w-4 text-primary" />
-                {t('streakDays', { count: 0 })}
+                {t('streakDays', { count: streak })}
               </span>
             </div>
             <CardDescription>
-              {t('dailyGoalProgress', { done: dailyDone, total: dailyTotal })}
+              {t('dailyGoalProgress', { done: todayDone, total: dailyTotal })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -90,38 +73,40 @@ function DashboardContent() {
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {subjects.map((s) => {
-              const Icon = s.icon;
+              const Icon = getSubjectIcon(s.icon);
+              const ready = s.is_active && s.question_count > 0;
               return (
-                <Card key={s.slug} className="transition-colors hover:border-primary/40">
+                <Card key={s.id} className="transition-colors hover:border-primary/40">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="grid h-10 w-10 place-items-center rounded-md bg-primary/10 text-primary">
                         <Icon className="h-5 w-5" />
                       </div>
-                      {!s.ready ? (
+                      {!ready ? (
                         <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                          скоро
+                          {tSubjects('comingSoon')}
                         </span>
                       ) : null}
                     </div>
-                    <CardTitle className="mt-3">{s.name}</CardTitle>
+                    <CardTitle className="mt-3">{subjectName(s, locale as Locale)}</CardTitle>
                     <CardDescription>
-                      {tSubjects('topicsCount', { count: s.topics })} ·{' '}
-                      {tSubjects('questionsCount', { count: s.questions })}
+                      {tSubjects('topicsCount', { count: s.topic_count })} ·{' '}
+                      {tSubjects('questionsCount', { count: s.question_count })}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="w-full"
-                      disabled={!s.ready}
-                    >
-                      <Link href={s.ready ? '/subjects' : '/dashboard'}>
-                        {t('startPractice')}
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
+                    {ready ? (
+                      <Button asChild variant="outline" className="w-full">
+                        <Link href={`/subjects/${s.slug}` as never}>
+                          {t('startPractice')}
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button variant="outline" className="w-full" disabled>
+                        {tSubjects('comingSoon')}
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               );

@@ -41,7 +41,7 @@ fi
 if [ ! -d node_modules ]; then
   echo "→ Устанавливаю зависимости (это занимает ~1–2 минуты)…"
   echo ""
-  npm install
+  npm install --legacy-peer-deps
   echo ""
 fi
 
