@@ -19,7 +19,7 @@ export async function recordAttempt(input: RecordInput) {
   const { error: insertError } = await supabase.from('attempts').insert({
     user_id: user.id,
     question_id: input.questionId,
-    given_answer: input.givenAnswer as never,
+    given_answer: input.givenAnswer,
     is_correct: input.isCorrect,
     time_spent_ms: input.timeSpentMs,
   });

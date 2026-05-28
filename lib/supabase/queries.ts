@@ -1,5 +1,5 @@
 import { createClient } from './server';
-import type { Profile, Subject, Topic, Locale } from '@/types/db';
+import type { Profile, Subject, Topic, Locale, Question, ContextContent } from '@/types/db';
 
 export async function getCurrentUser() {
   const supabase = await createClient();
@@ -142,7 +142,7 @@ export async function getQuestionsForTopic(topicSlug: string, locale: Locale = '
     .select('id, name_ru, name_kk, slug')
     .eq('slug', topicSlug)
     .maybeSingle();
-  if (!topic) return { topic: null, questions: [] as never[], contexts: new Map() };
+  if (!topic) return { topic: null, questions: [] as Question[], contexts: new Map<string, { id: string; title: string | null; content: ContextContent }>() };
 
   const { data: questions } = await supabase
     .from('questions')
@@ -152,28 +152,21 @@ export async function getQuestionsForTopic(topicSlug: string, locale: Locale = '
     .eq('is_published', true)
     .order('sort_order');
 
-  const list = (questions ?? []) as Array<{
-    id: string;
-    topic_id: string;
-    context_id: string | null;
-    language: Locale;
-    type: 'single' | 'multi' | 'matching';
-    body: unknown;
-    explanation: unknown;
-    sort_order: number;
-  }>;
+  const list = (questions ?? []) as Question[];
 
   const contextIds = Array.from(
     new Set(list.map((q) => q.context_id).filter((x): x is string => Boolean(x)))
   );
 
-  const contextsMap = new Map<string, { id: string; title: string | null; content: unknown }>();
+  const contextsMap = new Map<string, { id: string; title: string | null; content: ContextContent }>();
   if (contextIds.length > 0) {
     const { data: contexts } = await supabase
       .from('contexts')
       .select('id, title, content')
       .in('id', contextIds);
-    (contexts ?? []).forEach((c) => contextsMap.set(c.id, c));
+    (contexts ?? []).forEach((c) =>
+      contextsMap.set(c.id, { id: c.id, title: c.title as string | null, content: c.content as ContextContent })
+    );
   }
 
   return { topic, questions: list, contexts: contextsMap };

@@ -3,6 +3,11 @@ node_modules
 out
 build
 dist
+*.tsbuildinfo
+
+# Python (venv, если вдруг создаётся в папке — проекту не нужен)
+.venv
+__pycache__/
 
 .env
 .env.local

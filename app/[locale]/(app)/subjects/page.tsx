@@ -56,7 +56,7 @@ export default async function SubjectsPage({
             );
 
             return ready ? (
-              <Link key={s.id} href={`/subjects/${s.slug}` as never}>
+              <Link key={s.id} href={{ pathname: '/subjects/[subject]', params: { subject: s.slug } }}>
                 {card}
               </Link>
             ) : (

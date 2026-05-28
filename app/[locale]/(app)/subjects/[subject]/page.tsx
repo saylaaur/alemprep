@@ -75,7 +75,7 @@ export default async function SubjectTopicsPage({
             return ready ? (
               <Link
                 key={topic.id}
-                href={`/practice/topic/${topic.slug}` as never}
+                href={{ pathname: '/practice/topic/[topic]', params: { topic: topic.slug } }}
               >
                 {card}
               </Link>

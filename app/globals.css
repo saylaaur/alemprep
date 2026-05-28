@@ -4,59 +4,94 @@
 
 @layer base {
   :root {
+    /* Surfaces */
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 240 10% 9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 240 10% 9%;
 
-    --primary: 238 75% 60%;            /* indigo-600 */
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 9%;
+
+    /* Brand accent — indigo */
+    --primary: 243 75% 59%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 240 5% 96.5%;
+    --muted-foreground: 240 4% 44%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 240 5% 95.5%;
+    --accent-foreground: 240 6% 10%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    /* Semantic */
+    --success: 152 56% 38%;
+    --success-foreground: 0 0% 100%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 238 75% 60%;
+    --warning: 38 92% 48%;
+    --warning-foreground: 0 0% 100%;
 
-    --radius: 0.625rem;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Lines & rings */
+    --border: 240 6% 90%;
+    --input: 240 6% 88%;
+    --ring: 243 75% 59%;
+
+    --radius: 0.75rem;
+
+    /* Layered soft shadows */
+    --shadow-xs: 0 1px 2px 0 hsl(240 10% 10% / 0.04);
+    --shadow-sm: 0 1px 3px 0 hsl(240 10% 10% / 0.06), 0 1px 2px -1px hsl(240 10% 10% / 0.04);
+    --shadow-md: 0 4px 12px -2px hsl(240 10% 10% / 0.08), 0 2px 6px -2px hsl(240 10% 10% / 0.05);
+    --shadow-lg: 0 12px 32px -8px hsl(240 10% 10% / 0.14), 0 4px 12px -4px hsl(240 10% 10% / 0.08);
+    --shadow-primary: 0 6px 20px -6px hsl(var(--primary) / 0.45);
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 240 10% 4%;
+    --foreground: 0 0% 96%;
 
-    --card: 240 10% 5%;
-    --card-foreground: 0 0% 98%;
+    --card: 240 8% 7%;
+    --card-foreground: 0 0% 96%;
 
-    --primary: 238 80% 67%;
-    --primary-foreground: 240 10% 3.9%;
+    --popover: 240 8% 7%;
+    --popover-foreground: 0 0% 96%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --primary: 243 80% 70%;
+    --primary-foreground: 240 12% 6%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --secondary: 240 5% 14%;
+    --secondary-foreground: 0 0% 96%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --muted: 240 5% 13%;
+    --muted-foreground: 240 5% 62%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --accent: 240 5% 15%;
+    --accent-foreground: 0 0% 96%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 238 80% 67%;
+    --success: 152 52% 46%;
+    --success-foreground: 240 12% 6%;
+
+    --warning: 38 92% 56%;
+    --warning-foreground: 240 12% 6%;
+
+    --destructive: 0 70% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 5% 16%;
+    --input: 240 5% 18%;
+    --ring: 243 80% 70%;
+
+    --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
+    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 14px -2px hsl(0 0% 0% / 0.5), 0 2px 6px -2px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 16px 40px -8px hsl(0 0% 0% / 0.6), 0 4px 12px -4px hsl(0 0% 0% / 0.45);
+    --shadow-primary: 0 8px 24px -8px hsl(var(--primary) / 0.55);
   }
 
   * {
@@ -67,16 +102,91 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
   }
 
   body {
     @apply bg-background text-foreground font-sans;
-    font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
+    font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1, 'cv11' 1;
+  }
+
+  /* Headings: tighter optical tracking */
+  h1, h2, h3, h4 {
+    @apply tracking-tight;
+    text-wrap: balance;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: hsl(var(--primary) / 0.18);
+    color: hsl(var(--foreground));
+  }
+
+  /* Refined focus ring across the app */
+  :focus-visible {
+    outline: none;
+  }
+
+  /* Subtle, modern scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.25);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.4);
+  }
+
+  /* Keyboard hint chips */
+  kbd {
+    @apply inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-[6px] border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground;
+    box-shadow: inset 0 -1px 0 0 hsl(240 10% 10% / 0.06);
+  }
+  .dark kbd {
+    box-shadow: inset 0 -1px 0 0 hsl(0 0% 0% / 0.3);
   }
 
   /* Focus mode — скрывает всё кроме вопроса */
   body.focus-mode aside,
   body.focus-mode [data-hide-in-focus] {
     @apply hidden;
+  }
+}
+
+@layer utilities {
+  /* Subtle dotted/grid background for hero & empty states */
+  .bg-grid {
+    background-image: radial-gradient(
+      hsl(var(--foreground) / 0.05) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+  }
+
+  /* Soft radial glow used behind hero content */
+  .bg-glow {
+    background:
+      radial-gradient(60% 60% at 50% 0%, hsl(var(--primary) / 0.12), transparent 70%);
+  }
+
+  /* Gradient text accent */
+  .text-gradient {
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--foreground)) 30%,
+      hsl(var(--primary)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 }

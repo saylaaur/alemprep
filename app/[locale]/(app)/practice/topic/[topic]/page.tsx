@@ -2,7 +2,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { PracticeView } from '@/components/practice/PracticeView';
 import { getQuestionsForTopic, topicName } from '@/lib/supabase/queries';
-import type { Locale, Question, ContextContent } from '@/types/db';
+import type { Locale } from '@/types/db';
 
 export default async function PracticeTopicPage({
   params,
@@ -18,17 +18,10 @@ export default async function PracticeTopicPage({
   );
   if (!topic) notFound();
 
-  const typedContexts = new Map<string, { id: string; title: string | null; content: ContextContent }>(
-    Array.from(contexts.entries()).map(([id, c]) => [
-      id,
-      { ...c, content: c.content as ContextContent },
-    ])
-  );
-
   return (
     <PracticeView
-      questions={questions as unknown as Question[]}
-      contexts={typedContexts}
+      questions={questions}
+      contexts={contexts}
       topicName={topicName(topic, locale as Locale)}
     />
   );
