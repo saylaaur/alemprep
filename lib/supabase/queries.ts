@@ -135,6 +135,160 @@ export function topicName(topic: Pick<Topic, 'name_ru' | 'name_kk'>, locale: Loc
   return locale === 'kk' ? topic.name_kk : topic.name_ru;
 }
 
+// ---- Progress data ----
+
+export type DailyActivity = { date: string; count: number };
+
+export type TopicStat = {
+  topic_id: string;
+  topic_name_ru: string;
+  topic_name_kk: string;
+  total: number;
+  correct: number;
+};
+
+export type RecentAttemptItem = {
+  id: string;
+  is_correct: boolean;
+  attempted_at: string;
+  topic_name_ru: string;
+  topic_name_kk: string;
+};
+
+export type ProgressData = {
+  currentStreak: number;
+  totalAttempts: number;
+  correctAttempts: number;
+  dailyActivity: DailyActivity[];
+  topicStats: TopicStat[];
+  recentAttempts: RecentAttemptItem[];
+};
+
+export async function getProgressData(): Promise<ProgressData | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const [attemptsRes, profileRes, topicsRes] = await Promise.all([
+    supabase
+      .from('attempts')
+      .select('id, is_correct, attempted_at, question_id')
+      .eq('user_id', user.id)
+      .order('attempted_at', { ascending: false }),
+    supabase
+      .from('profiles')
+      .select('current_streak')
+      .eq('id', user.id)
+      .maybeSingle(),
+    supabase.from('topics').select('id, name_ru, name_kk'),
+  ]);
+
+  const currentStreak =
+    (profileRes.data as { current_streak: number } | null)?.current_streak ?? 0;
+
+  const allAttempts = (attemptsRes.data ?? []) as {
+    id: string;
+    is_correct: boolean;
+    attempted_at: string;
+    question_id: string;
+  }[];
+
+  if (allAttempts.length === 0) {
+    return {
+      currentStreak,
+      totalAttempts: 0,
+      correctAttempts: 0,
+      dailyActivity: [],
+      topicStats: [],
+      recentAttempts: [],
+    };
+  }
+
+  const questionIds = Array.from(new Set(allAttempts.map((a) => a.question_id)));
+  const { data: questionsRaw } = await supabase
+    .from('questions')
+    .select('id, topic_id')
+    .in('id', questionIds);
+
+  const questionToTopic = new Map<string, string>();
+  for (const q of (questionsRaw ?? []) as { id: string; topic_id: string }[]) {
+    questionToTopic.set(q.id, q.topic_id);
+  }
+
+  const topicMap = new Map<string, { id: string; name_ru: string; name_kk: string }>();
+  for (const topic of (topicsRes.data ?? []) as {
+    id: string;
+    name_ru: string;
+    name_kk: string;
+  }[]) {
+    topicMap.set(topic.id, topic);
+  }
+
+  // Daily activity for the last 84 days
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 83);
+  cutoff.setHours(0, 0, 0, 0);
+  const activityMap = new Map<string, number>();
+  for (const a of allAttempts) {
+    const d = new Date(a.attempted_at);
+    if (d >= cutoff) {
+      const key = d.toISOString().split('T')[0];
+      activityMap.set(key, (activityMap.get(key) ?? 0) + 1);
+    }
+  }
+  const dailyActivity: DailyActivity[] = Array.from(activityMap.entries()).map(
+    ([date, count]) => ({ date, count })
+  );
+
+  // Topic accuracy (all time), sorted weakest → strongest
+  const topicStatsMap = new Map<string, TopicStat>();
+  for (const a of allAttempts) {
+    const topicId = questionToTopic.get(a.question_id);
+    if (!topicId) continue;
+    const topic = topicMap.get(topicId);
+    if (!topic) continue;
+    if (!topicStatsMap.has(topicId)) {
+      topicStatsMap.set(topicId, {
+        topic_id: topicId,
+        topic_name_ru: topic.name_ru,
+        topic_name_kk: topic.name_kk,
+        total: 0,
+        correct: 0,
+      });
+    }
+    const stat = topicStatsMap.get(topicId)!;
+    stat.total++;
+    if (a.is_correct) stat.correct++;
+  }
+  const topicStats: TopicStat[] = Array.from(topicStatsMap.values()).sort(
+    (a, b) => a.correct / a.total - b.correct / b.total
+  );
+
+  // Most recent 10 attempts with topic names
+  const recentAttempts: RecentAttemptItem[] = allAttempts.slice(0, 10).map((a) => {
+    const topicId = questionToTopic.get(a.question_id);
+    const topic = topicId ? topicMap.get(topicId) : undefined;
+    return {
+      id: a.id,
+      is_correct: a.is_correct,
+      attempted_at: a.attempted_at,
+      topic_name_ru: topic?.name_ru ?? '—',
+      topic_name_kk: topic?.name_kk ?? '—',
+    };
+  });
+
+  return {
+    currentStreak,
+    totalAttempts: allAttempts.length,
+    correctAttempts: allAttempts.filter((a) => a.is_correct).length,
+    dailyActivity,
+    topicStats,
+    recentAttempts,
+  };
+}
+
 export async function getQuestionsForTopic(topicSlug: string, locale: Locale = 'ru') {
   const supabase = await createClient();
   const { data: topic } = await supabase

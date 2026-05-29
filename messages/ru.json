@@ -99,8 +99,22 @@
   },
   "progress": {
     "title": "Прогресс",
-    "subtitle": "Статистика по темам и сессиям",
-    "comingSoon": "Скоро. Появится после первых сессий."
+    "subtitle": "Твоя активность и результаты по задачам",
+    "totalSolved": "Решено",
+    "accuracy": "Правильных",
+    "currentStreak": "Серия",
+    "streakDays": "{count, plural, =0 {дней} one {день} few {дня} other {дней}}",
+    "activityTitle": "Активность",
+    "activitySub": "последние 12 недель",
+    "topicsTitle": "Темы",
+    "topicsSub": "слабые → сильные",
+    "topicsEmpty": "Порешай задачи по темам — здесь появится статистика",
+    "recentTitle": "Последние попытки",
+    "recentEmpty": "Попыток ещё не было",
+    "emptyTitle": "Ещё нет активности",
+    "emptyText": "Реши несколько задач — здесь появится статистика",
+    "emptyAction": "Начать решать",
+    "attempts": "{count, plural, =0 {попыток} one {попытка} few {попытки} other {попыток}}"
   },
   "common": {
     "comingSoon": "Скоро",
