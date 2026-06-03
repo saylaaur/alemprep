@@ -17,9 +17,13 @@ declare global {
 /**
  * Рендерит строку с LaTeX-формулами в $...$ через KaTeX (CDN).
  * Использование: <MathText text="Найдите $\\ln x$" />
+ * display=true: если текст не содержит $-разделителей, оборачивает в $$...$$ (блочный режим).
  */
-export function MathText({ text, className }: { text: string; className?: string }) {
+export function MathText({ text, className, display = false }: { text: string; className?: string; display?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
+
+  // Bare LaTeX (без $) в display-блоках оборачиваем в $$...$$ для блочного рендера
+  const content = display && !/\$/.test(text) ? `$$${text}$$` : text;
 
   useEffect(() => {
     const el = ref.current;
@@ -38,11 +42,11 @@ export function MathText({ text, className }: { text: string; className?: string
       }
     };
     tryRender();
-  }, [text]);
+  }, [content]);
 
   return (
     <span ref={ref} className={className}>
-      {text}
+      {content}
     </span>
   );
 }

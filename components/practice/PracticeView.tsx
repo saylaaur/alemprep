@@ -338,7 +338,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
                 <div className="font-medium text-foreground">{t('explanation')}</div>
                 {((current.explanation as Explanation).blocks ?? []).map((b, i) => (
                   <div key={i}>
-                    <MathText text={b.value} />
+                    <MathText text={b.value} display={b.type === 'latex'} />
                   </div>
                 ))}
               </div>
@@ -387,7 +387,7 @@ function ContextBlock({
       <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
         {(ctx.content.blocks ?? []).map((b, i) => (
           <div key={i}>
-            <MathText text={b.value} />
+            <MathText text={b.value} display={b.type === 'latex'} />
           </div>
         ))}
       </div>

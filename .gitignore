@@ -17,3 +17,8 @@ __pycache__/
 *.log
 
 next-env.d.ts
+
+# Content pipeline outputs (runtime artefacts, not committed)
+scripts/references/
+scripts/generated/
+scripts/insert-batch.sql
