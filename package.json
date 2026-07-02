@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "gen:transcribe": "tsx --tsconfig tsconfig.scripts.json scripts/transcribe-questions.ts",
     "gen:variants": "tsx --tsconfig tsconfig.scripts.json scripts/generate-variants.ts",
+    "gen:verify": "tsx --tsconfig tsconfig.scripts.json scripts/verify-questions.ts",
     "gen:insert": "tsx --tsconfig tsconfig.scripts.json scripts/insert-to-db.ts",
     "gen:all": "tsx --tsconfig tsconfig.scripts.json scripts/gen-all.ts"
   },

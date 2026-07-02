@@ -21,4 +21,5 @@ next-env.d.ts
 # Content pipeline outputs (runtime artefacts, not committed)
 scripts/references/
 scripts/generated/
+scripts/verified/
 scripts/insert-batch.sql
