@@ -9,11 +9,12 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "gen:transcribe": "tsx --tsconfig tsconfig.scripts.json scripts/transcribe-questions.ts",
-    "gen:variants": "tsx --tsconfig tsconfig.scripts.json scripts/generate-variants.ts"
+    "gen:variants": "tsx --tsconfig tsconfig.scripts.json scripts/generate-variants.ts",
+    "gen:insert": "tsx --tsconfig tsconfig.scripts.json scripts/insert-to-db.ts",
+    "gen:all": "tsx --tsconfig tsconfig.scripts.json scripts/gen-all.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
-    "@google/genai": "^2.7.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",

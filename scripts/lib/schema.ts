@@ -63,6 +63,7 @@ export const ReferenceQuestionSchema = z.object({
   body: QuestionBodySchema,
   explanation: ExplanationSchema,
   source_file: z.string(),
+  has_image: z.boolean().optional(), // true for questions with visual diagrams (Epic C)
 });
 
 export const SkipItemSchema = z.object({

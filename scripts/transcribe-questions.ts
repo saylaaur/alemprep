@@ -1,14 +1,13 @@
 /**
  * Step 1 — Transcription
- * PNG files → reference JSON via Gemini vision.
+ * PNG files → reference JSON via Claude Haiku vision.
  *
  * Usage:
- *   npm run gen:transcribe -- --dir "~/Desktop/unt recources/math unt 1" [--limit 5]
+ *   npm run gen:transcribe -- --dir "~/Desktop/images" [--subject math] [--limit 5]
  *
- * ℹ️  Gemini 2.5 Flash pricing: $0.075/1M input, $0.30/1M output
- *     Free tier: 15 RPM · 1M tokens/day · 1500 req/day (demo costs ~$0)
+ * ⚠️  Uses paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output
  */
-import { GoogleGenAI } from '@google/genai';
+import Anthropic from '@anthropic-ai/sdk';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -18,14 +17,12 @@ import {
   type TranscriptionItem,
 } from './lib/schema';
 
-// ---- Cost (Gemini 2.5 Flash, USD per 1M tokens) ----
-const COST = { input: 0.075, output: 0.30 };
+const MODEL = 'claude-haiku-4-5-20251001';
+const COST = { input: 1.0, output: 5.0 }; // USD per 1M tokens
 
-function calcCost(promptTok: number, outputTok: number): number {
-  return (promptTok * COST.input + outputTok * COST.output) / 1_000_000;
+function calcCost(inputTok: number, outputTok: number): number {
+  return (inputTok * COST.input + outputTok * COST.output) / 1_000_000;
 }
-
-// ---- Helpers ----
 
 function expandPath(p: string): string {
   return p.startsWith('~/') ? path.join(os.homedir(), p.slice(2)) : p;
@@ -42,30 +39,32 @@ function loadEnv(): void {
   }
 }
 
-function parseArgs(): { dir: string; limit: number } {
+function parseArgs(): { dir: string; limit: number; subject: string } {
   const args = process.argv.slice(2);
   let dir = '';
   let limit = Infinity;
+  let subject = 'math';
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--dir' && args[i + 1]) dir = expandPath(args[++i]);
     if (args[i] === '--limit' && args[i + 1]) limit = parseInt(args[++i], 10);
+    if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
   }
   if (!dir) {
-    console.error('Usage: npm run gen:transcribe -- --dir <path> [--limit N]');
+    console.error('Usage: npm run gen:transcribe -- --dir <path> [--subject math] [--limit N]');
     process.exit(1);
   }
-  return { dir, limit };
+  return { dir, limit, subject };
 }
 
-function getMediaType(filePath: string): string {
+function getMediaType(
+  filePath: string,
+): 'image/jpeg' | 'image/gif' | 'image/webp' | 'image/png' {
   const ext = path.extname(filePath).toLowerCase();
   if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
   if (ext === '.gif') return 'image/gif';
   if (ext === '.webp') return 'image/webp';
   return 'image/png';
 }
-
-// ---- System instruction ----
 
 const SYSTEM_INSTRUCTION = `You are a math teacher transcribing ЕНТ (Unified National Testing, Kazakhstan) math problems into structured JSON.
 
@@ -98,32 +97,42 @@ Rules:
 - Pick the most specific matching topic_slug
 - difficulty: honest assessment — typical ЕНТ = 3`;
 
-// ---- Core transcription ----
-
 async function transcribeImage(
-  genAI: GoogleGenAI,
+  client: Anthropic,
   imagePath: string,
-): Promise<{ item: TranscriptionItem; promptTok: number; outputTok: number }> {
+): Promise<{ item: TranscriptionItem; inputTok: number; outputTok: number }> {
   const filename = path.basename(imagePath);
   const imageData = fs.readFileSync(imagePath).toString('base64');
-  const mimeType = getMediaType(imagePath);
+  const mediaType = getMediaType(imagePath);
 
-  const response = await genAI.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: [
-      { text: `Transcribe this ЕНТ math problem. Set source_file to "${filename}".` },
-      { inlineData: { data: imageData, mimeType } },
+  const response = await client.messages.create({
+    model: MODEL,
+    max_tokens: 2048,
+    system: SYSTEM_INSTRUCTION,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: mediaType, data: imageData },
+          },
+          {
+            type: 'text',
+            text: `Transcribe this ЕНТ math problem. Set source_file to "${filename}".`,
+          },
+        ],
+      },
     ],
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: 'application/json',
-      // No responseSchema — skip | question is a union; handled via prompt + Zod
-    },
   });
 
-  const promptTok = response.usageMetadata?.promptTokenCount ?? 0;
-  const outputTok = response.usageMetadata?.candidatesTokenCount ?? 0;
-  const raw = (response.text ?? '').trim();
+  const inputTok = response.usage.input_tokens;
+  const outputTok = response.usage.output_tokens;
+  const raw = response.content
+    .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
+    .map((b) => b.text)
+    .join('')
+    .trim();
 
   let parsed: unknown;
   try {
@@ -131,42 +140,38 @@ async function transcribeImage(
   } catch {
     return {
       item: { skip: 'unsupported', reason: 'Response is not valid JSON', source_file: filename },
-      promptTok,
+      inputTok,
       outputTok,
     };
   }
 
-  // Always stamp source_file from our known filename
   if (typeof parsed === 'object' && parsed !== null) {
     (parsed as Record<string, unknown>).source_file = filename;
   }
 
   const skipResult = SkipItemSchema.safeParse(parsed);
-  if (skipResult.success) return { item: skipResult.data, promptTok, outputTok };
+  if (skipResult.success) return { item: skipResult.data, inputTok, outputTok };
 
   const refResult = ReferenceQuestionSchema.safeParse(parsed);
-  if (refResult.success) return { item: refResult.data, promptTok, outputTok };
+  if (refResult.success) return { item: refResult.data, inputTok, outputTok };
 
   const msg = refResult.error.issues[0]?.message ?? 'unknown';
   return {
     item: { skip: 'unsupported', reason: `Zod: ${msg}`, source_file: filename },
-    promptTok,
+    inputTok,
     outputTok,
   };
 }
 
-// ---- Main ----
-
 async function main() {
   loadEnv();
 
-  const { dir, limit } = parseArgs();
+  const { dir, limit, subject } = parseArgs();
 
-  const apiKey = process.env.GOOGLE_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    console.error('\n❌  GOOGLE_API_KEY not found in .env.local');
-    console.error('   Add: GOOGLE_API_KEY=...');
-    console.error('   ℹ️  Free tier: 15 RPM · 1M tokens/day · no charge under quota\n');
+    console.error('\n❌  ANTHROPIC_API_KEY not found in .env.local');
+    console.error('   ⚠️  Paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output\n');
     process.exit(1);
   }
 
@@ -187,11 +192,12 @@ async function main() {
   }
 
   console.log(`\n📂  ${dir}`);
-  console.log(`📋  Processing ${files.length} image(s)  [model: gemini-2.5-flash]\n`);
+  console.log(`📋  Processing ${files.length} image(s)  [model: ${MODEL}]`);
+  console.log(`   ⚠️  Paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output\n`);
 
-  const genAI = new GoogleGenAI({ apiKey });
+  const anthropic = new Anthropic({ apiKey });
   const results: TranscriptionItem[] = [];
-  let totalPrompt = 0;
+  let totalInput = 0;
   let totalOutput = 0;
   let skipped = 0;
   let graphs = 0;
@@ -199,12 +205,12 @@ async function main() {
   for (const file of files) {
     process.stdout.write(`  ${file}  …  `);
     try {
-      const { item, promptTok, outputTok } = await transcribeImage(
-        genAI,
+      const { item, inputTok, outputTok } = await transcribeImage(
+        anthropic,
         path.join(dir, file),
       );
       results.push(item);
-      totalPrompt += promptTok;
+      totalInput += inputTok;
       totalOutput += outputTok;
 
       if ('skip' in item) {
@@ -212,9 +218,9 @@ async function main() {
         if (item.skip === 'graph') graphs++;
         console.log(`⏭  skip(${item.skip}): ${item.reason}`);
       } else {
-        const cost = calcCost(promptTok, outputTok);
+        const cost = calcCost(inputTok, outputTok);
         console.log(
-          `✓  ${item.topic_slug} / ${item.type} / diff=${item.difficulty}  [${promptTok}in ${outputTok}out ~$${cost.toFixed(4)}]`,
+          `✓  ${item.topic_slug} / ${item.type} / diff=${item.difficulty}  [${inputTok}in ${outputTok}out ~$${cost.toFixed(5)}]`,
         );
       }
     } catch (err) {
@@ -228,16 +234,16 @@ async function main() {
   const outDir = path.join(process.cwd(), 'scripts', 'references');
   fs.mkdirSync(outDir, { recursive: true });
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 16);
-  const outFile = path.join(outDir, `math-${ts}.json`);
+  const outFile = path.join(outDir, `${subject}-${ts}.json`);
   fs.writeFileSync(outFile, JSON.stringify(results, null, 2));
 
-  const totalCost = calcCost(totalPrompt, totalOutput);
+  const totalCost = calcCost(totalInput, totalOutput);
   const transcribed = files.length - skipped;
   console.log(
     `\n✅  ${transcribed} transcribed, ${skipped} skipped (${graphs} graph, ${skipped - graphs} other)`,
   );
   console.log(
-    `💰  Tokens: ${totalPrompt} in / ${totalOutput} out  ~$${totalCost.toFixed(4)}  (free tier ≤ 1M tok/day = $0)`,
+    `💰  Tokens: ${totalInput} in / ${totalOutput} out  ~$${totalCost.toFixed(4)} USD  [Haiku 4.5]`,
   );
   console.log(`📄  Saved → ${outFile}\n`);
 }

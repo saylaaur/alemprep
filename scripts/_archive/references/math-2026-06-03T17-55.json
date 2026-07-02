@@ -1,0 +1,1683 @@
+[
+  {
+    "topic_slug": "derivatives",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите неопределенный интеграл $\\int e^{5x} dx$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$5e^{5x} + C$"
+        },
+        {
+          "id": "b",
+          "content": "$e^{5x} + C$"
+        },
+        {
+          "id": "c",
+          "content": "$0,2e^{5x} + C$"
+        },
+        {
+          "id": "d",
+          "content": "$5e^x + C$"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для нахождения неопределенного интеграла воспользуемся формулой интегрирования экспоненциальной функции:"
+        },
+        {
+          "type": "latex",
+          "value": "$$\\int e^{ax} dx = \\frac{1}{a} e^{ax} + C$$"
+        },
+        {
+          "type": "text",
+          "value": "В данном случае $a=5$. Подставляем значение $a$ в формулу:"
+        },
+        {
+          "type": "latex",
+          "value": "$$\\int e^{5x} dx = \\frac{1}{5} e^{5x} + C$$"
+        },
+        {
+          "type": "text",
+          "value": "Так как $\\frac{1}{5} = 0,2$, получаем:"
+        },
+        {
+          "type": "latex",
+          "value": "$$0,2e^{5x} + C$$"
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.16.36 PM.png"
+  },
+  {
+    "topic_slug": "logarithms",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Найдите корни уравнения $ln^2 x - 2lnx = 0$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$e^3; 3$"
+        },
+        {
+          "id": "b",
+          "content": "$e^2; 2$"
+        },
+        {
+          "id": "c",
+          "content": "$e^2; 1$"
+        },
+        {
+          "id": "d",
+          "content": "$e; 1$"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Данное уравнение является логарифмическим. Введем замену переменной."
+        },
+        {
+          "type": "latex",
+          "value": "ln^2 x - 2lnx = 0"
+        },
+        {
+          "type": "text",
+          "value": "Пусть $y = lnx$. Тогда уравнение примет вид:"
+        },
+        {
+          "type": "latex",
+          "value": "y^2 - 2y = 0"
+        },
+        {
+          "type": "text",
+          "value": "Вынесем $y$ за скобки:"
+        },
+        {
+          "type": "latex",
+          "value": "y(y - 2) = 0"
+        },
+        {
+          "type": "text",
+          "value": "Из этого следует, что либо $y=0$, либо $y-2=0$."
+        },
+        {
+          "type": "latex",
+          "value": "y_1 = 0 \\quad \\text{или} \\quad y_2 = 2"
+        },
+        {
+          "type": "text",
+          "value": "Теперь подставим обратно $lnx$ вместо $y$."
+        },
+        {
+          "type": "latex",
+          "value": "lnx = 0"
+        },
+        {
+          "type": "text",
+          "value": "По определению логарифма, $x = e^0$, что равно 1."
+        },
+        {
+          "type": "latex",
+          "value": "x_1 = 1"
+        },
+        {
+          "type": "latex",
+          "value": "lnx = 2"
+        },
+        {
+          "type": "text",
+          "value": "По определению логарифма, $x = e^2$."
+        },
+        {
+          "type": "latex",
+          "value": "x_2 = e^2"
+        },
+        {
+          "type": "text",
+          "value": "Оба корня $x=1$ и $x=e^2$ удовлетворяют условию $x > 0$ для логарифма. Таким образом, корни уравнения $1$ и $e^2$."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.17.05 PM.png"
+  },
+  {
+    "topic_slug": "algebra",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите область допустимых значений переменной $a$ в алгебраическом выражении $\\frac{3a}{a-2}$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$(-\\infty; 0)$"
+        },
+        {
+          "id": "b",
+          "content": "$(2; +\\infty)$"
+        },
+        {
+          "id": "c",
+          "content": "$(-\\infty; 0) \\cup (2; +\\infty)$"
+        },
+        {
+          "id": "d",
+          "content": "$(-\\infty; 2) \\cup (2; +\\infty)$"
+        }
+      ],
+      "correct": "d"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Область допустимых значений (ОДЗ) для алгебраической дроби определяется условием, что знаменатель не должен быть равен нулю."
+        },
+        {
+          "type": "latex",
+          "value": "a - 2 \\neq 0"
+        },
+        {
+          "type": "latex",
+          "value": "a \\neq 2"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, переменная $a$ может принимать любые действительные значения, кроме 2. Это можно записать в виде интервала:"
+        },
+        {
+          "type": "latex",
+          "value": "$(-\\infty; 2) \\cup (2; +\\infty)$"
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.17.12 PM.png"
+  },
+  {
+    "topic_slug": "equations",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Пара чисел $(x_0; y_0)$ является решением системы уравнений $\\begin{cases} \\frac{x}{12} + \\frac{y}{3} = 21, \\\\ \\frac{x}{4} - \\frac{y}{12} = -2. \\end{cases}$ Найдите отношение $\\frac{y_0}{x_0}$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "12"
+        },
+        {
+          "id": "b",
+          "content": "6"
+        },
+        {
+          "id": "c",
+          "content": "5"
+        },
+        {
+          "id": "d",
+          "content": "48"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Дана система уравнений:"
+        },
+        {
+          "type": "latex",
+          "value": "\\begin{cases} \\frac{x}{12} + \\frac{y}{3} = 21 \\quad (1) \\\\ \\frac{x}{4} - \\frac{y}{12} = -2 \\quad (2) \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Умножим каждое уравнение на 12, чтобы избавиться от дробей:"
+        },
+        {
+          "type": "latex",
+          "value": "\\text{Уравнение (1) умножим на 12:} \\quad 12 \\left( \\frac{x}{12} + \\frac{y}{3} \\right) = 12 \\times 21 \\implies x + 4y = 252 \\quad (3)"
+        },
+        {
+          "type": "latex",
+          "value": "\\text{Уравнение (2) умножим на 12:} \\quad 12 \\left( \\frac{x}{4} - \\frac{y}{12} \\right) = 12 \\times (-2) \\implies 3x - y = -24 \\quad (4)"
+        },
+        {
+          "type": "text",
+          "value": "Теперь у нас есть более простая система:"
+        },
+        {
+          "type": "latex",
+          "value": "\\begin{cases} x + 4y = 252 \\\\ 3x - y = -24 \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Из уравнения (4) выразим $y$:"
+        },
+        {
+          "type": "latex",
+          "value": "-y = -24 - 3x \\implies y = 3x + 24"
+        },
+        {
+          "type": "text",
+          "value": "Подставим это выражение для $y$ в уравнение (3):"
+        },
+        {
+          "type": "latex",
+          "value": "x + 4(3x + 24) = 252"
+        },
+        {
+          "type": "latex",
+          "value": "x + 12x + 96 = 252"
+        },
+        {
+          "type": "latex",
+          "value": "13x = 252 - 96"
+        },
+        {
+          "type": "latex",
+          "value": "13x = 156"
+        },
+        {
+          "type": "latex",
+          "value": "x_0 = \\frac{156}{13} = 12"
+        },
+        {
+          "type": "text",
+          "value": "Теперь найдем $y_0$, подставив $x_0 = 12$ в выражение для $y$:"
+        },
+        {
+          "type": "latex",
+          "value": "y_0 = 3(12) + 24 = 36 + 24 = 60"
+        },
+        {
+          "type": "text",
+          "value": "Пара чисел $(x_0; y_0)$ равна $(12; 60)$. Нам нужно найти отношение $\\frac{y_0}{x_0}$:"
+        },
+        {
+          "type": "latex",
+          "value": "\\frac{y_0}{x_0} = \\frac{60}{12} = 5"
+        },
+        {
+          "type": "text",
+          "value": "Правильный ответ — 5."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.17.18 PM.png"
+  },
+  {
+    "topic_slug": "stereometry",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Дан куб $ABCDA_1B_1C_1D_1$. Найдите $|\\vec{AD} - \\vec{AB}|$, если ребро куба равно 5 см",
+      "options": [
+        {
+          "id": "a",
+          "content": "$7\\sqrt{2}$ см"
+        },
+        {
+          "id": "b",
+          "content": "$4\\sqrt{2}$ см"
+        },
+        {
+          "id": "c",
+          "content": "$6\\sqrt{2}$ см"
+        },
+        {
+          "id": "d",
+          "content": "$5\\sqrt{2}$ см"
+        }
+      ],
+      "correct": "d"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "По правилу вычитания векторов, если векторы имеют общее начало, то их разность равна вектору, идущему от конца вычитаемого вектора к концу уменьшаемого вектора."
+        },
+        {
+          "type": "latex",
+          "value": "$$\\vec{AD} - \\vec{AB} = \\vec{BD}$$"
+        },
+        {
+          "type": "text",
+          "value": "Вектор $\\vec{BD}$ является диагональю грани $ABCD$ куба. Грань $ABCD$ — это квадрат со стороной, равной ребру куба, то есть 5 см."
+        },
+        {
+          "type": "text",
+          "value": "Длина диагонали квадрата со стороной $a$ вычисляется по формуле $d = a\\sqrt{2}$."
+        },
+        {
+          "type": "latex",
+          "value": "$$|\\vec{BD}| = 5\\sqrt{2} \\text{ см}$$"
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.17.32 PM.png"
+  },
+  {
+    "topic_slug": "planimetry",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Составьте уравнение прямой, проходящей через заданные точки $A(-1; 2), B(2; -2)$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$3x + 4y + 5 = 0$"
+        },
+        {
+          "id": "b",
+          "content": "$4x + 3y - 2 = 0$"
+        },
+        {
+          "id": "c",
+          "content": "$3x + 4y - 5 = 0$"
+        },
+        {
+          "id": "d",
+          "content": "$4x - 3y - 2 = 0$"
+        }
+      ],
+      "correct": "b"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Уравнение прямой, проходящей через две точки $(x_1, y_1)$ и $(x_2, y_2)$, можно записать в виде:"
+        },
+        {
+          "type": "latex",
+          "value": "$$\\frac{x - x_1}{x_2 - x_1} = \\frac{y - y_1}{y_2 - y_1}$$"
+        },
+        {
+          "type": "text",
+          "value": "Даны точки $A(-1; 2)$ и $B(2; -2)$. Подставим их координаты в формулу:"
+        },
+        {
+          "type": "latex",
+          "value": "$$\\frac{x - (-1)}{2 - (-1)} = \\frac{y - 2}{-2 - 2}$$"
+        },
+        {
+          "type": "latex",
+          "value": "$$\\frac{x + 1}{3} = \\frac{y - 2}{-4}$$"
+        },
+        {
+          "type": "text",
+          "value": "Перемножим крест-накрест:"
+        },
+        {
+          "type": "latex",
+          "value": "$$-4(x + 1) = 3(y - 2)$$"
+        },
+        {
+          "type": "latex",
+          "value": "$$-4x - 4 = 3y - 6$$"
+        },
+        {
+          "type": "text",
+          "value": "Перенесем все члены в одну сторону, чтобы получить общий вид уравнения прямой $Ax + By + C = 0$:"
+        },
+        {
+          "type": "latex",
+          "value": "$$0 = 4x + 3y - 6 + 4$$"
+        },
+        {
+          "type": "latex",
+          "value": "$$4x + 3y - 2 = 0$$"
+        },
+        {
+          "type": "text",
+          "value": "Это соответствует варианту B."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.17.38 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "Response is not valid JSON",
+    "source_file": "Screenshot 2026-05-10 at 11.17.50 PM.png"
+  },
+  {
+    "topic_slug": "derivatives",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Найдите неопределенный интеграл $\\int \\frac{1}{\\cos^2 x} \\cdot \\frac{1}{\\sin^2 x} dx$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$tg2x + C$"
+        },
+        {
+          "id": "b",
+          "content": "$-4ctg2x + C$"
+        },
+        {
+          "id": "c",
+          "content": "$-tg2x + C$"
+        },
+        {
+          "id": "d",
+          "content": "$-2ctg2x + C$"
+        }
+      ],
+      "correct": "d"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Преобразуем подынтегральное выражение, используя тригонометрическую формулу двойного угла для синуса: $\\sin(2x) = 2\\sin x \\cos x$. Возведя обе части в квадрат, получаем:"
+        },
+        {
+          "type": "latex",
+          "value": "\\sin^2(2x) = (2\\sin x \\cos x)^2 = 4\\sin^2 x \\cos^2 x"
+        },
+        {
+          "type": "text",
+          "value": "Из этого следует:"
+        },
+        {
+          "type": "latex",
+          "value": "\\sin^2 x \\cos^2 x = \\frac{\\sin^2(2x)}{4}"
+        },
+        {
+          "type": "text",
+          "value": "Теперь подставим это в интеграл:"
+        },
+        {
+          "type": "latex",
+          "value": "\\int \\frac{1}{\\cos^2 x \\sin^2 x} dx = \\int \\frac{1}{\\frac{\\sin^2(2x)}{4}} dx = \\int \\frac{4}{\\sin^2(2x)} dx"
+        },
+        {
+          "type": "text",
+          "value": "Вынесем константу за знак интеграла:"
+        },
+        {
+          "type": "latex",
+          "value": "4 \\int \\frac{1}{\\sin^2(2x)} dx"
+        },
+        {
+          "type": "text",
+          "value": "Используем замену переменной: пусть $u = 2x$, тогда $du = 2dx$, откуда $dx = \\frac{1}{2} du$. Подставляем:"
+        },
+        {
+          "type": "latex",
+          "value": "4 \\int \\frac{1}{\\sin^2 u} \\cdot \\frac{1}{2} du = 2 \\int \\frac{1}{\\sin^2 u} du"
+        },
+        {
+          "type": "text",
+          "value": "Известно, что интеграл от $\\frac{1}{\\sin^2 u}$ равен $-\\operatorname{ctg} u + C$. Таким образом:"
+        },
+        {
+          "type": "latex",
+          "value": "2(-\\operatorname{ctg} u) + C = -2\\operatorname{ctg}(2x) + C"
+        },
+        {
+          "type": "text",
+          "value": "Следовательно, правильный ответ — D."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.17.58 PM.png"
+  },
+  {
+    "topic_slug": "planimetry",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Найдите длину окружности, вписанной в правильный шестиугольник со стороной 6 см.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$3\\sqrt{3}\\pi$ см"
+        },
+        {
+          "id": "b",
+          "content": "$12\\sqrt{3}\\pi$ см"
+        },
+        {
+          "id": "c",
+          "content": "$6\\sqrt{3}\\pi$ см"
+        },
+        {
+          "id": "d",
+          "content": "$6\\sqrt{2}\\pi$ см"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для правильного шестиугольника со стороной $a$ радиус $r$ вписанной окружности равен $r = \\frac{a\\sqrt{3}}{2}$."
+        },
+        {
+          "type": "text",
+          "value": "Дана сторона шестиугольника $a = 6$ см. Найдем радиус вписанной окружности:"
+        },
+        {
+          "type": "latex",
+          "value": "r = \\frac{6\\sqrt{3}}{2} = 3\\sqrt{3} \\text{ см}"
+        },
+        {
+          "type": "text",
+          "value": "Длина окружности $L$ вычисляется по формуле $L = 2\\pi r$."
+        },
+        {
+          "type": "text",
+          "value": "Подставим найденное значение радиуса:"
+        },
+        {
+          "type": "latex",
+          "value": "L = 2\\pi (3\\sqrt{3}) = 6\\sqrt{3}\\pi \\text{ см}"
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.18.03 PM.png"
+  },
+  {
+    "topic_slug": "progressions",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "В геометрической прогрессии $(b_n)$ известно, что $b_2 = -8, b_5 = 64$. Найдите знаменатель этой прогрессии",
+      "options": [
+        {
+          "id": "a",
+          "content": "$-0,5$"
+        },
+        {
+          "id": "b",
+          "content": "$-1$"
+        },
+        {
+          "id": "c",
+          "content": "$-2$"
+        },
+        {
+          "id": "d",
+          "content": "$-1,5$"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для геометрической прогрессии $b_n$ справедлива формула:"
+        },
+        {
+          "type": "latex",
+          "value": "$b_n = b_k \\cdot q^{n-k}$"
+        },
+        {
+          "type": "text",
+          "value": "В данном случае, мы знаем $b_2 = -8$ и $b_5 = 64$. Мы можем подставить эти значения в формулу, чтобы найти знаменатель $q$:"
+        },
+        {
+          "type": "latex",
+          "value": "$b_5 = b_2 \\cdot q^{5-2}$"
+        },
+        {
+          "type": "latex",
+          "value": "$b_5 = b_2 \\cdot q^3$"
+        },
+        {
+          "type": "text",
+          "value": "Подставляем известные значения:"
+        },
+        {
+          "type": "latex",
+          "value": "$64 = -8 \\cdot q^3$"
+        },
+        {
+          "type": "text",
+          "value": "Разделим обе части уравнения на $-8$:"
+        },
+        {
+          "type": "latex",
+          "value": "$q^3 = \\frac{64}{-8}$"
+        },
+        {
+          "type": "latex",
+          "value": "$q^3 = -8$"
+        },
+        {
+          "type": "text",
+          "value": "Извлечем кубический корень из обеих частей:"
+        },
+        {
+          "type": "latex",
+          "value": "$q = \\sqrt[3]{-8}$"
+        },
+        {
+          "type": "latex",
+          "value": "$q = -2$"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, знаменатель прогрессии равен $-2$."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.18.09 PM.png"
+  },
+  {
+    "topic_slug": "algebra",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Найдите значение выражения $xy^2 - ax + y^2 - by^2 + ab - a$ при $x - b - 3 = 0$ и $y^2 - a = 4$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "16"
+        },
+        {
+          "id": "b",
+          "content": "12"
+        },
+        {
+          "id": "c",
+          "content": "-15"
+        },
+        {
+          "id": "d",
+          "content": "-10"
+        }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Дано выражение: $E = xy^2 - ax + y^2 - by^2 + ab - a$"
+        },
+        {
+          "type": "text",
+          "value": "Даны условия: $x - b - 3 = 0$ и $y^2 - a = 4$"
+        },
+        {
+          "type": "text",
+          "value": "Из первого условия получаем: $x - b = 3$"
+        },
+        {
+          "type": "text",
+          "value": "Из второго условия получаем: $y^2 - a = 4$"
+        },
+        {
+          "type": "text",
+          "value": "Сгруппируем члены в выражении $E$:"
+        },
+        {
+          "type": "latex",
+          "value": "$E = (xy^2 - by^2) + (y^2 - a) + (-ax + ab)$"
+        },
+        {
+          "type": "text",
+          "value": "Вынесем общие множители из каждой группы:"
+        },
+        {
+          "type": "latex",
+          "value": "$E = y^2(x - b) + (y^2 - a) - a(x - b)$"
+        },
+        {
+          "type": "text",
+          "value": "Теперь подставим значения, полученные из условий:"
+        },
+        {
+          "type": "latex",
+          "value": "$E = y^2(3) + 4 - a(3)$"
+        },
+        {
+          "type": "latex",
+          "value": "$E = 3y^2 + 4 - 3a$"
+        },
+        {
+          "type": "text",
+          "value": "Вынесем 3 из первых двух слагаемых:"
+        },
+        {
+          "type": "latex",
+          "value": "$E = 3(y^2 - a) + 4$"
+        },
+        {
+          "type": "text",
+          "value": "Снова подставим $y^2 - a = 4$:"
+        },
+        {
+          "type": "latex",
+          "value": "$E = 3(4) + 4$"
+        },
+        {
+          "type": "latex",
+          "value": "$E = 12 + 4$"
+        },
+        {
+          "type": "latex",
+          "value": "$E = 16$"
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.18.15 PM.png"
+  },
+  {
+    "topic_slug": "equations",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Решите уравнение $3x^2 - 4,5x + 1,5 = 0$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$x_1 = 0,5$; $x_2 = -1$"
+        },
+        {
+          "id": "b",
+          "content": "$x_1 = -0,5$; $x_2 = 1$"
+        },
+        {
+          "id": "c",
+          "content": "$x_1 = -0,5$; $x_2 = -1$"
+        },
+        {
+          "id": "d",
+          "content": "$x_1 = 0,5$; $x_2 = 1$"
+        }
+      ],
+      "correct": "d"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Данное квадратное уравнение:"
+        },
+        {
+          "type": "latex",
+          "value": "$3x^2 - 4,5x + 1,5 = 0$"
+        },
+        {
+          "type": "text",
+          "value": "Умножим все члены уравнения на 2, чтобы избавиться от десятичных дробей:"
+        },
+        {
+          "type": "latex",
+          "value": "$6x^2 - 9x + 3 = 0$"
+        },
+        {
+          "type": "text",
+          "value": "Разделим все члены уравнения на 3, чтобы упростить:"
+        },
+        {
+          "type": "latex",
+          "value": "$2x^2 - 3x + 1 = 0$"
+        },
+        {
+          "type": "text",
+          "value": "Вычислим дискриминант $D = b^2 - 4ac$:"
+        },
+        {
+          "type": "latex",
+          "value": "$D = (-3)^2 - 4(2)(1) = 9 - 8 = 1$"
+        },
+        {
+          "type": "text",
+          "value": "Найдем корни уравнения по формуле $x = \\frac{-b \\pm \\sqrt{D}}{2a}$:"
+        },
+        {
+          "type": "latex",
+          "value": "$x_1 = \\frac{-(-3) + \\sqrt{1}}{2(2)} = \\frac{3 + 1}{4} = \\frac{4}{4} = 1$"
+        },
+        {
+          "type": "latex",
+          "value": "$x_2 = \\frac{-(-3) - \\sqrt{1}}{2(2)} = \\frac{3 - 1}{4} = \\frac{2}{4} = 0,5$"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, корни уравнения: $x_1 = 1$ и $x_2 = 0,5$."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.18.20 PM.png"
+  },
+  {
+    "topic_slug": "equations",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Решите неравенство $\\sqrt{x-1} < 3-x$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$[1; 2)$"
+        },
+        {
+          "id": "b",
+          "content": "$(1; 2)$"
+        },
+        {
+          "id": "c",
+          "content": "$[1; 2]$"
+        },
+        {
+          "id": "d",
+          "content": "$(1; 2]$"
+        }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для решения неравенства $\\sqrt{x-1} < 3-x$ необходимо выполнить следующие шаги:"
+        },
+        {
+          "type": "text",
+          "value": "1. Определить область допустимых значений (ОДЗ) для переменной $x$."
+        },
+        {
+          "type": "latex",
+          "value": "Корень четной степени определен только для неотрицательных значений подкоренного выражения: $x-1 \\ge 0 \\implies x \\ge 1$."
+        },
+        {
+          "type": "text",
+          "value": "Правая часть неравенства $3-x$ должна быть строго положительной, так как левая часть $\\sqrt{x-1}$ неотрицательна, и $\\sqrt{x-1} < 3-x$."
+        },
+        {
+          "type": "latex",
+          "value": "$3-x > 0 \\implies x < 3$."
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, ОДЗ с учетом условия положительности правой части: $1 \\le x < 3$."
+        },
+        {
+          "type": "text",
+          "value": "2. Возвести обе части неравенства в квадрат (это допустимо, так как обе части неотрицательны в ОДЗ)."
+        },
+        {
+          "type": "latex",
+          "value": "$(\\sqrt{x-1})^2 < (3-x)^2$"
+        },
+        {
+          "type": "latex",
+          "value": "$x-1 < 9 - 6x + x^2$"
+        },
+        {
+          "type": "latex",
+          "value": "$0 < x^2 - 7x + 10$"
+        },
+        {
+          "type": "text",
+          "value": "3. Решить полученное квадратное неравенство."
+        },
+        {
+          "type": "text",
+          "value": "Найдем корни квадратного уравнения $x^2 - 7x + 10 = 0$."
+        },
+        {
+          "type": "text",
+          "value": "По теореме Виета или через дискриминант: $(x-2)(x-5) = 0$."
+        },
+        {
+          "type": "text",
+          "value": "Корни: $x_1 = 2$, $x_2 = 5$."
+        },
+        {
+          "type": "text",
+          "value": "Так как парабола $y = x^2 - 7x + 10$ открыта вверх, неравенство $x^2 - 7x + 10 > 0$ выполняется при $x < 2$ или $x > 5$."
+        },
+        {
+          "type": "text",
+          "value": "4. Объединить полученное решение с ОДЗ."
+        },
+        {
+          "type": "text",
+          "value": "Нам нужно найти пересечение условий:"
+        },
+        {
+          "type": "latex",
+          "value": "$\\begin{cases} 1 \\le x < 3 \\\\ x < 2 \\text{ или } x > 5 \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Рассмотрим интервал $[1, 3)$:"
+        },
+        {
+          "type": "text",
+          "value": "Пересечение $[1, 3)$ с $(-\\infty, 2)$ дает $[1, 2)$."
+        },
+        {
+          "type": "text",
+          "value": "Пересечение $[1, 3)$ с $(5, +\\infty)$ дает пустое множество."
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, решением неравенства является интервал $[1, 2)$."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.18.26 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 26.402987629s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"26s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.18.31 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 25.637619331s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"25s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.18.39 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 25.252835886s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"25s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.18.45 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 25.005270164s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"model\":\"gemini-2.5-flash\",\"location\":\"global\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"25s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.18.50 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 24.741307573s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"24s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.18.55 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 24.45422003s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"model\":\"gemini-2.5-flash\",\"location\":\"global\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"24s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.19.01 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 24.198034101s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"24s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.19.07 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 23.918284651s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"23s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.19.14 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 23.651120198s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"23s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.19.20 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 23.32584888s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"23s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.19.26 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 23.081059233s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"23s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.19.32 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 22.827712111s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"22s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.19.36 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 22.120350397s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"22s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.20.03 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 21.860691038s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"model\":\"gemini-2.5-flash\",\"location\":\"global\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"21s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.20.10 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 21.573619833s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"21s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.20.21 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 21.140302241s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"model\":\"gemini-2.5-flash\",\"location\":\"global\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"21s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.20.30 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 20.885518953s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"20s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.20.36 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 20.622276839s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"20s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.20.41 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\\nPlease retry in 20.356235191s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"5\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"20s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.20.50 PM.png"
+  },
+  {
+    "topic_slug": "algebra",
+    "type": "matching",
+    "difficulty": 3,
+    "body": {
+      "stem": "Известно, что $8a^3 + 12a^2b + 6ab^2 - 8 = -b^3$. Установите соответствие между выражением и его числовым значением",
+      "left": [
+        {
+          "id": "A",
+          "content": "$(2a+b)^3 - 2$"
+        },
+        {
+          "id": "B",
+          "content": "$15 - (2a+b)$"
+        }
+      ],
+      "right": [
+        "6",
+        "13"
+      ],
+      "correct": {
+        "A": "6",
+        "B": "13"
+      }
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Дано уравнение: "
+        },
+        {
+          "type": "latex",
+          "value": "$8a^3 + 12a^2b + 6ab^2 - 8 = -b^3$"
+        },
+        {
+          "type": "text",
+          "value": "Перенесем $-b^3$ в левую часть уравнения:"
+        },
+        {
+          "type": "latex",
+          "value": "$8a^3 + 12a^2b + 6ab^2 + b^3 = 8$"
+        },
+        {
+          "type": "text",
+          "value": "Левая часть уравнения является формулой куба суммы: $(2a)^3 + 3(2a)^2b + 3(2a)b^2 + b^3 = (2a+b)^3$. Таким образом, уравнение принимает вид:"
+        },
+        {
+          "type": "latex",
+          "value": "$(2a+b)^3 = 8$"
+        },
+        {
+          "type": "text",
+          "value": "Извлечем кубический корень из обеих частей уравнения:"
+        },
+        {
+          "type": "latex",
+          "value": "$2a+b = \\sqrt[3]{8}$"
+        },
+        {
+          "type": "latex",
+          "value": "$2a+b = 2$"
+        },
+        {
+          "type": "text",
+          "value": "Теперь найдем значения выражений:"
+        },
+        {
+          "type": "text",
+          "value": "Для выражения А):"
+        },
+        {
+          "type": "latex",
+          "value": "$(2a+b)^3 - 2$"
+        },
+        {
+          "type": "text",
+          "value": "Подставим $(2a+b)^3 = 8$:"
+        },
+        {
+          "type": "latex",
+          "value": "$8 - 2 = 6$"
+        },
+        {
+          "type": "text",
+          "value": "Для выражения В):"
+        },
+        {
+          "type": "latex",
+          "value": "$15 - (2a+b)$"
+        },
+        {
+          "type": "text",
+          "value": "Подставим $2a+b = 2$:"
+        },
+        {
+          "type": "latex",
+          "value": "$15 - 2 = 13$"
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.21.07 PM.png"
+  },
+  {
+    "topic_slug": "equations",
+    "type": "matching",
+    "difficulty": 3,
+    "body": {
+      "stem": "$x_1$ и $x_2$ корни квадратного уравнения $x^2 - ax + 6 = 0$.",
+      "left": [
+        {
+          "id": "1",
+          "content": "A) если $a=7$, то $x_1^2 + x_2^2$ равно"
+        },
+        {
+          "id": "2",
+          "content": "B) если $a=5$, то $x_1^2 + x_2^2$ равно"
+        }
+      ],
+      "right": [
+        "А 13",
+        "Б 19",
+        "В 25",
+        "Г 37",
+        "Д 43"
+      ],
+      "correct": {
+        "1": "Г",
+        "2": "А"
+      }
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "По теореме Виета для квадратного уравнения $x^2 - ax + 6 = 0$:"
+        },
+        {
+          "type": "latex",
+          "value": "$x_1 + x_2 = a$"
+        },
+        {
+          "type": "latex",
+          "value": "$x_1 x_2 = 6$"
+        },
+        {
+          "type": "text",
+          "value": "Выразим $x_1^2 + x_2^2$ через сумму и произведение корней:"
+        },
+        {
+          "type": "latex",
+          "value": "$x_1^2 + x_2^2 = (x_1 + x_2)^2 - 2x_1 x_2$"
+        },
+        {
+          "type": "text",
+          "value": "Подставим значения из теоремы Виета:"
+        },
+        {
+          "type": "latex",
+          "value": "$x_1^2 + x_2^2 = a^2 - 2(6) = a^2 - 12$"
+        },
+        {
+          "type": "text",
+          "value": "A) Если $a=7$:"
+        },
+        {
+          "type": "latex",
+          "value": "$x_1^2 + x_2^2 = 7^2 - 12 = 49 - 12 = 37$"
+        },
+        {
+          "type": "text",
+          "value": "B) Если $a=5$:"
+        },
+        {
+          "type": "latex",
+          "value": "$x_1^2 + x_2^2 = 5^2 - 12 = 25 - 12 = 13$"
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.21.13 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "The options for the right-hand side of the matching problem are missing, preventing a complete and accurate transcription.",
+    "source_file": "Screenshot 2026-05-10 at 11.21.21 PM.png"
+  },
+  {
+    "topic_slug": "planimetry",
+    "type": "matching",
+    "difficulty": 3,
+    "body": {
+      "stem": "В равнобедренной трапеции большее основание равно 9, боковая сторона равна 4, угол между ними $60^{\\circ}$. Установите соответствие между средней линией, периметром трапеции и их числовыми значениями:",
+      "left": [
+        {
+          "id": "A",
+          "content": "периметр равен"
+        },
+        {
+          "id": "B",
+          "content": "средняя линия равна"
+        }
+      ],
+      "right": [
+        "7",
+        "22"
+      ],
+      "correct": {
+        "A": "22",
+        "B": "7"
+      }
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Пусть дана равнобедренная трапеция $ABCD$ с большим основанием $AD=9$, боковой стороной $AB=CD=4$ и углом при основании $\\angle A = \\angle D = 60^{\\circ}$."
+        },
+        {
+          "type": "text",
+          "value": "Опустим высоты $BH$ и $CK$ из вершин $B$ и $C$ на основание $AD$. Треугольники $ABH$ и $DCK$ являются прямоугольными."
+        },
+        {
+          "type": "latex",
+          "value": "$AH = AB \\cdot \\cos(\\angle A) = 4 \\cdot \\cos(60^{\\circ}) = 4 \\cdot \\frac{1}{2} = 2$"
+        },
+        {
+          "type": "text",
+          "value": "Аналогично, $KD = 2$. "
+        },
+        {
+          "type": "text",
+          "value": "Меньшее основание $BC = AD - AH - KD = 9 - 2 - 2 = 5$."
+        },
+        {
+          "type": "text",
+          "value": "Периметр трапеции $P = AD + BC + 2 \\cdot AB = 9 + 5 + 2 \\cdot 4 = 14 + 8 = 22$."
+        },
+        {
+          "type": "text",
+          "value": "Средняя линия трапеции $m = \\frac{AD + BC}{2} = \\frac{9 + 5}{2} = \\frac{14}{2} = 7$."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.21.31 PM.png"
+  },
+  {
+    "topic_slug": "algebra",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Упростите выражение $3x - 1,5x + 15,7x$ и в ответе укажите коэффициент полученного одночлена",
+      "options": [
+        {
+          "id": "a",
+          "content": "17,2"
+        },
+        {
+          "id": "b",
+          "content": "18,7"
+        },
+        {
+          "id": "c",
+          "content": "-1,5"
+        },
+        {
+          "id": "d",
+          "content": "3"
+        },
+        {
+          "id": "e",
+          "content": "20,2"
+        },
+        {
+          "id": "f",
+          "content": "15,7"
+        }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для упрощения выражения $3x - 1,5x + 15,7x$ сгруппируем подобные слагаемые:"
+        },
+        {
+          "type": "latex",
+          "value": "$(3 - 1,5 + 15,7)x$"
+        },
+        {
+          "type": "latex",
+          "value": "$1,5x + 15,7x$"
+        },
+        {
+          "type": "latex",
+          "value": "$17,2x$"
+        },
+        {
+          "type": "text",
+          "value": "Коэффициент полученного одночлена $17,2x$ равен $17,2$."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.21.38 PM.png"
+  },
+  {
+    "topic_slug": "functions",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Областью определения функции $y = 2 \\cos x - 7$ является",
+      "options": [
+        {
+          "id": "a",
+          "content": "$(-\\infty; +\\infty)$"
+        },
+        {
+          "id": "b",
+          "content": "$[-9; -5]$"
+        },
+        {
+          "id": "c",
+          "content": "R-множество действительных чисел"
+        },
+        {
+          "id": "d",
+          "content": "$(-\\infty; 2) \\cup (7; +\\infty)$"
+        },
+        {
+          "id": "e",
+          "content": "Z-множество целых чисел"
+        },
+        {
+          "id": "f",
+          "content": "$(-\\infty; 0) \\cup (0; +\\infty)$"
+        }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Функция косинуса $y = \\cos x$ определена для всех действительных чисел. Умножение на константу (2) и вычитание константы (7) не изменяют область определения функции. Следовательно, область определения функции $y = 2 \\cos x - 7$ также является множеством всех действительных чисел."
+        },
+        {
+          "type": "latex",
+          "value": "D(y) = (-\\infty; +\\infty)"
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.21.46 PM.png"
+  },
+  {
+    "topic_slug": "progressions",
+    "type": "multi",
+    "difficulty": 3,
+    "body": {
+      "stem": "В библиотеке на семи полках положили книги. Количество книг на полках образуют геометрическую прогрессию. На первой полке 9 книг, а на последней полке 576 книг. Сколько всего книг на этих полках? Сколько книг на четвертой полке, на пятой полке?",
+      "options": [
+        {
+          "id": "A",
+          "content": "48"
+        },
+        {
+          "id": "B",
+          "content": "1268"
+        },
+        {
+          "id": "C",
+          "content": "96"
+        },
+        {
+          "id": "D",
+          "content": "1143"
+        },
+        {
+          "id": "E",
+          "content": "72"
+        },
+        {
+          "id": "F",
+          "content": "144"
+        }
+      ],
+      "correct": [
+        "D",
+        "E",
+        "F"
+      ]
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Дана геометрическая прогрессия, где число полок $n=7$, количество книг на первой полке $b_1=9$, количество книг на последней (седьмой) полке $b_7=576$."
+        },
+        {
+          "type": "text",
+          "value": "Формула $n$-го члена геометрической прогрессии: $b_n = b_1 \\cdot q^{n-1}$."
+        },
+        {
+          "type": "text",
+          "value": "Найдем знаменатель прогрессии $q$:"
+        },
+        {
+          "type": "latex",
+          "value": "$b_7 = b_1 \\cdot q^{7-1}$"
+        },
+        {
+          "type": "latex",
+          "value": "$576 = 9 \\cdot q^6$"
+        },
+        {
+          "type": "latex",
+          "value": "$q^6 = \\frac{576}{9}$"
+        },
+        {
+          "type": "latex",
+          "value": "$q^6 = 64$"
+        },
+        {
+          "type": "latex",
+          "value": "$q = \\sqrt[6]{64}$"
+        },
+        {
+          "type": "latex",
+          "value": "$q = 2$"
+        },
+        {
+          "type": "text",
+          "value": "Найдем количество книг на четвертой полке ($b_4$):"
+        },
+        {
+          "type": "latex",
+          "value": "$b_4 = b_1 \\cdot q^{4-1} = b_1 \\cdot q^3$"
+        },
+        {
+          "type": "latex",
+          "value": "$b_4 = 9 \\cdot 2^3 = 9 \\cdot 8 = 72$"
+        },
+        {
+          "type": "text",
+          "value": "Найдем количество книг на пятой полке ($b_5$):"
+        },
+        {
+          "type": "latex",
+          "value": "$b_5 = b_1 \\cdot q^{5-1} = b_1 \\cdot q^4$"
+        },
+        {
+          "type": "latex",
+          "value": "$b_5 = 9 \\cdot 2^4 = 9 \\cdot 16 = 144$"
+        },
+        {
+          "type": "text",
+          "value": "Найдем общее количество книг на семи полках ($S_7$)."
+        },
+        {
+          "type": "text",
+          "value": "Формула суммы первых $n$ членов геометрической прогрессии: $S_n = \\frac{b_1(q^n - 1)}{q - 1}$."
+        },
+        {
+          "type": "latex",
+          "value": "$S_7 = \\frac{9(2^7 - 1)}{2 - 1}$"
+        },
+        {
+          "type": "latex",
+          "value": "$S_7 = \\frac{9(128 - 1)}{1}$"
+        },
+        {
+          "type": "latex",
+          "value": "$S_7 = 9 \\cdot 127$"
+        },
+        {
+          "type": "latex",
+          "value": "$S_7 = 1143$"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, всего книг 1143 (опция D), на четвертой полке 72 книги (опция E), на пятой полке 144 книги (опция F)."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.21.53 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\\nPlease retry in 14.185586795s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"14s\"}]}}",
+    "source_file": "Screenshot 2026-05-10 at 11.22.04 PM.png"
+  },
+  {
+    "topic_slug": "equations",
+    "type": "multi",
+    "difficulty": 3,
+    "body": {
+      "stem": "Найдите $x_n - y_n$, если $(x_n; y_n)$ – решения системы уравнений $\\begin{cases} x + y = 28 \\ \\sqrt[3]{x} + \\sqrt[3]{y} = 4 \\end{cases}$",
+      "options": [
+        {
+          "id": "a",
+          "content": "24"
+        },
+        {
+          "id": "b",
+          "content": "-26"
+        },
+        {
+          "id": "c",
+          "content": "-25"
+        },
+        {
+          "id": "d",
+          "content": "25"
+        },
+        {
+          "id": "e",
+          "content": "-24"
+        },
+        {
+          "id": "f",
+          "content": "26"
+        }
+      ],
+      "correct": [
+        "b",
+        "f"
+      ]
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Пусть $a = \\sqrt[3]{x}$ и $b = \\sqrt[3]{y}$. Тогда $x = a^3$ и $y = b^3$."
+        },
+        {
+          "type": "text",
+          "value": "Подставим эти выражения в систему уравнений:"
+        },
+        {
+          "type": "latex",
+          "value": "\\begin{cases} a^3 + b^3 = 28 \\\\ a + b = 4 \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Используем формулу суммы кубов: $a^3 + b^3 = (a+b)(a^2 - ab + b^2)$.\nПодставим известные значения:"
+        },
+        {
+          "type": "latex",
+          "value": "28 = (4)(a^2 - ab + b^2)"
+        },
+        {
+          "type": "text",
+          "value": "Разделим на 4:\n$7 = a^2 - ab + b^2$ (Уравнение 1)"
+        },
+        {
+          "type": "text",
+          "value": "Возведем второе уравнение системы $(a+b=4)$ в квадрат:"
+        },
+        {
+          "type": "latex",
+          "value": "(a+b)^2 = 4^2 \\\\ a^2 + 2ab + b^2 = 16"
+        },
+        {
+          "type": "text",
+          "value": "(Уравнение 2)"
+        },
+        {
+          "type": "text",
+          "value": "Вычтем Уравнение 1 из Уравнения 2:\n$(a^2 + 2ab + b^2) - (a^2 - ab + b^2) = 16 - 7$"
+        },
+        {
+          "type": "latex",
+          "value": "3ab = 9 \\\\ ab = 3"
+        },
+        {
+          "type": "text",
+          "value": "Теперь у нас есть система для $a$ и $b$:\n$\\begin{cases} a + b = 4 \\\\ ab = 3 \\end{cases}$"
+        },
+        {
+          "type": "text",
+          "value": "Это означает, что $a$ и $b$ являются корнями квадратного уравнения $t^2 - (a+b)t + ab = 0$:\n$t^2 - 4t + 3 = 0$"
+        },
+        {
+          "type": "text",
+          "value": "Решим это уравнение:\n$(t-1)(t-3) = 0$\nКорни: $t_1 = 1$, $t_2 = 3$."
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, есть два возможных случая для $(a, b)$:"
+        },
+        {
+          "type": "text",
+          "value": "Случай 1: $a=1$, $b=3$.\nТогда $\\sqrt[3]{x} = 1 \\Rightarrow x = 1^3 = 1$.\n$\\sqrt[3]{y} = 3 \\Rightarrow y = 3^3 = 27$.\nДля этого решения $x - y = 1 - 27 = -26$."
+        },
+        {
+          "type": "text",
+          "value": "Случай 2: $a=3$, $b=1$.\nТогда $\\sqrt[3]{x} = 3 \\Rightarrow x = 3^3 = 27$.\n$\\sqrt[3]{y} = 1 \\Rightarrow y = 1^3 = 1$.\nДля этого решения $x - y = 27 - 1 = 26$."
+        },
+        {
+          "type": "text",
+          "value": "Оба значения $-26$ и $26$ присутствуют среди вариантов ответов."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.22.12 PM.png"
+  }
+]

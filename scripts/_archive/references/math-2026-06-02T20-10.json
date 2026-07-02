@@ -1,0 +1,78 @@
+[
+  {
+    "topic_slug": "derivatives",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите неопределённый интеграл $\\int e^{5x} dx$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$5e^{5x} + C$"
+        },
+        {
+          "id": "b",
+          "content": "$e^{5x} + C$"
+        },
+        {
+          "id": "c",
+          "content": "$0,2e^{5x} + C$"
+        },
+        {
+          "id": "d",
+          "content": "$5e^x + C$"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для нахождения неопределенного интеграла от функции вида $e^{ax}$ используется формула:"
+        },
+        {
+          "type": "latex",
+          "value": "$$\\int e^{ax} dx = \\frac{1}{a} e^{ax} + C$$"
+        },
+        {
+          "type": "text",
+          "value": "В данном случае $a = 5$. Подставляя это значение в формулу, получаем:"
+        },
+        {
+          "type": "latex",
+          "value": "$$\\int e^{5x} dx = \\frac{1}{5} e^{5x} + C$$"
+        },
+        {
+          "type": "text",
+          "value": "Поскольку $\\frac{1}{5}$ равно $0,2$, ответ можно записать как:"
+        },
+        {
+          "type": "latex",
+          "value": "$$0,2e^{5x} + C$$"
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.16.36 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}",
+    "source_file": "Screenshot 2026-05-10 at 11.17.05 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}",
+    "source_file": "Screenshot 2026-05-10 at 11.17.12 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "API error: {\"error\":{\"code\":503,\"message\":\"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\"status\":\"UNAVAILABLE\"}}",
+    "source_file": "Screenshot 2026-05-10 at 11.17.18 PM.png"
+  },
+  {
+    "skip": "unsupported",
+    "reason": "Response is not valid JSON",
+    "source_file": "Screenshot 2026-05-10 at 11.17.32 PM.png"
+  }
+]

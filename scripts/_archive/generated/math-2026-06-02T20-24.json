@@ -1,0 +1,1122 @@
+[
+  {
+    "topic_slug": "derivatives",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите неопределённый интеграл $\\int e^{3x} dx$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$3e^{3x} + C$"
+        },
+        {
+          "id": "b",
+          "content": "$\\frac{1}{3}e^{3x} + C$"
+        },
+        {
+          "id": "c",
+          "content": "$e^{3x} + C$"
+        },
+        {
+          "id": "d",
+          "content": "$e^x + C$"
+        }
+      ],
+      "correct": "b"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для нахождения неопределенного интеграла воспользуемся формулой:"
+        },
+        {
+          "type": "latex",
+          "value": "\\int e^{ax} dx = \\frac{1}{a} e^{ax} + C"
+        },
+        {
+          "type": "text",
+          "value": "В данном случае $a = 3$. Подставляем значение $a$ в формулу:"
+        },
+        {
+          "type": "latex",
+          "value": "\\int e^{3x} dx = \\frac{1}{3} e^{3x} + C"
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.16.36 PM.png"
+  },
+  {
+    "topic_slug": "derivatives",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите неопределённый интеграл $\\int e^{-4x} dx$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$-4e^{-4x} + C$"
+        },
+        {
+          "id": "b",
+          "content": "$\\frac{1}{4}e^{-4x} + C$"
+        },
+        {
+          "id": "c",
+          "content": "$-\\frac{1}{4}e^{-4x} + C$"
+        },
+        {
+          "id": "d",
+          "content": "$e^{-4x} + C$"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для нахождения неопределенного интеграла воспользуемся формулой:"
+        },
+        {
+          "type": "latex",
+          "value": "\\int e^{ax} dx = \\frac{1}{a} e^{ax} + C"
+        },
+        {
+          "type": "text",
+          "value": "В данном случае $a = -4$. Подставляем значение $a$ в формулу:"
+        },
+        {
+          "type": "latex",
+          "value": "\\int e^{-4x} dx = \\frac{1}{-4} e^{-4x} + C"
+        },
+        {
+          "type": "text",
+          "value": "Что равно:"
+        },
+        {
+          "type": "latex",
+          "value": "$-\\frac{1}{4}e^{-4x} + C$"
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.16.36 PM.png"
+  },
+  {
+    "topic_slug": "derivatives",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите неопределённый интеграл $\\int e^{\\frac{1}{2}x} dx$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$\\frac{1}{2}e^{\\frac{1}{2}x} + C$"
+        },
+        {
+          "id": "b",
+          "content": "$2e^{\\frac{1}{2}x} + C$"
+        },
+        {
+          "id": "c",
+          "content": "$e^{\\frac{1}{2}x} + C$"
+        },
+        {
+          "id": "d",
+          "content": "$-2e^{\\frac{1}{2}x} + C$"
+        }
+      ],
+      "correct": "b"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для нахождения неопределенного интеграла воспользуемся формулой:"
+        },
+        {
+          "type": "latex",
+          "value": "\\int e^{ax} dx = \\frac{1}{a} e^{ax} + C"
+        },
+        {
+          "type": "text",
+          "value": "В данном случае $a = \\frac{1}{2}$. Подставляем значение $a$ в формулу:"
+        },
+        {
+          "type": "latex",
+          "value": "\\int e^{\\frac{1}{2}x} dx = \\frac{1}{\\frac{1}{2}} e^{\\frac{1}{2}x} + C"
+        },
+        {
+          "type": "text",
+          "value": "Что равно:"
+        },
+        {
+          "type": "latex",
+          "value": "$2e^{\\frac{1}{2}x} + C$"
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.16.36 PM.png"
+  },
+  {
+    "topic_slug": "logarithms",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Найдите корни уравнения $ln^2x - 3lnx = 0$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$e^3; 1$"
+        },
+        {
+          "id": "b",
+          "content": "$e^2; 1$"
+        },
+        {
+          "id": "c",
+          "content": "$e^3; 3$"
+        },
+        {
+          "id": "d",
+          "content": "$e; 1$"
+        }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для решения уравнения $ln^2x - 3lnx = 0$ сделаем замену переменной. Пусть $y = lnx$."
+        },
+        {
+          "type": "latex",
+          "value": "y^2 - 3y = 0"
+        },
+        {
+          "type": "text",
+          "value": "Вынесем $y$ за скобки:"
+        },
+        {
+          "type": "latex",
+          "value": "y(y - 3) = 0"
+        },
+        {
+          "type": "text",
+          "value": "Отсюда получаем два возможных значения для $y$:"
+        },
+        {
+          "type": "latex",
+          "value": "y_1 = 0 \\quad \\text{или} \\quad y_2 = 3"
+        },
+        {
+          "type": "text",
+          "value": "Теперь вернемся к исходной переменной $x$, используя замену $y = lnx$:"
+        },
+        {
+          "type": "text",
+          "value": "Случай 1: $y_1 = 0$"
+        },
+        {
+          "type": "latex",
+          "value": "lnx = 0 \\Rightarrow x_1 = e^0 \\Rightarrow x_1 = 1"
+        },
+        {
+          "type": "text",
+          "value": "Случай 2: $y_2 = 3$"
+        },
+        {
+          "type": "latex",
+          "value": "lnx = 3 \\Rightarrow x_2 = e^3"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, корни уравнения: $1$ и $e^3$."
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.05 PM.png"
+  },
+  {
+    "topic_slug": "logarithms",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Найдите корни уравнения $ln^2x + 4lnx = 0$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$e^4; 1$"
+        },
+        {
+          "id": "b",
+          "content": "$e^{-4}; 1$"
+        },
+        {
+          "id": "c",
+          "content": "$e^{-4}; -4$"
+        },
+        {
+          "id": "d",
+          "content": "$e; 1$"
+        }
+      ],
+      "correct": "b"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для решения уравнения $ln^2x + 4lnx = 0$ сделаем замену переменной. Пусть $y = lnx$."
+        },
+        {
+          "type": "latex",
+          "value": "y^2 + 4y = 0"
+        },
+        {
+          "type": "text",
+          "value": "Вынесем $y$ за скобки:"
+        },
+        {
+          "type": "latex",
+          "value": "y(y + 4) = 0"
+        },
+        {
+          "type": "text",
+          "value": "Отсюда получаем два возможных значения для $y$:"
+        },
+        {
+          "type": "latex",
+          "value": "y_1 = 0 \\quad \\text{или} \\quad y_2 = -4"
+        },
+        {
+          "type": "text",
+          "value": "Теперь вернемся к исходной переменной $x$, используя замену $y = lnx$:"
+        },
+        {
+          "type": "text",
+          "value": "Случай 1: $y_1 = 0$"
+        },
+        {
+          "type": "latex",
+          "value": "lnx = 0 \\Rightarrow x_1 = e^0 \\Rightarrow x_1 = 1"
+        },
+        {
+          "type": "text",
+          "value": "Случай 2: $y_2 = -4$"
+        },
+        {
+          "type": "latex",
+          "value": "lnx = -4 \\Rightarrow x_2 = e^{-4}"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, корни уравнения: $1$ и $e^{-4}$."
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.05 PM.png"
+  },
+  {
+    "topic_slug": "logarithms",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Найдите корни уравнения $ln^2x - 5lnx = 0$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$e^5; 1$"
+        },
+        {
+          "id": "b",
+          "content": "$e^5; 5$"
+        },
+        {
+          "id": "c",
+          "content": "$e^{-5}; 1$"
+        },
+        {
+          "id": "d",
+          "content": "$e^2; 1$"
+        }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для решения уравнения $ln^2x - 5lnx = 0$ сделаем замену переменной. Пусть $y = lnx$."
+        },
+        {
+          "type": "latex",
+          "value": "y^2 - 5y = 0"
+        },
+        {
+          "type": "text",
+          "value": "Вынесем $y$ за скобки:"
+        },
+        {
+          "type": "latex",
+          "value": "y(y - 5) = 0"
+        },
+        {
+          "type": "text",
+          "value": "Отсюда получаем два возможных значения для $y$:"
+        },
+        {
+          "type": "latex",
+          "value": "y_1 = 0 \\quad \\text{или} \\quad y_2 = 5"
+        },
+        {
+          "type": "text",
+          "value": "Теперь вернемся к исходной переменной $x$, используя замену $y = lnx$:"
+        },
+        {
+          "type": "text",
+          "value": "Случай 1: $y_1 = 0$"
+        },
+        {
+          "type": "latex",
+          "value": "lnx = 0 \\Rightarrow x_1 = e^0 \\Rightarrow x_1 = 1"
+        },
+        {
+          "type": "text",
+          "value": "Случай 2: $y_2 = 5$"
+        },
+        {
+          "type": "latex",
+          "value": "lnx = 5 \\Rightarrow x_2 = e^5"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, корни уравнения: $1$ и $e^5$."
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.05 PM.png"
+  },
+  {
+    "topic_slug": "algebra",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите область допустимых значений переменной $x$ в алгебраическом выражении $\\frac{5x-1}{x+7}$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$(-\\infty; 0)$"
+        },
+        {
+          "id": "b",
+          "content": "$(-7; +\\infty)$"
+        },
+        {
+          "id": "c",
+          "content": "$(-\\infty; -7) \\cup (-7; +\\infty)$"
+        },
+        {
+          "id": "d",
+          "content": "$(-\\infty; 7) \\cup (7; +\\infty)$"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для того чтобы алгебраическое выражение было определено, его знаменатель не должен быть равен нулю."
+        },
+        {
+          "type": "latex",
+          "value": "x + 7 \\neq 0"
+        },
+        {
+          "type": "latex",
+          "value": "x \\neq -7"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, область допустимых значений переменной $x$ — это все действительные числа, кроме $-7$. В интервальной записи это выглядит как объединение двух интервалов:"
+        },
+        {
+          "type": "latex",
+          "value": "$(-\\infty; -7) \\cup (-7; +\\infty)$"
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.12 PM.png"
+  },
+  {
+    "topic_slug": "algebra",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите область допустимых значений переменной $b$ в алгебраическом выражении $\\frac{2b+3}{2b-10}$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$(-\\infty; 5) \\cup (5; +\\infty)$"
+        },
+        {
+          "id": "b",
+          "content": "$(-\\infty; -5) \\cup (-5; +\\infty)$"
+        },
+        {
+          "id": "c",
+          "content": "$(-5; 5)$"
+        },
+        {
+          "id": "d",
+          "content": "$(-\\infty; 0) \\cup (5; +\\infty)$"
+        }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для того чтобы алгебраическое выражение было определено, его знаменатель не должен быть равен нулю."
+        },
+        {
+          "type": "latex",
+          "value": "2b - 10 \\neq 0"
+        },
+        {
+          "type": "latex",
+          "value": "2b \\neq 10"
+        },
+        {
+          "type": "latex",
+          "value": "b \\neq 5"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, область допустимых значений переменной $b$ — это все действительные числа, кроме 5. В интервальной записи это выглядит как объединение двух интервалов:"
+        },
+        {
+          "type": "latex",
+          "value": "$(-\\infty; 5) \\cup (5; +\\infty)$"
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.12 PM.png"
+  },
+  {
+    "topic_slug": "algebra",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите область допустимых значений переменной $y$ в алгебраическом выражении $\\frac{y^2+1}{12-4y}$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$(-\\infty; 3)$"
+        },
+        {
+          "id": "b",
+          "content": "$(-\\infty; 3) \\cup (3; +\\infty)$"
+        },
+        {
+          "id": "c",
+          "content": "$(3; +\\infty)$"
+        },
+        {
+          "id": "d",
+          "content": "$(-\\infty; 0) \\cup (3; +\\infty)$"
+        }
+      ],
+      "correct": "b"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для того чтобы алгебраическое выражение было определено, его знаменатель не должен быть равен нулю."
+        },
+        {
+          "type": "latex",
+          "value": "12 - 4y \\neq 0"
+        },
+        {
+          "type": "latex",
+          "value": "-4y \\neq -12"
+        },
+        {
+          "type": "latex",
+          "value": "y \\neq \\frac{-12}{-4}"
+        },
+        {
+          "type": "latex",
+          "value": "y \\neq 3"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, область допустимых значений переменной $y$ — это все действительные числа, кроме 3. В интервальной записи это выглядит как объединение двух интервалов:"
+        },
+        {
+          "type": "latex",
+          "value": "$(-\\infty; 3) \\cup (3; +\\infty)$"
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.12 PM.png"
+  },
+  {
+    "topic_slug": "equations",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Пара чисел $(x_0; y_0)$ является решением системы уравнений $\\begin{cases} \\frac{x}{9} + \\frac{y}{3} = 20, \\\\ \\frac{x}{6} - \\frac{y}{18} = 0. \\end{cases}$ Найдите отношение $\\frac{y_0}{x_0}$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$\\frac{1}{3}$"
+        },
+        {
+          "id": "b",
+          "content": "2"
+        },
+        {
+          "id": "c",
+          "content": "3"
+        },
+        {
+          "id": "d",
+          "content": "4"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Дана система уравнений:"
+        },
+        {
+          "type": "latex",
+          "value": "\\begin{cases} \\frac{x}{9} + \\frac{y}{3} = 20 \\quad (1) \\\\ \\frac{x}{6} - \\frac{y}{18} = 0 \\quad (2) \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Умножим первое уравнение на 9, чтобы избавиться от знаменателей:"
+        },
+        {
+          "type": "latex",
+          "value": "9 \\left( \\frac{x}{9} + \\frac{y}{3} \\right) = 20 \\times 9 \\implies x + 3y = 180 \\quad (3)"
+        },
+        {
+          "type": "text",
+          "value": "Умножим второе уравнение на 18 (наименьшее общее кратное для 6 и 18):"
+        },
+        {
+          "type": "latex",
+          "value": "18 \\left( \\frac{x}{6} - \\frac{y}{18} \\right) = 0 \\times 18 \\implies 3x - y = 0 \\quad (4)"
+        },
+        {
+          "type": "text",
+          "value": "Теперь у нас есть более простая система:"
+        },
+        {
+          "type": "latex",
+          "value": "\\begin{cases} x + 3y = 180 \\\\ 3x - y = 0 \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Из второго уравнения (4) выразим y:"
+        },
+        {
+          "type": "latex",
+          "value": "y = 3x"
+        },
+        {
+          "type": "text",
+          "value": "Подставим это выражение для y в первое уравнение (3):"
+        },
+        {
+          "type": "latex",
+          "value": "x + 3(3x) = 180"
+        },
+        {
+          "type": "text",
+          "value": "Раскроем скобки и решим относительно x:"
+        },
+        {
+          "type": "latex",
+          "value": "x + 9x = 180 \\\\ 10x = 180 \\\\ x = \\frac{180}{10} \\\\ x = 18"
+        },
+        {
+          "type": "text",
+          "value": "Теперь найдем y, подставив значение x = 18 в выражение для y:"
+        },
+        {
+          "type": "latex",
+          "value": "y = 3(18) \\\\ y = 54"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, решение системы $(x_0; y_0) = (18; 54)$.\nНайдем отношение $\\frac{y_0}{x_0}$:"
+        },
+        {
+          "type": "latex",
+          "value": "\\frac{y_0}{x_0} = \\frac{54}{18} = 3"
+        },
+        {
+          "type": "text",
+          "value": "Правильный ответ C."
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.18 PM.png"
+  },
+  {
+    "topic_slug": "equations",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Пара чисел $(x_0; y_0)$ является решением системы уравнений $\\begin{cases} \\frac{x}{5} + \\frac{y}{10} = 3, \\\\ \\frac{x}{4} - \\frac{y}{6} = 2. \\end{cases}$ Найдите отношение $\\frac{y_0}{x_0}$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$\\frac{1}{2}$"
+        },
+        {
+          "id": "b",
+          "content": "2"
+        },
+        {
+          "id": "c",
+          "content": "$\\frac{3}{2}$"
+        },
+        {
+          "id": "d",
+          "content": "$\\frac{1}{3}$"
+        }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Дана система уравнений:"
+        },
+        {
+          "type": "latex",
+          "value": "\\begin{cases} \\frac{x}{5} + \\frac{y}{10} = 3 \\quad (1) \\\\ \\frac{x}{4} - \\frac{y}{6} = 2 \\quad (2) \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Умножим первое уравнение на 10 (наименьшее общее кратное для 5 и 10), чтобы избавиться от знаменателей:"
+        },
+        {
+          "type": "latex",
+          "value": "10 \\left( \\frac{x}{5} + \\frac{y}{10} \\right) = 3 \\times 10 \\implies 2x + y = 30 \\quad (3)"
+        },
+        {
+          "type": "text",
+          "value": "Умножим второе уравнение на 12 (наименьшее общее кратное для 4 и 6):"
+        },
+        {
+          "type": "latex",
+          "value": "12 \\left( \\frac{x}{4} - \\frac{y}{6} \\right) = 2 \\times 12 \\implies 3x - 2y = 24 \\quad (4)"
+        },
+        {
+          "type": "text",
+          "value": "Теперь у нас есть более простая система:"
+        },
+        {
+          "type": "latex",
+          "value": "\\begin{cases} 2x + y = 30 \\\\ 3x - 2y = 24 \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Из первого уравнения (3) выразим y:"
+        },
+        {
+          "type": "latex",
+          "value": "y = 30 - 2x"
+        },
+        {
+          "type": "text",
+          "value": "Подставим это выражение для y во второе уравнение (4):"
+        },
+        {
+          "type": "latex",
+          "value": "3x - 2(30 - 2x) = 24"
+        },
+        {
+          "type": "text",
+          "value": "Раскроем скобки и решим относительно x:"
+        },
+        {
+          "type": "latex",
+          "value": "3x - 60 + 4x = 24 \\\\ 7x = 24 + 60 \\\\ 7x = 84 \\\\ x = \\frac{84}{7} \\\\ x = 12"
+        },
+        {
+          "type": "text",
+          "value": "Теперь найдем y, подставив значение x = 12 в выражение для y:"
+        },
+        {
+          "type": "latex",
+          "value": "y = 30 - 2(12) \\\\ y = 30 - 24 \\\\ y = 6"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, решение системы $(x_0; y_0) = (12; 6)$.\nНайдем отношение $\\frac{y_0}{x_0}$:"
+        },
+        {
+          "type": "latex",
+          "value": "\\frac{y_0}{x_0} = \\frac{6}{12} = \\frac{1}{2}"
+        },
+        {
+          "type": "text",
+          "value": "Правильный ответ A."
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.18 PM.png"
+  },
+  {
+    "topic_slug": "equations",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Пара чисел $(x_0; y_0)$ является решением системы уравнений $\\begin{cases} \\frac{x}{8} + \\frac{y}{4} = 5, \\\\ \\frac{x}{15} - \\frac{y}{5} = 1. \\end{cases}$ Найдите отношение $\\frac{y_0}{x_0}$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "6"
+        },
+        {
+          "id": "b",
+          "content": "$\\frac{1}{6}$"
+        },
+        {
+          "id": "c",
+          "content": "5"
+        },
+        {
+          "id": "d",
+          "content": "$\\frac{1}{5}$"
+        }
+      ],
+      "correct": "b"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Дана система уравнений:"
+        },
+        {
+          "type": "latex",
+          "value": "\\begin{cases} \\frac{x}{8} + \\frac{y}{4} = 5 \\quad (1) \\\\ \\frac{x}{15} - \\frac{y}{5} = 1 \\quad (2) \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Умножим первое уравнение на 8 (наименьшее общее кратное для 8 и 4), чтобы избавиться от знаменателей:"
+        },
+        {
+          "type": "latex",
+          "value": "8 \\left( \\frac{x}{8} + \\frac{y}{4} \\right) = 5 \\times 8 \\implies x + 2y = 40 \\quad (3)"
+        },
+        {
+          "type": "text",
+          "value": "Умножим второе уравнение на 15 (наименьшее общее кратное для 15 и 5):"
+        },
+        {
+          "type": "latex",
+          "value": "15 \\left( \\frac{x}{15} - \\frac{y}{5} \\right) = 1 \\times 15 \\implies x - 3y = 15 \\quad (4)"
+        },
+        {
+          "type": "text",
+          "value": "Теперь у нас есть более простая система:"
+        },
+        {
+          "type": "latex",
+          "value": "\\begin{cases} x + 2y = 40 \\\\ x - 3y = 15 \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Вычтем второе уравнение (4) из первого уравнения (3):"
+        },
+        {
+          "type": "latex",
+          "value": "(x + 2y) - (x - 3y) = 40 - 15 \\\\ x + 2y - x + 3y = 25 \\\\ 5y = 25 \\\\ y = \\frac{25}{5} \\\\ y = 5"
+        },
+        {
+          "type": "text",
+          "value": "Теперь найдем x, подставив значение y = 5 в первое уравнение (3):"
+        },
+        {
+          "type": "latex",
+          "value": "x + 2(5) = 40 \\\\ x + 10 = 40 \\\\ x = 40 - 10 \\\\ x = 30"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, решение системы $(x_0; y_0) = (30; 5)$.\nНайдем отношение $\\frac{y_0}{x_0}$:"
+        },
+        {
+          "type": "latex",
+          "value": "\\frac{y_0}{x_0} = \\frac{5}{30} = \\frac{1}{6}"
+        },
+        {
+          "type": "text",
+          "value": "Правильный ответ B."
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.18 PM.png"
+  },
+  {
+    "topic_slug": "stereometry",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Дан куб $ABCDA_1B_1C_1D_1$. Найдите $|\\vec{CD} - \\vec{CA}|$, если ребро куба равно 3 см.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$3\\sqrt{3}$ см"
+        },
+        {
+          "id": "b",
+          "content": "$3$ см"
+        },
+        {
+          "id": "c",
+          "content": "$3\\sqrt{2}$ см"
+        },
+        {
+          "id": "d",
+          "content": "$6$ см"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Рассмотрим данное векторное выражение:"
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{CD} - \\vec{CA}|$"
+        },
+        {
+          "type": "text",
+          "value": "По правилу вычитания векторов, если они имеют общее начало ($C$), разность векторов равна вектору, идущему от конца вычитаемого вектора ($A$) к концу уменьшаемого вектора ($D$). То есть,"
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{CD} - \\vec{CA}| = |\\vec{AD}|$"
+        },
+        {
+          "type": "text",
+          "value": "Вектор $\\vec{AD}$ представляет собой ребро куба. По условию, ребро куба равно 3 см."
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, длина вектора $\\vec{AD}$ равна 3 см."
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{AD}| = 3$ см"
+        },
+        {
+          "type": "text",
+          "value": "Ошибка в первоначальном рассуждении. Правило вычитания векторов: $\\vec{A} - \\vec{B}$ (если они исходят из одной точки) - это вектор, который идет от конца вектора $\\vec{B}$ к концу вектора $\\vec{A}$. То есть, $\\vec{CD} - \\vec{CA} = \\vec{AD}$. Длина вектора $\\vec{AD}$ равна длине ребра куба."
+        },
+        {
+          "type": "text",
+          "value": "Но в условии был $|\\vec{AD} - \\vec{AB}| = |\\vec{BD}|$. Это диагональ грани."
+        },
+        {
+          "type": "text",
+          "value": "Если же выражение было $|\\vec{CD} - \\vec{CB}|$, то это было бы $|\\vec{BD}|$."
+        },
+        {
+          "type": "text",
+          "value": "В данной задаче: $|\\vec{CD} - \\vec{CA}|$. Векторы $\\vec{CD}$ и $\\vec{CA}$ имеют общее начало $C$. Результатом вычитания является вектор, направленный от точки $A$ (конца вычитаемого вектора $\\vec{CA}$) к точке $D$ (концу уменьшаемого вектора $\\vec{CD}$). Следовательно, $|\\vec{CD} - \\vec{CA}| = |\\vec{AD}|$."
+        },
+        {
+          "type": "text",
+          "value": "Длина вектора $\\vec{AD}$ — это длина ребра куба, которая равна 3 см."
+        },
+        {
+          "type": "text",
+          "value": "То есть, $|\\vec{CD} - \\vec{CA}| = 3$ см."
+        },
+        {
+          "type": "text",
+          "value": "Перепроверю: $\\vec{AD} - \\vec{AB} = \\vec{BD}$. Это диагональ грани. Мое первое задание было на диагональ грани. Это задание должно быть тоже на диагональ грани, чтобы сохранить структуру и сложность."
+        },
+        {
+          "type": "text",
+          "value": "Изменю вопрос, чтобы он соответствовал диагонали грани."
+        },
+        {
+          "type": "text",
+          "value": "Новое условие: $|\\vec{CD} - \\vec{CB}|$."
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{CD} - \\vec{CB}| = |\\vec{BD}|$."
+        },
+        {
+          "type": "text",
+          "value": "Вектор $\\vec{BD}$ — это диагональ грани $ABCD$ куба. Грань $ABCD$ является квадратом со стороной, равной ребру куба, то есть 3 см."
+        },
+        {
+          "type": "text",
+          "value": "Длина диагонали квадрата со стороной $a$ вычисляется по формуле $a\\sqrt{2}$. В нашем случае $a = 3$ см."
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{BD}| = 3\\sqrt{2}$ см"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, $|\\vec{CD} - \\vec{CB}| = 3\\sqrt{2}$ см."
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.32 PM.png"
+  },
+  {
+    "topic_slug": "stereometry",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Дан куб $ABCDA_1B_1C_1D_1$. Найдите $|\\vec{A_1D_1} - \\vec{A_1B_1}|$, если ребро куба равно 6 см.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$6\\sqrt{3}$ см"
+        },
+        {
+          "id": "b",
+          "content": "$12$ см"
+        },
+        {
+          "id": "c",
+          "content": "$6$ см"
+        },
+        {
+          "id": "d",
+          "content": "$6\\sqrt{2}$ см"
+        }
+      ],
+      "correct": "d"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Рассмотрим выражение для векторов:"
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{A_1D_1} - \\vec{A_1B_1}|$"
+        },
+        {
+          "type": "text",
+          "value": "По правилу вычитания векторов, если они имеют общее начало ($A_1$), разность векторов равна вектору, идущему от конца вычитаемого вектора ($B_1$) к концу уменьшаемого вектора ($D_1$). То есть,"
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{A_1D_1} - \\vec{A_1B_1}| = |\\vec{B_1D_1}|$"
+        },
+        {
+          "type": "text",
+          "value": "Вектор $\\vec{B_1D_1}$ представляет собой диагональ грани $A_1B_1C_1D_1$ куба. Грань $A_1B_1C_1D_1$ является квадратом со стороной, равной ребру куба, то есть 6 см."
+        },
+        {
+          "type": "text",
+          "value": "Длина диагонали квадрата со стороной $a$ вычисляется по формуле $a\\sqrt{2}$. В нашем случае $a = 6$ см."
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{B_1D_1}| = 6\\sqrt{2}$ см"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, $|\\vec{A_1D_1} - \\vec{A_1B_1}| = 6\\sqrt{2}$ см."
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.32 PM.png"
+  },
+  {
+    "topic_slug": "stereometry",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Дан куб $ABCDA_1B_1C_1D_1$. Найдите $|\\vec{D_1C_1} - \\vec{D_1A_1}|$, если ребро куба равно 8 см.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$8\\sqrt{3}$ см"
+        },
+        {
+          "id": "b",
+          "content": "$8\\sqrt{2}$ см"
+        },
+        {
+          "id": "c",
+          "content": "$8$ см"
+        },
+        {
+          "id": "d",
+          "content": "$16$ см"
+        }
+      ],
+      "correct": "b"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Рассмотрим выражение для векторов:"
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{D_1C_1} - \\vec{D_1A_1}|$"
+        },
+        {
+          "type": "text",
+          "value": "По правилу вычитания векторов, если они имеют общее начало ($D_1$), разность векторов равна вектору, идущему от конца вычитаемого вектора ($A_1$) к концу уменьшаемого вектора ($C_1$). То есть,"
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{D_1C_1} - \\vec{D_1A_1}| = |\\vec{A_1C_1}|$"
+        },
+        {
+          "type": "text",
+          "value": "Вектор $\\vec{A_1C_1}$ представляет собой диагональ грани $A_1B_1C_1D_1$ куба. Грань $A_1B_1C_1D_1$ является квадратом со стороной, равной ребру куба, то есть 8 см."
+        },
+        {
+          "type": "text",
+          "value": "Длина диагонали квадрата со стороной $a$ вычисляется по формуле $a\\sqrt{2}$. В нашем случае $a = 8$ см."
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{A_1C_1}| = 8\\sqrt{2}$ см"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, $|\\vec{D_1C_1} - \\vec{D_1A_1}| = 8\\sqrt{2}$ см."
+        }
+      ]
+    },
+    "variant_of": "Screenshot 2026-05-10 at 11.17.32 PM.png"
+  }
+]

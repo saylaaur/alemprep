@@ -1,0 +1,362 @@
+[
+  {
+    "topic_slug": "derivatives",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите неопределённый интеграл $\\int e^{5x} dx$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$5e^{5x} + C$"
+        },
+        {
+          "id": "b",
+          "content": "$e^{5x} + C$"
+        },
+        {
+          "id": "c",
+          "content": "$0,2e^{5x} + C$"
+        },
+        {
+          "id": "d",
+          "content": "$5e^x + C$"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для нахождения неопределенного интеграла воспользуемся формулой:"
+        },
+        {
+          "type": "latex",
+          "value": "\\int e^{ax} dx = \\frac{1}{a} e^{ax} + C"
+        },
+        {
+          "type": "text",
+          "value": "В данном случае $a = 5$. Подставляем значение $a$ в формулу:"
+        },
+        {
+          "type": "latex",
+          "value": "\\int e^{5x} dx = \\frac{1}{5} e^{5x} + C"
+        },
+        {
+          "type": "text",
+          "value": "Так как $\\frac{1}{5} = 0,2$, получаем:"
+        },
+        {
+          "type": "latex",
+          "value": "\\int e^{5x} dx = 0,2e^{5x} + C"
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.16.36 PM.png"
+  },
+  {
+    "topic_slug": "logarithms",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Найдите корни уравнения $ln^2x - 2lnx = 0$",
+      "options": [
+        {
+          "id": "a",
+          "content": "$e^3; 3$"
+        },
+        {
+          "id": "b",
+          "content": "$e^2; 2$"
+        },
+        {
+          "id": "c",
+          "content": "$e^2; 1$"
+        },
+        {
+          "id": "d",
+          "content": "$e; 1$"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для решения уравнения $ln^2x - 2lnx = 0$ сделаем замену переменной. Пусть $y = lnx$."
+        },
+        {
+          "type": "latex",
+          "value": "y^2 - 2y = 0"
+        },
+        {
+          "type": "text",
+          "value": "Вынесем $y$ за скобки:"
+        },
+        {
+          "type": "latex",
+          "value": "y(y - 2) = 0"
+        },
+        {
+          "type": "text",
+          "value": "Отсюда получаем два возможных значения для $y$:"
+        },
+        {
+          "type": "latex",
+          "value": "y_1 = 0 \\quad \\text{или} \\quad y_2 = 2"
+        },
+        {
+          "type": "text",
+          "value": "Теперь вернемся к исходной переменной $x$, используя замену $y = lnx$:"
+        },
+        {
+          "type": "text",
+          "value": "Случай 1: $y_1 = 0$"
+        },
+        {
+          "type": "latex",
+          "value": "lnx = 0 \\Rightarrow x_1 = e^0 \\Rightarrow x_1 = 1"
+        },
+        {
+          "type": "text",
+          "value": "Случай 2: $y_2 = 2$"
+        },
+        {
+          "type": "latex",
+          "value": "lnx = 2 \\Rightarrow x_2 = e^2"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, корни уравнения: $1$ и $e^2$."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.17.05 PM.png"
+  },
+  {
+    "topic_slug": "algebra",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите область допустимых значений переменной $a$ в алгебраическом выражении $\\frac{3a}{a-2}$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "$(-\\infty; 0)$"
+        },
+        {
+          "id": "b",
+          "content": "$(2; +\\infty)$"
+        },
+        {
+          "id": "c",
+          "content": "$(-\\infty; 0) \\cup (2; +\\infty)$"
+        },
+        {
+          "id": "d",
+          "content": "$(-\\infty; 2) \\cup (2; +\\infty)$"
+        }
+      ],
+      "correct": "d"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Для того чтобы алгебраическое выражение было определено, его знаменатель не должен быть равен нулю."
+        },
+        {
+          "type": "latex",
+          "value": "a - 2 \\neq 0"
+        },
+        {
+          "type": "latex",
+          "value": "a \\neq 2"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, область допустимых значений переменной $a$ — это все действительные числа, кроме 2. В интервальной записи это выглядит как объединение двух интервалов:"
+        },
+        {
+          "type": "latex",
+          "value": "$(-\\infty; 2) \\cup (2; +\\infty)$"
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.17.12 PM.png"
+  },
+  {
+    "topic_slug": "equations",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Пара чисел $(x_0; y_0)$ является решением системы уравнений $\\begin{cases} \\frac{x}{12} + \\frac{y}{3} = 21, \\\\ \\frac{x}{4} - \\frac{y}{12} = -2. \\end{cases}$ Найдите отношение $\\frac{y_0}{x_0}$.",
+      "options": [
+        {
+          "id": "a",
+          "content": "12"
+        },
+        {
+          "id": "b",
+          "content": "6"
+        },
+        {
+          "id": "c",
+          "content": "5"
+        },
+        {
+          "id": "d",
+          "content": "48"
+        }
+      ],
+      "correct": "c"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Дана система уравнений:"
+        },
+        {
+          "type": "latex",
+          "value": "\\begin{cases} \\frac{x}{12} + \\frac{y}{3} = 21 \\quad (1) \\\\ \\frac{x}{4} - \\frac{y}{12} = -2 \\quad (2) \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Умножим первое уравнение на 12, чтобы избавиться от знаменателей:"
+        },
+        {
+          "type": "latex",
+          "value": "12 \\left( \\frac{x}{12} + \\frac{y}{3} \\right) = 21 \\times 12 \\implies x + 4y = 252 \\quad (3)"
+        },
+        {
+          "type": "text",
+          "value": "Умножим второе уравнение на 12:"
+        },
+        {
+          "type": "latex",
+          "value": "12 \\left( \\frac{x}{4} - \\frac{y}{12} \\right) = -2 \\times 12 \\implies 3x - y = -24 \\quad (4)"
+        },
+        {
+          "type": "text",
+          "value": "Теперь у нас есть более простая система:"
+        },
+        {
+          "type": "latex",
+          "value": "\\begin{cases} x + 4y = 252 \\\\ 3x - y = -24 \\end{cases}"
+        },
+        {
+          "type": "text",
+          "value": "Из второго уравнения (4) выразим y:"
+        },
+        {
+          "type": "latex",
+          "value": "-y = -24 - 3x \\implies y = 3x + 24"
+        },
+        {
+          "type": "text",
+          "value": "Подставим это выражение для y в первое уравнение (3):"
+        },
+        {
+          "type": "latex",
+          "value": "x + 4(3x + 24) = 252"
+        },
+        {
+          "type": "text",
+          "value": "Раскроем скобки и решим относительно x:"
+        },
+        {
+          "type": "latex",
+          "value": "x + 12x + 96 = 252 \\\\ 13x = 252 - 96 \\\\ 13x = 156 \\\\ x = \\frac{156}{13} \\\\ x = 12"
+        },
+        {
+          "type": "text",
+          "value": "Теперь найдем y, подставив значение x = 12 в выражение для y:"
+        },
+        {
+          "type": "latex",
+          "value": "y = 3(12) + 24 \\\\ y = 36 + 24 \\\\ y = 60"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, решение системы $(x_0; y_0) = (12; 60)$.\nНайдем отношение $\\frac{y_0}{x_0}$:"
+        },
+        {
+          "type": "latex",
+          "value": "\\frac{y_0}{x_0} = \\frac{60}{12} = 5"
+        },
+        {
+          "type": "text",
+          "value": "Правильный ответ C."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.17.18 PM.png"
+  },
+  {
+    "topic_slug": "stereometry",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Дан куб $ABCDA_1B_1C_1D_1$. Найдите $|\\vec{AD} - \\vec{AB}|$, если ребро куба равно 5 см",
+      "options": [
+        {
+          "id": "a",
+          "content": "$7\\sqrt{2}$ см"
+        },
+        {
+          "id": "b",
+          "content": "$4\\sqrt{2}$ см"
+        },
+        {
+          "id": "c",
+          "content": "$6\\sqrt{2}$ см"
+        },
+        {
+          "id": "d",
+          "content": "$5\\sqrt{2}$ см"
+        }
+      ],
+      "correct": "d"
+    },
+    "explanation": {
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Рассмотрим выражение для векторов:"
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{AD} - \\vec{AB}|$"
+        },
+        {
+          "type": "text",
+          "value": "По правилу вычитания векторов, если они имеют общее начало, разность векторов равна вектору, идущему от конца вычитаемого вектора к концу уменьшаемого вектора. То есть,"
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{AD} - \\vec{AB}| = |\\vec{BD}|$"
+        },
+        {
+          "type": "text",
+          "value": "Вектор $\\vec{BD}$ представляет собой диагональ грани $ABCD$ куба. Грань $ABCD$ является квадратом со стороной, равной ребру куба, то есть 5 см."
+        },
+        {
+          "type": "text",
+          "value": "Длина диагонали квадрата со стороной $a$ вычисляется по формуле $a\\sqrt{2}$. В нашем случае $a = 5$ см."
+        },
+        {
+          "type": "latex",
+          "value": "$|\\vec{BD}| = 5\\sqrt{2}$ см"
+        },
+        {
+          "type": "text",
+          "value": "Таким образом, $|\\vec{AD} - \\vec{AB}| = 5\\sqrt{2}$ см."
+        }
+      ]
+    },
+    "source_file": "Screenshot 2026-05-10 at 11.17.32 PM.png"
+  }
+]
