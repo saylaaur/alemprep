@@ -1,6 +1,84 @@
 import { createClient } from './server';
 import type { Profile, Subject, Topic, Locale, Question, ContextContent } from '@/types/db';
 
+// ---- Admin helpers ----
+
+export type UnpublishedQuestion = Question & {
+  topic_name_ru: string;
+  topic_name_kk: string;
+  subject_slug: string;
+};
+
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+  const { data } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', user.id)
+    .maybeSingle();
+  return (data as { is_admin: boolean } | null)?.is_admin === true;
+}
+
+export async function getUnpublishedQuestions(): Promise<UnpublishedQuestion[]> {
+  const supabase = await createClient();
+
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('*')
+    .eq('is_published', false)
+    .order('created_at', { ascending: false });
+
+  if (!questions || questions.length === 0) return [];
+
+  const topicIds = Array.from(
+    new Set((questions as Question[]).map((q) => q.topic_id)),
+  );
+
+  const { data: topics } = await supabase
+    .from('topics')
+    .select('id, name_ru, name_kk, subject_id')
+    .in('id', topicIds);
+
+  const subjectIds = Array.from(
+    new Set(
+      (topics ?? []).map(
+        (t: { subject_id: string }) => t.subject_id,
+      ),
+    ),
+  );
+
+  const { data: subjects } = await supabase
+    .from('subjects')
+    .select('id, slug')
+    .in('id', subjectIds);
+
+  const subjectMap = new Map<string, string>(
+    (subjects ?? []).map((s: { id: string; slug: string }) => [s.id, s.slug]),
+  );
+  const topicMap = new Map<
+    string,
+    { id: string; name_ru: string; name_kk: string; subject_id: string }
+  >(
+    (topics ?? []).map(
+      (t: { id: string; name_ru: string; name_kk: string; subject_id: string }) => [t.id, t],
+    ),
+  );
+
+  return (questions as Question[]).map((q) => {
+    const topic = topicMap.get(q.topic_id);
+    return {
+      ...q,
+      topic_name_ru: topic?.name_ru ?? '—',
+      topic_name_kk: topic?.name_kk ?? '—',
+      subject_slug: topic ? (subjectMap.get(topic.subject_id) ?? '') : '',
+    };
+  });
+}
+
 export async function getCurrentUser() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
