@@ -119,5 +119,20 @@
   "common": {
     "comingSoon": "Жақында",
     "loading": "Жүктелуде…"
+  },
+  "admin": {
+    "title": "Тапсырмаларды модерациялау",
+    "subtitle": "{count} тапсырма тексеруді күтуде",
+    "subtitleEmpty": "Тексеретін тапсырма жоқ",
+    "publishAll": "Барлығын жариялау ({count})",
+    "publish": "Жариялау",
+    "delete": "Жою",
+    "answer": "Жауап",
+    "explanation": "Шешім",
+    "topic": "Тақырып",
+    "difficulty": "Қиындық",
+    "source": "Дереккөз",
+    "noQuestions": "Барлық тапсырмалар тексерілді — кезек бос.",
+    "forbidden": "Кіруге рұқсат жоқ"
   }
 }
