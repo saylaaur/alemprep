@@ -32,6 +32,20 @@ function expandPath(p: string): string {
   return p.startsWith('~/') ? path.join(os.homedir(), p.slice(2)) : p;
 }
 
+/**
+ * Claude часто оборачивает JSON в ```-блоки или добавляет преамбулу.
+ * Снимаем code fences и берём срез от первой { до последней }.
+ */
+function extractJson(raw: string): string {
+  let s = raw.trim();
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) s = fence[1].trim();
+  const start = s.indexOf('{');
+  const end = s.lastIndexOf('}');
+  if (start !== -1 && end > start) s = s.slice(start, end + 1);
+  return s;
+}
+
 function loadEnv(): void {
   const envFile = path.join(process.cwd(), '.env.local');
   if (!fs.existsSync(envFile)) return;
@@ -135,9 +149,9 @@ Generate ${count} NEW variants with completely different numbers. Return them in
 
   let parsed: { variants?: unknown[] };
   try {
-    parsed = JSON.parse(raw) as { variants?: unknown[] };
+    parsed = JSON.parse(extractJson(raw)) as { variants?: unknown[] };
   } catch {
-    console.warn('      ⚠️  Response JSON parse failed');
+    console.warn(`      ⚠️  Response JSON parse failed: ${raw.slice(0, 60).replace(/\s+/g, ' ')}`);
     return { variants: [], inputTok, outputTok };
   }
 

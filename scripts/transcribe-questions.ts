@@ -66,6 +66,21 @@ function getMediaType(
   return 'image/png';
 }
 
+/**
+ * Claude (в отличие от Gemini responseSchema) часто оборачивает JSON в ```-блоки
+ * или добавляет преамбулу. Достаём чистый JSON-объект: снимаем code fences и
+ * берём срез от первой { до последней }.
+ */
+function extractJson(raw: string): string {
+  let s = raw.trim();
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) s = fence[1].trim();
+  const start = s.indexOf('{');
+  const end = s.lastIndexOf('}');
+  if (start !== -1 && end > start) s = s.slice(start, end + 1);
+  return s;
+}
+
 const SYSTEM_INSTRUCTION = `You are a math teacher transcribing ЕНТ (Unified National Testing, Kazakhstan) math problems into structured JSON.
 
 Output ONLY a valid JSON object — no markdown, no code fences, just raw JSON.
@@ -136,10 +151,14 @@ async function transcribeImage(
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(extractJson(raw));
   } catch {
     return {
-      item: { skip: 'unsupported', reason: 'Response is not valid JSON', source_file: filename },
+      item: {
+        skip: 'unsupported',
+        reason: `Not JSON: ${raw.slice(0, 60).replace(/\s+/g, ' ')}`,
+        source_file: filename,
+      },
       inputTok,
       outputTok,
     };
