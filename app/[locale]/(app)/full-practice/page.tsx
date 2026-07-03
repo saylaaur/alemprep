@@ -11,7 +11,7 @@ export default async function FullPracticePage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { questions, contexts, topics, subjectId } = await getMockExamQuestions(locale as Locale);
+  const { questions, contexts, topics, subjectId, shortfall } = await getMockExamQuestions(locale as Locale);
 
   return (
     <MockExamView
@@ -20,6 +20,7 @@ export default async function FullPracticePage({
       topics={topics}
       subjectId={subjectId ?? ''}
       locale={locale}
+      shortfall={shortfall}
     />
   );
 }

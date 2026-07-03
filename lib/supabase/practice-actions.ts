@@ -2,6 +2,8 @@
 
 import { createClient } from './server';
 import { revalidatePath } from 'next/cache';
+import { QUESTION_POINTS } from '@/lib/exam';
+import type { QuestionType } from '@/types/db';
 
 type RecordInput = {
   questionId: string;
@@ -104,8 +106,18 @@ export async function finishExamSession(input: {
   if (!user) return { error: 'unauthenticated' };
 
   const correctCount = input.results.filter((r) => r.isCorrect).length;
-  const total = input.results.length;
-  const score = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+
+  // score — баллы ЕНТ: типы задач перечитываем из БД, а не берём с клиента
+  const questionIds = input.results.map((r) => r.questionId);
+  const { data: typeRows } = questionIds.length > 0
+    ? await supabase.from('questions').select('id, type').in('id', questionIds)
+    : { data: [] };
+  const typeById = new Map((typeRows ?? []).map((q) => [q.id as string, q.type as QuestionType]));
+  const score = input.results.reduce((sum, r) => {
+    if (!r.isCorrect) return sum;
+    const type = typeById.get(r.questionId);
+    return sum + (type ? QUESTION_POINTS[type] : 0);
+  }, 0);
 
   const { error: sessionError } = await supabase
     .from('sessions')

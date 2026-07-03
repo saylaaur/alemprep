@@ -1,4 +1,5 @@
 import { createClient } from './server';
+import { EXAM_BLUEPRINT, type ExamShortfall } from '@/lib/exam';
 import type { Profile, Subject, Topic, Locale, Question, ContextContent } from '@/types/db';
 
 // ---- Admin helpers ----
@@ -369,8 +370,25 @@ export async function getProgressData(): Promise<ProgressData | null> {
 
 export type MockExamTopic = { id: string; name_ru: string; name_kk: string };
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export async function getMockExamQuestions(locale: Locale = 'ru') {
   const supabase = await createClient();
+
+  const emptyResult = (topics: MockExamTopic[], subjectId: string | null) => ({
+    questions: [] as Question[],
+    contexts: new Map<string, { id: string; title: string | null; content: ContextContent }>(),
+    topics,
+    subjectId,
+    shortfall: EXAM_BLUEPRINT.map((p) => ({ type: p.type, available: 0, required: p.count })),
+  });
 
   const { data: mathSubject } = await supabase
     .from('subjects')
@@ -378,7 +396,7 @@ export async function getMockExamQuestions(locale: Locale = 'ru') {
     .eq('slug', 'math')
     .maybeSingle();
 
-  if (!mathSubject) return { questions: [] as Question[], contexts: new Map<string, { id: string; title: string | null; content: ContextContent }>(), topics: [] as MockExamTopic[], subjectId: null as string | null };
+  if (!mathSubject) return emptyResult([], null);
 
   const { data: topics } = await supabase
     .from('topics')
@@ -386,7 +404,7 @@ export async function getMockExamQuestions(locale: Locale = 'ru') {
     .eq('subject_id', mathSubject.id);
 
   const topicList = (topics ?? []) as MockExamTopic[];
-  if (topicList.length === 0) return { questions: [] as Question[], contexts: new Map<string, { id: string; title: string | null; content: ContextContent }>(), topics: topicList, subjectId: mathSubject.id as string };
+  if (topicList.length === 0) return emptyResult(topicList, mathSubject.id as string);
 
   const topicIds = topicList.map((t) => t.id);
 
@@ -395,10 +413,22 @@ export async function getMockExamQuestions(locale: Locale = 'ru') {
     .select('*')
     .in('topic_id', topicIds)
     .eq('language', locale)
-    .eq('is_published', true)
-    .order('sort_order');
+    .eq('is_published', true);
 
-  const list = (questions ?? []) as Question[];
+  const pool = (questions ?? []) as Question[];
+
+  // Формат ЕНТ: по квоте на каждый тип, вперемешку по темам,
+  // порядок частей — single → multi → matching.
+  const list: Question[] = [];
+  const shortfall: ExamShortfall[] = [];
+  for (const part of EXAM_BLUEPRINT) {
+    const ofType = shuffle(pool.filter((q) => q.type === part.type));
+    const picked = ofType.slice(0, part.count);
+    list.push(...picked);
+    if (picked.length < part.count) {
+      shortfall.push({ type: part.type, available: picked.length, required: part.count });
+    }
+  }
 
   const contextIds = Array.from(
     new Set(list.map((q) => q.context_id).filter((x): x is string => Boolean(x)))
@@ -415,7 +445,7 @@ export async function getMockExamQuestions(locale: Locale = 'ru') {
     );
   }
 
-  return { questions: list, contexts: contextsMap, topics: topicList, subjectId: mathSubject.id as string };
+  return { questions: list, contexts: contextsMap, topics: topicList, subjectId: mathSubject.id as string, shortfall };
 }
 
 export async function getQuestionsForTopic(topicSlug: string, locale: Locale = 'ru') {
