@@ -46,7 +46,7 @@ export function Sidebar({
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card/40 backdrop-blur-xl">
       <div className="flex h-16 items-center gap-2.5 px-5 border-b">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-primary">
+        <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-primary">
           <GraduationCap className="h-5 w-5" />
         </div>
         <span className="text-[15px] font-semibold tracking-tight">

@@ -66,7 +66,7 @@ export default async function LandingPage({
       {/* Header */}
       <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
         <div className="flex items-center gap-2.5">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-primary">
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-primary">
             <GraduationCap className="h-5 w-5" />
           </div>
           <span className="text-[15px] font-semibold tracking-tight">
@@ -218,7 +218,7 @@ export default async function LandingPage({
       <footer className="mt-auto border-t">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-center text-xs text-muted-foreground sm:flex-row sm:text-left">
           <div className="flex items-center gap-2">
-            <div className="grid h-6 w-6 place-items-center rounded-md bg-primary text-primary-foreground">
+            <div className="grid h-6 w-6 place-items-center rounded bg-primary text-primary-foreground">
               <GraduationCap className="h-3.5 w-3.5" />
             </div>
             <span className="font-medium text-foreground">{tBrand('name')}</span>
