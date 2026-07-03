@@ -1,0 +1,221 @@
+[
+  {
+    "topic_slug": "combinatorics",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Сколькими способами можно расставить 5 различных книг в ряд на полке?",
+      "options": [
+        { "id": "a", "content": "$120$" },
+        { "id": "b", "content": "$25$" },
+        { "id": "c", "content": "$60$" },
+        { "id": "d", "content": "$720$" }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Число перестановок из 5 различных элементов равно 5 факториал." },
+        { "type": "latex", "value": "P_5 = 5! = 5\\cdot4\\cdot3\\cdot2\\cdot1 = 120" }
+      ]
+    },
+    "variant_of": "seed-combinatorics"
+  },
+  {
+    "topic_slug": "combinatorics",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Из 8 учеников нужно выбрать 2 дежурных. Сколькими способами это можно сделать?",
+      "options": [
+        { "id": "a", "content": "$28$" },
+        { "id": "b", "content": "$16$" },
+        { "id": "c", "content": "$56$" },
+        { "id": "d", "content": "$64$" }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Порядок выбора не важен — это сочетания из 8 по 2." },
+        { "type": "latex", "value": "C_8^2 = \\frac{8\\cdot7}{2} = 28" }
+      ]
+    },
+    "variant_of": "seed-combinatorics"
+  },
+  {
+    "topic_slug": "combinatorics",
+    "type": "single",
+    "difficulty": 3,
+    "body": {
+      "stem": "Сколькими способами можно выбрать из 7 человек троих и рассадить их на 3 различных стула?",
+      "options": [
+        { "id": "a", "content": "$210$" },
+        { "id": "b", "content": "$35$" },
+        { "id": "c", "content": "$343$" },
+        { "id": "d", "content": "$21$" }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Порядок важен — это размещения из 7 по 3." },
+        { "type": "latex", "value": "A_7^3 = 7\\cdot6\\cdot5 = 210" }
+      ]
+    },
+    "variant_of": "seed-combinatorics"
+  },
+  {
+    "topic_slug": "combinatorics",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "В кафе 4 вида супа, 3 вида второго блюда и 2 вида напитка. Сколько различных обедов из супа, второго и напитка можно составить?",
+      "options": [
+        { "id": "a", "content": "$24$" },
+        { "id": "b", "content": "$9$" },
+        { "id": "c", "content": "$12$" },
+        { "id": "d", "content": "$20$" }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "По правилу умножения перемножаем число вариантов на каждом шаге." },
+        { "type": "latex", "value": "4\\cdot3\\cdot2 = 24" }
+      ]
+    },
+    "variant_of": "seed-combinatorics"
+  },
+  {
+    "topic_slug": "combinatorics",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "В урне 3 белых и 5 чёрных шаров. Наугад достают один шар. Какова вероятность того, что он белый?",
+      "options": [
+        { "id": "a", "content": "$\\frac{3}{8}$" },
+        { "id": "b", "content": "$\\frac{5}{8}$" },
+        { "id": "c", "content": "$\\frac{3}{5}$" },
+        { "id": "d", "content": "$\\frac{1}{2}$" }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Всего шаров 3 + 5 = 8, благоприятных (белых) — 3." },
+        { "type": "latex", "value": "P = \\frac{3}{8}" }
+      ]
+    },
+    "variant_of": "seed-combinatorics"
+  },
+  {
+    "topic_slug": "statistics",
+    "type": "single",
+    "difficulty": 1,
+    "body": {
+      "stem": "Найдите среднее арифметическое чисел: 4, 8, 6, 10, 2.",
+      "options": [
+        { "id": "a", "content": "$6$" },
+        { "id": "b", "content": "$5$" },
+        { "id": "c", "content": "$30$" },
+        { "id": "d", "content": "$8$" }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Сумма чисел делится на их количество." },
+        { "type": "latex", "value": "\\frac{4+8+6+10+2}{5} = \\frac{30}{5} = 6" }
+      ]
+    },
+    "variant_of": "seed-statistics"
+  },
+  {
+    "topic_slug": "statistics",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите медиану набора чисел: 3, 7, 5, 9, 1.",
+      "options": [
+        { "id": "a", "content": "$5$" },
+        { "id": "b", "content": "$7$" },
+        { "id": "c", "content": "$25$" },
+        { "id": "d", "content": "$4$" }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Упорядочим набор: 1, 3, 5, 7, 9. Медиана — центральное (третье) значение." },
+        { "type": "text", "value": "Медиана равна 5." }
+      ]
+    },
+    "variant_of": "seed-statistics"
+  },
+  {
+    "topic_slug": "statistics",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите моду набора чисел: 2, 3, 3, 5, 7, 3, 8.",
+      "options": [
+        { "id": "a", "content": "$3$" },
+        { "id": "b", "content": "$5$" },
+        { "id": "c", "content": "$7$" },
+        { "id": "d", "content": "$2$" }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Мода — наиболее часто встречающееся значение. Число 3 встречается три раза, чаще остальных." }
+      ]
+    },
+    "variant_of": "seed-statistics"
+  },
+  {
+    "topic_slug": "statistics",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите размах набора чисел: 12, 5, 8, 20, 3.",
+      "options": [
+        { "id": "a", "content": "$17$" },
+        { "id": "b", "content": "$20$" },
+        { "id": "c", "content": "$15$" },
+        { "id": "d", "content": "$12$" }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Размах — разность наибольшего и наименьшего значений набора." },
+        { "type": "latex", "value": "20 - 3 = 17" }
+      ]
+    },
+    "variant_of": "seed-statistics"
+  },
+  {
+    "topic_slug": "statistics",
+    "type": "single",
+    "difficulty": 2,
+    "body": {
+      "stem": "Найдите медиану набора чисел: 2, 4, 4, 4, 6, 8.",
+      "options": [
+        { "id": "a", "content": "$4$" },
+        { "id": "b", "content": "$5$" },
+        { "id": "c", "content": "$4{,}5$" },
+        { "id": "d", "content": "$6$" }
+      ],
+      "correct": "a"
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "В упорядоченном наборе из 6 чисел медиана — среднее двух центральных (3-го и 4-го)." },
+        { "type": "latex", "value": "\\frac{4+4}{2} = 4" }
+      ]
+    },
+    "variant_of": "seed-statistics"
+  }
+]
