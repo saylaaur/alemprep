@@ -367,6 +367,57 @@ export async function getProgressData(): Promise<ProgressData | null> {
   };
 }
 
+export type MockExamTopic = { id: string; name_ru: string; name_kk: string };
+
+export async function getMockExamQuestions(locale: Locale = 'ru') {
+  const supabase = await createClient();
+
+  const { data: mathSubject } = await supabase
+    .from('subjects')
+    .select('id')
+    .eq('slug', 'math')
+    .maybeSingle();
+
+  if (!mathSubject) return { questions: [] as Question[], contexts: new Map<string, { id: string; title: string | null; content: ContextContent }>(), topics: [] as MockExamTopic[], subjectId: null as string | null };
+
+  const { data: topics } = await supabase
+    .from('topics')
+    .select('id, name_ru, name_kk')
+    .eq('subject_id', mathSubject.id);
+
+  const topicList = (topics ?? []) as MockExamTopic[];
+  if (topicList.length === 0) return { questions: [] as Question[], contexts: new Map<string, { id: string; title: string | null; content: ContextContent }>(), topics: topicList, subjectId: mathSubject.id as string };
+
+  const topicIds = topicList.map((t) => t.id);
+
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('*')
+    .in('topic_id', topicIds)
+    .eq('language', locale)
+    .eq('is_published', true)
+    .order('sort_order');
+
+  const list = (questions ?? []) as Question[];
+
+  const contextIds = Array.from(
+    new Set(list.map((q) => q.context_id).filter((x): x is string => Boolean(x)))
+  );
+
+  const contextsMap = new Map<string, { id: string; title: string | null; content: ContextContent }>();
+  if (contextIds.length > 0) {
+    const { data: contexts } = await supabase
+      .from('contexts')
+      .select('id, title, content')
+      .in('id', contextIds);
+    (contexts ?? []).forEach((c) =>
+      contextsMap.set(c.id, { id: c.id, title: c.title as string | null, content: c.content as ContextContent })
+    );
+  }
+
+  return { questions: list, contexts: contextsMap, topics: topicList, subjectId: mathSubject.id as string };
+}
+
 export async function getQuestionsForTopic(topicSlug: string, locale: Locale = 'ru') {
   const supabase = await createClient();
   const { data: topic } = await supabase

@@ -1,7 +1,7 @@
-import { useTranslations } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getMockExamQuestions } from '@/lib/supabase/queries';
+import { MockExamView } from '@/components/practice/MockExamView';
+import type { Locale } from '@/types/db';
 
 export default async function FullPracticePage({
   params,
@@ -10,25 +10,16 @@ export default async function FullPracticePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <FullPracticeContent />;
-}
 
-function FullPracticeContent() {
-  const t = useTranslations('practice');
-  const tNav = useTranslations('nav');
+  const { questions, contexts, topics, subjectId } = await getMockExamQuestions(locale as Locale);
 
   return (
-    <>
-      <PageHeader title={tNav('fullPractice')} />
-      <div className="p-8">
-        <Card className="max-w-xl">
-          <CardHeader>
-            <CardTitle>{t('title')}</CardTitle>
-            <CardDescription>{t('comingSoon')}</CardDescription>
-          </CardHeader>
-          <CardContent />
-        </Card>
-      </div>
-    </>
+    <MockExamView
+      questions={questions}
+      contexts={contexts}
+      topics={topics}
+      subjectId={subjectId ?? ''}
+      locale={locale}
+    />
   );
 }

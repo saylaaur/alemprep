@@ -1,0 +1,18 @@
+---
+name: "source-command-verify"
+description: "Ворота качества — typecheck, lint, build с отчётом"
+---
+
+# source-command-verify
+
+Use this skill when the user asks to run the migrated source command `verify`.
+
+## Command Template
+
+Прогони ворота качества проекта. Выполни по очереди и НЕ останавливайся на первой ошибке:
+
+1. `npm run typecheck`
+2. `npm run lint`
+3. `npm run build`
+
+Кратко отчитайся: что прошло, что упало (ошибки — по файлам с номерами строк). Это проверка, а не правка — ничего не чини без отдельной просьбы.
