@@ -21,6 +21,7 @@ function parseArgs(): {
   variants: number;
   limit: number | undefined;
   noVerify: boolean;
+  publish: boolean;
 } {
   const args = process.argv.slice(2);
   let dir = '';
@@ -28,20 +29,22 @@ function parseArgs(): {
   let variants = 3;
   let limit: number | undefined;
   let noVerify = false;
+  let publish = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--dir' && args[i + 1]) dir = expandPath(args[++i]);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
     if (args[i] === '--variants' && args[i + 1]) variants = parseInt(args[++i], 10);
     if (args[i] === '--limit' && args[i + 1]) limit = parseInt(args[++i], 10);
     if (args[i] === '--no-verify') noVerify = true;
+    if (args[i] === '--publish') publish = true;
   }
   if (!dir) {
     console.error(
-      'Usage: npm run gen:all -- --dir <path> --subject <slug> [--variants N] [--limit N] [--no-verify]',
+      'Usage: npm run gen:all -- --dir <path> --subject <slug> [--variants N] [--limit N] [--no-verify] [--publish]',
     );
     process.exit(1);
   }
-  return { dir, subject, variants, limit, noVerify };
+  return { dir, subject, variants, limit, noVerify, publish };
 }
 
 function newestJson(dir: string, prefix: string): string | null {
@@ -60,7 +63,7 @@ function run(cmd: string): void {
 }
 
 function main() {
-  const { dir, subject, variants, limit, noVerify } = parseArgs();
+  const { dir, subject, variants, limit, noVerify, publish } = parseArgs();
   const tsx = 'npx tsx --tsconfig tsconfig.scripts.json';
   const steps = noVerify ? 3 : 4;
 
@@ -117,8 +120,11 @@ function main() {
   }
 
   // ── Final: Insert to DB ─────────────────────────────────────────
-  console.log(`\nSTEP ${steps}/${steps}  Insert to Supabase DB (is_published=false)`);
-  run(`${tsx} scripts/insert-to-db.ts --input "${insertFile}" --subject ${subject}`);
+  const publishArg = publish ? ' --publish' : '';
+  console.log(
+    `\nSTEP ${steps}/${steps}  Insert to Supabase DB (is_published=${publish})`,
+  );
+  run(`${tsx} scripts/insert-to-db.ts --input "${insertFile}" --subject ${subject}${publishArg}`);
 
   console.log('═══════════════════════════════════════════════════════════');
   console.log('✅  Pipeline complete! Review at /admin/review\n');

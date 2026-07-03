@@ -26,19 +26,21 @@ function loadEnv(): void {
   }
 }
 
-function parseArgs(): { input: string; subject: string } {
+function parseArgs(): { input: string; subject: string; publish: boolean } {
   const args = process.argv.slice(2);
   let input = '';
   let subject = 'math';
+  let publish = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--input' && args[i + 1]) input = expandPath(args[++i]);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
+    if (args[i] === '--publish') publish = true;
   }
   if (!input) {
-    console.error('Usage: npm run gen:insert -- --input <path.json> [--subject math]');
+    console.error('Usage: npm run gen:insert -- --input <path.json> [--subject math] [--publish]');
     process.exit(1);
   }
-  return { input, subject };
+  return { input, subject, publish };
 }
 
 interface TopicRow {
@@ -53,7 +55,7 @@ interface SubjectRow {
 async function main() {
   loadEnv();
 
-  const { input, subject } = parseArgs();
+  const { input, subject, publish } = parseArgs();
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -92,7 +94,7 @@ async function main() {
 
   console.log(`\n📥  ${input}`);
   console.log(
-    `📋  Inserting ${questions.length} questions (subject: ${subject}, is_published: false)\n`,
+    `📋  Inserting ${questions.length} questions (subject: ${subject}, is_published: ${publish})\n`,
   );
 
   // Service-role client bypasses RLS
@@ -149,7 +151,7 @@ async function main() {
       body: q.body,
       explanation: q.explanation,
       source: 'ai_haiku',
-      is_published: false,
+      is_published: publish,
       sort_order: 1000 + i + 1,
     });
 
@@ -164,7 +166,9 @@ async function main() {
 
   console.log(`\n\n✅  Inserted: ${inserted}  Failed: ${failed}  Total: ${questions.length}`);
   console.log(
-    `   Subject: ${subject}  |  is_published: false  |  Ready for review at /admin/review\n`,
+    publish
+      ? `   Subject: ${subject}  |  is_published: true  |  Задачи уже ЖИВЫЕ на сайте ✅\n`
+      : `   Subject: ${subject}  |  is_published: false  |  Ready for review at /admin/review\n`,
   );
 }
 
