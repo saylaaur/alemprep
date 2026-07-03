@@ -45,7 +45,7 @@ export default async function AdminReviewPage({
     <>
       <PageHeader title={t('title')} subtitle={subtitle} />
 
-      <div className="p-8 space-y-6 max-w-3xl">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-3xl">
         {questions.length > 0 && (
           <form action={publishAll}>
             <Button type="submit" variant="outline" className="gap-2">

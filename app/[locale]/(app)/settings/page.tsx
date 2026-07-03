@@ -20,7 +20,7 @@ function SettingsContent() {
   return (
     <>
       <PageHeader title={t('settings')} />
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Card className="max-w-xl">
           <CardHeader>
             <CardTitle>{t('settings')}</CardTitle>

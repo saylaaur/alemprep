@@ -54,7 +54,7 @@ export default async function ProgressPage({
   return (
     <>
       <PageHeader title={t('title')} subtitle={t('subtitle')} />
-      <div className="space-y-8 p-8">
+      <div className="space-y-8 p-4 sm:p-6 lg:p-8">
         {/* Summary cards */}
         <section className="grid gap-4 sm:grid-cols-3">
           <Card>

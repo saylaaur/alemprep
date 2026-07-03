@@ -45,7 +45,7 @@ export default async function DashboardPage({
     <>
       <PageHeader title={t('greeting', { name })} subtitle={t('subtitle')} />
 
-      <div className="space-y-10 p-8">
+      <div className="space-y-10 p-4 sm:p-6 lg:p-8">
         {/* Top stats */}
         <section className="grid gap-4 md:grid-cols-3">
           {/* Daily goal */}
