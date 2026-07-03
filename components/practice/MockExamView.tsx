@@ -5,11 +5,11 @@ import { useTranslations } from 'next-intl';
 import { MathText } from '@/components/math/MathText';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Check, X, Flag, Clock, ChevronLeft, ChevronRight, Trophy, AlertCircle } from 'lucide-react';
-import type { Question, QuestionBody, Explanation, ContextContent, QuestionType } from '@/types/db';
+import { Check, X, Minus, Flag, Clock, ChevronLeft, ChevronRight, Trophy, AlertCircle } from 'lucide-react';
+import type { Question, Explanation, ContextContent, QuestionType } from '@/types/db';
 import { createExamSession, finishExamSession } from '@/lib/supabase/practice-actions';
 import type { MockExamTopic } from '@/lib/supabase/queries';
-import { EXAM_DURATION_S, EXAM_BLUEPRINT, QUESTION_POINTS, type ExamShortfall } from '@/lib/exam';
+import { EXAM_DURATION_S, EXAM_BLUEPRINT, QUESTION_POINTS, scoreAnswer, type ExamShortfall } from '@/lib/exam';
 
 const PART_TITLE_KEY: Record<QuestionType, 'partSingleTitle' | 'partMultiTitle' | 'partMatchingTitle'> = {
   single: 'partSingleTitle',
@@ -20,22 +20,6 @@ const PART_TITLE_KEY: Record<QuestionType, 'partSingleTitle' | 'partMultiTitle' 
 type AnswerState = string | string[] | Record<string, string> | null;
 type QuestionFlag = 'none' | 'answered' | 'flagged';
 type ExamPhase = 'intro' | 'exam' | 'result';
-
-function checkAnswer(type: Question['type'], answer: AnswerState, body: QuestionBody): boolean {
-  if (answer === null) return false;
-  if (type === 'single' && 'correct' in body && typeof body.correct === 'string') return answer === body.correct;
-  if (type === 'multi' && 'correct' in body && Array.isArray(body.correct)) {
-    const a = answer as string[];
-    if (a.length !== body.correct.length) return false;
-    return body.correct.every((c) => a.includes(c));
-  }
-  if (type === 'matching' && 'correct' in body && typeof body.correct === 'object' && !Array.isArray(body.correct)) {
-    const a = answer as Record<string, string>;
-    const c = body.correct as Record<string, string>;
-    return Object.keys(c).every((k) => a[k] === c[k]);
-  }
-  return false;
-}
 
 function formatTime(s: number): string {
   const m = Math.floor(s / 60);
@@ -100,7 +84,7 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
     const timeSpentMs = Date.now() - startTimeRef.current;
     const results = questions.map((q) => {
       const answer = answers[q.id] ?? null;
-      return { questionId: q.id, isCorrect: checkAnswer(q.type, answer, q.body), givenAnswer: answer, timeSpentMs: Math.round(timeSpentMs / Math.max(questions.length, 1)) };
+      return { questionId: q.id, givenAnswer: answer, timeSpentMs: Math.round(timeSpentMs / Math.max(questions.length, 1)) };
     });
     if (sessionId) await finishExamSession({ sessionId, results });
     setElapsedS(Math.min(EXAM_DURATION_S, Math.round(timeSpentMs / 1000)));
@@ -454,11 +438,12 @@ function ResultScreen({ questions, topics, answers, locale, elapsedS, t }: Resul
 
   const results = questions.map((q) => {
     const answer = answers[q.id] ?? null;
-    return { q, answer, isCorrect: checkAnswer(q.type, answer, q.body) };
+    const points = scoreAnswer(q.type, q.body, answer);
+    return { q, answer, points, isCorrect: points === QUESTION_POINTS[q.type] };
   });
 
   const correctCount = results.filter((r) => r.isCorrect).length;
-  const earnedScore = results.reduce((s, r) => s + (r.isCorrect ? QUESTION_POINTS[r.q.type] : 0), 0);
+  const earnedScore = results.reduce((s, r) => s + r.points, 0);
   const maxScore = questions.reduce((s, q) => s + QUESTION_POINTS[q.type], 0);
 
   const typeStats = EXAM_BLUEPRINT.map((part) => {
@@ -468,7 +453,7 @@ function ResultScreen({ questions, topics, answers, locale, elapsedS, t }: Resul
       type: part.type,
       total: ofType.length,
       correct,
-      earnedPts: correct * part.points,
+      earnedPts: ofType.reduce((s, r) => s + r.points, 0),
       maxPts: ofType.length * part.points,
     };
   }).filter((s) => s.total > 0);
@@ -513,7 +498,7 @@ function ResultScreen({ questions, topics, answers, locale, elapsedS, t }: Resul
           <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">{t('byType')}</h2>
           <div className="rounded-xl border bg-card divide-y divide-border">
             {typeStats.map((s) => {
-              const p = Math.round((s.correct / s.total) * 100);
+              const p = s.maxPts > 0 ? Math.round((s.earnedPts / s.maxPts) * 100) : 0;
               return (
                 <div key={s.type} className="flex items-center gap-4 px-5 py-3.5">
                   <span className="flex-1 truncate text-sm">{t(PART_TITLE_KEY[s.type])}</span>
@@ -561,19 +546,26 @@ function ResultScreen({ questions, topics, answers, locale, elapsedS, t }: Resul
       <section>
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">{t('allQuestions')}</h2>
         <div className="space-y-2">
-          {results.map(({ q, answer, isCorrect }, i) => {
+          {results.map(({ q, answer, points, isCorrect }, i) => {
             const isOpen = expandedId === q.id;
             const stem = (q.body as { stem: string }).stem;
             const exp = q.explanation as Explanation | null;
+            const isPartial = !isCorrect && points > 0;
             return (
               <div key={q.id} className="rounded-xl border bg-card">
                 <button className="flex w-full items-start gap-3 p-4 text-left" onClick={() => setExpandedId(isOpen ? null : q.id)}>
                   <span className={cn('mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-                    isCorrect ? 'bg-success/15 text-success' : answer !== null ? 'bg-destructive/15 text-destructive' : 'bg-muted text-muted-foreground')}>
-                    {isCorrect ? <Check className="h-3.5 w-3.5" /> : answer !== null ? <X className="h-3.5 w-3.5" /> : i + 1}
+                    isCorrect ? 'bg-success/15 text-success'
+                      : isPartial ? 'bg-warning/15 text-warning'
+                      : answer !== null ? 'bg-destructive/15 text-destructive'
+                      : 'bg-muted text-muted-foreground')}>
+                    {isCorrect ? <Check className="h-3.5 w-3.5" /> : isPartial ? <Minus className="h-3.5 w-3.5" /> : answer !== null ? <X className="h-3.5 w-3.5" /> : i + 1}
                   </span>
                   <span className="flex-1 text-sm leading-relaxed"><MathText text={stem} /></span>
-                  <span className="mt-1 shrink-0 text-xs text-muted-foreground">{i + 1}</span>
+                  <span className={cn('mt-1 shrink-0 text-xs font-medium tabular-nums',
+                    isCorrect ? 'text-success' : isPartial ? 'text-warning' : 'text-muted-foreground')}>
+                    {t('pointsOf', { earned: points, max: QUESTION_POINTS[q.type] })}
+                  </span>
                 </button>
                 {isOpen && (
                   <div className="border-t px-4 pb-4 pt-3 space-y-3">

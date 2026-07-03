@@ -2,8 +2,8 @@
 
 import { createClient } from './server';
 import { revalidatePath } from 'next/cache';
-import { QUESTION_POINTS } from '@/lib/exam';
-import type { QuestionType } from '@/types/db';
+import { QUESTION_POINTS, scoreAnswer } from '@/lib/exam';
+import type { QuestionType, QuestionBody } from '@/types/db';
 
 type RecordInput = {
   questionId: string;
@@ -92,7 +92,6 @@ export async function createExamSession(input: {
 
 type ExamResult = {
   questionId: string;
-  isCorrect: boolean;
   givenAnswer: unknown;
   timeSpentMs: number;
 };
@@ -105,19 +104,25 @@ export async function finishExamSession(input: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'unauthenticated' };
 
-  const correctCount = input.results.filter((r) => r.isCorrect).length;
-
-  // score — баллы ЕНТ: типы задач перечитываем из БД, а не берём с клиента
+  // Баллы ЕНТ (с частичным зачётом multi/matching) считаем только по данным
+  // из БД — ответы приходят с клиента, правильность и баллы ему не доверяем.
   const questionIds = input.results.map((r) => r.questionId);
-  const { data: typeRows } = questionIds.length > 0
-    ? await supabase.from('questions').select('id, type').in('id', questionIds)
+  const { data: qRows } = questionIds.length > 0
+    ? await supabase.from('questions').select('id, type, body').in('id', questionIds)
     : { data: [] };
-  const typeById = new Map((typeRows ?? []).map((q) => [q.id as string, q.type as QuestionType]));
-  const score = input.results.reduce((sum, r) => {
-    if (!r.isCorrect) return sum;
-    const type = typeById.get(r.questionId);
-    return sum + (type ? QUESTION_POINTS[type] : 0);
-  }, 0);
+  const qById = new Map(
+    (qRows ?? []).map((q) => [q.id as string, { type: q.type as QuestionType, body: q.body as QuestionBody }])
+  );
+
+  const scored = input.results.map((r) => {
+    const q = qById.get(r.questionId);
+    const points = q ? scoreAnswer(q.type, q.body, r.givenAnswer) : 0;
+    const isCorrect = q ? points === QUESTION_POINTS[q.type] : false;
+    return { ...r, points, isCorrect };
+  });
+
+  const correctCount = scored.filter((s) => s.isCorrect).length;
+  const score = scored.reduce((sum, s) => sum + s.points, 0);
 
   const { error: sessionError } = await supabase
     .from('sessions')
@@ -127,15 +132,15 @@ export async function finishExamSession(input: {
 
   if (sessionError) return { error: sessionError.message };
 
-  if (input.results.length > 0) {
+  if (scored.length > 0) {
     await supabase.from('attempts').insert(
-      input.results.map((r) => ({
+      scored.map((s) => ({
         user_id: user.id,
-        question_id: r.questionId,
+        question_id: s.questionId,
         session_id: input.sessionId,
-        given_answer: r.givenAnswer,
-        is_correct: r.isCorrect,
-        time_spent_ms: r.timeSpentMs,
+        given_answer: s.givenAnswer,
+        is_correct: s.isCorrect,
+        time_spent_ms: s.timeSpentMs,
       }))
     );
   }
