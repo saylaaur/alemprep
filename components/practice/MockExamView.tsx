@@ -45,6 +45,8 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
   const [flags, setFlags] = useState<Record<string, QuestionFlag>>({});
   const [timeLeft, setTimeLeft] = useState(EXAM_DURATION_S);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [startError, setStartError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [timesUp, setTimesUp] = useState(false);
@@ -71,13 +73,25 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
   }, [timesUp]);
 
   const startExam = useCallback(async () => {
-    // Пробник работает и без сессии в БД (баллы считаются на клиенте) —
-    // просто не сохранятся попытки. Не блокируем старт молчаливым return.
-    const res = await createExamSession({ subjectId, totalQuestions: total });
-    if (!('error' in res)) setSessionId(res.sessionId);
+    // Попытки сохраняются только при живой сессии в БД — без неё пробник
+    // не стартуем: до 3 попыток создать сессию, дальше видимая ошибка.
+    if (starting) return;
+    setStarting(true);
+    setStartError(false);
+    let res = await createExamSession({ subjectId, totalQuestions: total });
+    for (let attempt = 0; 'error' in res && attempt < 2; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+      res = await createExamSession({ subjectId, totalQuestions: total });
+    }
+    setStarting(false);
+    if ('error' in res) {
+      setStartError(true);
+      return;
+    }
+    setSessionId(res.sessionId);
     startTimeRef.current = Date.now();
     setPhase('exam');
-  }, [subjectId, total]);
+  }, [starting, subjectId, total]);
 
   const handleSubmit = useCallback(async (auto = false) => {
     if (submitting) return;
@@ -186,7 +200,15 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
               <div><div className="text-2xl font-semibold">{Math.round(EXAM_DURATION_S / 60)}</div><div className="mt-1 text-xs text-muted-foreground">{t('minutesLabel')}</div></div>
               <div><div className="text-2xl font-semibold">{maxScore}</div><div className="mt-1 text-xs text-muted-foreground">{t('maxPointsLabel')}</div></div>
             </div>
-            <Button size="lg" className="mt-8 shadow-primary" onClick={() => void startExam()}>{t('startButton')}</Button>
+            <Button size="lg" className="mt-8 shadow-primary" disabled={starting} onClick={() => void startExam()}>
+              {starting ? t('loading') : t('startButton')}
+            </Button>
+            {startError && (
+              <div className="mx-auto mt-4 flex max-w-sm items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-left text-sm text-destructive" role="alert">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{t('startError')}</span>
+              </div>
+            )}
           </>
         )}
       </div>
