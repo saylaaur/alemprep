@@ -10,6 +10,7 @@ import type { Question, Explanation, ContextContent, QuestionType } from '@/type
 import { createExamSession, finishExamSession } from '@/lib/supabase/practice-actions';
 import type { MockExamTopic } from '@/lib/supabase/queries';
 import { EXAM_DURATION_S, EXAM_BLUEPRINT, QUESTION_POINTS, scoreAnswer, type ExamShortfall } from '@/lib/exam';
+import { isAnswerEmpty } from '@/lib/practice';
 
 const PART_TITLE_KEY: Record<QuestionType, 'partSingleTitle' | 'partMultiTitle' | 'partMatchingTitle'> = {
   single: 'partSingleTitle',
@@ -70,9 +71,10 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
   }, [timesUp]);
 
   const startExam = useCallback(async () => {
+    // Пробник работает и без сессии в БД (баллы считаются на клиенте) —
+    // просто не сохранятся попытки. Не блокируем старт молчаливым return.
     const res = await createExamSession({ subjectId, totalQuestions: total });
-    if ('error' in res) return;
-    setSessionId(res.sessionId);
+    if (!('error' in res)) setSessionId(res.sessionId);
     startTimeRef.current = Date.now();
     setPhase('exam');
   }, [subjectId, total]);
@@ -95,7 +97,13 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
   const setAnswer = (next: AnswerState) => {
     if (!current) return;
     setAnswers((prev) => ({ ...prev, [current.id]: next }));
-    setFlags((prev) => ({ ...prev, [current.id]: 'answered' }));
+    setFlags((prev) => {
+      // Пометку «вернуться позже» не сбрасываем; пустой ответ (снял все
+      // галочки, сбросил селекты) — это «не отвечено», а не «отвечено».
+      const cur = prev[current.id] ?? 'none';
+      if (cur === 'flagged') return prev;
+      return { ...prev, [current.id]: isAnswerEmpty(next) ? 'none' : 'answered' };
+    });
   };
 
   const toggleFlag = () => {
@@ -470,7 +478,7 @@ function ResultScreen({ questions, topics, answers, locale, elapsedS, t }: Resul
     if (isCorrect) topicStats[q.topic_id].correct++;
   }
 
-  const skipped = results.filter((r) => r.answer === null).length;
+  const skipped = results.filter((r) => isAnswerEmpty(r.answer)).length;
   const wrong = questions.length - correctCount - skipped;
 
   return (
@@ -551,15 +559,16 @@ function ResultScreen({ questions, topics, answers, locale, elapsedS, t }: Resul
             const stem = (q.body as { stem: string }).stem;
             const exp = q.explanation as Explanation | null;
             const isPartial = !isCorrect && points > 0;
+            const isSkipped = isAnswerEmpty(answer);
             return (
               <div key={q.id} className="rounded-xl border bg-card">
                 <button className="flex w-full items-start gap-3 p-4 text-left" onClick={() => setExpandedId(isOpen ? null : q.id)}>
                   <span className={cn('mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
                     isCorrect ? 'bg-success/15 text-success'
                       : isPartial ? 'bg-warning/15 text-warning'
-                      : answer !== null ? 'bg-destructive/15 text-destructive'
+                      : !isSkipped ? 'bg-destructive/15 text-destructive'
                       : 'bg-muted text-muted-foreground')}>
-                    {isCorrect ? <Check className="h-3.5 w-3.5" /> : isPartial ? <Minus className="h-3.5 w-3.5" /> : answer !== null ? <X className="h-3.5 w-3.5" /> : i + 1}
+                    {isCorrect ? <Check className="h-3.5 w-3.5" /> : isPartial ? <Minus className="h-3.5 w-3.5" /> : !isSkipped ? <X className="h-3.5 w-3.5" /> : i + 1}
                   </span>
                   <span className="flex-1 text-sm leading-relaxed"><MathText text={stem} /></span>
                   <span className={cn('mt-1 shrink-0 text-xs font-medium tabular-nums',

@@ -1,5 +1,6 @@
 import { createClient } from './server';
 import { EXAM_BLUEPRINT, type ExamShortfall } from '@/lib/exam';
+import { localDateStr } from '@/lib/streak';
 import type { Profile, Subject, Topic, Locale, Question, ContextContent } from '@/types/db';
 
 // ---- Admin helpers ----
@@ -313,7 +314,8 @@ export async function getProgressData(): Promise<ProgressData | null> {
   for (const a of allAttempts) {
     const d = new Date(a.attempted_at);
     if (d >= cutoff) {
-      const key = d.toISOString().split('T')[0];
+      // локальная дата — как в heatmap и подсчёте «сегодня» (не UTC)
+      const key = localDateStr(d);
       activityMap.set(key, (activityMap.get(key) ?? 0) + 1);
     }
   }

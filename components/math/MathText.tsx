@@ -28,6 +28,7 @@ export function MathText({ text, className, display = false }: { text: string; c
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const tryRender = () => {
       if (window.renderMathInElement) {
         window.renderMathInElement(el, {
@@ -38,10 +39,12 @@ export function MathText({ text, className, display = false }: { text: string; c
           throwOnError: false,
         });
       } else {
-        setTimeout(tryRender, 100);
+        timer = setTimeout(tryRender, 100);
       }
     };
     tryRender();
+    // без cleanup ретрай-цикл продолжал жить после смены вопроса/анмаунта
+    return () => clearTimeout(timer);
   }, [content]);
 
   return (

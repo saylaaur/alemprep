@@ -2,6 +2,19 @@ import type { Question, QuestionBody } from '@/types/db';
 
 export type AnswerState = string | string[] | Record<string, string> | null;
 
+/** Ответ фактически пуст: null, '', [], либо объект без единого заполненного значения. */
+export function isAnswerEmpty(answer: unknown): boolean {
+  if (answer === null || answer === undefined) return true;
+  if (typeof answer === 'string') return answer.length === 0;
+  if (Array.isArray(answer)) return answer.length === 0;
+  if (typeof answer === 'object') {
+    return !Object.values(answer as Record<string, unknown>).some(
+      (v) => typeof v === 'string' && v.length > 0
+    );
+  }
+  return true;
+}
+
 /** Ответ заполнен полностью — можно нажимать «Проверить». */
 export function isAnswerComplete(type: Question['type'], answer: AnswerState, body: QuestionBody): boolean {
   if (answer === null) return false;

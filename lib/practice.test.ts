@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkAnswer, isAnswerComplete } from './practice';
+import { checkAnswer, isAnswerComplete, isAnswerEmpty } from './practice';
 import type { QuestionBody } from '@/types/db';
 
 const singleBody: QuestionBody = {
@@ -82,5 +82,25 @@ describe('isAnswerComplete (когда активна кнопка «Прове�
   });
   it('matching: массив вместо объекта — не готово, не крэш', () => {
     expect(isAnswerComplete('matching', ['1', '0'], matchingBody)).toBe(false);
+  });
+});
+
+describe('isAnswerEmpty (пробник: «отвечено» vs «пропущено»)', () => {
+  it('null/undefined — пусто', () => {
+    expect(isAnswerEmpty(null)).toBe(true);
+    expect(isAnswerEmpty(undefined)).toBe(true);
+  });
+  it('строки', () => {
+    expect(isAnswerEmpty('')).toBe(true);
+    expect(isAnswerEmpty('a')).toBe(false);
+  });
+  it('массивы (multi: снял все галочки — пусто)', () => {
+    expect(isAnswerEmpty([])).toBe(true);
+    expect(isAnswerEmpty(['a'])).toBe(false);
+  });
+  it('объекты (matching: все селекты сброшены — пусто)', () => {
+    expect(isAnswerEmpty({})).toBe(true);
+    expect(isAnswerEmpty({ a: '' })).toBe(true);
+    expect(isAnswerEmpty({ a: '', b: '1' })).toBe(false);
   });
 });

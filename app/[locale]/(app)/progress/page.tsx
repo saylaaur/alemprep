@@ -6,6 +6,7 @@ import { Link } from '@/i18n/routing';
 import { CheckCircle2, XCircle, Flame, TrendingUp } from 'lucide-react';
 import { getProgressData } from '@/lib/supabase/queries';
 import type { DailyActivity, TopicStat, RecentAttemptItem } from '@/lib/supabase/queries';
+import { localDateStr } from '@/lib/streak';
 import type { Locale } from '@/types/db';
 
 export default async function ProgressPage({
@@ -168,7 +169,8 @@ function buildHeatmap(dailyActivity: DailyActivity[]) {
     for (let d = 0; d < 7; d++) {
       const cell = new Date(start);
       cell.setDate(start.getDate() + w * 7 + d);
-      const dateStr = cell.toISOString().split('T')[0];
+      // локальная дата: toISOString сдвигал ячейки на день в TZ восточнее UTC
+      const dateStr = localDateStr(cell);
       const isFuture = cell > today;
       days.push({
         date: dateStr,
