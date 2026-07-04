@@ -15,6 +15,8 @@ import * as os from 'os';
 import {
   GeneratedQuestionSchema,
   ReferenceQuestionSchema,
+  getTopicSlugs,
+  SUBJECT_LABEL,
   type GeneratedQuestion,
   type ReferenceQuestion,
   type TranscriptionItem,
@@ -76,16 +78,19 @@ function parseArgs(): { input: string; variants: number; subject: string } {
   return { input, variants, subject };
 }
 
-const SYSTEM_INSTRUCTION = `You are an expert math teacher creating original practice problems for Kazakhstani high school students preparing for ЕНТ (Unified National Testing).
+function buildSystemInstruction(subject: string): string {
+  const label = SUBJECT_LABEL[subject] ?? 'mathematics';
+  const slugs = getTopicSlugs(subject).join('|');
+  return `You are an expert ${label} teacher creating original practice problems for Kazakhstani high school students preparing for ЕНТ (Unified National Testing).
 
-TASK: Given a reference math problem, generate NEW variants using completely different numbers, coefficients, and contexts.
+TASK: Given a reference ${label} problem, generate NEW variants using completely different numbers, values, and contexts.
 
 Output ONLY a valid JSON object with this exact structure (no markdown, no code fences):
 {"variants": [<variant1>, <variant2>, ...]}
 
 Each variant must have:
 {
-  "topic_slug": "<algebra|equations|functions|logarithms|trigonometry|progressions|planimetry|stereometry|derivatives|combinatorics|statistics|text_problems>",
+  "topic_slug": "<${slugs}>",
   "type": "<single|multi|matching — must match reference>",
   "difficulty": <integer 1-5, similar to reference>,
   "body": <body object>,
@@ -108,11 +113,13 @@ RULES:
 8. explanation.blocks: full step-by-step solution alternating text and LaTeX blocks.
 9. Each variant is completely self-contained.
 10. NEVER reproduce verbatim content from actual ЕНТ/НЦТ exam papers.`;
+}
 
 async function generateVariants(
   client: Anthropic,
   reference: ReferenceQuestion,
   n: number,
+  systemInstruction: string,
 ): Promise<{ variants: GeneratedQuestion[]; inputTok: number; outputTok: number }> {
   // Fewer variants for questions with accompanying images (Epic C forward compat)
   const count = reference.has_image ? Math.min(n, 2) : n;
@@ -135,7 +142,7 @@ Generate ${count} NEW variants with completely different numbers. Return them in
   const response = await client.messages.create({
     model: MODEL,
     max_tokens: 4096,
-    system: SYSTEM_INSTRUCTION,
+    system: systemInstruction,
     messages: [{ role: 'user', content: userMessage }],
   });
 
@@ -220,6 +227,7 @@ async function main() {
   console.log(`   ⚠️  Paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output\n`);
 
   const anthropic = new Anthropic({ apiKey });
+  const systemInstruction = buildSystemInstruction(subject);
   const allGenerated: GeneratedQuestion[] = [];
   let totalInput = 0;
   let totalOutput = 0;
@@ -231,6 +239,7 @@ async function main() {
         anthropic,
         ref,
         numVariants,
+        systemInstruction,
       );
       allGenerated.push(...variants);
       totalInput += inputTok;

@@ -14,6 +14,8 @@ import * as os from 'os';
 import {
   ReferenceQuestionSchema,
   SkipItemSchema,
+  getTopicSlugs,
+  SUBJECT_LABEL,
   type TranscriptionItem,
 } from './lib/schema';
 
@@ -81,19 +83,22 @@ function extractJson(raw: string): string {
   return s;
 }
 
-const SYSTEM_INSTRUCTION = `You are a math teacher transcribing ЕНТ (Unified National Testing, Kazakhstan) math problems into structured JSON.
+function buildSystemInstruction(subject: string): string {
+  const label = SUBJECT_LABEL[subject] ?? 'mathematics';
+  const slugs = getTopicSlugs(subject).join('|');
+  return `You are a ${label} teacher transcribing ЕНТ (Unified National Testing, Kazakhstan) ${label} problems into structured JSON.
 
 Output ONLY a valid JSON object — no markdown, no code fences, just raw JSON.
 
-If the image contains a graph, chart, coordinate plane, or any visual diagram that cannot be fully described in text/LaTeX:
+If the image contains a graph, chart, coordinate plane, circuit, block-scheme, or any visual diagram that cannot be fully described in text/LaTeX:
 {"skip": "graph", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
 
-If the image is unclear, has multiple problems, or is not a recognizable math question:
+If the image is unclear, has multiple problems, or is not a recognizable ${label} question:
 {"skip": "unsupported", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
 
 Otherwise transcribe the problem:
 {
-  "topic_slug": "<algebra|equations|functions|logarithms|trigonometry|progressions|planimetry|stereometry|derivatives|combinatorics|statistics|text_problems>",
+  "topic_slug": "<${slugs}>",
   "type": "<single|multi|matching>",
   "difficulty": <1–5: 1=trivial, 2=easy, 3=typical ЕНТ, 4=hard, 5=olympiad>,
   "body": { ... see formats below ... },
@@ -109,12 +114,16 @@ Body formats:
 Rules:
 - All text in Russian
 - Use $...$ for inline LaTeX: $x^2 + 1$, $\\log_2 8$, $\\sin\\frac{\\pi}{6}$
-- Pick the most specific matching topic_slug
+- Pick the most specific topic_slug from the list above
+- For informatics: code fragments go inside the stem as plain text
+- For physics: always keep correct units (м/с, кг, Н, Дж и т.п.)
 - difficulty: honest assessment — typical ЕНТ = 3`;
+}
 
 async function transcribeImage(
   client: Anthropic,
   imagePath: string,
+  systemInstruction: string,
 ): Promise<{ item: TranscriptionItem; inputTok: number; outputTok: number }> {
   const filename = path.basename(imagePath);
   const imageData = fs.readFileSync(imagePath).toString('base64');
@@ -123,7 +132,7 @@ async function transcribeImage(
   const response = await client.messages.create({
     model: MODEL,
     max_tokens: 2048,
-    system: SYSTEM_INSTRUCTION,
+    system: systemInstruction,
     messages: [
       {
         role: 'user',
@@ -134,7 +143,7 @@ async function transcribeImage(
           },
           {
             type: 'text',
-            text: `Transcribe this ЕНТ math problem. Set source_file to "${filename}".`,
+            text: `Transcribe this ЕНТ problem. Set source_file to "${filename}".`,
           },
         ],
       },
@@ -215,6 +224,7 @@ async function main() {
   console.log(`   ⚠️  Paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output\n`);
 
   const anthropic = new Anthropic({ apiKey });
+  const systemInstruction = buildSystemInstruction(subject);
   const results: TranscriptionItem[] = [];
   let totalInput = 0;
   let totalOutput = 0;
@@ -227,6 +237,7 @@ async function main() {
       const { item, inputTok, outputTok } = await transcribeImage(
         anthropic,
         path.join(dir, file),
+        systemInstruction,
       );
       results.push(item);
       totalInput += inputTok;
