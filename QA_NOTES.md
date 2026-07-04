@@ -19,3 +19,14 @@
 - `layout.tsx`: статичный `metadata` → `generateMetadata()` с локалью.
 - `MobileNav.tsx`: aria-label'ы через `tNav(...)`.
 - `displayName()` теперь возвращает `string | null`; fallback берётся из `dashboard.defaultName` на месте вызова (dashboard).
+
+## 2. tsconfig.scripts.json: scripts не типизировались
+
+**Найдено:**
+- `tsconfig.scripts.json` наследует `exclude: ["node_modules", "scripts"]` из базового `tsconfig.json`, а свой `exclude` не задаёт → унаследованный exclude гасил `include: ["scripts/**/*.ts"]`. Проверка `tsc -p tsconfig.scripts.json --listFilesOnly` показывала **0 файлов** из `scripts/`.
+- `npm run typecheck` гонял только основной конфиг — scripts вообще не проверялись.
+
+**Сделано:**
+- В `tsconfig.scripts.json` добавлен собственный `exclude: ["node_modules"]` — теперь в scope все 7 файлов из `scripts/`.
+- `npm run typecheck` расширен: `tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit`.
+- Скрипты уже типизировались чисто — ошибок после включения не выявлено.

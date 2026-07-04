@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
     "gen:transcribe": "tsx --tsconfig tsconfig.scripts.json scripts/transcribe-questions.ts",
     "gen:variants": "tsx --tsconfig tsconfig.scripts.json scripts/generate-variants.ts",
     "gen:verify": "tsx --tsconfig tsconfig.scripts.json scripts/verify-questions.ts",
