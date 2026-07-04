@@ -21,6 +21,19 @@ export const EXAM_MAX_SCORE = EXAM_BLUEPRINT.reduce(
   0
 );
 
+/**
+ * Пара профильных предметов: первый блок всегда математика,
+ * второй — физика или информатика. Других пар в ЕНТ-профиле нет.
+ * 2 блока × 40 заданий, 160 минут (пропорция ЕНТ: 80 заданий из 120 минут
+ * на предмет → ×2), максимум 110 баллов.
+ */
+export const EXAM_FIRST_SUBJECT = 'math' as const;
+export const EXAM_SECOND_SUBJECTS = ['physics', 'informatics'] as const;
+export type ExamSecondSubject = (typeof EXAM_SECOND_SUBJECTS)[number];
+
+export const EXAM_PAIR_DURATION_S = 160 * 60;
+export const EXAM_PAIR_MAX_SCORE = 2 * EXAM_MAX_SCORE;
+
 export const QUESTION_POINTS: Record<QuestionType, number> = Object.fromEntries(
   EXAM_BLUEPRINT.map((part) => [part.type, part.points])
 ) as Record<QuestionType, number>;
@@ -31,6 +44,60 @@ export type ExamShortfall = {
   available: number;
   required: number;
 };
+
+export function shuffle<T>(arr: readonly T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/**
+ * Отбор заданий блока по блюпринту, сбалансированно по темам:
+ * внутри каждого типа — round-robin по перемешанным тематическим группам
+ * (и перемешанным задачам внутри группы). Если задач не хватает —
+ * берём сколько есть и фиксируем shortfall.
+ * Порядок частей — как в блюпринте (single → multi → matching).
+ */
+export function pickBalancedByTopic<
+  T extends { type: QuestionType; topic_id: string },
+>(
+  pool: readonly T[],
+  blueprint: typeof EXAM_BLUEPRINT = EXAM_BLUEPRINT
+): { picked: T[]; shortfall: ExamShortfall[] } {
+  const picked: T[] = [];
+  const shortfall: ExamShortfall[] = [];
+
+  for (const part of blueprint) {
+    const byTopic = new Map<string, T[]>();
+    for (const q of pool) {
+      if (q.type !== part.type) continue;
+      const group = byTopic.get(q.topic_id);
+      if (group) group.push(q);
+      else byTopic.set(q.topic_id, [q]);
+    }
+
+    const groups = shuffle([...byTopic.values()].map((g) => shuffle(g)));
+    const taken: T[] = [];
+    for (let round = 0; taken.length < part.count; round++) {
+      const before = taken.length;
+      for (const group of groups) {
+        if (taken.length >= part.count) break;
+        if (round < group.length) taken.push(group[round]);
+      }
+      if (taken.length === before) break; // пул исчерпан
+    }
+
+    picked.push(...taken);
+    if (taken.length < part.count) {
+      shortfall.push({ type: part.type, available: taken.length, required: part.count });
+    }
+  }
+
+  return { picked, shortfall };
+}
 
 /**
  * Балл за ответ по правилам ЕНТ.
