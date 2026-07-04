@@ -32,7 +32,7 @@ export default async function DashboardPage({
 
   const dailyTotal = profile?.daily_goal ?? 20;
   const progressPct = Math.min(100, Math.round((todayDone / dailyTotal) * 100));
-  const name = displayName(profile, locale as Locale);
+  const name = displayName(profile) ?? t('defaultName');
   const streak = profile?.current_streak ?? 0;
   const goalReached = todayDone >= dailyTotal;
 

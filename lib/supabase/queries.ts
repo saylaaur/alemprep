@@ -200,8 +200,8 @@ export async function getTodayAttemptsCount(): Promise<number> {
   return count ?? 0;
 }
 
-export function displayName(profile: Profile | null, locale: Locale): string {
-  if (!profile?.full_name) return locale === 'kk' ? 'оқушы' : 'студент';
+export function displayName(profile: Profile | null): string | null {
+  if (!profile?.full_name) return null;
   // Берём только имя (первое слово)
   return profile.full_name.split(' ')[0];
 }

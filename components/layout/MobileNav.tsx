@@ -68,7 +68,7 @@ export function MobileNav({
         </div>
         <button
           type="button"
-          aria-label="Open navigation"
+          aria-label={tNav('openMenu')}
           aria-expanded={open}
           onClick={() => setOpen(true)}
           className="grid h-11 w-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -92,7 +92,7 @@ export function MobileNav({
           'fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r bg-card transition-transform duration-300 ease-smooth md:hidden',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
-        aria-label="Navigation drawer"
+        aria-label={tNav('menu')}
       >
         {/* Drawer header */}
         <div className="flex h-14 items-center justify-between border-b px-5">
@@ -104,7 +104,7 @@ export function MobileNav({
           </div>
           <button
             type="button"
-            aria-label="Close navigation"
+            aria-label={tNav('closeMenu')}
             onClick={() => setOpen(false)}
             className="grid h-11 w-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
