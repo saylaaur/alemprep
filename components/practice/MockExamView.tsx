@@ -5,7 +5,8 @@ import { useTranslations } from 'next-intl';
 import { MathText } from '@/components/math/MathText';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Check, X, Minus, Flag, Clock, ChevronLeft, ChevronRight, Trophy, AlertCircle } from 'lucide-react';
+import { Check, X, Minus, Flag, Clock, ChevronLeft, ChevronRight, Trophy, AlertCircle, Calculator as CalculatorIcon } from 'lucide-react';
+import { Calculator } from '@/components/practice/Calculator';
 import type { Question, Explanation, Locale, QuestionType } from '@/types/db';
 import { startPairExam, finishExamSession, type PairExamBlock } from '@/lib/supabase/practice-actions';
 import type { ExamAvailability, ExamContext, MockExamTopic } from '@/lib/supabase/queries';
@@ -46,6 +47,7 @@ type Props = {
 export function MockExamView({ availability, locale }: Props) {
   const t = useTranslations('exam');
   const tSubjects = useTranslations('subjects');
+  const tCalc = useTranslations('calc');
 
   const [phase, setPhase] = useState<ExamPhase>('intro');
   const [second, setSecond] = useState<ExamSecondSubject>(EXAM_SECOND_SUBJECTS[0]);
@@ -59,6 +61,7 @@ export function MockExamView({ availability, locale }: Props) {
   const [startError, setStartError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
   const [timesUp, setTimesUp] = useState(false);
   const [elapsedS, setElapsedS] = useState(0);
   const startTimeRef = useRef<number>(0);
@@ -356,10 +359,30 @@ export function MockExamView({ availability, locale }: Props) {
           {formatTime(timeLeft)}
         </div>
 
-        <Button size="sm" variant="destructive" onClick={() => setConfirmOpen(true)} disabled={submitting}>
-          {t('submitButton')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCalcOpen((v) => !v)}
+            aria-pressed={calcOpen}
+            aria-label={calcOpen ? tCalc('close') : tCalc('open')}
+            title={calcOpen ? tCalc('close') : tCalc('open')}
+            className={cn(
+              'grid h-9 w-9 place-items-center rounded-lg transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
+              calcOpen
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+            )}
+          >
+            <CalculatorIcon className="h-4 w-4" />
+          </button>
+          <Button size="sm" variant="destructive" onClick={() => setConfirmOpen(true)} disabled={submitting}>
+            {t('submitButton')}
+          </Button>
+        </div>
       </div>
+
+      {/* ── Floating calculator (только во время экзамена) ───────────── */}
+      <Calculator open={calcOpen} onClose={() => setCalcOpen(false)} />
 
       {/* ── Body: question panel + navigator sidebar ─────────────────── */}
       <div className="flex min-h-0">
