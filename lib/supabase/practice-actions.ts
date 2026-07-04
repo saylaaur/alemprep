@@ -2,9 +2,15 @@
 
 import { createClient } from './server';
 import { revalidatePath } from 'next/cache';
-import { QUESTION_POINTS, scoreAnswer } from '@/lib/exam';
+import {
+  EXAM_SECOND_SUBJECTS,
+  QUESTION_POINTS,
+  scoreAnswer,
+  type ExamSecondSubject,
+} from '@/lib/exam';
 import { advanceStreak, localDateStr } from '@/lib/streak';
-import type { QuestionType, QuestionBody } from '@/types/db';
+import { getPairExamBlocks, type ExamBlock, type ExamContext } from './queries';
+import type { QuestionType, QuestionBody, Locale } from '@/types/db';
 
 type RecordInput = {
   questionId: string;
@@ -81,6 +87,37 @@ export async function createExamSession(input: {
 
   if (error || !data) return { error: error?.message ?? 'failed to create session' };
   return { sessionId: data.id as string };
+}
+
+export type PairExamBlock = ExamBlock & { sessionId: string };
+
+/**
+ * Старт пробника-пары: собирает оба блока (математика + второй предмет)
+ * и создаёт по сессии на блок. Map контекстов сериализуется в entries —
+ * через границу server action Map не проходит.
+ */
+export async function startPairExam(input: {
+  second: ExamSecondSubject;
+  locale: Locale;
+}): Promise<
+  { blocks: PairExamBlock[]; contexts: [string, ExamContext][] } | { error: string }
+> {
+  if (!EXAM_SECOND_SUBJECTS.includes(input.second)) return { error: 'invalid subject' };
+
+  const data = await getPairExamBlocks(input.second, input.locale);
+  if (!data) return { error: 'subjects not found' };
+
+  const blocks: PairExamBlock[] = [];
+  for (const block of data.blocks) {
+    const res = await createExamSession({
+      subjectId: block.subjectId,
+      totalQuestions: block.questions.length,
+    });
+    if ('error' in res) return { error: res.error };
+    blocks.push({ ...block, sessionId: res.sessionId });
+  }
+
+  return { blocks, contexts: Array.from(data.contexts.entries()) };
 }
 
 type ExamResult = {

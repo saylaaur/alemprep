@@ -1,6 +1,13 @@
 import { createClient } from './server';
-import { EXAM_BLUEPRINT, type ExamShortfall } from '@/lib/exam';
+import {
+  EXAM_BLUEPRINT,
+  EXAM_FIRST_SUBJECT,
+  pickBalancedByTopic,
+  type ExamSecondSubject,
+  type ExamShortfall,
+} from '@/lib/exam';
 import { localDateStr } from '@/lib/streak';
+import type { QuestionType } from '@/types/db';
 import type { Profile, Subject, Topic, Locale, Question, ContextContent } from '@/types/db';
 
 // ---- Admin helpers ----
@@ -356,6 +363,142 @@ export async function getProgressData(): Promise<ProgressData | null> {
 }
 
 export type MockExamTopic = { id: string; name_ru: string; name_kk: string };
+
+// ---- Пробник: пара профильных предметов ----
+
+export type ExamContext = { id: string; title: string | null; content: ContextContent };
+
+export type ExamAvailability = Record<string, Partial<Record<QuestionType, number>>>;
+
+/** Сколько опубликованных задач каждого типа есть у каждого предмета (для предупреждений на интро). */
+export async function getExamAvailability(locale: Locale = 'ru'): Promise<ExamAvailability> {
+  const supabase = await createClient();
+  const [subjectsRes, topicsRes, questionsRes] = await Promise.all([
+    supabase.from('subjects').select('id, slug'),
+    supabase.from('topics').select('id, subject_id'),
+    supabase
+      .from('questions')
+      .select('type, topic_id')
+      .eq('language', locale)
+      .eq('is_published', true),
+  ]);
+
+  const subjectSlugById = new Map(
+    ((subjectsRes.data ?? []) as { id: string; slug: string }[]).map((s) => [s.id, s.slug])
+  );
+  const topicToSubject = new Map(
+    ((topicsRes.data ?? []) as { id: string; subject_id: string }[]).map((t) => [
+      t.id,
+      t.subject_id,
+    ])
+  );
+
+  const availability: ExamAvailability = {};
+  for (const q of (questionsRes.data ?? []) as { type: QuestionType; topic_id: string }[]) {
+    const subjectId = topicToSubject.get(q.topic_id);
+    const slug = subjectId ? subjectSlugById.get(subjectId) : undefined;
+    if (!slug) continue;
+    const bySlug = (availability[slug] ??= {});
+    bySlug[q.type] = (bySlug[q.type] ?? 0) + 1;
+  }
+  return availability;
+}
+
+export type ExamBlock = {
+  subjectSlug: string;
+  subjectId: string;
+  name_ru: string;
+  name_kk: string;
+  topics: MockExamTopic[];
+  questions: Question[];
+  shortfall: ExamShortfall[];
+};
+
+/**
+ * Собирает два блока пробника (математика + второй предмет):
+ * опубликованные задачи локали, сбалансированный по темам отбор по блюпринту.
+ * Если задач не хватает — блок короче + shortfall.
+ */
+export async function getPairExamBlocks(
+  second: ExamSecondSubject,
+  locale: Locale = 'ru'
+): Promise<{ blocks: ExamBlock[]; contexts: Map<string, ExamContext> } | null> {
+  const supabase = await createClient();
+  const slugs = [EXAM_FIRST_SUBJECT, second];
+
+  const { data: subjects } = await supabase
+    .from('subjects')
+    .select('id, slug, name_ru, name_kk')
+    .in('slug', slugs);
+
+  const subjectRows = (subjects ?? []) as {
+    id: string;
+    slug: string;
+    name_ru: string;
+    name_kk: string;
+  }[];
+  if (subjectRows.length !== slugs.length) return null;
+
+  const { data: topics } = await supabase
+    .from('topics')
+    .select('id, name_ru, name_kk, subject_id')
+    .in('subject_id', subjectRows.map((s) => s.id));
+
+  const topicRows = (topics ?? []) as (MockExamTopic & { subject_id: string })[];
+
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('*')
+    .in('topic_id', topicRows.map((t) => t.id))
+    .eq('language', locale)
+    .eq('is_published', true);
+
+  const pool = (questions ?? []) as Question[];
+  const topicSubject = new Map(topicRows.map((t) => [t.id, t.subject_id]));
+
+  // порядок блоков фиксирован: математика первой
+  const blocks: ExamBlock[] = slugs.map((slug) => {
+    const subject = subjectRows.find((s) => s.slug === slug)!;
+    const subjectPool = pool.filter((q) => topicSubject.get(q.topic_id) === subject.id);
+    const { picked, shortfall } = pickBalancedByTopic(subjectPool, EXAM_BLUEPRINT);
+    return {
+      subjectSlug: subject.slug,
+      subjectId: subject.id,
+      name_ru: subject.name_ru,
+      name_kk: subject.name_kk,
+      topics: topicRows
+        .filter((t) => t.subject_id === subject.id)
+        .map(({ id, name_ru, name_kk }) => ({ id, name_ru, name_kk })),
+      questions: picked,
+      shortfall,
+    };
+  });
+
+  const contextIds = Array.from(
+    new Set(
+      blocks
+        .flatMap((b) => b.questions)
+        .map((q) => q.context_id)
+        .filter((x): x is string => Boolean(x))
+    )
+  );
+  const contextsMap = new Map<string, ExamContext>();
+  if (contextIds.length > 0) {
+    const { data: contexts } = await supabase
+      .from('contexts')
+      .select('id, title, content')
+      .in('id', contextIds);
+    (contexts ?? []).forEach((c) =>
+      contextsMap.set(c.id, {
+        id: c.id,
+        title: c.title as string | null,
+        content: c.content as ContextContent,
+      })
+    );
+  }
+
+  return { blocks, contexts: contextsMap };
+}
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
