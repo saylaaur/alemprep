@@ -1,15 +1,24 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { MathText } from '@/components/math/MathText';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Check, X, Minus, Flag, Clock, ChevronLeft, ChevronRight, Trophy, AlertCircle } from 'lucide-react';
-import type { Question, Explanation, ContextContent, QuestionType } from '@/types/db';
-import { createExamSession, finishExamSession } from '@/lib/supabase/practice-actions';
-import type { MockExamTopic } from '@/lib/supabase/queries';
-import { EXAM_DURATION_S, EXAM_BLUEPRINT, QUESTION_POINTS, scoreAnswer, type ExamShortfall } from '@/lib/exam';
+import type { Question, Explanation, Locale, QuestionType } from '@/types/db';
+import { startPairExam, finishExamSession, type PairExamBlock } from '@/lib/supabase/practice-actions';
+import type { ExamAvailability, ExamContext, MockExamTopic } from '@/lib/supabase/queries';
+import {
+  EXAM_PAIR_DURATION_S,
+  EXAM_PAIR_MAX_SCORE,
+  EXAM_BLUEPRINT,
+  EXAM_FIRST_SUBJECT,
+  EXAM_SECOND_SUBJECTS,
+  QUESTION_POINTS,
+  scoreAnswer,
+  type ExamSecondSubject,
+} from '@/lib/exam';
 import { isAnswerEmpty } from '@/lib/practice';
 
 const PART_TITLE_KEY: Record<QuestionType, 'partSingleTitle' | 'partMultiTitle' | 'partMatchingTitle'> = {
@@ -27,24 +36,25 @@ function formatTime(s: number): string {
   return `${m}:${(s % 60).toString().padStart(2, '0')}`;
 }
 
+const BLUEPRINT_BLOCK_COUNT = EXAM_BLUEPRINT.reduce((s, p) => s + p.count, 0);
+
 type Props = {
-  questions: Question[];
-  contexts: Map<string, { id: string; title: string | null; content: ContextContent }>;
-  topics: MockExamTopic[];
-  subjectId: string;
+  availability: ExamAvailability;
   locale: string;
-  shortfall: ExamShortfall[];
 };
 
-export function MockExamView({ questions, contexts, topics, subjectId, locale, shortfall }: Props) {
+export function MockExamView({ availability, locale }: Props) {
   const t = useTranslations('exam');
+  const tSubjects = useTranslations('subjects');
 
   const [phase, setPhase] = useState<ExamPhase>('intro');
+  const [second, setSecond] = useState<ExamSecondSubject>(EXAM_SECOND_SUBJECTS[0]);
+  const [blocks, setBlocks] = useState<PairExamBlock[]>([]);
+  const [contexts, setContexts] = useState<Map<string, ExamContext>>(new Map());
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerState>>({});
   const [flags, setFlags] = useState<Record<string, QuestionFlag>>({});
-  const [timeLeft, setTimeLeft] = useState(EXAM_DURATION_S);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState(EXAM_PAIR_DURATION_S);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -54,10 +64,27 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
   const startTimeRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const questions = useMemo(() => blocks.flatMap((b) => b.questions), [blocks]);
+  // блоки с глобальным смещением нумерации (1–40 / 41–80 при полных банках)
+  const blockRanges = useMemo(() => {
+    let offset = 0;
+    return blocks.map((block) => {
+      const start = offset;
+      offset += block.questions.length;
+      return { block, start };
+    });
+  }, [blocks]);
+
   const total = questions.length;
   const current = questions[idx];
   const answeredCount = Object.values(flags).filter((f) => f === 'answered').length;
   const flaggedCount = Object.values(flags).filter((f) => f === 'flagged').length;
+
+  const subjectDisplayName = useCallback(
+    (block: { name_ru: string; name_kk: string }) =>
+      (locale === 'kk' ? block.name_kk : block.name_ru),
+    [locale]
+  );
 
   useEffect(() => {
     if (phase !== 'exam') return;
@@ -85,40 +112,50 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
   }, [phase]);
 
   const startExam = useCallback(async () => {
-    // Попытки сохраняются только при живой сессии в БД — без неё пробник
-    // не стартуем: до 3 попыток создать сессию, дальше видимая ошибка.
+    // Попытки сохраняются только при живых сессиях в БД — без них пробник
+    // не стартуем: до 3 попыток, дальше видимая ошибка.
     if (starting) return;
     setStarting(true);
     setStartError(false);
-    let res = await createExamSession({ subjectId, totalQuestions: total });
+    let res = await startPairExam({ second, locale: locale as Locale });
     for (let attempt = 0; 'error' in res && attempt < 2; attempt++) {
       await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
-      res = await createExamSession({ subjectId, totalQuestions: total });
+      res = await startPairExam({ second, locale: locale as Locale });
     }
     setStarting(false);
-    if ('error' in res) {
+    if ('error' in res || res.blocks.every((b) => b.questions.length === 0)) {
       setStartError(true);
       return;
     }
-    setSessionId(res.sessionId);
+    setBlocks(res.blocks);
+    setContexts(new Map(res.contexts));
     startTimeRef.current = Date.now();
     setPhase('exam');
-  }, [starting, subjectId, total]);
+  }, [starting, second, locale]);
 
   const handleSubmit = useCallback(async (auto = false) => {
     if (submitting) return;
     if (!auto) setConfirmOpen(false);
     setSubmitting(true);
     const timeSpentMs = Date.now() - startTimeRef.current;
-    const results = questions.map((q) => {
-      const answer = answers[q.id] ?? null;
-      return { questionId: q.id, givenAnswer: answer, timeSpentMs: Math.round(timeSpentMs / Math.max(questions.length, 1)) };
-    });
-    if (sessionId) await finishExamSession({ sessionId, results });
-    setElapsedS(Math.min(EXAM_DURATION_S, Math.round(timeSpentMs / 1000)));
+    const perQuestionMs = Math.round(timeSpentMs / Math.max(total, 1));
+    // по сессии на блок — результат каждого предмета пишется отдельно
+    await Promise.all(
+      blocks.map((block) =>
+        finishExamSession({
+          sessionId: block.sessionId,
+          results: block.questions.map((q) => ({
+            questionId: q.id,
+            givenAnswer: answers[q.id] ?? null,
+            timeSpentMs: perQuestionMs,
+          })),
+        })
+      )
+    );
+    setElapsedS(Math.min(EXAM_PAIR_DURATION_S, Math.round(timeSpentMs / 1000)));
     setSubmitting(false);
     setPhase('result');
-  }, [submitting, questions, answers, sessionId]);
+  }, [submitting, blocks, answers, total]);
 
   const setAnswer = (next: AnswerState) => {
     if (!current) return;
@@ -169,59 +206,113 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
 
   // ── INTRO ─────────────────────────────────────────────────────────────────
   if (phase === 'intro') {
-    const maxScore = questions.reduce((s, q) => s + QUESTION_POINTS[q.type], 0);
+    const pairSlugs = [EXAM_FIRST_SUBJECT, second] as const;
+    const pairShortfalls = pairSlugs.flatMap((slug) =>
+      EXAM_BLUEPRINT.flatMap((part) => {
+        const available = availability[slug]?.[part.type] ?? 0;
+        return available < part.count
+          ? [{ slug, type: part.type, available, required: part.count }]
+          : [];
+      })
+    );
+    const pairAvailableTotal = pairSlugs.reduce(
+      (sum, slug) =>
+        sum + Object.values(availability[slug] ?? {}).reduce((s, n) => s + (n ?? 0), 0),
+      0
+    );
+
     return (
       <div className="mx-auto max-w-lg px-6 py-16 text-center">
         <div className="mx-auto mb-6 grid h-16 w-16 place-items-center rounded-2xl bg-primary/10">
           <Trophy className="h-8 w-8 text-primary" />
         </div>
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
-        {total === 0 ? (
-          <p className="mt-4 text-muted-foreground">{t('noQuestionsDesc')}</p>
-        ) : (
-          <>
-            <p className="mt-3 text-muted-foreground">{t('subtitle', { count: total, duration: Math.round(EXAM_DURATION_S / 60), max: maxScore })}</p>
+        <p className="mt-3 text-muted-foreground">
+          {t('subtitle', {
+            count: 2 * BLUEPRINT_BLOCK_COUNT,
+            duration: Math.round(EXAM_PAIR_DURATION_S / 60),
+            max: EXAM_PAIR_MAX_SCORE,
+          })}
+        </p>
 
-            {/* Формат ЕНТ */}
-            <div className="mt-8 rounded-xl border bg-card/50 text-left">
-              <div className="border-b px-5 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t('formatTitle')}</div>
-              <div className="divide-y divide-border">
-                {EXAM_BLUEPRINT.map((part) => (
-                  <div key={part.type} className="flex items-center justify-between px-5 py-3 text-sm">
-                    <span>{t(PART_TITLE_KEY[part.type])}</span>
-                    <span className="tabular-nums text-muted-foreground">{t('partCount', { count: part.count, points: part.points })}</span>
-                  </div>
-                ))}
+        {/* Выбор пары предметов */}
+        <div className="mt-8 text-left">
+          <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            {t('choosePair')}
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {EXAM_SECOND_SUBJECTS.map((slug) => {
+              const selected = second === slug;
+              return (
+                <button
+                  key={slug}
+                  type="button"
+                  onClick={() => setSecond(slug)}
+                  aria-pressed={selected}
+                  className={cn(
+                    'rounded-xl border px-4 py-3.5 text-left text-sm font-medium transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
+                    selected
+                      ? 'border-primary bg-primary/8 ring-1 ring-primary/30'
+                      : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
+                  )}
+                >
+                  {tSubjects('math')} + {tSubjects(slug)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Формат блока */}
+        <div className="mt-6 rounded-xl border bg-card/50 text-left">
+          <div className="border-b px-5 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t('formatBlockTitle')}</div>
+          <div className="divide-y divide-border">
+            {EXAM_BLUEPRINT.map((part) => (
+              <div key={part.type} className="flex items-center justify-between px-5 py-3 text-sm">
+                <span>{t(PART_TITLE_KEY[part.type])}</span>
+                <span className="tabular-nums text-muted-foreground">{t('partCount', { count: part.count, points: part.points })}</span>
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            {/* Нехватка задач в банке */}
-            {shortfall.length > 0 && (
-              <div className="mt-4 space-y-2">
-                {shortfall.map((s) => (
-                  <div key={s.type} className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 px-4 py-2.5 text-left text-sm text-warning">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>{t('shortfallWarning', { available: s.available, required: s.required, type: t(PART_TITLE_KEY[s.type]) })}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="mt-6 grid grid-cols-3 divide-x divide-border rounded-xl border bg-card/50 py-5 text-center">
-              <div><div className="text-2xl font-semibold">{total}</div><div className="mt-1 text-xs text-muted-foreground">{t('totalQuestions')}</div></div>
-              <div><div className="text-2xl font-semibold">{Math.round(EXAM_DURATION_S / 60)}</div><div className="mt-1 text-xs text-muted-foreground">{t('minutesLabel')}</div></div>
-              <div><div className="text-2xl font-semibold">{maxScore}</div><div className="mt-1 text-xs text-muted-foreground">{t('maxPointsLabel')}</div></div>
-            </div>
-            <Button size="lg" className="mt-8 shadow-primary" disabled={starting} onClick={() => void startExam()}>
-              {starting ? t('loading') : t('startButton')}
-            </Button>
-            {startError && (
-              <div className="mx-auto mt-4 flex max-w-sm items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-left text-sm text-destructive" role="alert">
+        {/* Нехватка задач в банке выбранной пары */}
+        {pairShortfalls.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {pairShortfalls.map((s) => (
+              <div key={`${s.slug}-${s.type}`} className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 px-4 py-2.5 text-left text-sm text-warning">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{t('startError')}</span>
+                <span>
+                  {t('shortfallWarningSubject', {
+                    subject: tSubjects(s.slug),
+                    available: s.available,
+                    required: s.required,
+                    type: t(PART_TITLE_KEY[s.type]),
+                  })}
+                </span>
               </div>
-            )}
-          </>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-6 grid grid-cols-3 divide-x divide-border rounded-xl border bg-card/50 py-5 text-center">
+          <div><div className="text-2xl font-semibold">{2 * BLUEPRINT_BLOCK_COUNT}</div><div className="mt-1 text-xs text-muted-foreground">{t('totalQuestions')}</div></div>
+          <div><div className="text-2xl font-semibold">{Math.round(EXAM_PAIR_DURATION_S / 60)}</div><div className="mt-1 text-xs text-muted-foreground">{t('minutesLabel')}</div></div>
+          <div><div className="text-2xl font-semibold">{EXAM_PAIR_MAX_SCORE}</div><div className="mt-1 text-xs text-muted-foreground">{t('maxPointsLabel')}</div></div>
+        </div>
+
+        {pairAvailableTotal === 0 ? (
+          <p className="mt-6 text-muted-foreground">{t('noQuestionsDesc')}</p>
+        ) : (
+          <Button size="lg" className="mt-8 shadow-primary" disabled={starting} onClick={() => void startExam()}>
+            {starting ? t('loading') : t('startButton')}
+          </Button>
+        )}
+        {startError && (
+          <div className="mx-auto mt-4 flex max-w-sm items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-left text-sm text-destructive" role="alert">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{t('startError')}</span>
+          </div>
         )}
       </div>
     );
@@ -229,20 +320,26 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
 
   // ── RESULT ────────────────────────────────────────────────────────────────
   if (phase === 'result') {
-    return <ResultScreen questions={questions} contexts={contexts} topics={topics} answers={answers} locale={locale} elapsedS={elapsedS} t={t} />;
+    return <ResultScreen questions={questions} topics={blocks.flatMap((b) => b.topics)} answers={answers} locale={locale} elapsedS={elapsedS} t={t} />;
   }
 
   // ── EXAM ──────────────────────────────────────────────────────────────────
-  const answer = current ? (answers[current.id] ?? null) : null;
-  const currentFlag = current ? (flags[current.id] ?? 'none') : 'none';
-  const ctx = current?.context_id ? contexts.get(current.context_id) : null;
+  if (!current) return null;
+  const answer = answers[current.id] ?? null;
+  const currentFlag = flags[current.id] ?? 'none';
+  const ctx = current.context_id ? contexts.get(current.context_id) : null;
+  const currentRange = blockRanges.find(
+    (r) => idx >= r.start && idx < r.start + r.block.questions.length
+  );
 
   return (
     <div className="flex flex-col">
       {/* ── Sticky timer header ─────────────────────────────────────── */}
       <div className="sticky top-0 z-10 flex h-14 flex-shrink-0 items-center justify-between border-b bg-card/80 px-4 sm:px-6 backdrop-blur-xl">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="hidden truncate text-sm font-semibold sm:block">{t('examSubject')}</span>
+          <span className="hidden truncate text-sm font-semibold sm:block">
+            {currentRange ? subjectDisplayName(currentRange.block) : ''}
+          </span>
           <span className="text-sm text-muted-foreground tabular-nums whitespace-nowrap">
             {idx + 1} / {total}
           </span>
@@ -269,22 +366,32 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
         {/* Question column */}
         <div className="flex-1 min-w-0">
           {/* Mobile navigator pills */}
-          <div className="flex flex-wrap gap-1.5 px-4 pt-4 pb-2 lg:hidden">
-            {questions.map((q, i) => {
-              const f = flags[q.id] ?? 'none';
-              return (
-                <button key={q.id} onClick={() => setIdx(i)}
-                  aria-label={t('goToQuestion', { number: i + 1 })}
-                  aria-current={i === idx ? 'true' : undefined}
-                  className={cn(
-                  'h-8 w-8 rounded-lg text-xs font-medium transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
-                  i === idx && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
-                  f === 'none' && 'bg-muted text-muted-foreground hover:bg-muted/70',
-                  f === 'answered' && 'bg-primary/15 text-primary',
-                  f === 'flagged' && 'bg-warning/20 text-warning'
-                )}>{i + 1}</button>
-              );
-            })}
+          <div className="px-4 pt-4 pb-2 lg:hidden">
+            {blockRanges.map(({ block, start }) => (
+              <div key={block.subjectSlug} className="mb-2">
+                <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {subjectDisplayName(block)} · {start + 1}–{start + block.questions.length}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {block.questions.map((q, qi) => {
+                    const i = start + qi;
+                    const f = flags[q.id] ?? 'none';
+                    return (
+                      <button key={q.id} onClick={() => setIdx(i)}
+                        aria-label={t('goToQuestion', { number: i + 1 })}
+                        aria-current={i === idx ? 'true' : undefined}
+                        className={cn(
+                        'h-8 w-8 rounded-lg text-xs font-medium transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
+                        i === idx && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
+                        f === 'none' && 'bg-muted text-muted-foreground hover:bg-muted/70',
+                        f === 'answered' && 'bg-primary/15 text-primary',
+                        f === 'flagged' && 'bg-warning/20 text-warning'
+                      )}>{i + 1}</button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Question content */}
@@ -421,23 +528,31 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
           <div className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t('navigatorTitle')}
           </div>
-          <div className="grid grid-cols-5 gap-1.5 mb-5">
-            {questions.map((q, i) => {
-              const f = flags[q.id] ?? 'none';
-              return (
-                <button key={q.id} onClick={() => setIdx(i)}
-                  aria-label={t('goToQuestion', { number: i + 1 })}
-                  aria-current={i === idx ? 'true' : undefined}
-                  className={cn(
-                  'h-9 w-full rounded-lg text-xs font-medium transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
-                  i === idx && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
-                  f === 'none' && 'bg-muted/60 text-muted-foreground hover:bg-muted',
-                  f === 'answered' && 'bg-primary/15 text-primary',
-                  f === 'flagged' && 'bg-warning/20 text-warning'
-                )}>{i + 1}</button>
-              );
-            })}
-          </div>
+          {blockRanges.map(({ block, start }) => (
+            <div key={block.subjectSlug} className="mb-4">
+              <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                {subjectDisplayName(block)} · {start + 1}–{start + block.questions.length}
+              </div>
+              <div className="grid grid-cols-5 gap-1.5">
+                {block.questions.map((q, qi) => {
+                  const i = start + qi;
+                  const f = flags[q.id] ?? 'none';
+                  return (
+                    <button key={q.id} onClick={() => setIdx(i)}
+                      aria-label={t('goToQuestion', { number: i + 1 })}
+                      aria-current={i === idx ? 'true' : undefined}
+                      className={cn(
+                      'h-9 w-full rounded-lg text-xs font-medium transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
+                      i === idx && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
+                      f === 'none' && 'bg-muted/60 text-muted-foreground hover:bg-muted',
+                      f === 'answered' && 'bg-primary/15 text-primary',
+                      f === 'flagged' && 'bg-warning/20 text-warning'
+                    )}>{i + 1}</button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
           {/* Legend */}
           <div className="space-y-2 text-xs text-muted-foreground border-t pt-4 mt-auto">
             <div className="flex items-center gap-2"><span className="h-3 w-3 rounded bg-muted" />{t('legendUnanswered')}</div>
@@ -477,7 +592,6 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
 
 type ResultProps = {
   questions: Question[];
-  contexts: Map<string, { id: string; title: string | null; content: ContextContent }>;
   topics: MockExamTopic[];
   answers: Record<string, AnswerState>;
   locale: string;
