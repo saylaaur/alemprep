@@ -9,7 +9,7 @@ import { Check, X, Minus, Flag, Clock, ChevronLeft, ChevronRight, Trophy, AlertC
 import { Calculator } from '@/components/practice/Calculator';
 import type { Question, Explanation, Locale, QuestionType } from '@/types/db';
 import { startPairExam, finishExamSession, type PairExamBlock } from '@/lib/supabase/practice-actions';
-import type { ExamAvailability, ExamContext, MockExamTopic } from '@/lib/supabase/queries';
+import type { ExamAvailability, ExamContext } from '@/lib/supabase/queries';
 import {
   EXAM_PAIR_DURATION_S,
   EXAM_PAIR_MAX_SCORE,
@@ -323,7 +323,7 @@ export function MockExamView({ availability, locale }: Props) {
 
   // ── RESULT ────────────────────────────────────────────────────────────────
   if (phase === 'result') {
-    return <ResultScreen questions={questions} topics={blocks.flatMap((b) => b.topics)} answers={answers} locale={locale} elapsedS={elapsedS} t={t} />;
+    return <ResultScreen blocks={blocks} answers={answers} locale={locale} elapsedS={elapsedS} t={t} />;
   }
 
   // ── EXAM ──────────────────────────────────────────────────────────────────
@@ -613,58 +613,60 @@ export function MockExamView({ availability, locale }: Props) {
 
 // ── Result Screen ──────────────────────────────────────────────────────────
 
+type QuestionResult = {
+  q: Question;
+  answer: AnswerState;
+  points: number;
+  isCorrect: boolean;
+};
+
+type BlockResult = {
+  block: PairExamBlock;
+  name: string;
+  results: QuestionResult[];
+  correct: number;
+  earned: number;
+  max: number;
+};
+
 type ResultProps = {
-  questions: Question[];
-  topics: MockExamTopic[];
+  blocks: PairExamBlock[];
   answers: Record<string, AnswerState>;
   locale: string;
   elapsedS: number;
   t: ReturnType<typeof useTranslations<'exam'>>;
 };
 
-function ResultScreen({ questions, topics, answers, locale, elapsedS, t }: ResultProps) {
+function ResultScreen({ blocks, answers, locale, elapsedS, t }: ResultProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const results = questions.map((q) => {
-    const answer = answers[q.id] ?? null;
-    const points = scoreAnswer(q.type, q.body, answer);
-    return { q, answer, points, isCorrect: points === QUESTION_POINTS[q.type] };
+  const blockResults: BlockResult[] = blocks.map((block) => {
+    const results = block.questions.map((q) => {
+      const answer = answers[q.id] ?? null;
+      const points = scoreAnswer(q.type, q.body, answer);
+      return { q, answer, points, isCorrect: points === QUESTION_POINTS[q.type] };
+    });
+    return {
+      block,
+      name: locale === 'kk' ? block.name_kk : block.name_ru,
+      results,
+      correct: results.filter((r) => r.isCorrect).length,
+      earned: results.reduce((s, r) => s + r.points, 0),
+      max: block.questions.reduce((s, q) => s + QUESTION_POINTS[q.type], 0),
+    };
   });
 
-  const correctCount = results.filter((r) => r.isCorrect).length;
-  const earnedScore = results.reduce((s, r) => s + r.points, 0);
-  const maxScore = questions.reduce((s, q) => s + QUESTION_POINTS[q.type], 0);
-
-  const typeStats = EXAM_BLUEPRINT.map((part) => {
-    const ofType = results.filter((r) => r.q.type === part.type);
-    const correct = ofType.filter((r) => r.isCorrect).length;
-    return {
-      type: part.type,
-      total: ofType.length,
-      correct,
-      earnedPts: ofType.reduce((s, r) => s + r.points, 0),
-      maxPts: ofType.length * part.points,
-    };
-  }).filter((s) => s.total > 0);
-
-  const topicMap = new Map(topics.map((t) => [t.id, t]));
-  const topicStats: Record<string, { name: string; total: number; correct: number }> = {};
-  for (const { q, isCorrect } of results) {
-    if (!q.topic_id) continue;
-    const topic = topicMap.get(q.topic_id);
-    if (!topic) continue;
-    const name = locale === 'kk' ? topic.name_kk : topic.name_ru;
-    if (!topicStats[q.topic_id]) topicStats[q.topic_id] = { name, total: 0, correct: 0 };
-    topicStats[q.topic_id].total++;
-    if (isCorrect) topicStats[q.topic_id].correct++;
-  }
-
-  const skipped = results.filter((r) => isAnswerEmpty(r.answer)).length;
-  const wrong = questions.length - correctCount - skipped;
+  const allResults = blockResults.flatMap((b) => b.results);
+  const totalQuestions = allResults.length;
+  const correctCount = blockResults.reduce((s, b) => s + b.correct, 0);
+  const earnedScore = blockResults.reduce((s, b) => s + b.earned, 0);
+  const maxScore = blockResults.reduce((s, b) => s + b.max, 0);
+  const skipped = allResults.filter((r) => isAnswerEmpty(r.answer)).length;
+  const wrong = totalQuestions - correctCount - skipped;
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:px-6">
-      {/* Summary card */}
+      {/* Summary card: суммарный балл пары */}
       <div className="rounded-2xl border bg-card p-6 text-center">
         <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-primary/10">
           <Trophy className="h-7 w-7 text-primary" />
@@ -672,7 +674,18 @@ function ResultScreen({ questions, topics, answers, locale, elapsedS, t }: Resul
         <h1 className="text-2xl font-semibold">{t('resultTitle')}</h1>
         <div className="mt-4 text-5xl font-semibold tabular-nums">{earnedScore}</div>
         <p className="mt-2 text-muted-foreground">{t('scorePoints', { score: earnedScore, max: maxScore })}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{t('score', { correct: correctCount, total: questions.length })}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t('score', { correct: correctCount, total: totalQuestions })}</p>
+
+        {/* Балл по каждому предмету */}
+        <div className="mt-5 grid grid-cols-2 divide-x divide-border border-t pt-5">
+          {blockResults.map((b) => (
+            <div key={b.block.subjectSlug}>
+              <div className="text-2xl font-semibold tabular-nums">{b.earned}<span className="text-sm font-normal text-muted-foreground"> / {b.max}</span></div>
+              <div className="mt-1 text-xs text-muted-foreground">{b.name}</div>
+            </div>
+          ))}
+        </div>
+
         <div className="mt-5 grid grid-cols-4 divide-x divide-border border-t pt-5">
           <div><div className="text-2xl font-semibold text-success">{correctCount}</div><div className="mt-1 text-xs text-muted-foreground">{t('correctLabel')}</div></div>
           <div><div className="text-2xl font-semibold text-destructive">{wrong}</div><div className="mt-1 text-xs text-muted-foreground">{t('wrongLabel')}</div></div>
@@ -681,93 +694,133 @@ function ResultScreen({ questions, topics, answers, locale, elapsedS, t }: Resul
         </div>
       </div>
 
-      {/* Breakdown by question type */}
-      {typeStats.length > 0 && (
-        <section>
-          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">{t('byType')}</h2>
-          <div className="rounded-xl border bg-card divide-y divide-border">
-            {typeStats.map((s) => {
-              const p = s.maxPts > 0 ? Math.round((s.earnedPts / s.maxPts) * 100) : 0;
-              return (
-                <div key={s.type} className="flex items-center gap-4 px-5 py-3.5">
-                  <span className="flex-1 truncate text-sm">{t(PART_TITLE_KEY[s.type])}</span>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="tabular-nums text-muted-foreground">{s.correct}/{s.total}</span>
-                    <div className="w-20 overflow-hidden rounded-full bg-muted h-1.5">
-                      <div className={cn('h-full rounded-full', p >= 70 ? 'bg-success' : p >= 40 ? 'bg-warning' : 'bg-destructive')} style={{ width: `${p}%` }} />
-                    </div>
-                    <span className="w-14 text-right tabular-nums text-xs font-medium text-muted-foreground">{t('pointsOf', { earned: s.earnedPts, max: s.maxPts })}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      {/* Секции по предметам: типы + темы внутри блока */}
+      {blockResults.map((b) => {
+        const typeStats = EXAM_BLUEPRINT.map((part) => {
+          const ofType = b.results.filter((r) => r.q.type === part.type);
+          return {
+            type: part.type,
+            total: ofType.length,
+            correct: ofType.filter((r) => r.isCorrect).length,
+            earnedPts: ofType.reduce((s, r) => s + r.points, 0),
+            maxPts: ofType.length * part.points,
+          };
+        }).filter((s) => s.total > 0);
 
-      {/* Topic breakdown */}
-      {Object.keys(topicStats).length > 0 && (
-        <section>
-          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">{t('topicsBreakdown')}</h2>
-          <div className="rounded-xl border bg-card divide-y divide-border">
-            {Object.values(topicStats)
-              .sort((a, b) => a.correct / a.total - b.correct / b.total)
-              .map((s) => {
-                const p = Math.round((s.correct / s.total) * 100);
+        const topicMap = new Map(b.block.topics.map((topic) => [topic.id, topic]));
+        const topicStats: Record<string, { name: string; total: number; correct: number }> = {};
+        for (const { q, isCorrect } of b.results) {
+          if (!q.topic_id) continue;
+          const topic = topicMap.get(q.topic_id);
+          if (!topic) continue;
+          const name = locale === 'kk' ? topic.name_kk : topic.name_ru;
+          if (!topicStats[q.topic_id]) topicStats[q.topic_id] = { name, total: 0, correct: 0 };
+          topicStats[q.topic_id].total++;
+          if (isCorrect) topicStats[q.topic_id].correct++;
+        }
+
+        if (b.results.length === 0) return null;
+        return (
+          <section key={b.block.subjectSlug}>
+            <h2 className="mb-3 flex items-baseline justify-between gap-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              <span>{b.name}</span>
+              <span className="tabular-nums normal-case">{t('pointsOf', { earned: b.earned, max: b.max })} · {b.correct}/{b.results.length}</span>
+            </h2>
+            <div className="rounded-xl border bg-card divide-y divide-border">
+              {typeStats.map((s) => {
+                const p = s.maxPts > 0 ? Math.round((s.earnedPts / s.maxPts) * 100) : 0;
                 return (
-                  <div key={s.name} className="flex items-center gap-4 px-5 py-3.5">
-                    <span className="flex-1 truncate text-sm">{s.name}</span>
+                  <div key={s.type} className="flex items-center gap-4 px-5 py-3.5">
+                    <span className="flex-1 truncate text-sm">{t(PART_TITLE_KEY[s.type])}</span>
                     <div className="flex items-center gap-2 text-sm">
                       <span className="tabular-nums text-muted-foreground">{s.correct}/{s.total}</span>
                       <div className="w-20 overflow-hidden rounded-full bg-muted h-1.5">
                         <div className={cn('h-full rounded-full', p >= 70 ? 'bg-success' : p >= 40 ? 'bg-warning' : 'bg-destructive')} style={{ width: `${p}%` }} />
                       </div>
-                      <span className={cn('w-8 text-right tabular-nums text-xs font-medium', p >= 70 ? 'text-success' : p >= 40 ? 'text-warning' : 'text-destructive')}>{p}%</span>
+                      <span className="w-14 text-right tabular-nums text-xs font-medium text-muted-foreground">{t('pointsOf', { earned: s.earnedPts, max: s.maxPts })}</span>
                     </div>
                   </div>
                 );
               })}
-          </div>
-        </section>
-      )}
+            </div>
 
-      {/* Question list */}
+            {Object.keys(topicStats).length > 0 && (
+              <>
+                <h3 className="mb-2 mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t('topicsBreakdown')}</h3>
+                <div className="rounded-xl border bg-card divide-y divide-border">
+                  {Object.values(topicStats)
+                    .sort((a, bb) => a.correct / a.total - bb.correct / bb.total)
+                    .map((s) => {
+                      const p = Math.round((s.correct / s.total) * 100);
+                      return (
+                        <div key={s.name} className="flex items-center gap-4 px-5 py-3.5">
+                          <span className="flex-1 truncate text-sm">{s.name}</span>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="tabular-nums text-muted-foreground">{s.correct}/{s.total}</span>
+                            <div className="w-20 overflow-hidden rounded-full bg-muted h-1.5">
+                              <div className={cn('h-full rounded-full', p >= 70 ? 'bg-success' : p >= 40 ? 'bg-warning' : 'bg-destructive')} style={{ width: `${p}%` }} />
+                            </div>
+                            <span className={cn('w-8 text-right tabular-nums text-xs font-medium', p >= 70 ? 'text-success' : p >= 40 ? 'text-warning' : 'text-destructive')}>{p}%</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </>
+            )}
+          </section>
+        );
+      })}
+
+      {/* Question list, сгруппированный по блокам */}
       <section>
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">{t('allQuestions')}</h2>
-        <div className="space-y-2">
-          {results.map(({ q, answer, points, isCorrect }, i) => {
-            const isOpen = expandedId === q.id;
-            const stem = (q.body as { stem: string }).stem;
-            const exp = q.explanation as Explanation | null;
-            const isPartial = !isCorrect && points > 0;
-            const isSkipped = isAnswerEmpty(answer);
+        <div className="space-y-5">
+          {blockResults.map((b, bi) => {
+            const offset = blockResults.slice(0, bi).reduce((s, x) => s + x.results.length, 0);
+            if (b.results.length === 0) return null;
             return (
-              <div key={q.id} className="rounded-xl border bg-card">
-                <button className="flex w-full items-start gap-3 p-4 text-left focus-visible:ring-4 focus-visible:ring-ring/25" aria-expanded={isOpen} onClick={() => setExpandedId(isOpen ? null : q.id)}>
-                  <span className={cn('mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-                    isCorrect ? 'bg-success/15 text-success'
-                      : isPartial ? 'bg-warning/15 text-warning'
-                      : !isSkipped ? 'bg-destructive/15 text-destructive'
-                      : 'bg-muted text-muted-foreground')}>
-                    {isCorrect ? <Check className="h-3.5 w-3.5" /> : isPartial ? <Minus className="h-3.5 w-3.5" /> : !isSkipped ? <X className="h-3.5 w-3.5" /> : i + 1}
-                  </span>
-                  <span className="flex-1 text-sm leading-relaxed"><MathText text={stem} /></span>
-                  <span className={cn('mt-1 shrink-0 text-xs font-medium tabular-nums',
-                    isCorrect ? 'text-success' : isPartial ? 'text-warning' : 'text-muted-foreground')}>
-                    {t('pointsOf', { earned: points, max: QUESTION_POINTS[q.type] })}
-                  </span>
-                </button>
-                {isOpen && (
-                  <div className="border-t px-4 pb-4 pt-3 space-y-3">
-                    <CorrectAnswerBlock q={q} answer={answer} isCorrect={isCorrect} t={t} />
-                    {exp && exp.blocks.length > 0 && (
-                      <div className="rounded-lg bg-muted/30 px-4 py-3 text-sm space-y-1">
-                        <div className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('explanationLabel')}</div>
-                        {exp.blocks.map((b, bi) => <MathText key={bi} text={b.value} />)}
+              <div key={b.block.subjectSlug}>
+                <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{b.name}</h3>
+                <div className="space-y-2">
+                  {b.results.map(({ q, answer, points, isCorrect }, qi) => {
+                    const i = offset + qi;
+                    const isOpen = expandedId === q.id;
+                    const stem = (q.body as { stem: string }).stem;
+                    const exp = q.explanation as Explanation | null;
+                    const isPartial = !isCorrect && points > 0;
+                    const isSkipped = isAnswerEmpty(answer);
+                    return (
+                      <div key={q.id} className="rounded-xl border bg-card">
+                        <button className="flex w-full items-start gap-3 p-4 text-left focus-visible:ring-4 focus-visible:ring-ring/25" aria-expanded={isOpen} onClick={() => setExpandedId(isOpen ? null : q.id)}>
+                          <span className={cn('mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                            isCorrect ? 'bg-success/15 text-success'
+                              : isPartial ? 'bg-warning/15 text-warning'
+                              : !isSkipped ? 'bg-destructive/15 text-destructive'
+                              : 'bg-muted text-muted-foreground')}>
+                            {isCorrect ? <Check className="h-3.5 w-3.5" /> : isPartial ? <Minus className="h-3.5 w-3.5" /> : !isSkipped ? <X className="h-3.5 w-3.5" /> : i + 1}
+                          </span>
+                          <span className="flex-1 text-sm leading-relaxed"><MathText text={stem} /></span>
+                          <span className={cn('mt-1 shrink-0 text-xs font-medium tabular-nums',
+                            isCorrect ? 'text-success' : isPartial ? 'text-warning' : 'text-muted-foreground')}>
+                            {t('pointsOf', { earned: points, max: QUESTION_POINTS[q.type] })}
+                          </span>
+                        </button>
+                        {isOpen && (
+                          <div className="border-t px-4 pb-4 pt-3 space-y-3">
+                            <CorrectAnswerBlock q={q} answer={answer} isCorrect={isCorrect} t={t} />
+                            {exp && exp.blocks.length > 0 && (
+                              <div className="rounded-lg bg-muted/30 px-4 py-3 text-sm space-y-1">
+                                <div className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('explanationLabel')}</div>
+                                {exp.blocks.map((eb, ebi) => <MathText key={ebi} text={eb.value} />)}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                )}
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
