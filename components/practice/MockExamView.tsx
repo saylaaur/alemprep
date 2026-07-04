@@ -239,8 +239,11 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
             {questions.map((q, i) => {
               const f = flags[q.id] ?? 'none';
               return (
-                <button key={q.id} onClick={() => setIdx(i)} className={cn(
-                  'h-8 w-8 rounded-lg text-xs font-medium transition-colors',
+                <button key={q.id} onClick={() => setIdx(i)}
+                  aria-label={t('goToQuestion', { number: i + 1 })}
+                  aria-current={i === idx ? 'true' : undefined}
+                  className={cn(
+                  'h-8 w-8 rounded-lg text-xs font-medium transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
                   i === idx && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
                   f === 'none' && 'bg-muted text-muted-foreground hover:bg-muted/70',
                   f === 'answered' && 'bg-primary/15 text-primary',
@@ -262,8 +265,9 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
               </span>
               <button
                 onClick={toggleFlag}
+                aria-pressed={currentFlag === 'flagged'}
                 className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                  'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
                   currentFlag === 'flagged'
                     ? 'border-warning/40 bg-warning/10 text-warning'
                     : 'border-border text-muted-foreground hover:border-warning/40 hover:bg-warning/10 hover:text-warning'
@@ -298,8 +302,9 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
                   const selected = answer === opt.id;
                   return (
                     <button key={opt.id} onClick={() => setAnswer(opt.id)}
+                      aria-pressed={selected}
                       className={cn(
-                        'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150',
+                        'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
                         selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
                       )}>
                       <span className={cn(
@@ -320,8 +325,9 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
                       const arr = Array.isArray(answer) ? answer : [];
                       setAnswer(selected ? arr.filter((x) => x !== opt.id) : [...arr, opt.id]);
                     }}
+                      aria-pressed={selected}
                       className={cn(
-                        'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150',
+                        'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
                         selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
                       )}>
                       <span className={cn(
@@ -351,6 +357,7 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
                       return (
                         <select key={item.id} value={val}
                           onChange={(e) => setAnswer({ ...((answer as Record<string, string> | null) ?? {}), [item.id]: e.target.value })}
+                          aria-label={t('matchingSelectFor', { item: item.id })}
                           className="w-full rounded-xl border bg-card px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
                           <option value="">{t('matchingPlaceholder')}</option>
                           {opts.map((o, i) => <option key={i} value={o}>{o}</option>)}
@@ -384,8 +391,11 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
             {questions.map((q, i) => {
               const f = flags[q.id] ?? 'none';
               return (
-                <button key={q.id} onClick={() => setIdx(i)} className={cn(
-                  'h-9 w-full rounded-lg text-xs font-medium transition-colors',
+                <button key={q.id} onClick={() => setIdx(i)}
+                  aria-label={t('goToQuestion', { number: i + 1 })}
+                  aria-current={i === idx ? 'true' : undefined}
+                  className={cn(
+                  'h-9 w-full rounded-lg text-xs font-medium transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
                   i === idx && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
                   f === 'none' && 'bg-muted/60 text-muted-foreground hover:bg-muted',
                   f === 'answered' && 'bg-primary/15 text-primary',
@@ -406,7 +416,7 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
       {/* ── Confirm dialog ──────────────────────────────────────────── */}
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-sm rounded-2xl border bg-card p-6 shadow-lg">
+          <div role="dialog" aria-modal="true" aria-label={t('confirmSubmit')} className="mx-4 w-full max-w-sm rounded-2xl border bg-card p-6 shadow-lg">
             <div className="mb-1 flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-warning" />
               <h2 className="font-semibold">{t('confirmSubmit')}</h2>
@@ -562,7 +572,7 @@ function ResultScreen({ questions, topics, answers, locale, elapsedS, t }: Resul
             const isSkipped = isAnswerEmpty(answer);
             return (
               <div key={q.id} className="rounded-xl border bg-card">
-                <button className="flex w-full items-start gap-3 p-4 text-left" onClick={() => setExpandedId(isOpen ? null : q.id)}>
+                <button className="flex w-full items-start gap-3 p-4 text-left focus-visible:ring-4 focus-visible:ring-ring/25" aria-expanded={isOpen} onClick={() => setExpandedId(isOpen ? null : q.id)}>
                   <span className={cn('mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
                     isCorrect ? 'bg-success/15 text-success'
                       : isPartial ? 'bg-warning/15 text-warning'

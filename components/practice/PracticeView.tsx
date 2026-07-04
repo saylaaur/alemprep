@@ -97,6 +97,9 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
 
   const isLast = idx === total - 1;
   const allDone = stats.answered === total;
+  const optionCount = current
+    ? ((current.body as { options?: { id: string }[] }).options?.length ?? 0)
+    : 0;
 
   // Клавиатурные шорткаты (хук должен быть до раннего return)
   useEffect(() => {
@@ -175,15 +178,18 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <div
-            data-hide-in-focus
-            className="hidden items-center gap-1.5 text-xs text-muted-foreground lg:flex"
-          >
-            <Keyboard className="h-3.5 w-3.5" />
-            <span className="flex items-center gap-1">
-              <kbd>1</kbd>–<kbd>4</kbd> {t('shortcutSelect')} · <kbd>↵</kbd> {t('shortcutVerify')}
-            </span>
-          </div>
+          {current.type !== 'matching' ? (
+            <div
+              data-hide-in-focus
+              className="hidden items-center gap-1.5 text-xs text-muted-foreground lg:flex"
+            >
+              <Keyboard className="h-3.5 w-3.5" />
+              <span className="flex items-center gap-1">
+                <kbd>1</kbd>–<kbd>{optionCount}</kbd> {t('shortcutSelect')} · <kbd>↵</kbd>{' '}
+                {t('shortcutVerify')}
+              </span>
+            </div>
+          ) : null}
           <div data-hide-in-focus className="text-sm text-muted-foreground">
             <span className="font-medium text-success">{stats.correct}</span>
             <span className="text-muted-foreground/60">/{stats.answered}</span>
@@ -192,8 +198,9 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
             type="button"
             onClick={() => setFocus((f) => !f)}
             aria-label={focus ? t('exitFocusMode') : t('focusMode')}
+            aria-pressed={focus}
             title={focus ? t('exitFocusMode') : t('focusMode')}
-            className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"
           >
             {focus ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </button>
@@ -217,8 +224,10 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
             <button
               key={q.id}
               onClick={() => setIdx(i)}
+              aria-label={t('question', { current: i + 1, total })}
+              aria-current={i === idx ? 'true' : undefined}
               className={cn(
-                'h-8 w-8 rounded-lg text-xs font-medium transition-all duration-200 ease-smooth',
+                'h-8 w-8 rounded-lg text-xs font-medium transition-all duration-200 ease-smooth focus-visible:ring-4 focus-visible:ring-ring/25',
                 i === idx && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
                 !wasRevealed && i !== idx && 'bg-muted text-muted-foreground hover:bg-muted/70',
                 !wasRevealed && i === idx && 'bg-muted text-foreground',
@@ -386,8 +395,9 @@ function SingleAnswer({
             key={opt.id}
             onClick={() => onChange(opt.id)}
             disabled={isRevealed}
+            aria-pressed={isSelected}
             className={cn(
-              'group flex w-full items-center gap-3.5 rounded-xl border p-4 text-left transition-all duration-200 ease-smooth',
+              'group flex w-full items-center gap-3.5 rounded-xl border p-4 text-left transition-all duration-200 ease-smooth focus-visible:ring-4 focus-visible:ring-ring/25',
               !isRevealed && 'cursor-pointer hover:border-primary/50 hover:bg-accent/40 active:scale-[0.995]',
               !isRevealed && isSelected && 'border-primary bg-primary/5 ring-1 ring-primary/30',
               !isRevealed && !isSelected && 'border-border',
@@ -453,8 +463,9 @@ function MultiAnswer({
             key={opt.id}
             onClick={() => toggle(opt.id)}
             disabled={isRevealed}
+            aria-pressed={isSelected}
             className={cn(
-              'group flex w-full items-center gap-3.5 rounded-xl border p-4 text-left transition-all duration-200 ease-smooth',
+              'group flex w-full items-center gap-3.5 rounded-xl border p-4 text-left transition-all duration-200 ease-smooth focus-visible:ring-4 focus-visible:ring-ring/25',
               !isRevealed && 'cursor-pointer hover:border-primary/50 hover:bg-accent/40 active:scale-[0.995]',
               !isRevealed && isSelected && 'border-primary bg-primary/5 ring-1 ring-primary/30',
               !isRevealed && !isSelected && 'border-border',
@@ -534,6 +545,7 @@ function MatchingAnswer({
               value={selected ?? ''}
               onChange={(e) => onChange({ ...answer, [item.id]: e.target.value })}
               disabled={isRevealed}
+              aria-label={t('matchingSelectFor', { item: item.id })}
               className="rounded-lg border bg-background px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25 disabled:opacity-60"
             >
               <option value="" disabled>

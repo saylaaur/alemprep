@@ -53,6 +53,16 @@ export function MobileNav({
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
+  // Escape закрывает drawer
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [open]);
+
   const displayName = profile?.full_name?.trim() || email || '';
   const initial = (displayName[0] ?? '?').toUpperCase();
 
@@ -71,7 +81,7 @@ export function MobileNav({
           aria-label={tNav('openMenu')}
           aria-expanded={open}
           onClick={() => setOpen(true)}
-          className="grid h-11 w-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="grid h-11 w-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -92,6 +102,8 @@ export function MobileNav({
           'fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r bg-card transition-transform duration-300 ease-smooth md:hidden',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
+        role="dialog"
+        aria-modal="true"
         aria-label={tNav('menu')}
       >
         {/* Drawer header */}
@@ -106,7 +118,7 @@ export function MobileNav({
             type="button"
             aria-label={tNav('closeMenu')}
             onClick={() => setOpen(false)}
-            className="grid h-11 w-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="grid h-11 w-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"
           >
             <X className="h-5 w-5" />
           </button>
@@ -122,7 +134,7 @@ export function MobileNav({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200',
+                  'group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 focus-visible:ring-4 focus-visible:ring-ring/25',
                   isActive
                     ? 'bg-primary/10 text-foreground'
                     : 'text-muted-foreground hover:bg-accent hover:text-foreground'
@@ -167,7 +179,7 @@ export function MobileNav({
           <form action={signOut}>
             <button
               type="submit"
-              className="flex w-full min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-accent hover:text-foreground"
+              className="flex w-full min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"
             >
               <LogOut className="h-[18px] w-[18px]" />
               {tNav('signOut')}

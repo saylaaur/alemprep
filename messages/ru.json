@@ -106,6 +106,7 @@
     "allDone": "Всё решено · {correct} из {total}",
     "multiHint": "Можно выбрать несколько вариантов",
     "matchingPlaceholder": "Выбери…",
+    "matchingSelectFor": "Ответ для пункта {item}",
     "correctAnswer": "верно: {answer}",
     "shortcutSelect": "выбор",
     "shortcutVerify": "проверить"
@@ -167,6 +168,8 @@
     "correctAnswer": "Правильный ответ",
     "checkManually": "Проверь сопоставление по правильным ответам",
     "matchingPlaceholder": "Выбери…",
+    "matchingSelectFor": "Ответ для пункта {item}",
+    "goToQuestion": "Вопрос {number}",
     "noQuestionsDesc": "Реши несколько задач по темам — они появятся в пробнике",
     "examSubject": "Пробный ЕНТ · Математика",
     "answeredShort": "отвечено",

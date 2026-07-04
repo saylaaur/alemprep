@@ -106,6 +106,7 @@
     "allDone": "Бәрі шешілді · {correct} / {total}",
     "multiHint": "Бірнеше жауап таңдауға болады",
     "matchingPlaceholder": "Таңда…",
+    "matchingSelectFor": "{item} тармағының жауабы",
     "correctAnswer": "дұрысы: {answer}",
     "shortcutSelect": "таңдау",
     "shortcutVerify": "тексеру"
@@ -167,6 +168,8 @@
     "correctAnswer": "Дұрыс жауап",
     "checkManually": "Дұрыс жауаптар бойынша сәйкестікті тексер",
     "matchingPlaceholder": "Таңда…",
+    "matchingSelectFor": "{item} тармағының жауабы",
+    "goToQuestion": "{number}-сұрақ",
     "noQuestionsDesc": "Тақырыптар бойынша бірнеше есеп шеш — олар сынақта пайда болады",
     "examSubject": "ҰБТ сынағы · Математика",
     "answeredShort": "жауапталды",

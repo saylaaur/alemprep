@@ -64,7 +64,7 @@ export function Sidebar({
               key={item.href}
               href={item.href}
               className={cn(
-                'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+                'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 focus-visible:ring-4 focus-visible:ring-ring/25',
                 isActive
                   ? 'bg-primary/10 text-foreground'
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground'
@@ -114,7 +114,7 @@ export function Sidebar({
         <form action={signOut}>
           <button
             type="submit"
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-accent hover:text-foreground"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"
           >
             <LogOut className="h-[18px] w-[18px]" />
             {tNav('signOut')}
