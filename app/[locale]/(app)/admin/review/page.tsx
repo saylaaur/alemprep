@@ -29,9 +29,7 @@ export default async function AdminReviewPage({
   const labels = {
     publish: t('publish'),
     delete: t('delete'),
-    answer: t('answer'),
     explanation: t('explanation'),
-    topic: t('topic'),
     difficulty: t('difficulty'),
     source: t('source'),
   };

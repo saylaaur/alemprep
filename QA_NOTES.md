@@ -73,3 +73,12 @@
 - aria: `aria-pressed` (выбор вариантов, флаг, фокус-режим), `aria-current` + `aria-label` на кнопках навигаторов, `aria-expanded` на аккордеоне результата, `aria-label` на селектах matching (ключи `matchingSelectFor` ru+kk), `role="dialog" aria-modal` на подтверждении завершения пробника и drawer.
 - MobileNav: Escape закрывает drawer.
 - Клавиатура по типам вопросов: 1–9 выбирают вариант в single/multi (обе вьюхи), стрелки ←/→ листают вопросы везде, Enter в тренажёре проверяет/идёт дальше; для matching цифры намеренно не активны (выбор через Tab + стрелки в селектах), стрелки в фокусе селекта не перехватываются.
+
+## 6. Мёртвый код, дубли, console.log
+
+**Найдено и убрано:**
+- `console.log` в коде приложения — не найдено (в `scripts/` логи легитимны, CLI-пайплайн).
+- `lib/supabase/queries.ts`: `getCurrentUser()` и `getSubjects()` нигде не использовались — удалены.
+- Зависимость `zustand` не импортируется нигде — удалена из package.json.
+- `ReviewCard`: поля `labels.answer` / `labels.topic` пробрасывались, но не рендерились — убраны вместе с неиспользуемыми ключами `admin.answer` / `admin.topic` (ru+kk, паритет сохранён).
+- Дубль массива навигации в `Sidebar.tsx` и `MobileNav.tsx` (одинаковые `NavItem`/`items`) — вынесен в общий `components/layout/nav-items.ts`.

@@ -10,9 +10,7 @@ import { CheckCircle2, Trash2, BookOpen, Tag, Gauge } from 'lucide-react';
 interface Labels {
   publish: string;
   delete: string;
-  answer: string;
   explanation: string;
-  topic: string;
   difficulty: string;
   source: string;
 }

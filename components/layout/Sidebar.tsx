@@ -6,28 +6,8 @@ import { cn } from '@/lib/utils';
 import { signOut } from '@/lib/supabase/auth-actions';
 import { ThemeToggle } from '@/components/theme-toggle';
 import type { Profile } from '@/types/db';
-import {
-  LayoutDashboard,
-  BookOpen,
-  Timer,
-  LineChart,
-  GraduationCap,
-  LogOut,
-  type LucideIcon,
-} from 'lucide-react';
-
-type NavItem = {
-  href: '/dashboard' | '/subjects' | '/full-practice' | '/progress';
-  labelKey: 'dashboard' | 'subjects' | 'fullPractice' | 'progress';
-  icon: LucideIcon;
-};
-
-const items: NavItem[] = [
-  { href: '/dashboard', labelKey: 'dashboard', icon: LayoutDashboard },
-  { href: '/subjects', labelKey: 'subjects', icon: BookOpen },
-  { href: '/full-practice', labelKey: 'fullPractice', icon: Timer },
-  { href: '/progress', labelKey: 'progress', icon: LineChart },
-];
+import { navItems } from './nav-items';
+import { GraduationCap, LogOut } from 'lucide-react';
 
 export function Sidebar({
   profile,
@@ -55,7 +35,7 @@ export function Sidebar({
       </div>
 
       <nav className="flex-1 space-y-1 p-3">
-        {items.map((item) => {
+        {navItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;

@@ -81,12 +81,6 @@ export async function getUnpublishedQuestions(): Promise<UnpublishedQuestion[]> 
   });
 }
 
-export async function getCurrentUser() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-}
-
 export async function getProfile(): Promise<Profile | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -101,15 +95,6 @@ export async function getProfile(): Promise<Profile | null> {
   } catch {
     return null;
   }
-}
-
-export async function getSubjects(): Promise<Subject[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('subjects')
-    .select('*')
-    .order('sort_order');
-  return (data as Subject[] | null) ?? [];
 }
 
 export async function getSubjectsWithCounts() {
