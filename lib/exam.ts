@@ -61,6 +61,8 @@ export function scoreAnswer(type: QuestionType, body: QuestionBody, answer: unkn
     if (!('correct' in body) || typeof body.correct !== 'object' || Array.isArray(body.correct)) return 0;
     if (typeof answer !== 'object' || Array.isArray(answer)) return 0;
     const given = answer as Record<string, unknown>;
+    // ни одной заполненной пары — это отсутствие ответа, а не «одна ошибка»
+    if (!Object.values(given).some((v) => typeof v === 'string' && v.length > 0)) return 0;
     const pairs = Object.entries(body.correct as Record<string, string>);
     const wrong = pairs.filter(([k, v]) => given[k] !== v).length;
     return wrong === 0 ? 2 : wrong === 1 ? 1 : 0;

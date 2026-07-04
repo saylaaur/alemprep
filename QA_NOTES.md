@@ -30,3 +30,17 @@
 - В `tsconfig.scripts.json` добавлен собственный `exclude: ["node_modules"]` — теперь в scope все 7 файлов из `scripts/`.
 - `npm run typecheck` расширен: `tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit`.
 - Скрипты уже типизировались чисто — ошибок после включения не выявлено.
+
+## 3. Vitest + юнит-тесты критической логики
+
+**Сделано (инфраструктура):**
+- Vitest 4 (`npm i -D vitest --legacy-peer-deps`), `vitest.config.ts` с алиасом `@`, скрипт `npm test`.
+- Извлечена чистая логика из компонентов/actions, чтобы её можно было тестировать:
+  - `lib/practice.ts` — `checkAnswer` / `isAnswerComplete` (были приватными в `PracticeView.tsx`);
+  - `lib/streak.ts` — `advanceStreak` / `localDateStr` / `previousDateStr` (стрик был инлайном в `recordAttempt`).
+- Тесты: `lib/exam.test.ts` (scoreAnswer — 24 кейса), `lib/streak.test.ts`, `lib/practice.test.ts`. Итого 44 теста.
+
+**Найденные и починенные баги:**
+1. **`scoreAnswer` (matching): пустой ответ давал частичный балл.** `{}` или `{a: ''}` при вопросе с одной парой считались «одной ошибкой» → 1 балл вместо 0. Теперь ответ без единой заполненной пары — это пропуск (0), как и пустой выбор в multi. Поймано тестом до фикса.
+2. **Стрик считался по UTC-дате, дневная цель — по локальной полуночи.** `recordAttempt` брал `toISOString().slice(0,10)` (UTC), а `getTodayAttemptsCount` — локальную полночь. На сервере в TZ ≠ UTC активность около полуночи попадала в разные «дни». Теперь оба на локальной дате (`localDateStr`), вычисление «вчера» — TZ-независимое.
+3. Попутно: `checkAnswer('multi', не-массив)` раньше падал бы на `.length` у строки — извлечённая версия строго проверяет типы (было маскировано кастом `as string[]`).

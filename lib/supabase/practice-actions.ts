@@ -3,6 +3,7 @@
 import { createClient } from './server';
 import { revalidatePath } from 'next/cache';
 import { QUESTION_POINTS, scoreAnswer } from '@/lib/exam';
+import { advanceStreak, localDateStr } from '@/lib/streak';
 import type { QuestionType, QuestionBody } from '@/types/db';
 
 type RecordInput = {
@@ -29,8 +30,8 @@ export async function recordAttempt(input: RecordInput) {
     return { ok: false as const, error: insertError.message };
   }
 
-  // 2. Обновляем стрик и last_active_date
-  const today = new Date().toISOString().slice(0, 10);
+  // 2. Обновляем стрик и last_active_date (локальная дата — тот же базис,
+  // что у getTodayAttemptsCount; toISOString здесь давал бы UTC-сдвиг)
   const { data: profile } = await supabase
     .from('profiles')
     .select('current_streak, last_active_date')
@@ -38,23 +39,15 @@ export async function recordAttempt(input: RecordInput) {
     .maybeSingle();
 
   if (profile) {
-    const last = profile.last_active_date as string | null;
-    let newStreak = profile.current_streak as number;
-
-    if (last !== today) {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().slice(0, 10);
-
-      if (last === yesterdayStr) {
-        newStreak += 1;
-      } else {
-        newStreak = 1;
-      }
-
+    const next = advanceStreak({
+      lastActiveDate: profile.last_active_date as string | null,
+      currentStreak: (profile.current_streak as number | null) ?? 0,
+      today: localDateStr(),
+    });
+    if (next) {
       await supabase
         .from('profiles')
-        .update({ current_streak: newStreak, last_active_date: today })
+        .update({ current_streak: next.streak, last_active_date: next.lastActiveDate })
         .eq('id', user.id);
     }
   }

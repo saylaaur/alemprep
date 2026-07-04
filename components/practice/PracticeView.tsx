@@ -15,45 +15,15 @@ import {
   Minimize2,
   Trophy,
 } from 'lucide-react';
-import type { Question, QuestionBody, Explanation, ContextContent } from '@/types/db';
+import type { Question, Explanation, ContextContent } from '@/types/db';
 import { recordAttempt } from '@/lib/supabase/practice-actions';
+import { checkAnswer, isAnswerComplete, type AnswerState } from '@/lib/practice';
 
 type Props = {
   questions: Question[];
   contexts: Map<string, { id: string; title: string | null; content: ContextContent }>;
   topicName: string;
 };
-
-type AnswerState = string | string[] | Record<string, string> | null;
-
-function isAnswerComplete(type: Question['type'], answer: AnswerState, body: QuestionBody): boolean {
-  if (answer === null) return false;
-  if (type === 'single') return typeof answer === 'string' && answer.length > 0;
-  if (type === 'multi') return Array.isArray(answer) && answer.length > 0;
-  if (type === 'matching' && 'left' in body) {
-    const obj = answer as Record<string, string>;
-    return body.left.every((l) => obj[l.id]);
-  }
-  return false;
-}
-
-function checkAnswer(type: Question['type'], answer: AnswerState, body: QuestionBody): boolean {
-  if (answer === null) return false;
-  if (type === 'single' && 'correct' in body && typeof body.correct === 'string') {
-    return answer === body.correct;
-  }
-  if (type === 'multi' && 'correct' in body && Array.isArray(body.correct)) {
-    const a = answer as string[];
-    if (a.length !== body.correct.length) return false;
-    return body.correct.every((c) => a.includes(c));
-  }
-  if (type === 'matching' && 'correct' in body && typeof body.correct === 'object' && !Array.isArray(body.correct)) {
-    const a = answer as Record<string, string>;
-    const c = body.correct as Record<string, string>;
-    return Object.keys(c).every((k) => a[k] === c[k]);
-  }
-  return false;
-}
 
 export function PracticeView({ questions, contexts, topicName }: Props) {
   const t = useTranslations('practice');
