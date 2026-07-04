@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-
-const VALID_LOCALES = ['ru', 'kk'];
+import { resolveAuthRedirect } from '@/lib/auth-redirect';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/ru/dashboard';
-
-  const rawLocale = next.split('/')[1];
-  const locale = VALID_LOCALES.includes(rawLocale) ? rawLocale : 'ru';
+  const { next, locale } = resolveAuthRedirect(searchParams.get('next'));
 
   if (code) {
     const supabase = await createClient();
