@@ -72,6 +72,18 @@ export function MockExamView({ questions, contexts, topics, subjectId, locale, s
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timesUp]);
 
+  // Уход со страницы во время экзамена теряет прогресс — предупреждаем.
+  // Текст диалога браузер показывает свой, кастомный не поддерживается.
+  useEffect(() => {
+    if (phase !== 'exam') return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [phase]);
+
   const startExam = useCallback(async () => {
     // Попытки сохраняются только при живой сессии в БД — без неё пробник
     // не стартуем: до 3 попыток создать сессию, дальше видимая ошибка.
