@@ -14,6 +14,7 @@ import {
   Maximize2,
   Minimize2,
   Trophy,
+  Zap,
 } from 'lucide-react';
 import type { Question, Explanation, ContextContent } from '@/types/db';
 import { recordAttempt } from '@/lib/supabase/practice-actions';
@@ -31,6 +32,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
   const [answers, setAnswers] = useState<Record<string, AnswerState>>({});
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [focus, setFocus] = useState(false);
+  const [xpPop, setXpPop] = useState<{ id: number; amount: number } | null>(null);
   const questionShownAt = useRef<Record<string, number>>({});
   const recordedRef = useRef<Set<string>>(new Set());
 
@@ -76,7 +78,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
 
     setRevealed((prev) => ({ ...prev, [current.id]: true }));
 
-    // Сохраняем попытку в БД (fire-and-forget — не блокируем UI)
+    // Сохраняем попытку в БД и показываем «+N XP» по реально начисленному XP.
     const shownAt = questionShownAt.current[current.id] ?? Date.now();
     const timeSpent = Date.now() - shownAt;
     const correct = checkAnswer(current.type, answer, current.body);
@@ -85,8 +87,19 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
       givenAnswer: answer,
       isCorrect: correct,
       timeSpentMs: timeSpent,
+    }).then((res) => {
+      if (res.ok && res.xpAwarded > 0) {
+        setXpPop({ id: Date.now(), amount: res.xpAwarded });
+      }
     });
   };
+
+  // Микро-празднование «+N XP» гаснет само.
+  useEffect(() => {
+    if (!xpPop) return;
+    const timer = window.setTimeout(() => setXpPop(null), 1200);
+    return () => window.clearTimeout(timer);
+  }, [xpPop]);
 
   const goNext = () => {
     if (idx < total - 1) setIdx(idx + 1);
@@ -173,7 +186,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
       <div className="mb-5 flex items-center justify-between gap-4">
         <div className="min-w-0 text-sm text-muted-foreground">
           <span className="truncate">{topicName}</span> ·{' '}
-          <span className="font-medium text-foreground">
+          <span className="font-mono font-medium tabular-nums text-foreground">
             {idx + 1} / {total}
           </span>
         </div>
@@ -190,8 +203,8 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
               </span>
             </div>
           ) : null}
-          <div data-hide-in-focus className="text-sm text-muted-foreground">
-            <span className="font-medium text-success">{stats.correct}</span>
+          <div data-hide-in-focus className="font-mono text-sm tabular-nums text-muted-foreground">
+            <span className="font-semibold text-success">{stats.correct}</span>
             <span className="text-muted-foreground/60">/{stats.answered}</span>
           </div>
           <button
@@ -311,6 +324,14 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
                 {isCorrect ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
               </span>
               {isCorrect ? t('correct') : t('incorrect')}
+              {isCorrect && xpPop ? (
+                <span
+                  key={xpPop.id}
+                  className="ml-auto inline-flex animate-xp-pop items-center gap-1 rounded-full bg-primary/15 px-2.5 py-1 font-mono text-xs font-bold text-primary"
+                >
+                  <Zap className="h-3 w-3" />+{xpPop.amount} XP
+                </span>
+              ) : null}
             </div>
             {current.explanation ? (
               <div className="animate-slide-up space-y-2 rounded-xl border bg-card p-5 text-sm leading-relaxed text-muted-foreground shadow-xs">

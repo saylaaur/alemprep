@@ -50,6 +50,7 @@ export async function recordAttempt(input: RecordInput) {
     .eq('id', user.id)
     .maybeSingle();
 
+  let xpAwarded = 0;
   if (profile) {
     const next = advanceStreak({
       lastActiveDate: profile.last_active_date as string | null,
@@ -65,6 +66,7 @@ export async function recordAttempt(input: RecordInput) {
     }
     if (input.isCorrect) {
       update.xp = ((profile.xp as number | null) ?? 0) + XP_PER_CORRECT;
+      xpAwarded = XP_PER_CORRECT;
     }
     if (Object.keys(update).length > 0) {
       await supabase.from('profiles').update(update).eq('id', user.id);
@@ -74,10 +76,12 @@ export async function recordAttempt(input: RecordInput) {
   // 3. Достижения (контекст практики — без exam)
   await awardAchievements(supabase, user.id, await buildAchievementSnapshot(supabase, user.id));
 
-  // Дашборд должен пересчитаться при следующем заходе
+  // Дашборд/прогресс должны пересчитать XP, уровень и стрик при следующем заходе
   revalidatePath('/[locale]/(app)/dashboard', 'page');
+  revalidatePath('/[locale]/(app)/progress', 'page');
 
-  return { ok: true as const };
+  // xpAwarded — реально начисленный XP: клиент показывает микро-празднование «+N XP»
+  return { ok: true as const, xpAwarded };
 }
 
 export async function createExamSession(input: {
