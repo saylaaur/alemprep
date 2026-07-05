@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
-import { Inter } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -12,6 +12,12 @@ import '../globals.css';
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
   variable: '--font-sans',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
   display: 'swap',
 });
 
@@ -49,7 +55,11 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning className={inter.variable}>
+    <html
+      lang={locale}
+      suppressHydrationWarning
+      className={cn(inter.variable, jetbrainsMono.variable)}
+    >
       <head>
         <link
           rel="stylesheet"

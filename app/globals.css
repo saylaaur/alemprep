@@ -3,95 +3,110 @@
 @tailwind utilities;
 
 @layer base {
+  /* AlemPrep Emerald — dark is the primary theme; light kept at full parity.
+     Values are HSL triplets (H S% L%), consumed via hsl(var(--token)). */
   :root {
     /* Surfaces */
-    --background: 0 0% 100%;
-    --foreground: 240 10% 9%;
+    --background: 150 20% 99%;
+    --foreground: 160 12% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 9%;
+    --card-foreground: 160 12% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 9%;
+    --popover-foreground: 160 12% 10%;
 
-    /* Brand accent — indigo */
-    --primary: 243 75% 59%;
+    /* Brand accent — emerald */
+    --primary: 158 74% 36%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
+    --secondary: 150 12% 95%;
+    --secondary-foreground: 160 12% 12%;
 
-    --muted: 240 5% 96.5%;
-    --muted-foreground: 240 4% 44%;
+    --muted: 150 12% 95%;
+    --muted-foreground: 155 8% 42%;
 
-    --accent: 240 5% 95.5%;
-    --accent-foreground: 240 6% 10%;
+    --accent: 150 14% 94%;
+    --accent-foreground: 160 12% 12%;
 
     /* Semantic */
-    --success: 152 56% 38%;
+    --success: 158 74% 34%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 48%;
+    --warning: 38 92% 45%;
     --warning-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Gamification accents */
+    --streak: 24 88% 48%;
+    --streak-foreground: 0 0% 100%;
+
+    --badge-gold: 43 82% 46%;
+    --badge-gold-foreground: 0 0% 100%;
+
     /* Lines & rings */
-    --border: 240 6% 90%;
-    --input: 240 6% 88%;
-    --ring: 243 75% 59%;
+    --border: 150 12% 90%;
+    --input: 150 12% 86%;
+    --ring: 158 74% 36%;
 
     --radius: 0.75rem;
 
     /* Layered soft shadows */
-    --shadow-xs: 0 1px 2px 0 hsl(240 10% 10% / 0.04);
-    --shadow-sm: 0 1px 3px 0 hsl(240 10% 10% / 0.06), 0 1px 2px -1px hsl(240 10% 10% / 0.04);
-    --shadow-md: 0 4px 12px -2px hsl(240 10% 10% / 0.08), 0 2px 6px -2px hsl(240 10% 10% / 0.05);
-    --shadow-lg: 0 12px 32px -8px hsl(240 10% 10% / 0.14), 0 4px 12px -4px hsl(240 10% 10% / 0.08);
-    --shadow-primary: 0 6px 20px -6px hsl(var(--primary) / 0.45);
+    --shadow-xs: 0 1px 2px 0 hsl(160 10% 10% / 0.04);
+    --shadow-sm: 0 1px 3px 0 hsl(160 10% 10% / 0.06), 0 1px 2px -1px hsl(160 10% 10% / 0.04);
+    --shadow-md: 0 4px 12px -2px hsl(160 10% 10% / 0.08), 0 2px 6px -2px hsl(160 10% 10% / 0.05);
+    --shadow-lg: 0 12px 32px -8px hsl(160 10% 10% / 0.14), 0 4px 12px -4px hsl(160 10% 10% / 0.08);
+    --shadow-primary: 0 6px 20px -6px hsl(var(--primary) / 0.4);
   }
 
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 96%;
+    --background: 160 10% 5%;
+    --foreground: 150 12% 96%;
 
-    --card: 240 8% 7%;
-    --card-foreground: 0 0% 96%;
+    --card: 160 9% 8%;
+    --card-foreground: 150 12% 96%;
 
-    --popover: 240 8% 7%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 160 9% 9%;
+    --popover-foreground: 150 12% 96%;
 
-    --primary: 243 80% 70%;
-    --primary-foreground: 240 12% 6%;
+    --primary: 158 64% 48%;
+    --primary-foreground: 160 40% 6%;
 
-    --secondary: 240 5% 14%;
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 160 7% 14%;
+    --secondary-foreground: 150 12% 96%;
 
-    --muted: 240 5% 13%;
-    --muted-foreground: 240 5% 62%;
+    --muted: 160 7% 14%;
+    --muted-foreground: 155 6% 60%;
 
-    --accent: 240 5% 15%;
-    --accent-foreground: 0 0% 96%;
+    --accent: 160 7% 15%;
+    --accent-foreground: 150 12% 96%;
 
-    --success: 152 52% 46%;
-    --success-foreground: 240 12% 6%;
+    --success: 158 64% 50%;
+    --success-foreground: 160 40% 6%;
 
-    --warning: 38 92% 56%;
-    --warning-foreground: 240 12% 6%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 160 40% 6%;
 
-    --destructive: 0 70% 58%;
+    --destructive: 0 72% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5% 16%;
-    --input: 240 5% 18%;
-    --ring: 243 80% 70%;
+    --streak: 24 90% 56%;
+    --streak-foreground: 160 40% 6%;
+
+    --badge-gold: 43 88% 58%;
+    --badge-gold-foreground: 160 40% 6%;
+
+    --border: 160 7% 15%;
+    --input: 160 7% 18%;
+    --ring: 158 64% 48%;
 
     --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
     --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.3);
     --shadow-md: 0 4px 14px -2px hsl(0 0% 0% / 0.5), 0 2px 6px -2px hsl(0 0% 0% / 0.4);
     --shadow-lg: 0 16px 40px -8px hsl(0 0% 0% / 0.6), 0 4px 12px -4px hsl(0 0% 0% / 0.45);
-    --shadow-primary: 0 8px 24px -8px hsl(var(--primary) / 0.55);
+    --shadow-primary: 0 8px 24px -8px hsl(var(--primary) / 0.6);
   }
 
   * {
@@ -118,7 +133,7 @@
 
   /* Selection */
   ::selection {
-    background-color: hsl(var(--primary) / 0.18);
+    background-color: hsl(var(--primary) / 0.22);
     color: hsl(var(--foreground));
   }
 
@@ -175,7 +190,7 @@
   /* Soft radial glow used behind hero content */
   .bg-glow {
     background:
-      radial-gradient(60% 60% at 50% 0%, hsl(var(--primary) / 0.12), transparent 70%);
+      radial-gradient(55% 60% at 50% 0%, hsl(var(--primary) / 0.16), transparent 70%);
   }
 
   /* Gradient text accent */

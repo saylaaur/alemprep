@@ -15,6 +15,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -49,6 +50,14 @@ const config: Config = {
         warning: {
           DEFAULT: 'hsl(var(--warning))',
           foreground: 'hsl(var(--warning-foreground))',
+        },
+        streak: {
+          DEFAULT: 'hsl(var(--streak))',
+          foreground: 'hsl(var(--streak-foreground))',
+        },
+        'badge-gold': {
+          DEFAULT: 'hsl(var(--badge-gold))',
+          foreground: 'hsl(var(--badge-gold-foreground))',
         },
         card: {
           DEFAULT: 'hsl(var(--card))',
@@ -99,6 +108,12 @@ const config: Config = {
           '70%': { boxShadow: '0 0 0 8px hsl(var(--primary) / 0)' },
           '100%': { boxShadow: '0 0 0 0 hsl(var(--primary) / 0)' },
         },
+        'xp-pop': {
+          '0%': { opacity: '0', transform: 'translateY(6px) scale(0.9)' },
+          '18%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+          '75%': { opacity: '1', transform: 'translateY(-10px) scale(1)' },
+          '100%': { opacity: '0', transform: 'translateY(-22px) scale(0.96)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 250ms ease-out',
@@ -107,6 +122,7 @@ const config: Config = {
         'slide-up': 'slide-up 400ms cubic-bezier(0.16, 1, 0.3, 1)',
         shimmer: 'shimmer 1.6s infinite',
         'pulse-ring': 'pulse-ring 1.8s cubic-bezier(0.66, 0, 0, 1) infinite',
+        'xp-pop': 'xp-pop 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
       },
       transitionTimingFunction: {
         smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',
