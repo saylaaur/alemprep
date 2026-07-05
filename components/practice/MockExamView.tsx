@@ -299,9 +299,9 @@ export function MockExamView({ availability, locale }: Props) {
         )}
 
         <div className="mt-6 grid grid-cols-3 divide-x divide-border rounded-xl border bg-card/50 py-5 text-center">
-          <div><div className="text-2xl font-semibold">{2 * BLUEPRINT_BLOCK_COUNT}</div><div className="mt-1 text-xs text-muted-foreground">{t('totalQuestions')}</div></div>
-          <div><div className="text-2xl font-semibold">{Math.round(EXAM_PAIR_DURATION_S / 60)}</div><div className="mt-1 text-xs text-muted-foreground">{t('minutesLabel')}</div></div>
-          <div><div className="text-2xl font-semibold">{EXAM_PAIR_MAX_SCORE}</div><div className="mt-1 text-xs text-muted-foreground">{t('maxPointsLabel')}</div></div>
+          <div><div className="font-mono text-2xl font-bold tabular-nums">{2 * BLUEPRINT_BLOCK_COUNT}</div><div className="mt-1 text-xs text-muted-foreground">{t('totalQuestions')}</div></div>
+          <div><div className="font-mono text-2xl font-bold tabular-nums">{Math.round(EXAM_PAIR_DURATION_S / 60)}</div><div className="mt-1 text-xs text-muted-foreground">{t('minutesLabel')}</div></div>
+          <div><div className="font-mono text-2xl font-bold tabular-nums">{EXAM_PAIR_MAX_SCORE}</div><div className="mt-1 text-xs text-muted-foreground">{t('maxPointsLabel')}</div></div>
         </div>
 
         {pairAvailableTotal === 0 ? (
@@ -343,17 +343,19 @@ export function MockExamView({ availability, locale }: Props) {
           <span className="hidden truncate text-sm font-semibold sm:block">
             {currentRange ? subjectDisplayName(currentRange.block) : ''}
           </span>
-          <span className="text-sm text-muted-foreground tabular-nums whitespace-nowrap">
+          <span className="whitespace-nowrap font-mono text-sm tabular-nums text-muted-foreground">
             {idx + 1} / {total}
           </span>
         </div>
 
         {/* Timer */}
         <div className={cn(
-          'flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-semibold tabular-nums',
-          timeLeft <= 300
+          'flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono text-sm font-semibold tabular-nums',
+          timeLeft <= 60
             ? 'bg-destructive/10 border-destructive/30 text-destructive'
-            : 'bg-warning/10 border-warning/30 text-warning'
+            : timeLeft <= 300
+              ? 'bg-warning/10 border-warning/30 text-warning'
+              : 'bg-muted/40 border-border text-foreground'
         )}>
           <Clock className="h-3.5 w-3.5" />
           {formatTime(timeLeft)}
@@ -565,7 +567,7 @@ export function MockExamView({ availability, locale }: Props) {
                       aria-label={t('goToQuestion', { number: i + 1 })}
                       aria-current={i === idx ? 'true' : undefined}
                       className={cn(
-                      'h-9 w-full rounded-lg text-xs font-medium transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
+                      'h-9 w-full rounded-lg font-mono text-xs font-medium tabular-nums transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
                       i === idx && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
                       f === 'none' && 'bg-muted/60 text-muted-foreground hover:bg-muted',
                       f === 'answered' && 'bg-primary/15 text-primary',
@@ -672,7 +674,7 @@ function ResultScreen({ blocks, answers, locale, elapsedS, t }: ResultProps) {
           <Trophy className="h-7 w-7 text-primary" />
         </div>
         <h1 className="text-2xl font-semibold">{t('resultTitle')}</h1>
-        <div className="mt-4 text-5xl font-semibold tabular-nums">{earnedScore}</div>
+        <div className="mt-4 font-mono text-5xl font-bold tabular-nums text-primary">{earnedScore}</div>
         <p className="mt-2 text-muted-foreground">{t('scorePoints', { score: earnedScore, max: maxScore })}</p>
         <p className="mt-1 text-sm text-muted-foreground">{t('score', { correct: correctCount, total: totalQuestions })}</p>
 
@@ -680,17 +682,17 @@ function ResultScreen({ blocks, answers, locale, elapsedS, t }: ResultProps) {
         <div className="mt-5 grid grid-cols-2 divide-x divide-border border-t pt-5">
           {blockResults.map((b) => (
             <div key={b.block.subjectSlug}>
-              <div className="text-2xl font-semibold tabular-nums">{b.earned}<span className="text-sm font-normal text-muted-foreground"> / {b.max}</span></div>
+              <div className="font-mono text-2xl font-bold tabular-nums">{b.earned}<span className="text-sm font-normal text-muted-foreground"> / {b.max}</span></div>
               <div className="mt-1 text-xs text-muted-foreground">{b.name}</div>
             </div>
           ))}
         </div>
 
         <div className="mt-5 grid grid-cols-4 divide-x divide-border border-t pt-5">
-          <div><div className="text-2xl font-semibold text-success">{correctCount}</div><div className="mt-1 text-xs text-muted-foreground">{t('correctLabel')}</div></div>
-          <div><div className="text-2xl font-semibold text-destructive">{wrong}</div><div className="mt-1 text-xs text-muted-foreground">{t('wrongLabel')}</div></div>
-          <div><div className="text-2xl font-semibold text-muted-foreground">{skipped}</div><div className="mt-1 text-xs text-muted-foreground">{t('skippedLabel')}</div></div>
-          <div><div className="text-2xl font-semibold tabular-nums">{formatTime(elapsedS)}</div><div className="mt-1 text-xs text-muted-foreground">{t('timeSpent')}</div></div>
+          <div><div className="font-mono text-2xl font-bold tabular-nums text-success">{correctCount}</div><div className="mt-1 text-xs text-muted-foreground">{t('correctLabel')}</div></div>
+          <div><div className="font-mono text-2xl font-bold tabular-nums text-destructive">{wrong}</div><div className="mt-1 text-xs text-muted-foreground">{t('wrongLabel')}</div></div>
+          <div><div className="font-mono text-2xl font-bold tabular-nums text-muted-foreground">{skipped}</div><div className="mt-1 text-xs text-muted-foreground">{t('skippedLabel')}</div></div>
+          <div><div className="font-mono text-2xl font-bold tabular-nums">{formatTime(elapsedS)}</div><div className="mt-1 text-xs text-muted-foreground">{t('timeSpent')}</div></div>
         </div>
       </div>
 

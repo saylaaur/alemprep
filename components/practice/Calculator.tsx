@@ -95,7 +95,7 @@ export function Calculator({ open, onClose }: { open: boolean; onClose: () => vo
         inputMode="text"
         autoComplete="off"
         className={cn(
-          'mb-2 w-full rounded-lg border bg-background px-3 py-2.5 text-right text-lg tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25',
+          'mb-2 w-full rounded-lg border bg-background px-3 py-2.5 text-right font-mono text-lg tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25',
           error && 'border-destructive/60 text-destructive'
         )}
       />
@@ -132,7 +132,7 @@ export function Calculator({ open, onClose }: { open: boolean; onClose: () => vo
               else if (b.append) append(b.append);
             }}
             className={cn(
-              'h-10 rounded-lg text-sm font-medium transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
+              'h-10 rounded-lg font-mono text-sm font-medium transition-colors focus-visible:ring-4 focus-visible:ring-ring/25',
               b.action === 'equals'
                 ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                 : 'bg-muted/60 hover:bg-muted'
