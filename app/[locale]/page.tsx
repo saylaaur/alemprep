@@ -14,6 +14,7 @@ import {
   Calculator,
   Atom,
   Code2,
+  Check,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -107,6 +108,11 @@ export default async function LandingPage({
               <Link href="/login">{t('ctaSecondary')}</Link>
             </Button>
           </div>
+
+          <div className="mt-5 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Check className="h-4 w-4 text-primary" />
+            {t('heroReassure')}
+          </div>
         </div>
       </section>
 
@@ -119,7 +125,7 @@ export default async function LandingPage({
             { value: '4', label: t('stat3Label') },
           ].map((s) => (
             <div key={s.label} className="px-3">
-              <dt className="text-3xl font-semibold tracking-tight text-foreground">
+              <dt className="font-mono text-3xl font-semibold tabular-nums tracking-tight text-foreground">
                 {s.value}
               </dt>
               <dd className="mt-1 text-xs text-muted-foreground">{s.label}</dd>
@@ -143,7 +149,7 @@ export default async function LandingPage({
             return (
               <div
                 key={f.title}
-                className="group rounded-xl border bg-card p-5 shadow-xs transition-all duration-300 ease-smooth hover:-translate-y-0.5 hover:shadow-md"
+                className="group rounded-2xl border bg-card p-5 shadow-xs transition-all duration-300 ease-smooth hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
               >
                 <div className="mb-4 grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-105">
                   <Icon className="h-5 w-5" />
@@ -173,7 +179,7 @@ export default async function LandingPage({
             return (
               <div
                 key={s.name}
-                className="flex items-center gap-4 rounded-xl border bg-card p-5 shadow-xs"
+                className="flex items-center gap-4 rounded-2xl border bg-card p-5 shadow-xs"
               >
                 <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
                   <Icon className="h-6 w-6" />
