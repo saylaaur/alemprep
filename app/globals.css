@@ -137,9 +137,14 @@
     color: hsl(var(--foreground));
   }
 
-  /* Refined focus ring across the app */
+  /* Доступность: гарантированный видимый фокус. Глобальный fallback-ринг —
+     страховка на случай, если у элемента нет своего focus-ring. Элементы с
+     Tailwind `focus-visible:outline-none` (например, Button) перекрывают это
+     правило по специфичности и показывают свой box-shadow-ring, поэтому
+     двойного кольца у них нет. */
   :focus-visible {
-    outline: none;
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
   /* Subtle, modern scrollbar */
