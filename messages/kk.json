@@ -161,7 +161,11 @@
     "emptyTitle": "Белсенділік жоқ",
     "emptyText": "Бірнеше есеп шеш — статистика осы жерде пайда болады",
     "emptyAction": "Шешуді бастау",
-    "attempts": "{count, plural, =0 {әрекет жоқ} other {# әрекет}}"
+    "attempts": "{count, plural, =0 {әрекет жоқ} other {# әрекет}}",
+    "streakRecord": "рекорд — {count, plural, other {# күн}}",
+    "heatmapLess": "аз",
+    "heatmapMore": "көп",
+    "badgesTitle": "Бейджтер"
   },
   "exam": {
     "title": "Толық сынақ",

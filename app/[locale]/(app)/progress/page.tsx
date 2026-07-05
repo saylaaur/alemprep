@@ -3,10 +3,13 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/routing';
-import { CheckCircle2, XCircle, Flame, TrendingUp } from 'lucide-react';
-import { getProgressData } from '@/lib/supabase/queries';
+import { CheckCircle2, XCircle, Flame, TrendingUp, Award } from 'lucide-react';
+import { getProgressData, getProfile, getGamification } from '@/lib/supabase/queries';
 import type { DailyActivity, TopicStat, RecentAttemptItem } from '@/lib/supabase/queries';
+import { ACHIEVEMENT_KEYS } from '@/lib/gamification';
+import { ACHIEVEMENT_META } from '@/components/gamification/achievement-meta';
 import { localDateStr } from '@/lib/streak';
+import { cn } from '@/lib/utils';
 import type { Locale } from '@/types/db';
 
 export default async function ProgressPage({
@@ -17,12 +20,19 @@ export default async function ProgressPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [t, data] = await Promise.all([
+  const profile = await getProfile();
+  const userId = profile?.id;
+
+  const [t, tAch, data, g] = await Promise.all([
     getTranslations('progress'),
+    getTranslations('achievements'),
     getProgressData(),
+    userId ? getGamification(userId) : Promise.resolve(null),
   ]);
 
   const l = locale as Locale;
+  const earnedMap = new Map((g?.earned ?? []).map((b) => [b.key, b.earnedAt]));
+  const longestStreak = g?.longestStreak ?? 0;
 
   // Empty state
   if (!data || data.totalAttempts === 0) {
@@ -61,7 +71,7 @@ export default async function ProgressPage({
           <Card>
             <CardContent className="p-5">
               <p className="text-sm text-muted-foreground">{t('totalSolved')}</p>
-              <p className="mt-1 text-3xl font-semibold tabular-nums">{data.totalAttempts}</p>
+              <p className="mt-1 font-mono text-3xl font-bold tabular-nums">{data.totalAttempts}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {t('attempts', { count: data.totalAttempts })}
               </p>
@@ -71,8 +81,8 @@ export default async function ProgressPage({
           <Card>
             <CardContent className="p-5">
               <p className="text-sm text-muted-foreground">{t('accuracy')}</p>
-              <p className="mt-1 text-3xl font-semibold tabular-nums">{accuracyPct}%</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
+              <p className="mt-1 font-mono text-3xl font-bold tabular-nums">{accuracyPct}%</p>
+              <p className="mt-0.5 font-mono text-xs tabular-nums text-muted-foreground">
                 {data.correctAttempts} / {data.totalAttempts}
               </p>
             </CardContent>
@@ -80,17 +90,22 @@ export default async function ProgressPage({
 
           <Card>
             <CardContent className="flex items-center gap-4 p-5">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/10">
-                <Flame className="h-5 w-5 text-primary" />
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-streak/12">
+                <Flame className="h-5 w-5 fill-streak text-streak" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t('currentStreak')}</p>
-                <p className="mt-0.5 text-2xl font-semibold tabular-nums">
+                <p className="mt-0.5 font-mono text-2xl font-bold tabular-nums">
                   {data.currentStreak}{' '}
-                  <span className="text-sm font-normal text-muted-foreground">
+                  <span className="font-sans text-sm font-normal text-muted-foreground">
                     {t('streakDays', { count: data.currentStreak })}
                   </span>
                 </p>
+                {longestStreak > 0 ? (
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {t('streakRecord', { count: longestStreak })}
+                  </p>
+                ) : null}
               </div>
             </CardContent>
           </Card>
@@ -105,8 +120,74 @@ export default async function ProgressPage({
           <Card>
             <CardContent className="overflow-x-auto p-5">
               <Heatmap weeks={heatmap} />
+              <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span>{t('heatmapLess')}</span>
+                <span className="h-3 w-3 rounded-sm bg-muted" />
+                <span className="h-3 w-3 rounded-sm bg-success/30" />
+                <span className="h-3 w-3 rounded-sm bg-success/60" />
+                <span className="h-3 w-3 rounded-sm bg-success" />
+                <span>{t('heatmapMore')}</span>
+              </div>
             </CardContent>
           </Card>
+        </section>
+
+        {/* Badges */}
+        <section>
+          <h2 className="mb-3 flex items-center gap-1.5 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            <Award className="h-4 w-4 text-badge-gold" />
+            {t('badgesTitle')}
+            <span className="ml-1 normal-case font-normal">
+              · {earnedMap.size} / {ACHIEVEMENT_KEYS.length}
+            </span>
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {ACHIEVEMENT_KEYS.map((key) => {
+              const Icon = ACHIEVEMENT_META[key].icon;
+              const earned = earnedMap.has(key);
+              return (
+                <div
+                  key={key}
+                  className={cn(
+                    'flex items-start gap-3 rounded-2xl border p-4',
+                    earned
+                      ? 'border-badge-gold/30 bg-badge-gold/[0.06]'
+                      : 'opacity-60'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'grid h-11 w-11 shrink-0 place-items-center rounded-xl',
+                      earned
+                        ? 'bg-badge-gold/15 text-badge-gold ring-1 ring-inset ring-badge-gold/35'
+                        : 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold">{tAch(`${key}.title`)}</div>
+                    <div className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                      {tAch(`${key}.desc`)}
+                    </div>
+                    <div
+                      className={cn(
+                        'mt-1.5 text-[11px]',
+                        earned ? 'text-badge-gold' : 'text-muted-foreground/70'
+                      )}
+                    >
+                      {earned
+                        ? new Date(earnedMap.get(key)!).toLocaleDateString(
+                            l === 'kk' ? 'kk-KZ' : 'ru-RU',
+                            { month: 'short', day: 'numeric', year: 'numeric' }
+                          )
+                        : tAch('lockedHint')}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </section>
 
         {/* Topic accuracy */}
@@ -227,7 +308,7 @@ function TopicBars({ stats, locale }: { stats: TopicStat[]; locale: Locale }) {
           <div key={s.topic_id} className="space-y-1.5">
             <div className="flex items-center justify-between gap-2 text-sm">
               <span className="truncate">{name}</span>
-              <span className="shrink-0 tabular-nums text-muted-foreground">
+              <span className="shrink-0 font-mono tabular-nums text-muted-foreground">
                 {pct}% · {s.total}
               </span>
             </div>

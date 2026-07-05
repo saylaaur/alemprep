@@ -161,7 +161,11 @@
     "emptyTitle": "Ещё нет активности",
     "emptyText": "Реши несколько задач — здесь появится статистика",
     "emptyAction": "Начать решать",
-    "attempts": "{count, plural, =0 {попыток} one {попытка} few {попытки} other {попыток}}"
+    "attempts": "{count, plural, =0 {попыток} one {попытка} few {попытки} other {попыток}}",
+    "streakRecord": "рекорд — {count, plural, one {# день} few {# дня} other {# дней}}",
+    "heatmapLess": "меньше",
+    "heatmapMore": "больше",
+    "badgesTitle": "Бейджи"
   },
   "exam": {
     "title": "Полный пробник",
