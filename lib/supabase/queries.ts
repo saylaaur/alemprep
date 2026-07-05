@@ -7,6 +7,15 @@ import {
   type ExamShortfall,
 } from '@/lib/exam';
 import { localDateStr } from '@/lib/streak';
+import {
+  levelProgress,
+  upcomingBadges,
+  ACHIEVEMENT_KEYS,
+  TOPIC_MASTERY_MIN_ATTEMPTS,
+  TOPIC_MASTERY_RATIO,
+  type AchievementKey,
+  type UpcomingBadge,
+} from '@/lib/gamification';
 import type { QuestionType } from '@/types/db';
 import type { Profile, Subject, Topic, Locale, Question, ContextContent } from '@/types/db';
 
@@ -359,6 +368,163 @@ export async function getProgressData(): Promise<ProgressData | null> {
     dailyActivity,
     topicStats,
     recentAttempts,
+  };
+}
+
+// ---- Gamification ----
+
+export type GamificationBadge = { key: AchievementKey; earnedAt: string };
+
+export type TopicMasteryStat = {
+  topicId: string;
+  nameRu: string;
+  nameKk: string;
+  total: number;
+  correct: number;
+  accuracy: number;
+  mastered: boolean;
+};
+
+export type Gamification = {
+  xp: number;
+  level: number;
+  xpIntoLevel: number;
+  levelSpan: number;
+  xpToNext: number;
+  percentToNext: number;
+  currentStreak: number;
+  longestStreak: number;
+  solvedToday: number;
+  earned: GamificationBadge[];
+  upcoming: UpcomingBadge[];
+  topicMastery: TopicMasteryStat[];
+};
+
+/**
+ * Полная сводка геймификации для UI: уровень и прогресс по XP, стрик и его рекорд,
+ * решено сегодня, полученные и ближайшие бейджи, мастерство по темам. Считается на сервере.
+ */
+export async function getGamification(userId: string): Promise<Gamification | null> {
+  const supabase = await createClient();
+
+  const [profileRes, attemptsRes, achievementsRes, topicsRes] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('xp, current_streak, longest_streak')
+      .eq('id', userId)
+      .maybeSingle(),
+    supabase
+      .from('attempts')
+      .select('is_correct, question_id, attempted_at')
+      .eq('user_id', userId),
+    supabase
+      .from('user_achievements')
+      .select('achievement_key, earned_at')
+      .eq('user_id', userId),
+    supabase.from('topics').select('id, name_ru, name_kk'),
+  ]);
+
+  const profile = profileRes.data as {
+    xp: number;
+    current_streak: number;
+    longest_streak: number;
+  } | null;
+  if (!profile) return null;
+
+  const xp = profile.xp ?? 0;
+  const currentStreak = profile.current_streak ?? 0;
+  const progress = levelProgress(xp);
+
+  const attempts = (attemptsRes.data ?? []) as {
+    is_correct: boolean;
+    question_id: string;
+    attempted_at: string;
+  }[];
+
+  // Решено сегодня — локальная дата, тот же базис, что у getTodayAttemptsCount.
+  const today = localDateStr();
+  const solvedToday = attempts.filter(
+    (a) => localDateStr(new Date(a.attempted_at)) === today
+  ).length;
+
+  // Мастерство по темам: точность по каждой теме.
+  const topicMap = new Map<string, { name_ru: string; name_kk: string }>();
+  for (const t of (topicsRes.data ?? []) as {
+    id: string;
+    name_ru: string;
+    name_kk: string;
+  }[]) {
+    topicMap.set(t.id, t);
+  }
+
+  const questionIds = Array.from(new Set(attempts.map((a) => a.question_id)));
+  const questionToTopic = new Map<string, string>();
+  if (questionIds.length > 0) {
+    const { data: questions } = await supabase
+      .from('questions')
+      .select('id, topic_id')
+      .in('id', questionIds);
+    for (const q of (questions ?? []) as { id: string; topic_id: string }[]) {
+      questionToTopic.set(q.id, q.topic_id);
+    }
+  }
+
+  const byTopic = new Map<string, { total: number; correct: number }>();
+  for (const a of attempts) {
+    const topicId = questionToTopic.get(a.question_id);
+    if (!topicId) continue;
+    const stat = byTopic.get(topicId) ?? { total: 0, correct: 0 };
+    stat.total++;
+    if (a.is_correct) stat.correct++;
+    byTopic.set(topicId, stat);
+  }
+
+  const topicMastery: TopicMasteryStat[] = Array.from(byTopic.entries())
+    .map(([topicId, stat]) => {
+      const topic = topicMap.get(topicId);
+      const accuracy = stat.correct / stat.total;
+      return {
+        topicId,
+        nameRu: topic?.name_ru ?? '—',
+        nameKk: topic?.name_kk ?? '—',
+        total: stat.total,
+        correct: stat.correct,
+        accuracy,
+        mastered: stat.total >= TOPIC_MASTERY_MIN_ATTEMPTS && accuracy > TOPIC_MASTERY_RATIO,
+      };
+    })
+    .sort((a, b) => b.accuracy - a.accuracy || b.total - a.total);
+
+  // Полученные бейджи — в порядке справочника.
+  const earnedAtByKey = new Map<string, string>();
+  for (const row of (achievementsRes.data ?? []) as {
+    achievement_key: string;
+    earned_at: string;
+  }[]) {
+    earnedAtByKey.set(row.achievement_key, row.earned_at);
+  }
+  const earned: GamificationBadge[] = ACHIEVEMENT_KEYS.filter((k) =>
+    earnedAtByKey.has(k)
+  ).map((key) => ({ key, earnedAt: earnedAtByKey.get(key)! }));
+
+  const upcoming = upcomingBadges(
+    { totalAttempts: attempts.length, currentStreak },
+    earned.map((b) => b.key)
+  );
+
+  return {
+    xp,
+    level: progress.level,
+    xpIntoLevel: progress.xpIntoLevel,
+    levelSpan: progress.levelSpan,
+    xpToNext: progress.xpToNext,
+    percentToNext: progress.percentToNext,
+    currentStreak,
+    longestStreak: profile.longest_streak ?? 0,
+    solvedToday,
+    earned,
+    upcoming,
+    topicMastery,
   };
 }
 

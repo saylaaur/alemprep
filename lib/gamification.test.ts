@@ -4,6 +4,7 @@ import {
   levelFromXp,
   levelProgress,
   evaluateAchievements,
+  upcomingBadges,
   XP_PER_CORRECT,
   EXAM_BLOCK_BONUS,
 } from './gamification';
@@ -180,5 +181,37 @@ describe('evaluateAchievements', () => {
       'exam-complete',
       'exam-90',
     ]);
+  });
+});
+
+describe('upcomingBadges — ближайшие незаработанные счётные бейджи', () => {
+  it('сортирует по близости (прогресс убыв.) и режет по лимиту', () => {
+    const r = upcomingBadges({ totalAttempts: 90, currentStreak: 5 }, ['first-question']);
+    expect(r).toEqual([
+      { key: 'solved-100', current: 90, target: 100, progress: 0.9 },
+      { key: 'streak-7', current: 5, target: 7, progress: 5 / 7 },
+      { key: 'solved-500', current: 90, target: 500, progress: 0.18 },
+    ]);
+  });
+
+  it('исключает уже полученные бейджи', () => {
+    const r = upcomingBadges(
+      { totalAttempts: 150, currentStreak: 10 },
+      ['first-question', 'solved-100', 'streak-7']
+    );
+    expect(r).toEqual([
+      { key: 'streak-30', current: 10, target: 30, progress: 10 / 30 },
+      { key: 'solved-500', current: 150, target: 500, progress: 0.3 },
+    ]);
+  });
+
+  it('current не превышает target', () => {
+    const r = upcomingBadges({ totalAttempts: 900, currentStreak: 0 }, ['solved-100']);
+    const solved500 = r.find((b) => b.key === 'solved-500');
+    expect(solved500).toEqual({ key: 'solved-500', current: 500, target: 500, progress: 1 });
+  });
+
+  it('уважает лимит', () => {
+    expect(upcomingBadges({ totalAttempts: 0, currentStreak: 0 }, [], 2)).toHaveLength(2);
   });
 });

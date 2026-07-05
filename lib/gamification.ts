@@ -121,3 +121,38 @@ export function evaluateAchievements(s: AchievementSnapshot): AchievementKey[] {
   }
   return earned;
 }
+
+export type UpcomingBadge = {
+  key: AchievementKey;
+  current: number;
+  target: number;
+  progress: number;
+};
+
+/**
+ * Ближайшие ещё не полученные счётные бейджи (решено / стрик) с прогрессом,
+ * отсортированные по близости (по убыванию прогресса). Неколичественные бейджи
+ * (мастерство темы, пробник) сюда не входят — у них нет линейного прогресса.
+ */
+export function upcomingBadges(
+  input: { totalAttempts: number; currentStreak: number },
+  earned: Iterable<AchievementKey>,
+  limit = 3
+): UpcomingBadge[] {
+  const have = new Set(earned);
+  const counters: Array<[ReadonlyArray<{ key: AchievementKey; target: number }>, number]> = [
+    [SOLVED_THRESHOLDS, input.totalAttempts],
+    [STREAK_THRESHOLDS, input.currentStreak],
+  ];
+
+  const candidates: UpcomingBadge[] = [];
+  for (const [thresholds, value] of counters) {
+    for (const { key, target } of thresholds) {
+      if (have.has(key)) continue;
+      const current = Math.min(value, target);
+      candidates.push({ key, current, target, progress: current / target });
+    }
+  }
+
+  return candidates.sort((a, b) => b.progress - a.progress).slice(0, limit);
+}
