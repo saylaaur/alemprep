@@ -23,3 +23,8 @@ scripts/references/
 scripts/generated/
 scripts/verified/
 scripts/insert-batch.sql
+
+# Исходные материалы пробников (скрины НЦТ) — НЕ коммитить в публичный репо
+physics/
+unt-resources/
+*.unt/
