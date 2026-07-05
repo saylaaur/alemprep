@@ -150,6 +150,30 @@ export async function finishExamSession(input: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'unauthenticated' };
 
+  // Идемпотентность: если сессия уже завершена (finished_at проставлен) —
+  // возвращаем прежний результат, ничего не пересчитывая и НЕ начисляя XP,
+  // бонусы и достижения повторно. Защищает от двойного вызова (двойной клик,
+  // ретрай после флап-ответа). Ownership проверяем тем же user_id.
+  const { data: existingSession } = await supabase
+    .from('sessions')
+    .select('correct_count, score, finished_at')
+    .eq('id', input.sessionId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (!existingSession) return { error: 'session not found' };
+  const prior = existingSession as {
+    correct_count: number | null;
+    score: number | null;
+    finished_at: string | null;
+  };
+  if (prior.finished_at) {
+    return {
+      ok: true as const,
+      correctCount: prior.correct_count ?? 0,
+      score: prior.score ?? 0,
+    };
+  }
+
   // Баллы ЕНТ (с частичным зачётом multi/matching) считаем только по данным
   // из БД — ответы приходят с клиента, правильность и баллы ему не доверяем.
   const questionIds = input.results.map((r) => r.questionId);
