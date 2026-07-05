@@ -1,5 +1,6 @@
 import { Sidebar } from './Sidebar';
 import { MobileNav } from './MobileNav';
+import { BottomTabBar } from './BottomTabBar';
 import type { Profile } from '@/types/db';
 
 export function AppShell({
@@ -16,8 +17,10 @@ export function AppShell({
       <Sidebar profile={profile} email={email} />
       <div className="flex flex-1 flex-col overflow-x-hidden">
         <MobileNav profile={profile} email={email} />
-        <main className="flex-1">{children}</main>
+        {/* нижний отступ на моб. — под таб-бар (68px + safe-area) */}
+        <main className="flex-1 pb-[68px] md:pb-0">{children}</main>
       </div>
+      <BottomTabBar />
     </div>
   );
 }

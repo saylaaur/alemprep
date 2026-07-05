@@ -8,7 +8,7 @@ import { signOut } from '@/lib/supabase/auth-actions';
 import { ThemeToggle } from '@/components/theme-toggle';
 import type { Profile } from '@/types/db';
 import { navItems } from './nav-items';
-import { GraduationCap, LogOut, Menu, X } from 'lucide-react';
+import { GraduationCap, LogOut, Menu, X, Flame } from 'lucide-react';
 
 export function MobileNav({
   profile,
@@ -43,17 +43,12 @@ export function MobileNav({
 
   const displayName = profile?.full_name?.trim() || email || '';
   const initial = (displayName[0] ?? '?').toUpperCase();
+  const streak = profile?.current_streak ?? 0;
 
   return (
     <>
-      {/* Top bar (mobile only) */}
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-xl md:hidden">
-        <div className="flex items-center gap-2.5">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground shadow-primary">
-            <GraduationCap className="h-4 w-4" />
-          </div>
-          <span className="text-[15px] font-semibold tracking-tight">{tBrand('name')}</span>
-        </div>
+      {/* Top bar (mobile only): бургер · бренд · стрик */}
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-2 backdrop-blur-xl md:hidden">
         <button
           type="button"
           aria-label={tNav('openMenu')}
@@ -63,6 +58,20 @@ export function MobileNav({
         >
           <Menu className="h-5 w-5" />
         </button>
+        <div className="flex items-center gap-2">
+          <div className="grid h-6 w-6 place-items-center rounded-lg bg-primary text-primary-foreground">
+            <GraduationCap className="h-3.5 w-3.5" />
+          </div>
+          <span className="text-[15px] font-semibold tracking-tight">{tBrand('name')}</span>
+        </div>
+        {streak > 0 ? (
+          <div className="flex h-11 items-center gap-1.5 rounded-full bg-streak/12 px-3">
+            <Flame className="h-4 w-4 fill-streak text-streak" />
+            <span className="font-mono text-sm font-bold tabular-nums text-streak">{streak}</span>
+          </div>
+        ) : (
+          <div className="h-11 w-11" aria-hidden />
+        )}
       </header>
 
       {/* Overlay */}
