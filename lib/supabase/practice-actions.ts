@@ -9,6 +9,7 @@ import {
   type ExamSecondSubject,
 } from '@/lib/exam';
 import { advanceStreak, localDateStr } from '@/lib/streak';
+import { XP_PER_CORRECT } from '@/lib/gamification';
 import { getPairExamBlocks, type ExamBlock, type ExamContext } from './queries';
 import type { QuestionType, QuestionBody, Locale } from '@/types/db';
 
@@ -36,11 +37,11 @@ export async function recordAttempt(input: RecordInput) {
     return { ok: false as const, error: insertError.message };
   }
 
-  // 2. Обновляем стрик и last_active_date (локальная дата — тот же базис,
-  // что у getTodayAttemptsCount; toISOString здесь давал бы UTC-сдвиг)
+  // 2. Обновляем стрик, рекорд стрика и XP. Локальная дата — тот же базис,
+  // что у getTodayAttemptsCount; toISOString здесь давал бы UTC-сдвиг.
   const { data: profile } = await supabase
     .from('profiles')
-    .select('current_streak, last_active_date')
+    .select('current_streak, last_active_date, longest_streak, xp')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -50,11 +51,18 @@ export async function recordAttempt(input: RecordInput) {
       currentStreak: (profile.current_streak as number | null) ?? 0,
       today: localDateStr(),
     });
+    const update: Record<string, unknown> = {};
     if (next) {
-      await supabase
-        .from('profiles')
-        .update({ current_streak: next.streak, last_active_date: next.lastActiveDate })
-        .eq('id', user.id);
+      update.current_streak = next.streak;
+      update.last_active_date = next.lastActiveDate;
+      const longest = (profile.longest_streak as number | null) ?? 0;
+      if (next.streak > longest) update.longest_streak = next.streak;
+    }
+    if (input.isCorrect) {
+      update.xp = ((profile.xp as number | null) ?? 0) + XP_PER_CORRECT;
+    }
+    if (Object.keys(update).length > 0) {
+      await supabase.from('profiles').update(update).eq('id', user.id);
     }
   }
 
