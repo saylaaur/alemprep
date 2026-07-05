@@ -20,10 +20,19 @@ export type Profile = {
   locale: Locale;
   daily_goal: number;
   current_streak: number;
+  longest_streak: number;
   last_active_date: string | null;
+  xp: number;
   is_admin: boolean;
   created_at: string;
   updated_at: string;
+};
+
+/** user_achievements — полученные бейджи (по одному ключу на пользователя) */
+export type UserAchievement = {
+  user_id: string;
+  achievement_key: string;
+  earned_at: string;
 };
 
 /** subjects — Математика / Физика / Информатика */
