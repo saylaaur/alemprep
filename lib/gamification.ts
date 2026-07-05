@@ -50,3 +50,74 @@ export function levelProgress(xp: number): LevelProgress {
     percentToNext: xpIntoLevel / levelSpan,
   };
 }
+
+// ---- Достижения ----
+
+/** Справочник ключей бейджей (порядок = порядок выдачи/отображения). */
+export const ACHIEVEMENT_KEYS = [
+  'first-question',
+  'solved-100',
+  'solved-500',
+  'streak-7',
+  'streak-30',
+  'topic-mastery',
+  'exam-complete',
+  'exam-90',
+] as const;
+
+export type AchievementKey = (typeof ACHIEVEMENT_KEYS)[number];
+
+/** Тема считается освоенной при ≥ N попыток и точности строго выше порога. */
+export const TOPIC_MASTERY_MIN_ATTEMPTS = 10;
+export const TOPIC_MASTERY_RATIO = 0.9;
+/** Порог «высокого балла» блока пробника (доля от максимума). */
+export const EXAM_HIGH_SCORE_RATIO = 0.9;
+
+/** Счётные пороги «решено» → ключ бейджа (для проверки и подсказки «ближайшие»). */
+export const SOLVED_THRESHOLDS: ReadonlyArray<{ key: AchievementKey; target: number }> = [
+  { key: 'solved-100', target: 100 },
+  { key: 'solved-500', target: 500 },
+];
+/** Счётные пороги стрика → ключ бейджа. */
+export const STREAK_THRESHOLDS: ReadonlyArray<{ key: AchievementKey; target: number }> = [
+  { key: 'streak-7', target: 7 },
+  { key: 'streak-30', target: 30 },
+];
+
+export type AchievementSnapshot = {
+  /** Всего попыток (любых, независимо от верности). */
+  totalAttempts: number;
+  currentStreak: number;
+  topicStats: { attempts: number; correct: number }[];
+  /** Присутствует только в контексте завершения блока пробника. */
+  exam?: { completed: boolean; scoreRatio: number };
+};
+
+/** Проходит ли хоть одна тема порог мастерства. */
+export function hasTopicMastery(topicStats: { attempts: number; correct: number }[]): boolean {
+  return topicStats.some(
+    (t) => t.attempts >= TOPIC_MASTERY_MIN_ATTEMPTS && t.correct / t.attempts > TOPIC_MASTERY_RATIO
+  );
+}
+
+/**
+ * Все ключи, условие которых выполнено для снапшота. Идемпотентно: возвращает и
+ * уже полученные — сервер сам вставляет только новые. Exam-ключи выдаются только
+ * когда передан контекст `exam`.
+ */
+export function evaluateAchievements(s: AchievementSnapshot): AchievementKey[] {
+  const earned: AchievementKey[] = [];
+  if (s.totalAttempts >= 1) earned.push('first-question');
+  for (const { key, target } of SOLVED_THRESHOLDS) {
+    if (s.totalAttempts >= target) earned.push(key);
+  }
+  for (const { key, target } of STREAK_THRESHOLDS) {
+    if (s.currentStreak >= target) earned.push(key);
+  }
+  if (hasTopicMastery(s.topicStats)) earned.push('topic-mastery');
+  if (s.exam) {
+    if (s.exam.completed) earned.push('exam-complete');
+    if (s.exam.scoreRatio >= EXAM_HIGH_SCORE_RATIO) earned.push('exam-90');
+  }
+  return earned;
+}

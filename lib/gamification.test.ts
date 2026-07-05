@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { xpForLevel, levelFromXp, levelProgress, XP_PER_CORRECT, EXAM_BLOCK_BONUS } from './gamification';
+import {
+  xpForLevel,
+  levelFromXp,
+  levelProgress,
+  evaluateAchievements,
+  XP_PER_CORRECT,
+  EXAM_BLOCK_BONUS,
+} from './gamification';
 
 describe('константы XP', () => {
   it('верный ответ = 10 XP, бонус за блок пробника = 50', () => {
@@ -77,5 +84,101 @@ describe('levelProgress', () => {
     expect(p.xpIntoLevel).toBe(199);
     expect(p.xpToNext).toBe(1);
     expect(p.percentToNext).toBeCloseTo(0.995);
+  });
+});
+
+describe('evaluateAchievements', () => {
+  const empty = { totalAttempts: 0, currentStreak: 0, topicStats: [] };
+
+  it('нет достижений при пустом снапшоте', () => {
+    expect(evaluateAchievements(empty)).toEqual([]);
+  });
+
+  it('первая попытка → first-question', () => {
+    const r = evaluateAchievements({ ...empty, totalAttempts: 1 });
+    expect(r).toContain('first-question');
+    expect(r).not.toContain('solved-100');
+  });
+
+  it('пороги «решено» 100 и 500', () => {
+    expect(evaluateAchievements({ ...empty, totalAttempts: 99 })).not.toContain('solved-100');
+    const at100 = evaluateAchievements({ ...empty, totalAttempts: 100 });
+    expect(at100).toContain('solved-100');
+    expect(at100).not.toContain('solved-500');
+    expect(evaluateAchievements({ ...empty, totalAttempts: 500 })).toContain('solved-500');
+  });
+
+  it('пороги стрика 7 и 30', () => {
+    expect(evaluateAchievements({ ...empty, currentStreak: 6 })).not.toContain('streak-7');
+    const at7 = evaluateAchievements({ ...empty, currentStreak: 7 });
+    expect(at7).toContain('streak-7');
+    expect(at7).not.toContain('streak-30');
+    expect(evaluateAchievements({ ...empty, currentStreak: 30 })).toContain('streak-30');
+  });
+
+  it('мастерство темы: ≥10 попыток и точность строго > 0.9', () => {
+    // 10/10 = 1.0 → да
+    expect(
+      evaluateAchievements({ ...empty, topicStats: [{ attempts: 10, correct: 10 }] })
+    ).toContain('topic-mastery');
+    // 9/10 = 0.9 (не > 0.9) → нет
+    expect(
+      evaluateAchievements({ ...empty, topicStats: [{ attempts: 10, correct: 9 }] })
+    ).not.toContain('topic-mastery');
+    // 9/9 = 1.0, но попыток < 10 → нет
+    expect(
+      evaluateAchievements({ ...empty, topicStats: [{ attempts: 9, correct: 9 }] })
+    ).not.toContain('topic-mastery');
+    // хотя бы одна тема проходит → да
+    expect(
+      evaluateAchievements({
+        ...empty,
+        topicStats: [
+          { attempts: 20, correct: 5 },
+          { attempts: 50, correct: 46 },
+        ],
+      })
+    ).toContain('topic-mastery');
+  });
+
+  it('exam-ключи только когда есть контекст пробника', () => {
+    // без exam — не появляются
+    const noExam = evaluateAchievements({ ...empty, totalAttempts: 40 });
+    expect(noExam).not.toContain('exam-complete');
+    expect(noExam).not.toContain('exam-90');
+    // завершён, но балл < 90%
+    const low = evaluateAchievements({
+      ...empty,
+      exam: { completed: true, scoreRatio: 0.5 },
+    });
+    expect(low).toContain('exam-complete');
+    expect(low).not.toContain('exam-90');
+    // ровно 0.9 → exam-90
+    expect(
+      evaluateAchievements({ ...empty, exam: { completed: true, scoreRatio: 0.9 } })
+    ).toContain('exam-90');
+    // 0.89 → нет
+    expect(
+      evaluateAchievements({ ...empty, exam: { completed: true, scoreRatio: 0.89 } })
+    ).not.toContain('exam-90');
+  });
+
+  it('возвращает ключи в порядке справочника', () => {
+    const r = evaluateAchievements({
+      totalAttempts: 500,
+      currentStreak: 30,
+      topicStats: [{ attempts: 10, correct: 10 }],
+      exam: { completed: true, scoreRatio: 1 },
+    });
+    expect(r).toEqual([
+      'first-question',
+      'solved-100',
+      'solved-500',
+      'streak-7',
+      'streak-30',
+      'topic-mastery',
+      'exam-complete',
+      'exam-90',
+    ]);
   });
 });
