@@ -377,6 +377,7 @@ export type GamificationBadge = { key: AchievementKey; earnedAt: string };
 
 export type TopicMasteryStat = {
   topicId: string;
+  subjectId: string;
   nameRu: string;
   nameKk: string;
   total: number;
@@ -421,7 +422,7 @@ export async function getGamification(userId: string): Promise<Gamification | nu
       .from('user_achievements')
       .select('achievement_key, earned_at')
       .eq('user_id', userId),
-    supabase.from('topics').select('id, name_ru, name_kk'),
+    supabase.from('topics').select('id, name_ru, name_kk, subject_id'),
   ]);
 
   const profile = profileRes.data as {
@@ -448,11 +449,15 @@ export async function getGamification(userId: string): Promise<Gamification | nu
   ).length;
 
   // Мастерство по темам: точность по каждой теме.
-  const topicMap = new Map<string, { name_ru: string; name_kk: string }>();
+  const topicMap = new Map<
+    string,
+    { name_ru: string; name_kk: string; subject_id: string }
+  >();
   for (const t of (topicsRes.data ?? []) as {
     id: string;
     name_ru: string;
     name_kk: string;
+    subject_id: string;
   }[]) {
     topicMap.set(t.id, t);
   }
@@ -485,6 +490,7 @@ export async function getGamification(userId: string): Promise<Gamification | nu
       const accuracy = stat.correct / stat.total;
       return {
         topicId,
+        subjectId: topic?.subject_id ?? '',
         nameRu: topic?.name_ru ?? '—',
         nameKk: topic?.name_kk ?? '—',
         total: stat.total,

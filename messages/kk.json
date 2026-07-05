@@ -75,7 +75,39 @@
     "streakWord": "{count, plural, other {күн қатарынан}}",
     "todaySolved": "Бүгін шешілді",
     "keepGoing": "Жарайсың — мақсатқа аз қалды",
-    "goalReached": "Бүгінгі мақсат орындалды. Тамаша!"
+    "goalReached": "Бүгінгі мақсат орындалды. Тамаша!",
+    "goalUnit": "есеп",
+    "continue": "Жалғастыру",
+    "level": "Деңгей {level}",
+    "xpToNext": "{level}-деңгейге — тағы {xp} XP",
+    "mastery": "Меңгеру",
+    "streakRecord": "серия рекорды — {count, plural, other {# күн}}",
+    "streakStart": "Есеп шеш — серияны баста",
+    "weakTopics": "Әлсіз тақырыптар",
+    "weakTopicsEmpty": "Есептер шығар — нені пысықтау керегін көрсетеміз",
+    "upcomingBadges": "Жақын бейджтер",
+    "badgesAllClose": "Барлық бейдж қолыңда дерлік!",
+    "weekday": {
+      "mon": "Дс",
+      "tue": "Сс",
+      "wed": "Ср",
+      "thu": "Бс",
+      "fri": "Жм",
+      "sat": "Сб",
+      "sun": "Жс"
+    }
+  },
+  "achievements": {
+    "first-question": { "title": "Алғашқы қадам", "desc": "Бірінші есепті шеш" },
+    "solved-100": { "title": "Жүз есеп", "desc": "100 есеп шеш" },
+    "solved-500": { "title": "Бес жүз есеп", "desc": "500 есеп шеш" },
+    "streak-7": { "title": "7 күн қатарынан", "desc": "7 күн қатарынан айналыс" },
+    "streak-30": { "title": "30 күн қатарынан", "desc": "30 күн қатарынан айналыс" },
+    "topic-mastery": { "title": "Тақырып шебері", "desc": "Кез келген тақырыпты меңгер" },
+    "exam-complete": { "title": "Сынақ аяқталды", "desc": "Сынақ блогын аяқта" },
+    "exam-90": { "title": "Жоғары балл", "desc": "Сынақ блогынан 90% жина" },
+    "earnedTitle": "Алынған бейджтер",
+    "lockedHint": "әлі ашылмаған"
   },
   "subjects": {
     "title": "Пәндер",
