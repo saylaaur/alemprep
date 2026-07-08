@@ -48,8 +48,8 @@ export default async function LandingPage({
     active: boolean;
   }[] = [
     { icon: Calculator, name: tSubjects('math'), desc: t('subjMathDesc'), active: true },
-    { icon: Atom, name: tSubjects('physics'), desc: tSubjects('comingSoon'), active: false },
-    { icon: Code2, name: tSubjects('informatics'), desc: tSubjects('comingSoon'), active: false },
+    { icon: Atom, name: tSubjects('physics'), desc: t('subjPhysicsDesc'), active: true },
+    { icon: Code2, name: tSubjects('informatics'), desc: t('subjInformaticsDesc'), active: true },
   ];
 
   return (
