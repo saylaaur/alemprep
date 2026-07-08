@@ -8,11 +8,8 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { signOut } from '@/lib/supabase/auth-actions';
-import {
-  updateProfileSettings,
-  MIN_DAILY_GOAL,
-  MAX_DAILY_GOAL,
-} from '@/lib/supabase/profile-actions';
+import { updateProfileSettings } from '@/lib/supabase/profile-actions';
+import { MIN_DAILY_GOAL, MAX_DAILY_GOAL } from '@/lib/settings';
 import type { Locale } from '@/types/db';
 import { Monitor, Moon, Sun, Languages, Target, User, LogOut, Check } from 'lucide-react';
 

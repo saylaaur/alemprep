@@ -2,11 +2,8 @@
 
 import { createClient } from './server';
 import { revalidatePath } from 'next/cache';
+import { MIN_DAILY_GOAL, MAX_DAILY_GOAL } from '@/lib/settings';
 import type { Locale } from '@/types/db';
-
-/** Границы дневной цели (задач в день). Дефолт схемы — 20. */
-export const MIN_DAILY_GOAL = 5;
-export const MAX_DAILY_GOAL = 200;
 
 /**
  * Обновляет пользовательские настройки в profiles: язык интерфейса и/или
