@@ -142,19 +142,21 @@ export function MockExamView({ availability, locale }: Props) {
     setSubmitting(true);
     const timeSpentMs = Date.now() - startTimeRef.current;
     const perQuestionMs = Math.round(timeSpentMs / Math.max(total, 1));
-    // по сессии на блок — результат каждого предмета пишется отдельно
-    await Promise.all(
-      blocks.map((block) =>
-        finishExamSession({
-          sessionId: block.sessionId,
-          results: block.questions.map((q) => ({
-            questionId: q.id,
-            givenAnswer: answers[q.id] ?? null,
-            timeSpentMs: perQuestionMs,
-          })),
-        })
-      )
-    );
+    // По сессии на блок — результат каждого предмета пишется отдельно.
+    // Последовательно, а не Promise.all: обе сессии обновляют XP и стрик в
+    // profiles; параллельные апдейты гонятся за last-write (часть XP терялась
+    // бы). Последовательный проход делает начисление корректным, а стрик —
+    // идемпотентным по дню.
+    for (const block of blocks) {
+      await finishExamSession({
+        sessionId: block.sessionId,
+        results: block.questions.map((q) => ({
+          questionId: q.id,
+          givenAnswer: answers[q.id] ?? null,
+          timeSpentMs: perQuestionMs,
+        })),
+      });
+    }
     setElapsedS(Math.min(EXAM_PAIR_DURATION_S, Math.round(timeSpentMs / 1000)));
     setSubmitting(false);
     setPhase('result');

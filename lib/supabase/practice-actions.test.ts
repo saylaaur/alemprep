@@ -79,6 +79,7 @@ function builder(store: Store, table: string) {
 
 // Импортируем ПОСЛЕ регистрации моков.
 import { finishExamSession } from './practice-actions';
+import { localDateStr, previousDateStr } from '../streak';
 
 function seed(): Store {
   return {
@@ -143,5 +144,33 @@ describe('finishExamSession — идемпотентность', () => {
     const res = await finishExamSession({ ...input, sessionId: 'NOPE' });
     expect(res).toEqual({ error: 'session not found' });
     expect(h.store.attempts).toHaveLength(0);
+  });
+
+  it('завершение блока продлевает дневной стрик (как тренажёр)', async () => {
+    const today = localDateStr();
+    h.store.profiles[0].last_active_date = previousDateStr(today);
+    h.store.profiles[0].current_streak = 3;
+
+    await finishExamSession(input);
+
+    expect(h.store.profiles[0].current_streak).toBe(4);
+    expect(h.store.profiles[0].last_active_date).toBe(today);
+    expect(h.store.profiles[0].longest_streak).toBe(4);
+  });
+
+  it('второй блок в тот же день не двигает стрик повторно', async () => {
+    const today = localDateStr();
+    h.store.profiles[0].last_active_date = previousDateStr(today);
+    h.store.profiles[0].current_streak = 3;
+    // Вторая сессия того же пробника (второй предмет).
+    h.store.sessions.push({
+      id: 'S2', user_id: 'U1', correct_count: null, score: null, finished_at: null,
+    });
+
+    await finishExamSession(input); // блок 1 → стрик 3 → 4
+    await finishExamSession({ ...input, sessionId: 'S2' }); // тот же день → без изменений
+
+    expect(h.store.profiles[0].current_streak).toBe(4);
+    expect(h.store.profiles[0].last_active_date).toBe(today);
   });
 });

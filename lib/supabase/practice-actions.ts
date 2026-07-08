@@ -219,18 +219,34 @@ export async function finishExamSession(input: {
     );
   }
 
-  // XP за пробник: +10 за верный ответ + разовый бонус за завершённый блок.
-  // Пробник не проходит через recordAttempt, поэтому XP начисляем здесь.
+  // XP + стрик за пробник. Пробник не проходит через recordAttempt, поэтому
+  // начисляем здесь: +10 за верный ответ и разовый бонус за завершённый блок.
+  // Завершение пробника засчитывает активность дня и продлевает стрик так же,
+  // как ответ в тренажёре. advanceStreak идемпотентен по дате — второй блок,
+  // завершённый в тот же день, стрик уже не двигает.
   const { data: examProfile } = await supabase
     .from('profiles')
-    .select('xp')
+    .select('xp, current_streak, last_active_date, longest_streak')
     .eq('id', user.id)
     .maybeSingle();
-  const xpGain = correctCount * XP_PER_CORRECT + EXAM_BLOCK_BONUS;
-  await supabase
-    .from('profiles')
-    .update({ xp: ((examProfile as { xp: number } | null)?.xp ?? 0) + xpGain })
-    .eq('id', user.id);
+  if (examProfile) {
+    const xpGain = correctCount * XP_PER_CORRECT + EXAM_BLOCK_BONUS;
+    const update: Record<string, unknown> = {
+      xp: ((examProfile.xp as number | null) ?? 0) + xpGain,
+    };
+    const next = advanceStreak({
+      lastActiveDate: examProfile.last_active_date as string | null,
+      currentStreak: (examProfile.current_streak as number | null) ?? 0,
+      today: localDateStr(),
+    });
+    if (next) {
+      update.current_streak = next.streak;
+      update.last_active_date = next.lastActiveDate;
+      const longest = (examProfile.longest_streak as number | null) ?? 0;
+      if (next.streak > longest) update.longest_streak = next.streak;
+    }
+    await supabase.from('profiles').update(update).eq('id', user.id);
+  }
 
   // Достижения: контекст пробника — доля балла от максимума блока (score / maxBlockScore).
   const maxBlockScore = input.results.reduce((sum, r) => {
@@ -242,6 +258,9 @@ export async function finishExamSession(input: {
     exam: { completed: true, scoreRatio: maxBlockScore > 0 ? score / maxBlockScore : 0 },
   });
 
+  // Дашборд показывает XP/уровень, стрик и полученные бейджи — их нужно
+  // пересчитать после пробника (как это делает recordAttempt для тренажёра).
+  revalidatePath('/[locale]/(app)/dashboard', 'page');
   revalidatePath('/[locale]/(app)/progress', 'page');
   return { ok: true as const, correctCount, score };
 }
