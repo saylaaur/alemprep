@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,8 @@ export function MobileNav({
   const tBrand = useTranslations('brand');
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
 
   // Close drawer on route change
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -31,14 +33,56 @@ export function MobileNav({
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
-  // Escape закрывает drawer
+  // Escape + фокус-trap. Пока drawer открыт: при открытии фокус уходит внутрь
+  // панели, Tab/Shift+Tab циклятся по её фокусируемым элементам и не сбегают на
+  // фон, а при закрытии фокус возвращается на кнопку-бургер. (Закрытый drawer
+  // выведен из tab-порядка через inert.)
   useEffect(() => {
     if (!open) return;
+    const drawer = drawerRef.current;
+    // Кнопка-бургер стабильна между открытием/закрытием — снимок для cleanup.
+    const trigger = openButtonRef.current;
+
+    const focusable = (): HTMLElement[] =>
+      drawer
+        ? Array.from(
+            drawer.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )
+          )
+        : [];
+
+    // Фокус внутрь панели при открытии.
+    focusable()[0]?.focus();
+
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === 'Escape') {
+        setOpen(false);
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const items = focusable();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first || !drawer?.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !drawer?.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+
+    document.addEventListener('keydown', handler);
+    return () => {
+      document.removeEventListener('keydown', handler);
+      // Возврат фокуса на триггер при закрытии.
+      trigger?.focus();
+    };
   }, [open]);
 
   const displayName = profile?.full_name?.trim() || email || '';
@@ -50,6 +94,7 @@ export function MobileNav({
       {/* Top bar (mobile only): бургер · бренд · стрик */}
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-2 backdrop-blur-xl md:hidden">
         <button
+          ref={openButtonRef}
           type="button"
           aria-label={tNav('openMenu')}
           aria-expanded={open}
@@ -85,6 +130,8 @@ export function MobileNav({
 
       {/* Drawer */}
       <div
+        ref={drawerRef}
+        inert={!open}
         className={cn(
           'fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r bg-card transition-transform duration-300 ease-smooth md:hidden',
           open ? 'translate-x-0' : '-translate-x-full'
