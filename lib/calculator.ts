@@ -167,6 +167,36 @@ function normalize(v: number): number {
   return Number(v.toPrecision(12));
 }
 
+/**
+ * Число → десятичная строка без экспоненциальной записи. `String(v)` (и
+ * `toPrecision`) переходят на вид "1e+21"/"1.6e-19" за пределами обычного
+ * диапазона — для дисплея это тупик: `e` не входит в допустимый ввод, так что
+ * дальнейшие нажатия цифр или повторное «=» дают неустранимую ошибку. Разумно
+ * ожидаемо на экзамене по физике (заряд электрона 1.6×10⁻¹⁹, скорость света
+ * и т.п.), поэтому разворачиваем экспоненту в обычную запись вручную.
+ */
+export function formatValue(v: number): string {
+  if (!Number.isFinite(v)) return String(v);
+  const str = v.toString();
+  const match = /^(-?)(\d+)(?:\.(\d+))?e([+-]\d+)$/i.exec(str);
+  if (!match) return str;
+
+  const [, sign, intPart, fracPart = '', expStr] = match;
+  const digits = intPart + fracPart;
+  const pointPos = intPart.length + Number(expStr);
+
+  let result: string;
+  if (pointPos <= 0) {
+    result = '0.' + '0'.repeat(-pointPos) + digits;
+  } else if (pointPos >= digits.length) {
+    result = digits + '0'.repeat(pointPos - digits.length);
+  } else {
+    result = digits.slice(0, pointPos) + '.' + digits.slice(pointPos);
+  }
+  if (result.includes('.')) result = result.replace(/0+$/, '').replace(/\.$/, '');
+  return sign + result;
+}
+
 export function evaluate(expr: string): CalcResult {
   if (!expr.trim()) return ERR;
   const tokens = tokenize(expr);

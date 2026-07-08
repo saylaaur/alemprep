@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { evaluate } from './calculator';
+import { evaluate, formatValue } from './calculator';
 
 function val(expr: string): number {
   const r = evaluate(expr);
@@ -52,6 +52,35 @@ describe('calculator: % и √', () => {
   it('корень из отрицательного — ошибка', () => {
     expect(evaluate('√-4')).toEqual({ ok: false });
     expect(evaluate('√(1-5)')).toEqual({ ok: false });
+  });
+});
+
+describe('formatValue: без экспоненциальной записи (иначе "e" ломает повторный ввод)', () => {
+  it('обычные числа — как есть', () => {
+    expect(formatValue(0)).toBe('0');
+    expect(formatValue(42)).toBe('42');
+    expect(formatValue(-3.5)).toBe('-3.5');
+    expect(formatValue(2.5)).toBe('2.5');
+  });
+  it('очень большое число (≥1e21) разворачивается в целую строку', () => {
+    expect(formatValue(1e21)).toBe('1' + '0'.repeat(21));
+    expect(formatValue(-1e21)).toBe('-1' + '0'.repeat(21));
+  });
+  it('очень маленькое число (константы физики) разворачивается без "e"', () => {
+    // заряд электрона, Кл
+    expect(formatValue(1.6e-19)).toBe('0.00000000000000000016');
+    expect(formatValue(-3.33e-8)).toBe('-0.0000000333');
+  });
+  it('результат formatValue снова парсится evaluate — не «кирпич»', () => {
+    for (const v of [1e21, 1.6e-19, -3.33e-8, 42, -3.5]) {
+      const s = formatValue(v);
+      expect(/e/i.test(s)).toBe(false);
+      const r = evaluate(s + '+0');
+      expect(r.ok).toBe(true);
+    }
+  });
+  it('целые экспоненциальные значения без дробной части', () => {
+    expect(formatValue(5e3)).toBe('5000');
   });
 });
 
