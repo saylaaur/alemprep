@@ -39,6 +39,48 @@ function formatTime(s: number): string {
 
 const BLUEPRINT_BLOCK_COUNT = EXAM_BLUEPRINT.reduce((s, p) => s + p.count, 0);
 
+// ── Восстановление незавершённого пробника (localStorage) ────────────────────
+// Экзамен привязан к живым сессиям в БД (по sessionId в блоках). При обновлении
+// страницы сохранённый прогресс восстанавливается на те же сессии, а не заводит
+// новые — поэтому refresh не сбрасывает экзамен и не плодит осиротевшие сессии.
+const EXAM_STORAGE_KEY = 'alemprep:mock-exam';
+
+type SavedExam = {
+  v: 1;
+  second: ExamSecondSubject;
+  blocks: PairExamBlock[];
+  contexts: [string, ExamContext][];
+  answers: Record<string, AnswerState>;
+  flags: Record<string, QuestionFlag>;
+  idx: number;
+  /** Абсолютное время старта (ms) — из него пересчитываем остаток таймера. */
+  startTime: number;
+};
+
+function readSavedExam(): SavedExam | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(EXAM_STORAGE_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw) as SavedExam;
+    if (saved?.v !== 1 || !Array.isArray(saved.blocks) || saved.blocks.length === 0) {
+      return null;
+    }
+    return saved;
+  } catch {
+    return null;
+  }
+}
+
+function clearSavedExam(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(EXAM_STORAGE_KEY);
+  } catch {
+    /* приватный режим / переполнение — тихо игнорируем */
+  }
+}
+
 type Props = {
   availability: ExamAvailability;
   locale: string;
@@ -66,6 +108,7 @@ export function MockExamView({ availability, locale }: Props) {
   const [elapsedS, setElapsedS] = useState(0);
   const startTimeRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const restoredRef = useRef(false);
 
   const questions = useMemo(() => blocks.flatMap((b) => b.questions), [blocks]);
   // блоки с глобальным смещением нумерации (1–40 / 41–80 при полных банках)
@@ -102,8 +145,9 @@ export function MockExamView({ availability, locale }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timesUp]);
 
-  // Уход со страницы во время экзамена теряет прогресс — предупреждаем.
-  // Текст диалога браузер показывает свой, кастомный не поддерживается.
+  // Предупреждаем при уходе со страницы во время экзамена. Прогресс сохраняется
+  // в localStorage и восстановится при возврате, но диалог защищает от случайного
+  // закрытия. Текст диалога браузер показывает свой, кастомный не поддерживается.
   useEffect(() => {
     if (phase !== 'exam') return;
     const handler = (e: BeforeUnloadEvent) => {
@@ -113,6 +157,52 @@ export function MockExamView({ availability, locale }: Props) {
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
   }, [phase]);
+
+  // Восстановление незавершённого пробника при монтировании (после refresh).
+  // Один раз: перечитываем сохранённый прогресс, возвращаем те же блоки/сессии,
+  // ответы и пометки, а таймер пересчитываем от абсолютного времени старта.
+  // Должно идти ДО эффекта-персиста, иначе тот успел бы затереть ключ.
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    const saved = readSavedExam();
+    if (!saved) return;
+
+    const remaining = EXAM_PAIR_DURATION_S - Math.floor((Date.now() - saved.startTime) / 1000);
+    startTimeRef.current = saved.startTime;
+    setSecond(saved.second);
+    setBlocks(saved.blocks);
+    setContexts(new Map(saved.contexts));
+    setAnswers(saved.answers ?? {});
+    setFlags(saved.flags ?? {});
+    setIdx(saved.idx ?? 0);
+    setTimeLeft(Math.max(0, remaining));
+    setPhase('exam');
+    // Время уже вышло, пока страница была закрыта — сдаём сразу (как по таймеру).
+    if (remaining <= 0) setTimesUp(true);
+  }, []);
+
+  // Персист прогресса экзамена. Блоки/контексты статичны, реально пишем на
+  // изменения ответов/пометок/индекса. startTime — из рефа (устанавливается
+  // синхронно со стартом, поэтому здесь уже актуален).
+  useEffect(() => {
+    if (typeof window === 'undefined' || phase !== 'exam') return;
+    const saved: SavedExam = {
+      v: 1,
+      second,
+      blocks,
+      contexts: Array.from(contexts.entries()),
+      answers,
+      flags,
+      idx,
+      startTime: startTimeRef.current,
+    };
+    try {
+      window.localStorage.setItem(EXAM_STORAGE_KEY, JSON.stringify(saved));
+    } catch {
+      /* приватный режим / переполнение — тихо игнорируем */
+    }
+  }, [phase, second, blocks, contexts, answers, flags, idx]);
 
   const startExam = useCallback(async () => {
     // Попытки сохраняются только при живых сессиях в БД — без них пробник
@@ -160,6 +250,9 @@ export function MockExamView({ availability, locale }: Props) {
     setElapsedS(Math.min(EXAM_PAIR_DURATION_S, Math.round(timeSpentMs / 1000)));
     setSubmitting(false);
     setPhase('result');
+    // Экзамен завершён — сохранённый прогресс больше не нужен (иначе
+    // восстановился бы уже сданный пробник при следующем заходе).
+    clearSavedExam();
   }, [submitting, blocks, answers, total]);
 
   const setAnswer = (next: AnswerState) => {
