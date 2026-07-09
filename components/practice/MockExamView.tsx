@@ -60,6 +60,7 @@ export function MockExamView({ availability, locale }: Props) {
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
   const [timesUp, setTimesUp] = useState(false);
@@ -140,21 +141,38 @@ export function MockExamView({ availability, locale }: Props) {
     if (submitting) return;
     if (!auto) setConfirmOpen(false);
     setSubmitting(true);
+    setSubmitError(false);
     const timeSpentMs = Date.now() - startTimeRef.current;
     const perQuestionMs = Math.round(timeSpentMs / Math.max(total, 1));
-    // по сессии на блок — результат каждого предмета пишется отдельно
-    await Promise.all(
-      blocks.map((block) =>
-        finishExamSession({
+    // По сессии на блок — результат каждого предмета пишется отдельно.
+    // Последовательно, а не Promise.all: finishExamSession начисляет XP на
+    // profiles через read-then-write (SELECT xp → UPDATE xp = old + gain).
+    // Параллельный вызов для двух блоков одного и того же пользователя —
+    // гонка на одной строке profiles: второй UPDATE перезаписывает результат
+    // первого, XP одного блока молча теряется. Последовательный проход
+    // гарантирует, что каждый read-then-write полностью завершается до
+    // следующего.
+    try {
+      for (const block of blocks) {
+        const res = await finishExamSession({
           sessionId: block.sessionId,
           results: block.questions.map((q) => ({
             questionId: q.id,
             givenAnswer: answers[q.id] ?? null,
             timeSpentMs: perQuestionMs,
           })),
-        })
-      )
-    );
+        });
+        if ('error' in res) {
+          setSubmitError(true);
+          setSubmitting(false);
+          return;
+        }
+      }
+    } catch {
+      setSubmitError(true);
+      setSubmitting(false);
+      return;
+    }
     setElapsedS(Math.min(EXAM_PAIR_DURATION_S, Math.round(timeSpentMs / 1000)));
     setSubmitting(false);
     setPhase('result');
@@ -385,6 +403,12 @@ export function MockExamView({ availability, locale }: Props) {
 
       {/* ── Floating calculator (только во время экзамена) ───────────── */}
       <Calculator open={calcOpen} onClose={() => setCalcOpen(false)} />
+
+      {submitError ? (
+        <div className="mx-4 mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive sm:mx-6" role="alert">
+          {t('submitError')}
+        </div>
+      ) : null}
 
       {/* ── Body: question panel + navigator sidebar ─────────────────── */}
       <div className="flex min-h-0">

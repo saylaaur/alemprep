@@ -33,6 +33,8 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [focus, setFocus] = useState(false);
   const [xpPop, setXpPop] = useState<{ id: number; amount: number } | null>(null);
+  const [pendingAttempts, setPendingAttempts] = useState<Record<string, boolean>>({});
+  const [saveErrors, setSaveErrors] = useState<Record<string, boolean>>({});
   const questionShownAt = useRef<Record<string, number>>({});
   const recordedRef = useRef<Set<string>>(new Set());
 
@@ -63,6 +65,8 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
   const answer = current ? (answers[current.id] ?? null) : null;
   const isRevealed = current ? !!revealed[current.id] : false;
   const isCorrect = isRevealed && current != null && checkAnswer(current.type, answer, current.body);
+  const isSaving = current ? !!pendingAttempts[current.id] : false;
+  const hasSaveError = current ? !!saveErrors[current.id] : false;
   const ctx = current?.context_id ? contexts.get(current.context_id) : null;
 
   const setAnswer = (next: AnswerState) => {
@@ -73,24 +77,33 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
   const check = () => {
     if (!current) return;
     if (!isAnswerComplete(current.type, answer, current.body)) return;
-    if (recordedRef.current.has(current.id)) return;
-    recordedRef.current.add(current.id);
-
-    setRevealed((prev) => ({ ...prev, [current.id]: true }));
+    if (recordedRef.current.has(current.id) || pendingAttempts[current.id]) return;
 
     // Сохраняем попытку в БД и показываем «+N XP» по реально начисленному XP.
     const shownAt = questionShownAt.current[current.id] ?? Date.now();
     const timeSpent = Date.now() - shownAt;
     const correct = checkAnswer(current.type, answer, current.body);
+    setPendingAttempts((prev) => ({ ...prev, [current.id]: true }));
+    setSaveErrors((prev) => ({ ...prev, [current.id]: false }));
     void recordAttempt({
       questionId: current.id,
       givenAnswer: answer,
       isCorrect: correct,
       timeSpentMs: timeSpent,
     }).then((res) => {
+      if (!res.ok) {
+        setSaveErrors((prev) => ({ ...prev, [current.id]: true }));
+        return;
+      }
+      recordedRef.current.add(current.id);
+      setRevealed((prev) => ({ ...prev, [current.id]: true }));
       if (res.ok && res.xpAwarded > 0) {
         setXpPop({ id: Date.now(), amount: res.xpAwarded });
       }
+    }).catch(() => {
+      setSaveErrors((prev) => ({ ...prev, [current.id]: true }));
+    }).finally(() => {
+      setPendingAttempts((prev) => ({ ...prev, [current.id]: false }));
     });
   };
 
@@ -345,6 +358,11 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
             ) : null}
           </div>
         ) : null}
+        {!isRevealed && hasSaveError ? (
+          <div className="mb-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
+            {t('saveError')}
+          </div>
+        ) : null}
       </div>
 
       {/* Controls */}
@@ -356,9 +374,9 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
         {!isRevealed ? (
           <Button
             onClick={check}
-            disabled={!isAnswerComplete(current.type, answer, current.body)}
+            disabled={!isAnswerComplete(current.type, answer, current.body) || isSaving}
           >
-            {t('checkAnswer')}
+            {isSaving ? t('saving') : t('checkAnswer')}
           </Button>
         ) : isLast && allDone ? (
           <div className="inline-flex items-center gap-2 rounded-lg bg-success/10 px-4 py-2 text-sm font-medium text-success">

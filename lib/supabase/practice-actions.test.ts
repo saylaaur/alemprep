@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 /**
  * Идемпотентность finishExamSession: повторный вызов на уже завершённой
@@ -10,9 +10,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 type Row = Record<string, unknown>;
 type Store = Record<string, Row[]>;
+type FailPoint = { table: string; op: 'delete' | 'insert' | 'update' | 'select'; message: string };
 
 // Общий стор между моком ./server и телом теста.
-const h = vi.hoisted(() => ({ store: {} as Store }));
+const h = vi.hoisted(() => ({ store: {} as Store, failOnce: null as FailPoint | null }));
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('./queries', () => ({ getPairExamBlocks: vi.fn() }));
@@ -31,7 +32,7 @@ function makeClient(store: Store) {
 
 /** Минимальный чейнбилдер: select/insert/update + eq/in/is + maybeSingle/await. */
 function builder(store: Store, table: string) {
-  let op: 'select' | 'insert' | 'update' = 'select';
+  let op: 'delete' | 'select' | 'insert' | 'update' = 'select';
   let payload: Row | Row[] | null = null;
   const eqs: Array<[string, unknown]> = [];
   const ins: Array<[string, unknown[]]> = [];
@@ -43,24 +44,37 @@ function builder(store: Store, table: string) {
     ins.every(([c, vs]) => vs.includes(r[c])) &&
     iss.every(([c, v]) => (v === null ? r[c] == null : r[c] === v));
 
-  const run = (): { data: Row[]; error: null } => {
+  const run = (): { data: Row[]; error: { message: string } | null } => {
+    if (h.failOnce?.table === table && h.failOnce.op === op) {
+      const message = h.failOnce.message;
+      h.failOnce = null;
+      return { data: [], error: { message } };
+    }
     const table_ = rows();
     if (op === 'insert') {
       const arr = Array.isArray(payload) ? payload : payload ? [payload] : [];
-      for (const row of arr) table_.push({ ...row });
-      return { data: arr, error: null };
+      const inserted = arr.map((row, i) => ({ id: row.id ?? `${table}-${table_.length + i + 1}`, ...row }));
+      for (const row of inserted) table_.push({ ...row });
+      return { data: inserted.map((row) => ({ ...row })), error: null };
     }
     if (op === 'update') {
-      for (const r of table_) if (match(r)) Object.assign(r, payload);
-      return { data: [], error: null };
+      const updated: Row[] = [];
+      for (const r of table_) if (match(r)) { Object.assign(r, payload); updated.push(r); }
+      return { data: updated.map((row) => ({ ...row })), error: null };
     }
-    return { data: table_.filter(match), error: null };
+    if (op === 'delete') {
+      const deleted = table_.filter(match);
+      store[table] = table_.filter((row) => !match(row));
+      return { data: deleted.map((row) => ({ ...row })), error: null };
+    }
+    return { data: table_.filter(match).map((row) => ({ ...row })), error: null };
   };
 
   const api = {
     select: () => api,
     insert: (p: Row | Row[]) => ((op = 'insert'), (payload = p), api),
     update: (p: Row) => ((op = 'update'), (payload = p), api),
+    delete: () => ((op = 'delete'), api),
     eq: (c: string, v: unknown) => (eqs.push([c, v]), api),
     in: (c: string, v: unknown[]) => (ins.push([c, v]), api),
     is: (c: string, v: unknown) => (iss.push([c, v]), api),
@@ -70,7 +84,7 @@ function builder(store: Store, table: string) {
     },
     single: () => api.maybeSingle(),
     then: <T>(
-      onF: (v: { data: Row[]; error: null }) => T,
+      onF: (v: { data: Row[]; error: { message: string } | null }) => T,
       onR?: (e: unknown) => T
     ) => Promise.resolve(run()).then(onF, onR),
   };
@@ -78,7 +92,7 @@ function builder(store: Store, table: string) {
 }
 
 // Импортируем ПОСЛЕ регистрации моков.
-import { finishExamSession } from './practice-actions';
+import { finishExamSession, recordAttempt } from './practice-actions';
 
 function seed(): Store {
   return {
@@ -89,7 +103,13 @@ function seed(): Store {
       { id: 'Q1', type: 'single', body: { correct: 'A' }, topic_id: 'T1' },
       { id: 'Q2', type: 'single', body: { correct: 'B' }, topic_id: 'T1' },
     ],
-    profiles: [{ id: 'U1', xp: 0, current_streak: 3 }],
+    profiles: [{
+      id: 'U1',
+      xp: 0,
+      current_streak: 3,
+      longest_streak: 3,
+      last_active_date: '2026-07-03',
+    }],
     attempts: [],
     user_achievements: [],
   };
@@ -105,7 +125,14 @@ const input = {
 
 describe('finishExamSession — идемпотентность', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 6, 4, 12, 0, 0));
     h.store = seed();
+    h.failOnce = null;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('первый вызов завершает сессию и начисляет XP', async () => {
@@ -118,6 +145,55 @@ describe('finishExamSession — идемпотентность', () => {
 
     expect(h.store.attempts).toHaveLength(2);
     expect((h.store.profiles[0].xp as number)).toBeGreaterThan(0);
+  });
+
+  it('завершение пробника считается активностью дня и продлевает стрик', async () => {
+    const res = await finishExamSession(input);
+
+    expect(res).toMatchObject({ ok: true });
+    expect(h.store.profiles[0]).toMatchObject({
+      current_streak: 4,
+      longest_streak: 4,
+      last_active_date: '2026-07-04',
+    });
+  });
+
+  it('если запись попыток падает, сессия остаётся незавершённой для повторной отправки', async () => {
+    h.failOnce = { table: 'attempts', op: 'insert', message: 'insert failed' };
+
+    const res = await finishExamSession(input);
+
+    expect(res).toEqual({ error: 'insert failed' });
+    expect(h.store.sessions[0]).toMatchObject({
+      correct_count: null,
+      score: null,
+      finished_at: null,
+    });
+    expect(h.store.attempts).toHaveLength(0);
+    expect(h.store.profiles[0]).toMatchObject({
+      xp: 0,
+      current_streak: 3,
+      last_active_date: '2026-07-03',
+    });
+  });
+
+  it('если обновление профиля падает, попытки откатываются и повторная отправка не задублирует их', async () => {
+    h.failOnce = { table: 'profiles', op: 'update', message: 'profile failed' };
+
+    const res = await finishExamSession(input);
+
+    expect(res).toEqual({ error: 'profile failed' });
+    expect(h.store.sessions[0]).toMatchObject({
+      correct_count: null,
+      score: null,
+      finished_at: null,
+    });
+    expect(h.store.attempts).toHaveLength(0);
+    expect(h.store.profiles[0]).toMatchObject({
+      xp: 0,
+      current_streak: 3,
+      last_active_date: '2026-07-03',
+    });
   });
 
   it('повторный вызов ничего не пересчитывает и не начисляет заново', async () => {
@@ -143,5 +219,56 @@ describe('finishExamSession — идемпотентность', () => {
     const res = await finishExamSession({ ...input, sessionId: 'NOPE' });
     expect(res).toEqual({ error: 'session not found' });
     expect(h.store.attempts).toHaveLength(0);
+  });
+
+  it('гонка: параллельный (Promise.all) двойной вызов на одной сессии не дублирует XP/попытки', async () => {
+    // Реалистичный сценарий: двойной клик на «Завершить», или ретрай сети,
+    // отправляющий второй запрос до того, как первый успел проставить
+    // finished_at. Условный UPDATE (finished_at IS NULL) должен гарантировать,
+    // что только один из двух вызовов реально проведёт побочные эффекты.
+    const [a, b] = await Promise.all([finishExamSession(input), finishExamSession(input)]);
+
+    expect(a).toEqual(b);
+    expect(a).toMatchObject({ ok: true, correctCount: 1 });
+
+    expect(h.store.sessions).toHaveLength(1);
+    expect(h.store.sessions[0].finished_at).toBeTruthy();
+    // Попытки вставлены только один раз (победителем гонки), не задвоены.
+    expect(h.store.attempts).toHaveLength(2);
+    // XP начислен один раз: 1 верный × 10 + бонус за блок 50 = 60.
+    expect(h.store.profiles[0].xp).toBe(60);
+  });
+});
+
+describe('recordAttempt — сохранение прогресса', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 6, 4, 12, 0, 0));
+    h.store = seed();
+    h.failOnce = null;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('если обновление профиля падает, попытка откатывается и клиент видит ошибку', async () => {
+    h.failOnce = { table: 'profiles', op: 'update', message: 'profile failed' };
+
+    const res = await recordAttempt({
+      questionId: 'Q1',
+      givenAnswer: 'A',
+      isCorrect: true,
+      timeSpentMs: 1000,
+    });
+
+    expect(res).toEqual({ ok: false, error: 'profile failed' });
+    expect(h.store.attempts).toHaveLength(0);
+    expect(h.store.profiles[0]).toMatchObject({
+      xp: 0,
+      current_streak: 3,
+      last_active_date: '2026-07-03',
+    });
+    expect(h.store.user_achievements).toHaveLength(0);
   });
 });
