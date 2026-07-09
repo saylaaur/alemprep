@@ -267,6 +267,40 @@ describe('recordAttempt — сохранение прогресса', () => {
     vi.useRealTimers();
   });
 
+  it('верный ответ начисляет +10 XP и сохраняет попытку как верную', async () => {
+    const res = await recordAttempt({
+      questionId: 'Q1',
+      givenAnswer: 'A',
+      isCorrect: true,
+      timeSpentMs: 1000,
+    });
+
+    expect(res).toEqual({ ok: true, xpAwarded: 10 });
+    expect(h.store.profiles[0].xp).toBe(10);
+    expect(h.store.attempts).toHaveLength(1);
+    expect(h.store.attempts[0]).toMatchObject({
+      question_id: 'Q1',
+      is_correct: true,
+    });
+  });
+
+  it('неверный ответ не начисляет XP, но попытка сохраняется', async () => {
+    const res = await recordAttempt({
+      questionId: 'Q2',
+      givenAnswer: 'wrong',
+      isCorrect: false,
+      timeSpentMs: 1000,
+    });
+
+    expect(res).toEqual({ ok: true, xpAwarded: 0 });
+    expect(h.store.profiles[0].xp).toBe(0);
+    expect(h.store.attempts).toHaveLength(1);
+    expect(h.store.attempts[0]).toMatchObject({
+      question_id: 'Q2',
+      is_correct: false,
+    });
+  });
+
   it('если обновление профиля падает, попытка откатывается и клиент видит ошибку', async () => {
     h.failOnce = { table: 'profiles', op: 'update', message: 'profile failed' };
 
