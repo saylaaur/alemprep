@@ -29,7 +29,13 @@ export function advanceStreak(input: {
   today: string;
 }): { streak: number; lastActiveDate: string } | null {
   const { lastActiveDate, currentStreak, today } = input;
-  if (lastActiveDate === today) return null;
+  if (lastActiveDate === today) {
+    // Активность сегодня уже учтена — но если currentStreak каким-то
+    // образом оказался 0 при уже проставленной сегодняшней дате (аномалия
+    // данных), самоисправляем в 1 вместо того, чтобы застрять на 0 до
+    // следующего дня: null здесь означал бы «обновлять нечего», хотя есть что.
+    return currentStreak >= 1 ? null : { streak: 1, lastActiveDate: today };
+  }
   const streak = lastActiveDate === previousDateStr(today) ? currentStreak + 1 : 1;
   return { streak, lastActiveDate: today };
 }

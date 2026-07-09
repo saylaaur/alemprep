@@ -44,6 +44,11 @@ describe('advanceStreak', () => {
       advanceStreak({ lastActiveDate: '2026-07-04', currentStreak: 5, today: '2026-07-04' })
     ).toBeNull();
   });
+  it('сегодня уже активны, но стрик аномально 0 — самоисправление в 1, не застревает', () => {
+    expect(
+      advanceStreak({ lastActiveDate: '2026-07-04', currentStreak: 0, today: '2026-07-04' })
+    ).toEqual({ streak: 1, lastActiveDate: '2026-07-04' });
+  });
   it('пропуск дня — стрик сбрасывается в 1', () => {
     expect(
       advanceStreak({ lastActiveDate: '2026-07-01', currentStreak: 10, today: '2026-07-04' })
