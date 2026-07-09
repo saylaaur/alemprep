@@ -31,16 +31,21 @@ export async function recordAttempt(input: RecordInput) {
   if (!user) return { ok: false as const, error: 'unauthenticated' };
 
   // 1. Записываем попытку
-  const { error: insertError } = await supabase.from('attempts').insert({
-    user_id: user.id,
-    question_id: input.questionId,
-    given_answer: input.givenAnswer,
-    is_correct: input.isCorrect,
-    time_spent_ms: input.timeSpentMs,
-  });
+  const { data: insertedAttempt, error: insertError } = await supabase
+    .from('attempts')
+    .insert({
+      user_id: user.id,
+      question_id: input.questionId,
+      given_answer: input.givenAnswer,
+      is_correct: input.isCorrect,
+      time_spent_ms: input.timeSpentMs,
+    })
+    .select('id')
+    .single();
   if (insertError) {
     return { ok: false as const, error: insertError.message };
   }
+  const attemptId = (insertedAttempt as { id: string } | null)?.id;
 
   // 2. Обновляем стрик, рекорд стрика и XP. Локальная дата — тот же базис,
   // что у getTodayAttemptsCount; toISOString здесь давал бы UTC-сдвиг.
@@ -69,7 +74,13 @@ export async function recordAttempt(input: RecordInput) {
       xpAwarded = XP_PER_CORRECT;
     }
     if (Object.keys(update).length > 0) {
-      await supabase.from('profiles').update(update).eq('id', user.id);
+      const { error: profileError } = await supabase.from('profiles').update(update).eq('id', user.id);
+      if (profileError) {
+        if (attemptId) {
+          await supabase.from('attempts').delete().eq('id', attemptId).eq('user_id', user.id);
+        }
+        return { ok: false as const, error: profileError.message };
+      }
     }
   }
 
@@ -198,16 +209,38 @@ export async function finishExamSession(input: {
   const correctCount = scored.filter((s) => s.isCorrect).length;
   const score = scored.reduce((sum, s) => sum + s.points, 0);
 
-  const { error: sessionError } = await supabase
+  // Условный UPDATE (finished_at IS NULL) закрывает более узкое TOCTOU-окно
+  // между проверкой prior.finished_at выше и этой записью: если два запроса
+  // на одну и ту же сессию (двойной клик, ретрай сети) проскочили проверку
+  // одновременно, .select() после update вернёт затронутые строки только
+  // победителю гонки — проигравший увидит пустой результат и не продублирует
+  // XP/бонус/достижения.
+  const { data: updatedRows, error: sessionError } = await supabase
     .from('sessions')
     .update({ correct_count: correctCount, score, finished_at: new Date().toISOString() })
     .eq('id', input.sessionId)
-    .eq('user_id', user.id);
+    .eq('user_id', user.id)
+    .is('finished_at', null)
+    .select('correct_count, score');
 
   if (sessionError) return { error: sessionError.message };
 
+  if (!updatedRows || updatedRows.length === 0) {
+    // Существование сессии уже подтверждено выше — значит, кто-то другой
+    // выиграл гонку и завершил её между нашей проверкой и этим update.
+    // Возвращаем то, что сохранил победитель, без повторных побочных эффектов.
+    const { data: raceWinner } = await supabase
+      .from('sessions')
+      .select('correct_count, score')
+      .eq('id', input.sessionId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    const winner = raceWinner as { correct_count: number | null; score: number | null } | null;
+    return { ok: true as const, correctCount: winner?.correct_count ?? 0, score: winner?.score ?? 0 };
+  }
+
   if (scored.length > 0) {
-    await supabase.from('attempts').insert(
+    const { error: attemptsError } = await supabase.from('attempts').insert(
       scored.map((s) => ({
         user_id: user.id,
         question_id: s.questionId,
@@ -217,35 +250,71 @@ export async function finishExamSession(input: {
         time_spent_ms: s.timeSpentMs,
       }))
     );
+    if (attemptsError) {
+      await supabase
+        .from('sessions')
+        .update({
+          correct_count: prior.correct_count,
+          score: prior.score,
+          finished_at: prior.finished_at,
+        })
+        .eq('id', input.sessionId)
+        .eq('user_id', user.id);
+      return { error: attemptsError.message };
+    }
   }
 
-  // XP + стрик за пробник. Пробник не проходит через recordAttempt, поэтому
-  // начисляем здесь: +10 за верный ответ и разовый бонус за завершённый блок.
-  // Завершение пробника засчитывает активность дня и продлевает стрик так же,
-  // как ответ в тренажёре. advanceStreak идемпотентен по дате — второй блок,
-  // завершённый в тот же день, стрик уже не двигает.
+  // XP за пробник: +10 за верный ответ + разовый бонус за завершённый блок.
+  // Пробник не проходит через recordAttempt, поэтому XP и стрик обновляем здесь.
   const { data: examProfile } = await supabase
     .from('profiles')
     .select('xp, current_streak, last_active_date, longest_streak')
     .eq('id', user.id)
     .maybeSingle();
-  if (examProfile) {
-    const xpGain = correctCount * XP_PER_CORRECT + EXAM_BLOCK_BONUS;
-    const update: Record<string, unknown> = {
-      xp: ((examProfile.xp as number | null) ?? 0) + xpGain,
-    };
-    const next = advanceStreak({
-      lastActiveDate: examProfile.last_active_date as string | null,
-      currentStreak: (examProfile.current_streak as number | null) ?? 0,
+  const profile = examProfile as {
+    xp: number | null;
+    current_streak: number | null;
+    last_active_date: string | null;
+    longest_streak: number | null;
+  } | null;
+  const xpGain = correctCount * XP_PER_CORRECT + EXAM_BLOCK_BONUS;
+  const profileUpdate: Record<string, unknown> = {
+    xp: (profile?.xp ?? 0) + xpGain,
+  };
+  if (profile) {
+    const nextStreak = advanceStreak({
+      lastActiveDate: profile.last_active_date,
+      currentStreak: profile.current_streak ?? 0,
       today: localDateStr(),
     });
-    if (next) {
-      update.current_streak = next.streak;
-      update.last_active_date = next.lastActiveDate;
-      const longest = (examProfile.longest_streak as number | null) ?? 0;
-      if (next.streak > longest) update.longest_streak = next.streak;
+    if (nextStreak) {
+      profileUpdate.current_streak = nextStreak.streak;
+      profileUpdate.last_active_date = nextStreak.lastActiveDate;
+      if (nextStreak.streak > (profile.longest_streak ?? 0)) {
+        profileUpdate.longest_streak = nextStreak.streak;
+      }
     }
-    await supabase.from('profiles').update(update).eq('id', user.id);
+  }
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .update(profileUpdate)
+    .eq('id', user.id);
+  if (profileError) {
+    await supabase
+      .from('attempts')
+      .delete()
+      .eq('session_id', input.sessionId)
+      .eq('user_id', user.id);
+    await supabase
+      .from('sessions')
+      .update({
+        correct_count: prior.correct_count,
+        score: prior.score,
+        finished_at: prior.finished_at,
+      })
+      .eq('id', input.sessionId)
+      .eq('user_id', user.id);
+    return { error: profileError.message };
   }
 
   // Достижения: контекст пробника — доля балла от максимума блока (score / maxBlockScore).
@@ -258,9 +327,6 @@ export async function finishExamSession(input: {
     exam: { completed: true, scoreRatio: maxBlockScore > 0 ? score / maxBlockScore : 0 },
   });
 
-  // Дашборд показывает XP/уровень, стрик и полученные бейджи — их нужно
-  // пересчитать после пробника (как это делает recordAttempt для тренажёра).
-  revalidatePath('/[locale]/(app)/dashboard', 'page');
   revalidatePath('/[locale]/(app)/progress', 'page');
   return { ok: true as const, correctCount, score };
 }

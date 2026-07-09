@@ -102,6 +102,7 @@ export function MockExamView({ availability, locale }: Props) {
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
   const [timesUp, setTimesUp] = useState(false);
@@ -230,22 +231,37 @@ export function MockExamView({ availability, locale }: Props) {
     if (submitting) return;
     if (!auto) setConfirmOpen(false);
     setSubmitting(true);
+    setSubmitError(false);
     const timeSpentMs = Date.now() - startTimeRef.current;
     const perQuestionMs = Math.round(timeSpentMs / Math.max(total, 1));
     // По сессии на блок — результат каждого предмета пишется отдельно.
-    // Последовательно, а не Promise.all: обе сессии обновляют XP и стрик в
-    // profiles; параллельные апдейты гонятся за last-write (часть XP терялась
-    // бы). Последовательный проход делает начисление корректным, а стрик —
-    // идемпотентным по дню.
-    for (const block of blocks) {
-      await finishExamSession({
-        sessionId: block.sessionId,
-        results: block.questions.map((q) => ({
-          questionId: q.id,
-          givenAnswer: answers[q.id] ?? null,
-          timeSpentMs: perQuestionMs,
-        })),
-      });
+    // Последовательно, а не Promise.all: finishExamSession начисляет XP на
+    // profiles через read-then-write (SELECT xp → UPDATE xp = old + gain).
+    // Параллельный вызов для двух блоков одного и того же пользователя —
+    // гонка на одной строке profiles: второй UPDATE перезаписывает результат
+    // первого, XP одного блока молча теряется. Последовательный проход
+    // гарантирует, что каждый read-then-write полностью завершается до
+    // следующего.
+    try {
+      for (const block of blocks) {
+        const res = await finishExamSession({
+          sessionId: block.sessionId,
+          results: block.questions.map((q) => ({
+            questionId: q.id,
+            givenAnswer: answers[q.id] ?? null,
+            timeSpentMs: perQuestionMs,
+          })),
+        });
+        if ('error' in res) {
+          setSubmitError(true);
+          setSubmitting(false);
+          return;
+        }
+      }
+    } catch {
+      setSubmitError(true);
+      setSubmitting(false);
+      return;
     }
     setElapsedS(Math.min(EXAM_PAIR_DURATION_S, Math.round(timeSpentMs / 1000)));
     setSubmitting(false);
@@ -481,6 +497,12 @@ export function MockExamView({ availability, locale }: Props) {
       {/* ── Floating calculator (только во время экзамена) ───────────── */}
       <Calculator open={calcOpen} onClose={() => setCalcOpen(false)} />
 
+      {submitError ? (
+        <div className="mx-4 mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive sm:mx-6" role="alert">
+          {t('submitError')}
+        </div>
+      ) : null}
+
       {/* ── Body: question panel + navigator sidebar ─────────────────── */}
       <div className="flex min-h-0">
         {/* Question column */}
@@ -559,46 +581,52 @@ export function MockExamView({ availability, locale }: Props) {
             {/* Answer options */}
             <div className="mb-8 space-y-2.5">
               {current.type === 'single' && 'options' in current.body && (
-                (current.body as { options: { id: string; content: string }[] }).options.map((opt) => {
-                  const selected = answer === opt.id;
-                  return (
-                    <button key={opt.id} onClick={() => setAnswer(opt.id)}
-                      aria-pressed={selected}
-                      className={cn(
-                        'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
-                        selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
-                      )}>
-                      <span className={cn(
-                        'grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold',
-                        selected ? 'bg-primary text-primary-foreground' : 'border border-muted-foreground/30 text-muted-foreground'
-                      )}>{opt.id}</span>
-                      <MathText text={opt.content} />
-                    </button>
-                  );
-                })
+                <div role="radiogroup" className="space-y-2.5">
+                  {(current.body as { options: { id: string; content: string }[] }).options.map((opt) => {
+                    const selected = answer === opt.id;
+                    return (
+                      <button key={opt.id} onClick={() => setAnswer(opt.id)}
+                        role="radio"
+                        aria-checked={selected}
+                        className={cn(
+                          'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
+                          selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
+                        )}>
+                        <span className={cn(
+                          'grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold',
+                          selected ? 'bg-primary text-primary-foreground' : 'border border-muted-foreground/30 text-muted-foreground'
+                        )}>{opt.id}</span>
+                        <MathText text={opt.content} />
+                      </button>
+                    );
+                  })}
+                </div>
               )}
 
               {current.type === 'multi' && 'options' in current.body && (
-                (current.body as { options: { id: string; content: string }[] }).options.map((opt) => {
-                  const selected = Array.isArray(answer) && answer.includes(opt.id);
-                  return (
-                    <button key={opt.id} onClick={() => {
-                      const arr = Array.isArray(answer) ? answer : [];
-                      setAnswer(selected ? arr.filter((x) => x !== opt.id) : [...arr, opt.id]);
-                    }}
-                      aria-pressed={selected}
-                      className={cn(
-                        'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
-                        selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
-                      )}>
-                      <span className={cn(
-                        'grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold',
-                        selected ? 'bg-primary text-primary-foreground' : 'border border-muted-foreground/30 text-muted-foreground'
-                      )}>{opt.id}</span>
-                      <MathText text={opt.content} />
-                    </button>
-                  );
-                })
+                <div role="group" aria-label={t(PART_TITLE_KEY.multi)} className="space-y-2.5">
+                  {(current.body as { options: { id: string; content: string }[] }).options.map((opt) => {
+                    const selected = Array.isArray(answer) && answer.includes(opt.id);
+                    return (
+                      <button key={opt.id} onClick={() => {
+                        const arr = Array.isArray(answer) ? answer : [];
+                        setAnswer(selected ? arr.filter((x) => x !== opt.id) : [...arr, opt.id]);
+                      }}
+                        role="checkbox"
+                        aria-checked={selected}
+                        className={cn(
+                          'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
+                          selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
+                        )}>
+                        <span className={cn(
+                          'grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold',
+                          selected ? 'bg-primary text-primary-foreground' : 'border border-muted-foreground/30 text-muted-foreground'
+                        )}>{opt.id}</span>
+                        <MathText text={opt.content} />
+                      </button>
+                    );
+                  })}
+                </div>
               )}
 
               {current.type === 'matching' && 'left' in current.body && (

@@ -4,15 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { X, Delete } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { evaluate } from '@/lib/calculator';
+import { evaluate, formatValue } from '@/lib/calculator';
 
 /** Символы, которые можно вводить с клавиатуры в дисплей. */
 const ALLOWED_INPUT = /^[0-9.,+\-*/×÷()%√\s]*$/;
-
-/** Число → строка для дисплея (без экспоненты на типичных значениях). */
-function formatValue(v: number): string {
-  return String(v);
-}
 
 type ButtonSpec = { label: string; append?: string; action?: 'clear' | 'backspace' | 'equals' };
 
