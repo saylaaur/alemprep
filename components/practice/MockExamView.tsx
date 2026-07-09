@@ -488,46 +488,52 @@ export function MockExamView({ availability, locale }: Props) {
             {/* Answer options */}
             <div className="mb-8 space-y-2.5">
               {current.type === 'single' && 'options' in current.body && (
-                (current.body as { options: { id: string; content: string }[] }).options.map((opt) => {
-                  const selected = answer === opt.id;
-                  return (
-                    <button key={opt.id} onClick={() => setAnswer(opt.id)}
-                      aria-pressed={selected}
-                      className={cn(
-                        'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
-                        selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
-                      )}>
-                      <span className={cn(
-                        'grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold',
-                        selected ? 'bg-primary text-primary-foreground' : 'border border-muted-foreground/30 text-muted-foreground'
-                      )}>{opt.id}</span>
-                      <MathText text={opt.content} />
-                    </button>
-                  );
-                })
+                <div role="radiogroup" className="space-y-2.5">
+                  {(current.body as { options: { id: string; content: string }[] }).options.map((opt) => {
+                    const selected = answer === opt.id;
+                    return (
+                      <button key={opt.id} onClick={() => setAnswer(opt.id)}
+                        role="radio"
+                        aria-checked={selected}
+                        className={cn(
+                          'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
+                          selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
+                        )}>
+                        <span className={cn(
+                          'grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold',
+                          selected ? 'bg-primary text-primary-foreground' : 'border border-muted-foreground/30 text-muted-foreground'
+                        )}>{opt.id}</span>
+                        <MathText text={opt.content} />
+                      </button>
+                    );
+                  })}
+                </div>
               )}
 
               {current.type === 'multi' && 'options' in current.body && (
-                (current.body as { options: { id: string; content: string }[] }).options.map((opt) => {
-                  const selected = Array.isArray(answer) && answer.includes(opt.id);
-                  return (
-                    <button key={opt.id} onClick={() => {
-                      const arr = Array.isArray(answer) ? answer : [];
-                      setAnswer(selected ? arr.filter((x) => x !== opt.id) : [...arr, opt.id]);
-                    }}
-                      aria-pressed={selected}
-                      className={cn(
-                        'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
-                        selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
-                      )}>
-                      <span className={cn(
-                        'grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold',
-                        selected ? 'bg-primary text-primary-foreground' : 'border border-muted-foreground/30 text-muted-foreground'
-                      )}>{opt.id}</span>
-                      <MathText text={opt.content} />
-                    </button>
-                  );
-                })
+                <div role="group" aria-label={t(PART_TITLE_KEY.multi)} className="space-y-2.5">
+                  {(current.body as { options: { id: string; content: string }[] }).options.map((opt) => {
+                    const selected = Array.isArray(answer) && answer.includes(opt.id);
+                    return (
+                      <button key={opt.id} onClick={() => {
+                        const arr = Array.isArray(answer) ? answer : [];
+                        setAnswer(selected ? arr.filter((x) => x !== opt.id) : [...arr, opt.id]);
+                      }}
+                        role="checkbox"
+                        aria-checked={selected}
+                        className={cn(
+                          'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
+                          selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
+                        )}>
+                        <span className={cn(
+                          'grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold',
+                          selected ? 'bg-primary text-primary-foreground' : 'border border-muted-foreground/30 text-muted-foreground'
+                        )}>{opt.id}</span>
+                        <MathText text={opt.content} />
+                      </button>
+                    );
+                  })}
+                </div>
               )}
 
               {current.type === 'matching' && 'left' in current.body && (

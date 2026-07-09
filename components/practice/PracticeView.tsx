@@ -425,7 +425,7 @@ function SingleAnswer({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2.5" role="radiogroup">
       {body.options.map((opt, i) => {
         const isSelected = answer === opt.id;
         const isCorrect = opt.id === body.correct;
@@ -434,7 +434,8 @@ function SingleAnswer({
             key={opt.id}
             onClick={() => onChange(opt.id)}
             disabled={isRevealed}
-            aria-pressed={isSelected}
+            role="radio"
+            aria-checked={isSelected}
             className={cn(
               'group flex w-full items-center gap-3.5 rounded-xl border p-4 text-left transition-all duration-200 ease-smooth focus-visible:ring-4 focus-visible:ring-ring/25',
               !isRevealed && 'cursor-pointer hover:border-primary/50 hover:bg-accent/40 active:scale-[0.995]',
@@ -492,7 +493,7 @@ function MultiAnswer({
   };
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2.5" role="group" aria-label={t('multiHint')}>
       <div className="text-sm text-muted-foreground">{t('multiHint')}</div>
       {body.options.map((opt, i) => {
         const isSelected = answer.includes(opt.id);
@@ -502,7 +503,8 @@ function MultiAnswer({
             key={opt.id}
             onClick={() => toggle(opt.id)}
             disabled={isRevealed}
-            aria-pressed={isSelected}
+            role="checkbox"
+            aria-checked={isSelected}
             className={cn(
               'group flex w-full items-center gap-3.5 rounded-xl border p-4 text-left transition-all duration-200 ease-smooth focus-visible:ring-4 focus-visible:ring-ring/25',
               !isRevealed && 'cursor-pointer hover:border-primary/50 hover:bg-accent/40 active:scale-[0.995]',
