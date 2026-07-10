@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { QUESTION_POINTS } from '@/lib/exam';
 
 /**
  * Идемпотентность finishExamSession: повторный вызов на уже завершённой
@@ -53,6 +54,13 @@ function builder(store: Store, table: string) {
     const table_ = rows();
     if (op === 'insert') {
       const arr = Array.isArray(payload) ? payload : payload ? [payload] : [];
+      // Симуляция схемы: attempts.given_answer — JSONB NOT NULL.
+      if (table === 'attempts' && arr.some((row) => row.given_answer == null)) {
+        return {
+          data: [],
+          error: { message: 'null value in column "given_answer" of relation "attempts" violates not-null constraint' },
+        };
+      }
       const inserted = arr.map((row, i) => ({ id: row.id ?? `${table}-${table_.length + i + 1}`, ...row }));
       for (const row of inserted) table_.push({ ...row });
       return { data: inserted.map((row) => ({ ...row })), error: null };
@@ -213,6 +221,23 @@ describe('finishExamSession — идемпотентность', () => {
     expect(h.store.attempts).toHaveLength(attemptsAfterFirst);
     expect(h.store.user_achievements).toHaveLength(achievementsAfterFirst);
     expect(h.store.sessions[0].finished_at).toBe(finishedAtAfterFirst);
+  });
+
+  it('блок с неотвеченными вопросами завершается, попытки пишутся только по отвеченным', async () => {
+    const res = await finishExamSession({
+      sessionId: 'S1',
+      results: [
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 }, // отвечен, верно
+        { questionId: 'Q2', givenAnswer: null, timeSpentMs: 1000 }, // не отвечен
+      ],
+    });
+
+    // Балл считается по ВСЕМ вопросам (неотвеченный = 0 баллов).
+    expect(res).toMatchObject({ ok: true, correctCount: 1, score: QUESTION_POINTS.single });
+    expect(h.store.sessions[0].finished_at).toBeTruthy();
+    // В attempts — только отвеченные (given_answer в схеме NOT NULL).
+    expect(h.store.attempts).toHaveLength(1);
+    expect(h.store.attempts[0]).toMatchObject({ question_id: 'Q1', is_correct: true });
   });
 
   it('несуществующая/чужая сессия — ошибка, без записи попыток', async () => {

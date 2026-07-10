@@ -239,9 +239,13 @@ export async function finishExamSession(input: {
     return { ok: true as const, correctCount: winner?.correct_count ?? 0, score: winner?.score ?? 0 };
   }
 
-  if (scored.length > 0) {
+  // В attempts пишем только отвеченные вопросы: given_answer в схеме NOT NULL,
+  // а неотвеченные приходят с givenAnswer: null. Балл и correctCount выше
+  // посчитаны по ВСЕМ результатам (неотвеченный = 0 баллов).
+  const answered = scored.filter((s) => s.givenAnswer != null);
+  if (answered.length > 0) {
     const { error: attemptsError } = await supabase.from('attempts').insert(
-      scored.map((s) => ({
+      answered.map((s) => ({
         user_id: user.id,
         question_id: s.questionId,
         session_id: input.sessionId,
