@@ -1,0 +1,227 @@
+[
+  {
+    "topic_slug": "mechanics",
+    "type": "multi",
+    "difficulty": 2,
+    "body": {
+      "stem": "Какие формулы кинематики равноускоренного движения записаны верно?",
+      "options": [
+        { "id": "a", "content": "$v = v_0 + at$" },
+        { "id": "b", "content": "$S = v_0 t + \\frac{at^2}{2}$" },
+        { "id": "c", "content": "$v^2 = v_0^2 + 2aS$" },
+        { "id": "d", "content": "$S = vt^2$" },
+        { "id": "e", "content": "$a = \\frac{v}{t^2}$" },
+        { "id": "f", "content": "$v = at^2$" }
+      ],
+      "correct": ["a", "b", "c"]
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Верны формулы скорости, пути и связи скорости с путём при равноускоренном движении." }
+      ]
+    },
+    "variant_of": "seed-physics-mm"
+  },
+  {
+    "topic_slug": "electric-current",
+    "type": "multi",
+    "difficulty": 2,
+    "body": {
+      "stem": "Какие соотношения для участка электрической цепи верны?",
+      "options": [
+        { "id": "a", "content": "$I = \\frac{U}{R}$" },
+        { "id": "b", "content": "$P = UI$" },
+        { "id": "c", "content": "$P = I^2 R$" },
+        { "id": "d", "content": "$U = \\frac{I}{R}$" },
+        { "id": "e", "content": "$R = UI$" },
+        { "id": "f", "content": "$P = \\frac{U}{I}$" }
+      ],
+      "correct": ["a", "b", "c"]
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Закон Ома $I=U/R$ и мощность $P=UI=I^2R$. Остальные записаны неверно." }
+      ]
+    },
+    "variant_of": "seed-physics-mm"
+  },
+  {
+    "topic_slug": "molecular-physics",
+    "type": "multi",
+    "difficulty": 3,
+    "body": {
+      "stem": "Какие утверждения об изопроцессах в идеальном газе верны?",
+      "options": [
+        { "id": "a", "content": "при изотермическом процессе $T = const$" },
+        { "id": "b", "content": "при изобарном процессе $p = const$" },
+        { "id": "c", "content": "при изохорном процессе $V = const$" },
+        { "id": "d", "content": "при изотермическом процессе $p = const$" },
+        { "id": "e", "content": "при изохорном процессе $T = const$" },
+        { "id": "f", "content": "при изобарном процессе $V = const$" }
+      ],
+      "correct": ["a", "b", "c"]
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Изотермический — постоянная T, изобарный — постоянное p, изохорный — постоянный V." }
+      ]
+    },
+    "variant_of": "seed-physics-mm"
+  },
+  {
+    "topic_slug": "electrostatics",
+    "type": "multi",
+    "difficulty": 2,
+    "body": {
+      "stem": "Какие утверждения о взаимодействии точечных зарядов верны?",
+      "options": [
+        { "id": "a", "content": "сила подчиняется закону Кулона $F = k\\frac{q_1 q_2}{r^2}$" },
+        { "id": "b", "content": "одноимённые заряды отталкиваются" },
+        { "id": "c", "content": "разноимённые заряды притягиваются" },
+        { "id": "d", "content": "сила не зависит от расстояния" },
+        { "id": "e", "content": "сила прямо пропорциональна расстоянию" },
+        { "id": "f", "content": "заряд измеряется в ваттах" }
+      ],
+      "correct": ["a", "b", "c"]
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Закон Кулона: сила обратно пропорциональна квадрату расстояния; одноимённые отталкиваются, разноимённые притягиваются." }
+      ]
+    },
+    "variant_of": "seed-physics-mm"
+  },
+  {
+    "topic_slug": "optics",
+    "type": "multi",
+    "difficulty": 2,
+    "body": {
+      "stem": "Какие утверждения о свете верны?",
+      "options": [
+        { "id": "a", "content": "скорость света в вакууме приближённо $3\\cdot10^8$ м/с" },
+        { "id": "b", "content": "угол падения равен углу отражения" },
+        { "id": "c", "content": "белый свет разлагается призмой в спектр" },
+        { "id": "d", "content": "свет не переносит энергию" },
+        { "id": "e", "content": "частота света не связана с его цветом" },
+        { "id": "f", "content": "свет не может преломляться" }
+      ],
+      "correct": ["a", "b", "c"]
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Скорость света $\\approx 3\\cdot10^8$ м/с, закон отражения, дисперсия белого света — верны." }
+      ]
+    },
+    "variant_of": "seed-physics-mm"
+  },
+  {
+    "topic_slug": "mechanics",
+    "type": "matching",
+    "difficulty": 3,
+    "body": {
+      "stem": "Установите соответствие между физической величиной и её единицей измерения в СИ.",
+      "left": [
+        { "id": "1", "content": "Сила" },
+        { "id": "2", "content": "Энергия" },
+        { "id": "3", "content": "Мощность" },
+        { "id": "4", "content": "Давление" }
+      ],
+      "right": ["Н", "Дж", "Вт", "Па", "Кл"],
+      "correct": { "1": "Н", "2": "Дж", "3": "Вт", "4": "Па" }
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Сила — ньютон (Н), энергия — джоуль (Дж), мощность — ватт (Вт), давление — паскаль (Па)." }
+      ]
+    },
+    "variant_of": "seed-physics-mm"
+  },
+  {
+    "topic_slug": "mechanics",
+    "type": "matching",
+    "difficulty": 3,
+    "body": {
+      "stem": "Установите соответствие между величиной и её формулой.",
+      "left": [
+        { "id": "1", "content": "Кинетическая энергия" },
+        { "id": "2", "content": "Потенциальная энергия в поле тяжести" },
+        { "id": "3", "content": "Импульс тела" },
+        { "id": "4", "content": "Механическая работа" }
+      ],
+      "right": ["$\\frac{mv^2}{2}$", "$mgh$", "$mv$", "$Fs$", "$ma$"],
+      "correct": { "1": "$\\frac{mv^2}{2}$", "2": "$mgh$", "3": "$mv$", "4": "$Fs$" }
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Лишнее $ma$ — это сила по второму закону Ньютона, а не одна из перечисленных величин." }
+      ]
+    },
+    "variant_of": "seed-physics-mm"
+  },
+  {
+    "topic_slug": "electric-current",
+    "type": "matching",
+    "difficulty": 3,
+    "body": {
+      "stem": "Установите соответствие между прибором и измеряемой им величиной.",
+      "left": [
+        { "id": "1", "content": "Амперметр" },
+        { "id": "2", "content": "Вольтметр" },
+        { "id": "3", "content": "Омметр" },
+        { "id": "4", "content": "Ваттметр" }
+      ],
+      "right": ["сила тока", "напряжение", "сопротивление", "мощность", "температура"],
+      "correct": { "1": "сила тока", "2": "напряжение", "3": "сопротивление", "4": "мощность" }
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Амперметр — ток, вольтметр — напряжение, омметр — сопротивление, ваттметр — мощность." }
+      ]
+    },
+    "variant_of": "seed-physics-mm"
+  },
+  {
+    "topic_slug": "molecular-physics",
+    "type": "matching",
+    "difficulty": 3,
+    "body": {
+      "stem": "Установите соответствие между изопроцессом и его условием.",
+      "left": [
+        { "id": "1", "content": "Изотермический" },
+        { "id": "2", "content": "Изобарный" },
+        { "id": "3", "content": "Изохорный" },
+        { "id": "4", "content": "Адиабатный" }
+      ],
+      "right": ["$T = const$", "$p = const$", "$V = const$", "нет теплообмена", "$U = const$"],
+      "correct": { "1": "$T = const$", "2": "$p = const$", "3": "$V = const$", "4": "нет теплообмена" }
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Изотермический — T=const, изобарный — p=const, изохорный — V=const, адиабатный — без теплообмена." }
+      ]
+    },
+    "variant_of": "seed-physics-mm"
+  },
+  {
+    "topic_slug": "electric-current",
+    "type": "matching",
+    "difficulty": 3,
+    "body": {
+      "stem": "Установите соответствие между электрической величиной и её единицей СИ.",
+      "left": [
+        { "id": "1", "content": "Сила тока" },
+        { "id": "2", "content": "Напряжение" },
+        { "id": "3", "content": "Сопротивление" },
+        { "id": "4", "content": "Электрический заряд" }
+      ],
+      "right": ["А", "В", "Ом", "Кл", "Вт"],
+      "correct": { "1": "А", "2": "В", "3": "Ом", "4": "Кл" }
+    },
+    "explanation": {
+      "blocks": [
+        { "type": "text", "value": "Сила тока — ампер (А), напряжение — вольт (В), сопротивление — ом (Ом), заряд — кулон (Кл)." }
+      ]
+    },
+    "variant_of": "seed-physics-mm"
+  }
+]
