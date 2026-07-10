@@ -100,7 +100,7 @@ function builder(store: Store, table: string) {
 }
 
 // Импортируем ПОСЛЕ регистрации моков.
-import { finishExamSession, recordAttempt } from './practice-actions';
+import { finishExamSession, recordAttempt, verifyExamSessions } from './practice-actions';
 
 function seed(): Store {
   return {
@@ -277,6 +277,33 @@ describe('finishExamSession — идемпотентность', () => {
     expect(h.store.attempts).toHaveLength(2);
     // XP начислен один раз: 1 верный × 10 + бонус за блок 50 = 60.
     expect(h.store.profiles[0].xp).toBe(60);
+  });
+});
+
+describe('verifyExamSessions — принадлежность сессий текущему пользователю', () => {
+  beforeEach(() => {
+    h.store = seed();
+    h.failOnce = null;
+  });
+
+  it('свои сессии → ok', async () => {
+    expect(await verifyExamSessions(['S1'])).toEqual({ ok: true });
+  });
+
+  it('чужая сессия в списке → не ok (восстановление надо отбросить)', async () => {
+    h.store.sessions.push({
+      id: 'S-foreign', user_id: 'U2', correct_count: null, score: null, finished_at: null,
+    });
+
+    expect(await verifyExamSessions(['S1', 'S-foreign'])).toEqual({ ok: false });
+  });
+
+  it('несуществующая сессия → не ok', async () => {
+    expect(await verifyExamSessions(['S1', 'NOPE'])).toEqual({ ok: false });
+  });
+
+  it('пустой список → не ok', async () => {
+    expect(await verifyExamSessions([])).toEqual({ ok: false });
   });
 });
 

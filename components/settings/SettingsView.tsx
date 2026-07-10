@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { signOut } from '@/lib/supabase/auth-actions';
+import { clearAllSavedExams } from '@/lib/exam-storage';
 import { updateProfileSettings } from '@/lib/supabase/profile-actions';
 import { MIN_DAILY_GOAL, MAX_DAILY_GOAL } from '@/lib/settings';
 import type { Locale } from '@/types/db';
@@ -92,7 +93,9 @@ export function SettingsView({ locale, displayName, email, avatarUrl, dailyGoal 
             {email && <div className="truncate text-sm text-muted-foreground">{email}</div>}
           </div>
         </div>
-        <form action={signOut} className="mt-5">
+        {/* Прогресс пробника в localStorage — чистим при выходе, чтобы он
+            не достался следующему аккаунту на этом устройстве. */}
+        <form action={signOut} onSubmit={() => clearAllSavedExams()} className="mt-5">
           <Button type="submit" variant="outline" className="w-full sm:w-auto">
             <LogOut className="h-4 w-4" />
             {t('signOut')}

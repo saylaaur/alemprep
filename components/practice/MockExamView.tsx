@@ -8,8 +8,20 @@ import { cn } from '@/lib/utils';
 import { Check, X, Minus, Flag, Clock, ChevronLeft, ChevronRight, Trophy, AlertCircle, Calculator as CalculatorIcon } from 'lucide-react';
 import { Calculator } from '@/components/practice/Calculator';
 import type { Question, Explanation, Locale, QuestionType } from '@/types/db';
-import { startPairExam, finishExamSession, type PairExamBlock } from '@/lib/supabase/practice-actions';
+import {
+  startPairExam,
+  finishExamSession,
+  verifyExamSessions,
+  type PairExamBlock,
+} from '@/lib/supabase/practice-actions';
 import type { ExamAvailability, ExamContext } from '@/lib/supabase/queries';
+import {
+  readSavedExam,
+  writeSavedExam,
+  clearSavedExam,
+  type SavedExam,
+  type QuestionFlag,
+} from '@/lib/exam-storage';
 import {
   EXAM_PAIR_DURATION_S,
   EXAM_PAIR_MAX_SCORE,
@@ -20,7 +32,7 @@ import {
   scoreAnswer,
   type ExamSecondSubject,
 } from '@/lib/exam';
-import { isAnswerEmpty } from '@/lib/practice';
+import { isAnswerEmpty, type AnswerState } from '@/lib/practice';
 
 const PART_TITLE_KEY: Record<QuestionType, 'partSingleTitle' | 'partMultiTitle' | 'partMatchingTitle'> = {
   single: 'partSingleTitle',
@@ -28,8 +40,6 @@ const PART_TITLE_KEY: Record<QuestionType, 'partSingleTitle' | 'partMultiTitle' 
   matching: 'partMatchingTitle',
 };
 
-type AnswerState = string | string[] | Record<string, string> | null;
-type QuestionFlag = 'none' | 'answered' | 'flagged';
 type ExamPhase = 'intro' | 'exam' | 'result';
 
 function formatTime(s: number): string {
@@ -39,54 +49,19 @@ function formatTime(s: number): string {
 
 const BLUEPRINT_BLOCK_COUNT = EXAM_BLUEPRINT.reduce((s, p) => s + p.count, 0);
 
-// ── Восстановление незавершённого пробника (localStorage) ────────────────────
-// Экзамен привязан к живым сессиям в БД (по sessionId в блоках). При обновлении
-// страницы сохранённый прогресс восстанавливается на те же сессии, а не заводит
-// новые — поэтому refresh не сбрасывает экзамен и не плодит осиротевшие сессии.
-const EXAM_STORAGE_KEY = 'alemprep:mock-exam';
-
-type SavedExam = {
-  v: 1;
-  second: ExamSecondSubject;
-  blocks: PairExamBlock[];
-  contexts: [string, ExamContext][];
-  answers: Record<string, AnswerState>;
-  flags: Record<string, QuestionFlag>;
-  idx: number;
-  /** Абсолютное время старта (ms) — из него пересчитываем остаток таймера. */
-  startTime: number;
-};
-
-function readSavedExam(): SavedExam | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = window.localStorage.getItem(EXAM_STORAGE_KEY);
-    if (!raw) return null;
-    const saved = JSON.parse(raw) as SavedExam;
-    if (saved?.v !== 1 || !Array.isArray(saved.blocks) || saved.blocks.length === 0) {
-      return null;
-    }
-    return saved;
-  } catch {
-    return null;
-  }
-}
-
-function clearSavedExam(): void {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.removeItem(EXAM_STORAGE_KEY);
-  } catch {
-    /* приватный режим / переполнение — тихо игнорируем */
-  }
-}
+// Восстановление незавершённого пробника: экзамен привязан к живым сессиям
+// в БД (по sessionId в блоках). При обновлении страницы сохранённый прогресс
+// восстанавливается на те же сессии, а не заводит новые — поэтому refresh не
+// сбрасывает экзамен и не плодит осиротевшие сессии. Хранение — в
+// lib/exam-storage (ключ localStorage неймспейсится по userId).
 
 type Props = {
   availability: ExamAvailability;
   locale: string;
+  userId: string;
 };
 
-export function MockExamView({ availability, locale }: Props) {
+export function MockExamView({ availability, locale, userId }: Props) {
   const t = useTranslations('exam');
   const tSubjects = useTranslations('subjects');
   const tCalc = useTranslations('calc');
@@ -103,6 +78,7 @@ export function MockExamView({ availability, locale }: Props) {
   const [startError, setStartError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
   const [timesUp, setTimesUp] = useState(false);
@@ -166,28 +142,47 @@ export function MockExamView({ availability, locale }: Props) {
   useEffect(() => {
     if (restoredRef.current) return;
     restoredRef.current = true;
-    const saved = readSavedExam();
+    const saved = readSavedExam(userId);
     if (!saved) return;
 
-    const remaining = EXAM_PAIR_DURATION_S - Math.floor((Date.now() - saved.startTime) / 1000);
-    startTimeRef.current = saved.startTime;
-    setSecond(saved.second);
-    setBlocks(saved.blocks);
-    setContexts(new Map(saved.contexts));
-    setAnswers(saved.answers ?? {});
-    setFlags(saved.flags ?? {});
-    setIdx(saved.idx ?? 0);
-    setTimeLeft(Math.max(0, remaining));
-    setPhase('exam');
-    // Время уже вышло, пока страница была закрыта — сдаём сразу (как по таймеру).
-    if (remaining <= 0) setTimesUp(true);
-  }, []);
+    setRestoring(true);
+    void (async () => {
+      // Сессии должны принадлежать текущему пользователю: чужое/устаревшее
+      // сохранение (смена аккаунта, удалённые сессии) отбрасываем — его
+      // завершение всё равно упало бы на RLS.
+      let ownership: { ok: boolean } | null = null;
+      try {
+        ownership = await verifyExamSessions(saved.blocks.map((b) => b.sessionId));
+      } catch {
+        // Сеть моргнула: сохранение не трогаем, покажем интро — восстановится
+        // при следующем заходе.
+      }
+      setRestoring(false);
+      if (!ownership?.ok) {
+        if (ownership) clearSavedExam(userId);
+        return;
+      }
+
+      const remaining = EXAM_PAIR_DURATION_S - Math.floor((Date.now() - saved.startTime) / 1000);
+      startTimeRef.current = saved.startTime;
+      setSecond(saved.second);
+      setBlocks(saved.blocks);
+      setContexts(new Map(saved.contexts));
+      setAnswers(saved.answers ?? {});
+      setFlags(saved.flags ?? {});
+      setIdx(saved.idx ?? 0);
+      setTimeLeft(Math.max(0, remaining));
+      setPhase('exam');
+      // Время уже вышло, пока страница была закрыта — сдаём сразу (как по таймеру).
+      if (remaining <= 0) setTimesUp(true);
+    })();
+  }, [userId]);
 
   // Персист прогресса экзамена. Блоки/контексты статичны, реально пишем на
   // изменения ответов/пометок/индекса. startTime — из рефа (устанавливается
   // синхронно со стартом, поэтому здесь уже актуален).
   useEffect(() => {
-    if (typeof window === 'undefined' || phase !== 'exam') return;
+    if (phase !== 'exam') return;
     const saved: SavedExam = {
       v: 1,
       second,
@@ -198,12 +193,8 @@ export function MockExamView({ availability, locale }: Props) {
       idx,
       startTime: startTimeRef.current,
     };
-    try {
-      window.localStorage.setItem(EXAM_STORAGE_KEY, JSON.stringify(saved));
-    } catch {
-      /* приватный режим / переполнение — тихо игнорируем */
-    }
-  }, [phase, second, blocks, contexts, answers, flags, idx]);
+    writeSavedExam(userId, saved);
+  }, [phase, second, blocks, contexts, answers, flags, idx, userId]);
 
   const startExam = useCallback(async () => {
     // Попытки сохраняются только при живых сессиях в БД — без них пробник
@@ -268,8 +259,8 @@ export function MockExamView({ availability, locale }: Props) {
     setPhase('result');
     // Экзамен завершён — сохранённый прогресс больше не нужен (иначе
     // восстановился бы уже сданный пробник при следующем заходе).
-    clearSavedExam();
-  }, [submitting, blocks, answers, total]);
+    clearSavedExam(userId);
+  }, [submitting, blocks, answers, total, userId]);
 
   const setAnswer = (next: AnswerState) => {
     if (!current) return;
@@ -317,6 +308,10 @@ export function MockExamView({ availability, locale }: Props) {
     return () => window.removeEventListener('keydown', handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, current, idx, total, answers]);
+
+  // Идёт проверка сохранённого пробника: не показываем интро, чтобы оно не
+  // мигало перед прыжком в середину восстановленного экзамена.
+  if (restoring) return null;
 
   // ── INTRO ─────────────────────────────────────────────────────────────────
   if (phase === 'intro') {

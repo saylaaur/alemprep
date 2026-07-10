@@ -157,6 +157,26 @@ type ExamResult = {
   timeSpentMs: number;
 };
 
+/**
+ * Все ли сессии принадлежат текущему пользователю. Клиент зовёт перед
+ * восстановлением пробника из localStorage: чужое/устаревшее сохранение
+ * (смена аккаунта, удалённые сессии) надо отбросить, а не продолжать —
+ * его завершение всё равно упадёт на RLS.
+ */
+export async function verifyExamSessions(sessionIds: string[]): Promise<{ ok: boolean }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || sessionIds.length === 0) return { ok: false };
+
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('id')
+    .in('id', sessionIds)
+    .eq('user_id', user.id);
+  if (error) return { ok: false };
+  return { ok: (data ?? []).length === sessionIds.length };
+}
+
 export async function finishExamSession(input: {
   sessionId: string;
   results: ExamResult[];
