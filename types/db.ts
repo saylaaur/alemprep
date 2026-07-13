@@ -10,7 +10,10 @@
 export type Locale = 'ru' | 'kk';
 
 export type QuestionType = 'single' | 'multi' | 'matching';
-export type SessionMode = 'practice' | 'topic_drill' | 'mock_exam';
+export type SessionMode = 'practice' | 'topic_drill' | 'mock_exam' | 'diagnostic';
+
+/** Второй профильный предмет пары ЕНТ (первый всегда математика). */
+export type SecondSubject = 'physics' | 'informatics';
 
 /** profiles — расширение auth.users */
 export type Profile = {
@@ -24,6 +27,9 @@ export type Profile = {
   last_active_date: string | null;
   xp: number;
   is_admin: boolean;
+  second_subject: SecondSubject | null;
+  exam_date: string | null;
+  target_score: number | null;
   created_at: string;
   updated_at: string;
 };
