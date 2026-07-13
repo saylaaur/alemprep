@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Check, X, Minus, Flag, Clock, ChevronLeft, ChevronRight, Trophy, AlertCircle, Calculator as CalculatorIcon } from 'lucide-react';
 import { Calculator } from '@/components/practice/Calculator';
+import { QuestionAnswerInput } from '@/components/practice/QuestionAnswerInput';
 import type { Question, Explanation, Locale, QuestionType } from '@/types/db';
 import {
   startPairExam,
@@ -574,83 +575,17 @@ export function MockExamView({ availability, locale, userId }: Props) {
             </div>
 
             {/* Answer options */}
-            <div className="mb-8 space-y-2.5">
-              {current.type === 'single' && 'options' in current.body && (
-                <div role="radiogroup" className="space-y-2.5">
-                  {(current.body as { options: { id: string; content: string }[] }).options.map((opt) => {
-                    const selected = answer === opt.id;
-                    return (
-                      <button key={opt.id} onClick={() => setAnswer(opt.id)}
-                        role="radio"
-                        aria-checked={selected}
-                        className={cn(
-                          'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
-                          selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
-                        )}>
-                        <span className={cn(
-                          'grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold',
-                          selected ? 'bg-primary text-primary-foreground' : 'border border-muted-foreground/30 text-muted-foreground'
-                        )}>{opt.id}</span>
-                        <MathText text={opt.content} />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {current.type === 'multi' && 'options' in current.body && (
-                <div role="group" aria-label={t(PART_TITLE_KEY.multi)} className="space-y-2.5">
-                  {(current.body as { options: { id: string; content: string }[] }).options.map((opt) => {
-                    const selected = Array.isArray(answer) && answer.includes(opt.id);
-                    return (
-                      <button key={opt.id} onClick={() => {
-                        const arr = Array.isArray(answer) ? answer : [];
-                        setAnswer(selected ? arr.filter((x) => x !== opt.id) : [...arr, opt.id]);
-                      }}
-                        role="checkbox"
-                        aria-checked={selected}
-                        className={cn(
-                          'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
-                          selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
-                        )}>
-                        <span className={cn(
-                          'grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold',
-                          selected ? 'bg-primary text-primary-foreground' : 'border border-muted-foreground/30 text-muted-foreground'
-                        )}>{opt.id}</span>
-                        <MathText text={opt.content} />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {current.type === 'matching' && 'left' in current.body && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    {(current.body as { left: { id: string; content: string }[] }).left.map((item) => (
-                      <div key={item.id} className="flex items-center gap-2 rounded-xl border bg-card px-3 py-3 text-sm">
-                        <span className="font-mono text-xs text-muted-foreground">{item.id}.</span>
-                        <MathText text={item.content} />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="space-y-2">
-                    {(current.body as { left: { id: string }[]; right: string[] }).left.map((item) => {
-                      const opts = (current.body as { right: string[] }).right;
-                      const val = (answer as Record<string, string> | null)?.[item.id] ?? '';
-                      return (
-                        <select key={item.id} value={val}
-                          onChange={(e) => setAnswer({ ...((answer as Record<string, string> | null) ?? {}), [item.id]: e.target.value })}
-                          aria-label={t('matchingSelectFor', { item: item.id })}
-                          className="w-full rounded-xl border bg-card px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-                          <option value="">{t('matchingPlaceholder')}</option>
-                          {opts.map((o, i) => <option key={i} value={o}>{o}</option>)}
-                        </select>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+            <div className="mb-8">
+              <QuestionAnswerInput
+                question={current}
+                answer={answer}
+                onChange={setAnswer}
+                labels={{
+                  matchingPlaceholder: t('matchingPlaceholder'),
+                  matchingSelectFor: (item) => t('matchingSelectFor', { item }),
+                  multiGroup: t(PART_TITLE_KEY.multi),
+                }}
+              />
             </div>
 
             {/* Prev / Next navigation */}
