@@ -1,17 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { QUESTION_POINTS } from '@/lib/exam';
+import { makeClient, type Store, type FailPoint } from './testing/in-memory-db';
 
 /**
  * Идемпотентность finishExamSession: повторный вызов на уже завершённой
  * сессии не пересчитывает результат и НЕ начисляет XP/бонусы/достижения второй раз.
  *
- * Тест гоняет РЕАЛЬНУЮ серверную функцию против крошечного in-memory «Supabase»:
- * поддерживает ровно те цепочки, что использует finishExamSession.
+ * Тест гоняет РЕАЛЬНУЮ серверную функцию против крошечного in-memory «Supabase»
+ * (lib/supabase/testing/in-memory-db.ts): поддерживает ровно те цепочки, что
+ * использует finishExamSession.
  */
-
-type Row = Record<string, unknown>;
-type Store = Record<string, Row[]>;
-type FailPoint = { table: string; op: 'delete' | 'insert' | 'update' | 'select'; message: string };
 
 // Общий стор между моком ./server и телом теста.
 const h = vi.hoisted(() => ({ store: {} as Store, failOnce: null as FailPoint | null }));
@@ -19,85 +17,8 @@ const h = vi.hoisted(() => ({ store: {} as Store, failOnce: null as FailPoint | 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('./queries', () => ({ getPairExamBlocks: vi.fn() }));
 vi.mock('./server', () => ({
-  createClient: async () => makeClient(h.store),
+  createClient: async () => makeClient(h),
 }));
-
-function makeClient(store: Store) {
-  return {
-    auth: {
-      getUser: async () => ({ data: { user: { id: 'U1' } }, error: null }),
-    },
-    from: (table: string) => builder(store, table),
-  };
-}
-
-/** Минимальный чейнбилдер: select/insert/update + eq/in/is + maybeSingle/await. */
-function builder(store: Store, table: string) {
-  let op: 'delete' | 'select' | 'insert' | 'update' = 'select';
-  let payload: Row | Row[] | null = null;
-  const eqs: Array<[string, unknown]> = [];
-  const ins: Array<[string, unknown[]]> = [];
-  const iss: Array<[string, unknown]> = [];
-  const rows = (): Row[] => (store[table] ??= []);
-
-  const match = (r: Row) =>
-    eqs.every(([c, v]) => r[c] === v) &&
-    ins.every(([c, vs]) => vs.includes(r[c])) &&
-    iss.every(([c, v]) => (v === null ? r[c] == null : r[c] === v));
-
-  const run = (): { data: Row[]; error: { message: string } | null } => {
-    if (h.failOnce?.table === table && h.failOnce.op === op) {
-      const message = h.failOnce.message;
-      h.failOnce = null;
-      return { data: [], error: { message } };
-    }
-    const table_ = rows();
-    if (op === 'insert') {
-      const arr = Array.isArray(payload) ? payload : payload ? [payload] : [];
-      // Симуляция схемы: attempts.given_answer — JSONB NOT NULL.
-      if (table === 'attempts' && arr.some((row) => row.given_answer == null)) {
-        return {
-          data: [],
-          error: { message: 'null value in column "given_answer" of relation "attempts" violates not-null constraint' },
-        };
-      }
-      const inserted = arr.map((row, i) => ({ id: row.id ?? `${table}-${table_.length + i + 1}`, ...row }));
-      for (const row of inserted) table_.push({ ...row });
-      return { data: inserted.map((row) => ({ ...row })), error: null };
-    }
-    if (op === 'update') {
-      const updated: Row[] = [];
-      for (const r of table_) if (match(r)) { Object.assign(r, payload); updated.push(r); }
-      return { data: updated.map((row) => ({ ...row })), error: null };
-    }
-    if (op === 'delete') {
-      const deleted = table_.filter(match);
-      store[table] = table_.filter((row) => !match(row));
-      return { data: deleted.map((row) => ({ ...row })), error: null };
-    }
-    return { data: table_.filter(match).map((row) => ({ ...row })), error: null };
-  };
-
-  const api = {
-    select: () => api,
-    insert: (p: Row | Row[]) => ((op = 'insert'), (payload = p), api),
-    update: (p: Row) => ((op = 'update'), (payload = p), api),
-    delete: () => ((op = 'delete'), api),
-    eq: (c: string, v: unknown) => (eqs.push([c, v]), api),
-    in: (c: string, v: unknown[]) => (ins.push([c, v]), api),
-    is: (c: string, v: unknown) => (iss.push([c, v]), api),
-    maybeSingle: () => {
-      const { data, error } = run();
-      return Promise.resolve({ data: data[0] ?? null, error });
-    },
-    single: () => api.maybeSingle(),
-    then: <T>(
-      onF: (v: { data: Row[]; error: { message: string } | null }) => T,
-      onR?: (e: unknown) => T
-    ) => Promise.resolve(run()).then(onF, onR),
-  };
-  return api;
-}
 
 // Импортируем ПОСЛЕ регистрации моков.
 import { finishExamSession, recordAttempt, verifyExamSessions } from './practice-actions';
