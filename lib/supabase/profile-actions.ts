@@ -3,17 +3,23 @@
 import { createClient } from './server';
 import { revalidatePath } from 'next/cache';
 import { MIN_DAILY_GOAL, MAX_DAILY_GOAL } from '@/lib/settings';
-import { validateOnboarding } from '@/lib/onboarding';
+import { validateOnboarding, validateExamDate, clampTargetScore } from '@/lib/onboarding';
+import { EXAM_SECOND_SUBJECTS, type ExamSecondSubject } from '@/lib/exam';
 import type { Locale } from '@/types/db';
 
 /**
- * Обновляет пользовательские настройки в profiles: язык интерфейса и/или
- * дневную цель. Пустой ввод игнорируется (частичное обновление). Пишем только
- * своё (RLS profiles_update_own), правильность значений валидируем на сервере.
+ * Обновляет пользовательские настройки в profiles: язык, дневную цель и/или
+ * (после онбординга) пару предметов/дату ЕНТ/целевой балл. Пустой/неуказанный
+ * ввод игнорируется (частичное обновление) — в отличие от completeOnboarding,
+ * где все 3 поля экзамена обязательны сразу. Пишем только своё
+ * (RLS profiles_update_own), правильность значений валидируем на сервере.
  */
 export async function updateProfileSettings(input: {
   locale?: Locale;
   dailyGoal?: number;
+  secondSubject?: string;
+  examDate?: string;
+  targetScore?: number;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -29,12 +35,27 @@ export async function updateProfileSettings(input: {
       Math.max(MIN_DAILY_GOAL, Math.round(input.dailyGoal))
     );
   }
+  if (input.secondSubject !== undefined) {
+    if (!EXAM_SECOND_SUBJECTS.includes(input.secondSubject as ExamSecondSubject)) {
+      return { ok: false, error: 'invalid_subject' };
+    }
+    update.second_subject = input.secondSubject;
+  }
+  if (input.examDate !== undefined) {
+    const examDate = validateExamDate(input.examDate);
+    if (!examDate) return { ok: false, error: 'invalid_exam_date' };
+    update.exam_date = examDate;
+  }
+  if (input.targetScore !== undefined) {
+    if (!Number.isFinite(input.targetScore)) return { ok: false, error: 'invalid_target_score' };
+    update.target_score = clampTargetScore(input.targetScore);
+  }
   if (Object.keys(update).length === 0) return { ok: true };
 
   const { error } = await supabase.from('profiles').update(update).eq('id', user.id);
   if (error) return { ok: false, error: error.message };
 
-  // Дашборд (кольцо дневной цели) и сама страница настроек должны увидеть новое значение.
+  // Дашборд (кольцо дневной цели, план) и сама страница настроек должны увидеть новое значение.
   revalidatePath('/[locale]/(app)/dashboard', 'page');
   revalidatePath('/[locale]/(app)/settings', 'page');
   return { ok: true };

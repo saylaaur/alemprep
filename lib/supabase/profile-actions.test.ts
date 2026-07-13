@@ -9,7 +9,7 @@ vi.mock('./server', () => ({
 }));
 
 // Импортируем ПОСЛЕ регистрации моков.
-import { completeOnboarding } from './profile-actions';
+import { completeOnboarding, updateProfileSettings } from './profile-actions';
 
 function seed(): Store {
   return {
@@ -86,5 +86,44 @@ describe('completeOnboarding', () => {
     });
 
     expect(res).toEqual({ ok: false, error: 'update_failed' });
+  });
+});
+
+describe('updateProfileSettings — поля экзамена (после онбординга)', () => {
+  beforeEach(() => {
+    h.store = {
+      profiles: [
+        { id: 'U1', daily_goal: 20, second_subject: 'physics', exam_date: '2027-01-01', target_score: 80 },
+      ],
+    };
+  });
+
+  it('меняет только переданные поля экзамена, остальные не трогает', async () => {
+    const res = await updateProfileSettings({ targetScore: 90 });
+
+    expect(res).toEqual({ ok: true });
+    expect(h.store.profiles[0]).toMatchObject({
+      second_subject: 'physics',
+      exam_date: '2027-01-01',
+      target_score: 90,
+    });
+  });
+
+  it('невалидный второй предмет — ошибка, профиль не меняется', async () => {
+    const res = await updateProfileSettings({ secondSubject: 'chemistry' });
+
+    expect(res).toEqual({ ok: false, error: 'invalid_subject' });
+    expect(h.store.profiles[0].second_subject).toBe('physics');
+  });
+
+  it('дата в прошлом — ошибка', async () => {
+    const res = await updateProfileSettings({ examDate: '2020-01-01' });
+    expect(res).toEqual({ ok: false, error: 'invalid_exam_date' });
+  });
+
+  it('целевой балл вне диапазона клэмпится', async () => {
+    const res = await updateProfileSettings({ targetScore: 999 });
+    expect(res).toEqual({ ok: true });
+    expect(h.store.profiles[0].target_score).toBe(110);
   });
 });

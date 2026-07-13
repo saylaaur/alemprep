@@ -10,9 +10,10 @@ import { Button } from '@/components/ui/button';
 import { signOut } from '@/lib/supabase/auth-actions';
 import { clearAllSavedExams } from '@/lib/exam-storage';
 import { updateProfileSettings } from '@/lib/supabase/profile-actions';
-import { MIN_DAILY_GOAL, MAX_DAILY_GOAL } from '@/lib/settings';
+import { MIN_DAILY_GOAL, MAX_DAILY_GOAL, MIN_TARGET_SCORE, MAX_TARGET_SCORE } from '@/lib/settings';
+import { EXAM_SECOND_SUBJECTS, type ExamSecondSubject } from '@/lib/exam';
 import type { Locale } from '@/types/db';
-import { Monitor, Moon, Sun, Languages, Target, User, LogOut, Check } from 'lucide-react';
+import { Monitor, Moon, Sun, Languages, Target, User, LogOut, Check, CalendarClock } from 'lucide-react';
 
 type Props = {
   locale: Locale;
@@ -20,12 +21,25 @@ type Props = {
   email: string | null;
   avatarUrl: string | null;
   dailyGoal: number;
+  secondSubject: ExamSecondSubject;
+  examDate: string | null;
+  targetScore: number;
 };
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
-export function SettingsView({ locale, displayName, email, avatarUrl, dailyGoal }: Props) {
+export function SettingsView({
+  locale,
+  displayName,
+  email,
+  avatarUrl,
+  dailyGoal,
+  secondSubject,
+  examDate: initialExamDate,
+  targetScore: initialTargetScore,
+}: Props) {
   const t = useTranslations('settings');
+  const tSubjects = useTranslations('subjects');
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -58,6 +72,29 @@ export function SettingsView({ locale, displayName, email, avatarUrl, dailyGoal 
         router.refresh();
       } else {
         setGoalState('error');
+      }
+    });
+  };
+
+  const [second, setSecond] = useState<ExamSecondSubject>(secondSubject);
+  const [examDate, setExamDate] = useState(initialExamDate ?? '');
+  const [targetScore, setTargetScore] = useState(initialTargetScore);
+  const [examState, setExamState] = useState<SaveState>('idle');
+  const [savingExam, startExamTransition] = useTransition();
+  const examDirty =
+    second !== secondSubject ||
+    examDate !== (initialExamDate ?? '') ||
+    targetScore !== initialTargetScore;
+
+  const saveExam = () => {
+    setExamState('saving');
+    startExamTransition(async () => {
+      const res = await updateProfileSettings({ secondSubject: second, examDate, targetScore });
+      if (res.ok) {
+        setExamState('saved');
+        router.refresh();
+      } else {
+        setExamState('error');
       }
     });
   };
@@ -195,6 +232,80 @@ export function SettingsView({ locale, displayName, email, avatarUrl, dailyGoal 
         <p className="mt-2 text-xs text-muted-foreground">
           {t('goalHint', { min: MIN_DAILY_GOAL, max: MAX_DAILY_GOAL })}
         </p>
+      </SettingsSection>
+
+      {/* ── Экзамен ─────────────────────────────────────────────── */}
+      <SettingsSection icon={CalendarClock} title={t('examTitle')} description={t('examDesc')}>
+        <div className="space-y-4">
+          <div>
+            <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{t('examPairLabel')}</span>
+            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('examPairLabel')}>
+              {EXAM_SECOND_SUBJECTS.map((slug) => {
+                const active = second === slug;
+                return (
+                  <button
+                    key={slug}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => { setSecond(slug); setExamState('idle'); }}
+                    className={cn(
+                      'rounded-xl border px-4 py-3 text-sm font-medium transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
+                      active
+                        ? 'border-primary bg-primary/8 text-foreground ring-1 ring-primary/30'
+                        : 'border-border bg-card text-muted-foreground hover:border-primary/30 hover:bg-accent'
+                    )}
+                  >
+                    {tSubjects('math')} + {tSubjects(slug)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground">{t('examDateLabel')}</span>
+            <input
+              type="date"
+              value={examDate}
+              onChange={(e) => { setExamDate(e.target.value); setExamState('idle'); }}
+              className="h-11 w-full max-w-[220px] rounded-xl border bg-card px-3 text-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground">{t('targetScoreLabel')}</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={MIN_TARGET_SCORE}
+              max={MAX_TARGET_SCORE}
+              value={targetScore}
+              onChange={(e) => { setTargetScore(Number(e.target.value)); setExamState('idle'); }}
+              className="h-11 w-28 rounded-xl border bg-card px-3 text-base font-semibold tabular-nums focus:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
+            />
+            <span className="text-xs text-muted-foreground">
+              {t('targetScoreHint', { min: MIN_TARGET_SCORE, max: MAX_TARGET_SCORE })}
+            </span>
+          </label>
+
+          <div className="flex items-center gap-3">
+            <Button onClick={saveExam} disabled={savingExam || !examDirty}>
+              {examState === 'saving' ? t('saving') : t('save')}
+            </Button>
+            {examState === 'saved' && !examDirty && (
+              <span className="flex items-center gap-1.5 text-sm text-success">
+                <Check className="h-4 w-4" />
+                {t('saved')}
+              </span>
+            )}
+            {examState === 'error' && (
+              <span className="text-sm text-destructive" role="alert">
+                {t('saveError')}
+              </span>
+            )}
+          </div>
+        </div>
       </SettingsSection>
     </div>
   );

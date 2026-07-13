@@ -3,6 +3,8 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { SettingsView } from '@/components/settings/SettingsView';
 import { createClient } from '@/lib/supabase/server';
 import { getProfile } from '@/lib/supabase/queries';
+import { EXAM_SECOND_SUBJECTS } from '@/lib/exam';
+import { MIN_TARGET_SCORE } from '@/lib/settings';
 import type { Locale } from '@/types/db';
 
 export default async function SettingsPage({
@@ -32,6 +34,9 @@ export default async function SettingsPage({
         email={email}
         avatarUrl={profile?.avatar_url ?? null}
         dailyGoal={profile?.daily_goal ?? 20}
+        secondSubject={profile?.second_subject ?? EXAM_SECOND_SUBJECTS[0]}
+        examDate={profile?.exam_date ?? null}
+        targetScore={profile?.target_score ?? MIN_TARGET_SCORE}
       />
     </>
   );
