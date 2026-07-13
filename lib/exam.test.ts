@@ -7,6 +7,10 @@ import {
   EXAM_PAIR_DURATION_S,
   EXAM_BLUEPRINT,
   QUESTION_POINTS,
+  DIAGNOSTIC_BLUEPRINT,
+  DIAGNOSTIC_BLOCK_COUNT,
+  DIAGNOSTIC_BLOCK_MAX_SCORE,
+  DIAGNOSTIC_PAIR_MAX_SCORE,
 } from './exam';
 import type { QuestionBody, QuestionType } from '@/types/db';
 
@@ -51,6 +55,21 @@ describe('scoreAnswer: константы формата', () => {
   it('пара: 110 баллов, 160 минут', () => {
     expect(EXAM_PAIR_MAX_SCORE).toBe(110);
     expect(EXAM_PAIR_DURATION_S).toBe(160 * 60);
+  });
+});
+
+describe('DIAGNOSTIC_BLUEPRINT: константы', () => {
+  it('9 заданий и 12 баллов на предмет, 18 заданий и 24 балла на пару', () => {
+    expect(DIAGNOSTIC_BLOCK_COUNT).toBe(9);
+    expect(DIAGNOSTIC_BLOCK_MAX_SCORE).toBe(12);
+    expect(DIAGNOSTIC_PAIR_MAX_SCORE).toBe(24);
+  });
+
+  it('pickBalancedByTopic работает с DIAGNOSTIC_BLUEPRINT', () => {
+    const pool = makePool({ t1: { single: 6, multi: 2, matching: 1 } });
+    const { picked, shortfall } = pickBalancedByTopic(pool, DIAGNOSTIC_BLUEPRINT);
+    expect(picked).toHaveLength(9);
+    expect(shortfall).toEqual([]);
   });
 });
 

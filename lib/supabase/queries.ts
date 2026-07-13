@@ -593,7 +593,8 @@ export type ExamBlock = {
  */
 export async function getPairExamBlocks(
   second: ExamSecondSubject,
-  locale: Locale = 'ru'
+  locale: Locale = 'ru',
+  blueprint: typeof EXAM_BLUEPRINT = EXAM_BLUEPRINT
 ): Promise<{ blocks: ExamBlock[]; contexts: Map<string, ExamContext> } | null> {
   const supabase = await createClient();
   const slugs = [EXAM_FIRST_SUBJECT, second];
@@ -632,7 +633,7 @@ export async function getPairExamBlocks(
   const blocks: ExamBlock[] = slugs.map((slug) => {
     const subject = subjectRows.find((s) => s.slug === slug)!;
     const subjectPool = pool.filter((q) => topicSubject.get(q.topic_id) === subject.id);
-    const { picked, shortfall } = pickBalancedByTopic(subjectPool, EXAM_BLUEPRINT);
+    const { picked, shortfall } = pickBalancedByTopic(subjectPool, blueprint);
     return {
       subjectSlug: subject.slug,
       subjectId: subject.id,

@@ -34,6 +34,28 @@ export type ExamSecondSubject = (typeof EXAM_SECOND_SUBJECTS)[number];
 export const EXAM_PAIR_DURATION_S = 160 * 60;
 export const EXAM_PAIR_MAX_SCORE = 2 * EXAM_MAX_SCORE;
 
+/**
+ * Блюпринт диагностики: короткий замер (9 заданий/предмет, 18/пару) без
+ * мгновенной обратной связи. Пропорции типов те же, что у EXAM_BLUEPRINT,
+ * но меньше вопросов на тип.
+ */
+export const DIAGNOSTIC_BLUEPRINT: ReadonlyArray<{
+  type: QuestionType;
+  count: number;
+  points: number;
+}> = [
+  { type: 'single', count: 6, points: 1 },
+  { type: 'multi', count: 2, points: 2 },
+  { type: 'matching', count: 1, points: 2 },
+];
+
+export const DIAGNOSTIC_BLOCK_COUNT = DIAGNOSTIC_BLUEPRINT.reduce((sum, part) => sum + part.count, 0);
+export const DIAGNOSTIC_BLOCK_MAX_SCORE = DIAGNOSTIC_BLUEPRINT.reduce(
+  (sum, part) => sum + part.count * part.points,
+  0
+);
+export const DIAGNOSTIC_PAIR_MAX_SCORE = 2 * DIAGNOSTIC_BLOCK_MAX_SCORE;
+
 export const QUESTION_POINTS: Record<QuestionType, number> = Object.fromEntries(
   EXAM_BLUEPRINT.map((part) => [part.type, part.points])
 ) as Record<QuestionType, number>;
