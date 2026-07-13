@@ -8,11 +8,13 @@ export const routing = defineRouting({
   pathnames: {
     '/': '/',
     '/login': '/login',
+    '/onboarding': '/onboarding',
     '/dashboard': '/dashboard',
     '/subjects': '/subjects',
     '/subjects/[subject]': '/subjects/[subject]',
     '/practice/topic/[topic]': '/practice/topic/[topic]',
     '/full-practice': '/full-practice',
+    '/diagnostic': '/diagnostic',
     '/progress': '/progress',
     '/settings': '/settings',
   },
