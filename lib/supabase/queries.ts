@@ -16,6 +16,8 @@ import {
   type AchievementKey,
   type UpcomingBadge,
 } from '@/lib/gamification';
+import { DIAGNOSTIC_PAIR_MAX_SCORE } from '@/lib/exam';
+import type { BaselineTopicStat } from '@/lib/plan';
 import type { QuestionType } from '@/types/db';
 import type { Profile, Subject, Topic, Locale, Question, ContextContent } from '@/types/db';
 
@@ -708,4 +710,85 @@ export async function getQuestionsForTopic(topicSlug: string, locale: Locale = '
   }
 
   return { topic, questions: list, contexts: contextsMap };
+}
+
+// ---- Персональный план (baseline из диагностики) ----
+
+export type DiagnosticBaseline = {
+  sessionId: string;
+  finishedAt: string;
+  score: number;
+  maxScore: number;
+  topicStats: BaselineTopicStat[];
+};
+
+/**
+ * Baseline — самая РАННЯЯ завершённая diagnostic-сессия пользователя (v1 без
+ * ретейка: она же единственная). Разрез по темам строится из attempts этой
+ * сессии (сессия одна на всю диагностику, subject_id NULL).
+ */
+export async function getDiagnosticBaseline(userId: string): Promise<DiagnosticBaseline | null> {
+  const supabase = await createClient();
+
+  const { data: sessionRows } = await supabase
+    .from('sessions')
+    .select('id, score, finished_at')
+    .eq('user_id', userId)
+    .eq('mode', 'diagnostic')
+    .not('finished_at', 'is', null)
+    .order('finished_at', { ascending: true })
+    .limit(1);
+
+  const session = (sessionRows ?? [])[0] as { id: string; score: number; finished_at: string } | undefined;
+  if (!session) return null;
+
+  const { data: attemptRows } = await supabase
+    .from('attempts')
+    .select('question_id, is_correct')
+    .eq('session_id', session.id);
+
+  const attempts = (attemptRows ?? []) as { question_id: string; is_correct: boolean }[];
+  const questionIds = Array.from(new Set(attempts.map((a) => a.question_id)));
+
+  const topicStats: BaselineTopicStat[] = [];
+  if (questionIds.length > 0) {
+    const { data: questionsRaw } = await supabase
+      .from('questions')
+      .select('id, topic_id')
+      .in('id', questionIds);
+    const questionToTopic = new Map(
+      ((questionsRaw ?? []) as { id: string; topic_id: string }[]).map((q) => [q.id, q.topic_id])
+    );
+
+    const topicIds = Array.from(new Set(Array.from(questionToTopic.values())));
+    const { data: topicsRaw } = topicIds.length > 0
+      ? await supabase.from('topics').select('id, name_ru, name_kk').in('id', topicIds)
+      : { data: [] };
+    const topicMap = new Map(
+      ((topicsRaw ?? []) as { id: string; name_ru: string; name_kk: string }[]).map((t) => [t.id, t])
+    );
+
+    const byTopic = new Map<string, { total: number; correct: number }>();
+    for (const a of attempts) {
+      const topicId = questionToTopic.get(a.question_id);
+      if (!topicId) continue;
+      const stat = byTopic.get(topicId) ?? { total: 0, correct: 0 };
+      stat.total++;
+      if (a.is_correct) stat.correct++;
+      byTopic.set(topicId, stat);
+    }
+    for (const [topicId, stat] of byTopic) {
+      const topic = topicMap.get(topicId);
+      if (!topic) continue;
+      topicStats.push({ topicId, nameRu: topic.name_ru, nameKk: topic.name_kk, ...stat });
+    }
+  }
+
+  return {
+    sessionId: session.id,
+    finishedAt: session.finished_at,
+    score: session.score ?? 0,
+    maxScore: DIAGNOSTIC_PAIR_MAX_SCORE,
+    topicStats,
+  };
 }

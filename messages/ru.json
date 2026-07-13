@@ -143,6 +143,21 @@
       "sun": "Вс"
     }
   },
+  "plan": {
+    "title": "Персональный план",
+    "emptyTitle": "План появится после диагностики",
+    "emptyDesc": "Пройди короткую диагностику — увидишь отсчёт до ЕНТ, прогноз балла и приоритетные темы.",
+    "startDiagnosticButton": "Пройти диагностику",
+    "examCountdown": "До ЕНТ",
+    "daysUnit": "{count, plural, =0 {дней} one {день} few {дня} other {дней}}",
+    "noExamDate": "Дата ЕНТ не указана",
+    "targetProgress": "Прогноз к цели",
+    "targetHint": "Прогноз {projected} из цели {target}",
+    "priorityTopics": "Приоритетные темы",
+    "priorityEmpty": "Пока нет данных по темам",
+    "deltaUp": "+{percent}% с диагностики",
+    "deltaDown": "−{percent}% с диагностики"
+  },
   "achievements": {
     "first-question": { "title": "Первый шаг", "desc": "Реши первую задачу" },
     "solved-100": { "title": "Сотня решённых", "desc": "Реши 100 задач" },

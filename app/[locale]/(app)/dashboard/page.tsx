@@ -15,6 +15,7 @@ import { getSubjectIcon } from '@/lib/icons';
 import { ProgressRing } from '@/components/gamification/ProgressRing';
 import { MasteryBar, type MasteryTone } from '@/components/gamification/MasteryBar';
 import { ACHIEVEMENT_META } from '@/components/gamification/achievement-meta';
+import { PlanSection } from '@/components/dashboard/PlanSection';
 import type { Locale } from '@/types/db';
 
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
@@ -206,6 +207,11 @@ export default async function DashboardPage({
             </CardContent>
           </Card>
         </section>
+
+        {/* ── Персональный план (только когда онбординг пройден) ── */}
+        {profile && profile.second_subject && (
+          <PlanSection profile={profile} topicMastery={g?.topicMastery ?? []} locale={locale as Locale} />
+        )}
 
         {/* ── Subjects with mastery ── */}
         <section>

@@ -143,6 +143,21 @@
       "sun": "Жс"
     }
   },
+  "plan": {
+    "title": "Жеке жоспар",
+    "emptyTitle": "Жоспар диагностикадан кейін пайда болады",
+    "emptyDesc": "Қысқа диагностикадан өт — ҰБТ-ға дейінгі санақты, балл болжамын және басым тақырыптарды көресің.",
+    "startDiagnosticButton": "Диагностикадан өту",
+    "examCountdown": "ҰБТ-ға дейін",
+    "daysUnit": "{count, plural, other {күн}}",
+    "noExamDate": "ҰБТ күні көрсетілмеген",
+    "targetProgress": "Мақсатқа болжам",
+    "targetHint": "Болжам {projected}, мақсат {target}",
+    "priorityTopics": "Басым тақырыптар",
+    "priorityEmpty": "Тақырыптар бойынша деректер әлі жоқ",
+    "deltaUp": "диагностикадан бері +{percent}%",
+    "deltaDown": "диагностикадан бері −{percent}%"
+  },
   "achievements": {
     "first-question": { "title": "Алғашқы қадам", "desc": "Бірінші есепті шеш" },
     "solved-100": { "title": "Жүз есеп", "desc": "100 есеп шеш" },
