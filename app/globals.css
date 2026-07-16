@@ -209,4 +209,50 @@
     background-clip: text;
     color: transparent;
   }
+
+  /* Emerald-styled native range slider (onboarding target-score step) */
+  .range-emerald {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+  }
+  .range-emerald::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 9999px;
+    background: hsl(var(--muted));
+  }
+  .range-emerald::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    margin-top: -7px;
+    height: 20px;
+    width: 20px;
+    border-radius: 9999px;
+    background: hsl(var(--primary));
+    border: 3px solid hsl(var(--background));
+    box-shadow: 0 0 0 1px hsl(var(--primary));
+    cursor: pointer;
+  }
+  .range-emerald::-moz-range-track {
+    height: 6px;
+    border-radius: 9999px;
+    background: hsl(var(--muted));
+  }
+  .range-emerald::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 9999px;
+    background: hsl(var(--primary));
+    border: 3px solid hsl(var(--background));
+    box-shadow: 0 0 0 1px hsl(var(--primary));
+    cursor: pointer;
+  }
+  .range-emerald:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  .range-emerald:focus-visible::-moz-range-thumb {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
 }
