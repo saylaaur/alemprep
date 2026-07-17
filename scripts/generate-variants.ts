@@ -4,9 +4,12 @@
  * Applies deterministic checks (dedup + LaTeX sanity) before saving.
  *
  * Usage:
- *   npm run gen:variants -- --input scripts/references/math-YYYY-MM-DDTHH-MM.json [--subject math] [--variants 3]
+ *   npm run gen:variants -- --input scripts/references/math-YYYY-MM-DDTHH-MM.json [--subject math] [--variants 3] [--sync]
  *
- * ⚠️  Uses paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output
+ * Default mode batches one request per reference into a single Message Batches API call
+ * (−50% cost, separate rate limit). --sync falls back to the old one-request-per-reference loop.
+ *
+ * ⚠️  Uses paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output (batch: half that)
  */
 import Anthropic from '@anthropic-ai/sdk';
 import * as fs from 'fs';
@@ -22,12 +25,20 @@ import {
   type TranscriptionItem,
 } from './lib/schema';
 import { validateAndFilter } from './lib/checks';
+import { resolveModel } from './lib/models';
+import {
+  collectBatchResults,
+  describeFailure,
+  indexCustomId,
+  isSucceeded,
+  mapResultsByCustomId,
+  submitAndAwaitBatch,
+} from './lib/batch';
 
-const MODEL = 'claude-haiku-4-5-20251001';
-const COST = { input: 1.0, output: 5.0 }; // USD per 1M tokens
+const COST = { input: 1.0, output: 5.0 }; // USD per 1M tokens (standard rate; batch is half this)
 
-function calcCost(inputTok: number, outputTok: number): number {
-  return (inputTok * COST.input + outputTok * COST.output) / 1_000_000;
+function calcCost(inputTok: number, outputTok: number, costMultiplier: number): number {
+  return ((inputTok * COST.input + outputTok * COST.output) / 1_000_000) * costMultiplier;
 }
 
 function expandPath(p: string): string {
@@ -59,23 +70,25 @@ function loadEnv(): void {
   }
 }
 
-function parseArgs(): { input: string; variants: number; subject: string } {
+function parseArgs(): { input: string; variants: number; subject: string; sync: boolean } {
   const args = process.argv.slice(2);
   let input = '';
   let variants = 3;
   let subject = 'math';
+  let sync = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--input' && args[i + 1]) input = expandPath(args[++i]);
     if (args[i] === '--variants' && args[i + 1]) variants = parseInt(args[++i], 10);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
+    if (args[i] === '--sync') sync = true;
   }
   if (!input) {
     console.error(
-      'Usage: npm run gen:variants -- --input <path.json> [--subject math] [--variants N]',
+      'Usage: npm run gen:variants -- --input <path.json> [--subject math] [--variants N] [--sync]',
     );
     process.exit(1);
   }
-  return { input, variants, subject };
+  return { input, variants, subject, sync };
 }
 
 function buildSystemInstruction(subject: string): string {
@@ -115,15 +128,25 @@ RULES:
 10. NEVER reproduce verbatim content from actual ЕНТ/НЦТ exam papers.`;
 }
 
-async function generateVariants(
-  client: Anthropic,
-  reference: ReferenceQuestion,
-  n: number,
-  systemInstruction: string,
-): Promise<{ variants: GeneratedQuestion[]; inputTok: number; outputTok: number }> {
-  // Fewer variants for questions with accompanying images (Epic C forward compat)
-  const count = reference.has_image ? Math.min(n, 2) : n;
+interface ParsedVariants {
+  variants: GeneratedQuestion[];
+  inputTok: number;
+  outputTok: number;
+  cacheRead: number;
+  cacheWrite: number;
+}
 
+/** Fewer variants for questions with accompanying images (Epic C forward compat). */
+function variantCountFor(reference: ReferenceQuestion, n: number): number {
+  return reference.has_image ? Math.min(n, 2) : n;
+}
+
+function buildGenerateParams(
+  reference: ReferenceQuestion,
+  count: number,
+  model: string,
+  system: Anthropic.Messages.MessageCreateParamsNonStreaming['system'],
+): Anthropic.Messages.MessageCreateParamsNonStreaming {
   const userMessage = `Reference problem (source: ${reference.source_file}):
 ${JSON.stringify(
   {
@@ -139,16 +162,23 @@ ${JSON.stringify(
 
 Generate ${count} NEW variants with completely different numbers. Return them in the variants array.`;
 
-  const response = await client.messages.create({
-    model: MODEL,
+  return {
+    model,
     max_tokens: 4096,
-    system: systemInstruction,
+    system,
     messages: [{ role: 'user', content: userMessage }],
-  });
+  };
+}
 
-  const inputTok = response.usage.input_tokens;
-  const outputTok = response.usage.output_tokens;
-  const raw = response.content
+function parseGenerateResponse(
+  message: Anthropic.Message,
+  reference: ReferenceQuestion,
+): ParsedVariants {
+  const inputTok = message.usage.input_tokens;
+  const outputTok = message.usage.output_tokens;
+  const cacheRead = message.usage.cache_read_input_tokens ?? 0;
+  const cacheWrite = message.usage.cache_creation_input_tokens ?? 0;
+  const raw = message.content
     .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
     .map((b) => b.text)
     .join('')
@@ -159,7 +189,7 @@ Generate ${count} NEW variants with completely different numbers. Return them in
     parsed = JSON.parse(extractJson(raw)) as { variants?: unknown[] };
   } catch {
     console.warn(`      ⚠️  Response JSON parse failed: ${raw.slice(0, 60).replace(/\s+/g, ' ')}`);
-    return { variants: [], inputTok, outputTok };
+    return { variants: [], inputTok, outputTok, cacheRead, cacheWrite };
   }
 
   const rawVariants = parsed.variants ?? [];
@@ -179,13 +209,26 @@ Generate ${count} NEW variants with completely different numbers. Return them in
     }
   }
 
-  return { variants: validated, inputTok, outputTok };
+  return { variants: validated, inputTok, outputTok, cacheRead, cacheWrite };
+}
+
+async function generateVariants(
+  client: Anthropic,
+  reference: ReferenceQuestion,
+  n: number,
+  model: string,
+  system: Anthropic.Messages.MessageCreateParamsNonStreaming['system'],
+): Promise<ParsedVariants> {
+  const count = variantCountFor(reference, n);
+  const params = buildGenerateParams(reference, count, model, system);
+  const response = await client.messages.create(params);
+  return parseGenerateResponse(response, reference);
 }
 
 async function main() {
   loadEnv();
 
-  const { input, variants: numVariants, subject } = parseArgs();
+  const { input, variants: numVariants, subject, sync } = parseArgs();
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -220,38 +263,101 @@ async function main() {
     process.exit(1);
   }
 
+  const model = resolveModel('GEN_MODEL', 'claude-haiku-4-5-20251001');
+  const mode = sync ? 'sync' : 'batch (−50%)';
+
   console.log(`\n📥  ${input}`);
   console.log(
-    `📋  ${references.length} references → up to ${numVariants} variants each  [model: ${MODEL}]`,
+    `📋  ${references.length} references → up to ${numVariants} variants each  [model: ${model}, mode: ${mode}]`,
   );
   console.log(`   ⚠️  Paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output\n`);
 
   const anthropic = new Anthropic({ apiKey });
-  const systemInstruction = buildSystemInstruction(subject);
+  const system: Anthropic.Messages.MessageCreateParamsNonStreaming['system'] = [
+    { type: 'text', text: buildSystemInstruction(subject), cache_control: { type: 'ephemeral' } },
+  ];
   const allGenerated: GeneratedQuestion[] = [];
   let totalInput = 0;
   let totalOutput = 0;
+  let totalCacheRead = 0;
+  let totalCacheWrite = 0;
+  const costMultiplier = sync ? 1 : 0.5;
 
-  for (const ref of references) {
-    process.stdout.write(`  ${ref.source_file}  (${ref.topic_slug})  …  `);
-    try {
-      const { variants, inputTok, outputTok } = await generateVariants(
-        anthropic,
-        ref,
-        numVariants,
-        systemInstruction,
-      );
-      allGenerated.push(...variants);
-      totalInput += inputTok;
-      totalOutput += outputTok;
+  function record(
+    ref: ReferenceQuestion,
+    variants: GeneratedQuestion[],
+    inputTok: number,
+    outputTok: number,
+    cacheRead: number,
+    cacheWrite: number,
+  ): void {
+    allGenerated.push(...variants);
+    totalInput += inputTok;
+    totalOutput += outputTok;
+    totalCacheRead += cacheRead;
+    totalCacheWrite += cacheWrite;
+    const cost = calcCost(inputTok, outputTok, costMultiplier);
+    console.log(
+      `✓  ${variants.length}/${variantCountFor(ref, numVariants)} variants  [${inputTok}in ${outputTok}out ~$${cost.toFixed(5)}]`,
+    );
+  }
 
-      const cost = calcCost(inputTok, outputTok);
-      console.log(
-        `✓  ${variants.length}/${numVariants} variants  [${inputTok}in ${outputTok}out ~$${cost.toFixed(5)}]`,
-      );
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.log(`❌  ${msg}`);
+  if (sync) {
+    for (const ref of references) {
+      process.stdout.write(`  ${ref.source_file}  (${ref.topic_slug})  …  `);
+      try {
+        const { variants, inputTok, outputTok, cacheRead, cacheWrite } = await generateVariants(
+          anthropic,
+          ref,
+          numVariants,
+          model,
+          system,
+        );
+        record(ref, variants, inputTok, outputTok, cacheRead, cacheWrite);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.log(`❌  ${msg}`);
+      }
+    }
+  } else {
+    const built = references.map((ref, i) => ({
+      customId: indexCustomId(i),
+      ref,
+      params: buildGenerateParams(ref, variantCountFor(ref, numVariants), model, system),
+    }));
+
+    console.log(`📦  Submitting batch of ${built.length} request(s)…`);
+    const batch = await submitAndAwaitBatch(
+      anthropic,
+      built.map(({ customId, params }) => ({ custom_id: customId, params })),
+      {
+        onPoll: (b) =>
+          console.log(
+            `   …  batch ${b.id} still ${b.processing_status} (${b.request_counts.succeeded} done, ${b.request_counts.processing} processing)`,
+          ),
+      },
+    );
+    console.log(
+      `   ✓  batch ${batch.id} ended — ${batch.request_counts.succeeded} succeeded, ${batch.request_counts.errored} errored, ${batch.request_counts.expired} expired, ${batch.request_counts.canceled} canceled\n`,
+    );
+
+    const resultsMap = await collectBatchResults(anthropic, batch.id);
+    const mapped = mapResultsByCustomId(
+      built.map(({ customId, ref }) => ({ customId, item: ref })),
+      resultsMap,
+    );
+
+    for (const { item: ref, result } of mapped) {
+      process.stdout.write(`  ${ref.source_file}  (${ref.topic_slug})  …  `);
+      if (isSucceeded(result)) {
+        const { variants, inputTok, outputTok, cacheRead, cacheWrite } = parseGenerateResponse(
+          result.result.message,
+          ref,
+        );
+        record(ref, variants, inputTok, outputTok, cacheRead, cacheWrite);
+      } else {
+        console.log(`❌  batch: ${describeFailure(result)}`);
+      }
     }
   }
 
@@ -282,12 +388,15 @@ async function main() {
   const genFile = path.join(genDir, `${subject}-${ts}.json`);
   fs.writeFileSync(genFile, JSON.stringify(valid, null, 2));
 
-  const totalCost = calcCost(totalInput, totalOutput);
+  const totalCost = calcCost(totalInput, totalOutput, costMultiplier);
   console.log(
     `✅  Generated ${valid.length} questions from ${references.length} references`,
   );
   console.log(
-    `💰  Tokens: ${totalInput} in / ${totalOutput} out  ~$${totalCost.toFixed(4)} USD  [Haiku 4.5]`,
+    `💰  Tokens: ${totalInput} in / ${totalOutput} out  ~$${totalCost.toFixed(4)} USD  [${model}, ${sync ? 'standard' : 'batch −50%'} rate]`,
+  );
+  console.log(
+    `🗄️  Cache: ${totalCacheWrite} written / ${totalCacheRead} read (system prompt cache_control — no effect until the prompt clears the model's minimum cacheable prefix)`,
   );
   console.log(`📄  Saved → ${genFile}\n`);
 }
