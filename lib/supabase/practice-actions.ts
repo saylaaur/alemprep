@@ -51,7 +51,7 @@ export async function recordAttempt(input: RecordInput) {
   // что у getTodayAttemptsCount; toISOString здесь давал бы UTC-сдвиг.
   const { data: profile } = await supabase
     .from('profiles')
-    .select('current_streak, last_active_date, longest_streak, xp')
+    .select('current_streak, last_active_date, longest_streak, xp, streak_freezes')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -61,11 +61,14 @@ export async function recordAttempt(input: RecordInput) {
       lastActiveDate: profile.last_active_date as string | null,
       currentStreak: (profile.current_streak as number | null) ?? 0,
       today: localDateStr(),
+      streakFreezes: (profile.streak_freezes as number | null) ?? 0,
     });
     const update: Record<string, unknown> = {};
     if (next) {
       update.current_streak = next.streak;
       update.last_active_date = next.lastActiveDate;
+      update.streak_freezes = next.streakFreezes;
+      if (next.freezeUsed) update.last_freeze_used_date = next.lastActiveDate;
       const longest = (profile.longest_streak as number | null) ?? 0;
       if (next.streak > longest) update.longest_streak = next.streak;
     }
@@ -292,7 +295,7 @@ export async function finishExamSession(input: {
   // Пробник не проходит через recordAttempt, поэтому XP и стрик обновляем здесь.
   const { data: examProfile } = await supabase
     .from('profiles')
-    .select('xp, current_streak, last_active_date, longest_streak')
+    .select('xp, current_streak, last_active_date, longest_streak, streak_freezes')
     .eq('id', user.id)
     .maybeSingle();
   const profile = examProfile as {
@@ -300,6 +303,7 @@ export async function finishExamSession(input: {
     current_streak: number | null;
     last_active_date: string | null;
     longest_streak: number | null;
+    streak_freezes: number | null;
   } | null;
   const xpGain = correctCount * XP_PER_CORRECT + EXAM_BLOCK_BONUS;
   const profileUpdate: Record<string, unknown> = {
@@ -310,10 +314,13 @@ export async function finishExamSession(input: {
       lastActiveDate: profile.last_active_date,
       currentStreak: profile.current_streak ?? 0,
       today: localDateStr(),
+      streakFreezes: profile.streak_freezes ?? 0,
     });
     if (nextStreak) {
       profileUpdate.current_streak = nextStreak.streak;
       profileUpdate.last_active_date = nextStreak.lastActiveDate;
+      profileUpdate.streak_freezes = nextStreak.streakFreezes;
+      if (nextStreak.freezeUsed) profileUpdate.last_freeze_used_date = nextStreak.lastActiveDate;
       if (nextStreak.streak > (profile.longest_streak ?? 0)) {
         profileUpdate.longest_streak = nextStreak.streak;
       }

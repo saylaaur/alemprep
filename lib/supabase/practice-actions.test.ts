@@ -38,6 +38,8 @@ function seed(): Store {
       current_streak: 3,
       longest_streak: 3,
       last_active_date: '2026-07-03',
+      streak_freezes: 1,
+      last_freeze_used_date: null,
     }],
     attempts: [],
     user_achievements: [],
@@ -182,6 +184,36 @@ describe('finishExamSession — идемпотентность', () => {
     });
   });
 
+  it('пропущен ровно один день, есть заморозка — стрик растёт, заморозка списывается', async () => {
+    h.store.profiles[0].last_active_date = '2026-07-02';
+    h.store.profiles[0].streak_freezes = 1;
+
+    const res = await finishExamSession(input);
+
+    expect(res).toMatchObject({ ok: true });
+    expect(h.store.profiles[0]).toMatchObject({
+      current_streak: 4,
+      last_active_date: '2026-07-04',
+      streak_freezes: 0,
+      last_freeze_used_date: '2026-07-04',
+    });
+  });
+
+  it('пропущен день, заморозок нет — обычный сброс серии в 1', async () => {
+    h.store.profiles[0].last_active_date = '2026-07-02';
+    h.store.profiles[0].streak_freezes = 0;
+
+    const res = await finishExamSession(input);
+
+    expect(res).toMatchObject({ ok: true });
+    expect(h.store.profiles[0]).toMatchObject({
+      current_streak: 1,
+      last_active_date: '2026-07-04',
+      streak_freezes: 0,
+    });
+    expect(h.store.profiles[0].last_freeze_used_date).toBeNull();
+  });
+
   it('гонка: параллельный (Promise.all) двойной вызов на одной сессии не дублирует XP/попытки', async () => {
     // Реалистичный сценарий: двойной клик на «Завершить», или ретрай сети,
     // отправляющий второй запрос до того, как первый успел проставить
@@ -271,6 +303,26 @@ describe('recordAttempt — сохранение прогресса', () => {
     expect(h.store.attempts[0]).toMatchObject({
       question_id: 'Q2',
       is_correct: false,
+    });
+  });
+
+  it('пропущен ровно один день, есть заморозка — стрик растёт, заморозка списывается', async () => {
+    h.store.profiles[0].last_active_date = '2026-07-02';
+    h.store.profiles[0].streak_freezes = 1;
+
+    const res = await recordAttempt({
+      questionId: 'Q1',
+      givenAnswer: 'A',
+      isCorrect: true,
+      timeSpentMs: 1000,
+    });
+
+    expect(res).toEqual({ ok: true, xpAwarded: 10 });
+    expect(h.store.profiles[0]).toMatchObject({
+      current_streak: 4,
+      last_active_date: '2026-07-04',
+      streak_freezes: 0,
+      last_freeze_used_date: '2026-07-04',
     });
   });
 
