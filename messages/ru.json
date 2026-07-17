@@ -150,6 +150,8 @@
     "mastery": "Освоение",
     "streakRecord": "рекорд серии — {count, plural, one {# день} few {# дня} other {# дней}}",
     "streakStart": "Реши задачу — и начни серию",
+    "streakFreezeCount": "{count, plural, =0 {0 заморозок} one {# заморозка} few {# заморозки} other {# заморозок}}",
+    "streakFreezeSaved": "Заморозка спасла серию",
     "weakTopics": "Слабые темы",
     "weakTopicsEmpty": "Порешай задачи — покажем, что стоит подтянуть",
     "upcomingBadges": "Ближайшие бейджи",

@@ -150,6 +150,8 @@
     "mastery": "Меңгеру",
     "streakRecord": "серия рекорды — {count, plural, other {# күн}}",
     "streakStart": "Есеп шеш — серияны баста",
+    "streakFreezeCount": "{count, plural, other {# мұздату}}",
+    "streakFreezeSaved": "Мұздату серияны сақтап қалды",
     "weakTopics": "Әлсіз тақырыптар",
     "weakTopicsEmpty": "Есептер шығар — нені пысықтау керегін көрсетеміз",
     "upcomingBadges": "Жақын бейджтер",

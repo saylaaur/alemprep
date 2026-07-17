@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Link } from '@/i18n/routing';
-import { Flame, Target, Zap, TriangleAlert, Sparkles } from 'lucide-react';
+import { Flame, Target, Zap, TriangleAlert, Sparkles, Snowflake } from 'lucide-react';
 import {
   getProfile,
   getGamification,
@@ -62,6 +62,8 @@ export default async function DashboardPage({
   const currentStreak = g?.currentStreak ?? 0;
   const longestStreak = g?.longestStreak ?? 0;
   const litFlames = Math.min(currentStreak, 7);
+  const streakFreezes = g?.streakFreezes ?? 0;
+  const freezeJustSaved = g?.freezeJustSaved ?? false;
 
   // Mastery aggregated per subject.
   const masteryBySubject = new Map<string, { correct: number; total: number }>();
@@ -173,11 +175,25 @@ export default async function DashboardPage({
                   );
                 })}
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                {currentStreak > 0
-                  ? t('streakRecord', { count: longestStreak })
-                  : t('streakStart')}
-              </p>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground">
+                  {currentStreak > 0
+                    ? t('streakRecord', { count: longestStreak })
+                    : t('streakStart')}
+                </p>
+                <div
+                  className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary"
+                  title={t('streakFreezeCount', { count: streakFreezes })}
+                >
+                  <Snowflake className="h-3.5 w-3.5" />
+                  <span className="font-mono tabular-nums">{streakFreezes}</span>
+                </div>
+              </div>
+              {freezeJustSaved && (
+                <p className="mt-1.5 text-xs font-medium text-primary">
+                  {t('streakFreezeSaved')}
+                </p>
+              )}
             </CardContent>
           </Card>
 
