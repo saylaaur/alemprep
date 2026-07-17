@@ -397,6 +397,9 @@ export type Gamification = {
   percentToNext: number;
   currentStreak: number;
   longestStreak: number;
+  streakFreezes: number;
+  /** true, если последняя заморозка спасла серию именно на текущий last_active_date. */
+  freezeJustSaved: boolean;
   solvedToday: number;
   earned: GamificationBadge[];
   upcoming: UpcomingBadge[];
@@ -413,7 +416,7 @@ export async function getGamification(userId: string): Promise<Gamification | nu
   const [profileRes, attemptsRes, achievementsRes, topicsRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('xp, current_streak, longest_streak')
+      .select('xp, current_streak, longest_streak, streak_freezes, last_active_date, last_freeze_used_date')
       .eq('id', userId)
       .maybeSingle(),
     supabase
@@ -431,11 +434,17 @@ export async function getGamification(userId: string): Promise<Gamification | nu
     xp: number;
     current_streak: number;
     longest_streak: number;
+    streak_freezes: number;
+    last_active_date: string | null;
+    last_freeze_used_date: string | null;
   } | null;
   if (!profile) return null;
 
   const xp = profile.xp ?? 0;
   const currentStreak = profile.current_streak ?? 0;
+  const streakFreezes = profile.streak_freezes ?? 0;
+  const freezeJustSaved =
+    profile.last_freeze_used_date != null && profile.last_freeze_used_date === profile.last_active_date;
   const progress = levelProgress(xp);
 
   const attempts = (attemptsRes.data ?? []) as {
@@ -529,6 +538,8 @@ export async function getGamification(userId: string): Promise<Gamification | nu
     percentToNext: progress.percentToNext,
     currentStreak,
     longestStreak: profile.longest_streak ?? 0,
+    streakFreezes,
+    freezeJustSaved,
     solvedToday,
     earned,
     upcoming,
