@@ -25,6 +25,8 @@ export type Profile = {
   current_streak: number;
   longest_streak: number;
   last_active_date: string | null;
+  streak_freezes: number;
+  last_freeze_used_date: string | null;
   xp: number;
   is_admin: boolean;
   second_subject: SecondSubject | null;
