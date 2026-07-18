@@ -22,6 +22,7 @@ export const WEEKLY_BLUEPRINT: ReadonlyArray<{
   { type: 'matching', count: 1, points: 2 },
 ];
 
+export const WEEKLY_BLOCK_COUNT = WEEKLY_BLUEPRINT.reduce((sum, part) => sum + part.count, 0);
 export const WEEKLY_BLOCK_MAX_SCORE = WEEKLY_BLUEPRINT.reduce(
   (sum, part) => sum + part.count * part.points,
   0

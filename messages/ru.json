@@ -128,6 +128,26 @@
     "resultTitle": "Результат диагностики",
     "goToPlanButton": "Смотреть мой план"
   },
+  "weekly": {
+    "title": "Еженедельный тест",
+    "subtitle": "{count} заданий · без обратной связи по ходу — увидишь результат в конце",
+    "pairLabel": "Пара: {pair}",
+    "noFeedbackNotice": "Это не тренировка: правильность ответов не показывается по ходу — так замер честнее.",
+    "startButton": "Начать тест",
+    "startError": "Не удалось начать тест. Проверь соединение и попробуй ещё раз.",
+    "submitButton": "Завершить тест",
+    "submitError": "Не удалось сохранить результат. Проверь соединение и попробуй завершить ещё раз.",
+    "confirmSubmit": "Завершить тест?",
+    "confirmSubmitDesc": "Отвечено {answered} из {total}. Продолжить?",
+    "confirmYes": "Завершить",
+    "confirmNo": "Отмена",
+    "loading": "Готовимся…",
+    "resultTitle": "Результат недели",
+    "goToDashboardButton": "На дашборд",
+    "alreadyDoneTitle": "Тест на этой неделе уже пройден",
+    "alreadyDoneDesc": "Следующий будет доступен {date}.",
+    "alreadyDoneScore": "Твой балл: {score}"
+  },
   "dashboard": {
     "greeting": "Привет, {name}",
     "defaultName": "студент",

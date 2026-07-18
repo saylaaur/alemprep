@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   WEEKLY_BLUEPRINT,
+  WEEKLY_BLOCK_COUNT,
   WEEKLY_BLOCK_MAX_SCORE,
   WEEKLY_PAIR_MAX_SCORE,
   isoWeekKey,
@@ -11,9 +12,9 @@ import {
 
 describe('WEEKLY_BLUEPRINT', () => {
   it('lands in the requested ~15-18 total-for-the-pair range', () => {
-    const perSubject = WEEKLY_BLUEPRINT.reduce((sum, part) => sum + part.count, 0);
-    expect(perSubject * 2).toBeGreaterThanOrEqual(15);
-    expect(perSubject * 2).toBeLessThanOrEqual(18);
+    expect(WEEKLY_BLOCK_COUNT * 2).toBeGreaterThanOrEqual(15);
+    expect(WEEKLY_BLOCK_COUNT * 2).toBeLessThanOrEqual(18);
+    expect(WEEKLY_BLOCK_COUNT).toBe(WEEKLY_BLUEPRINT.reduce((sum, part) => sum + part.count, 0));
   });
 
   it('derives block/pair max score from the blueprint', () => {

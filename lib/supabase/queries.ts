@@ -17,6 +17,7 @@ import {
   type UpcomingBadge,
 } from '@/lib/gamification';
 import { DIAGNOSTIC_PAIR_MAX_SCORE } from '@/lib/exam';
+import { WEEKLY_PAIR_MAX_SCORE, isSameIsoWeek, nextIsoWeekMonday } from '@/lib/weekly';
 import type { BaselineTopicStat } from '@/lib/plan';
 import type { QuestionType } from '@/types/db';
 import type { Profile, Subject, Topic, Locale, Question, ContextContent } from '@/types/db';
@@ -809,5 +810,59 @@ export async function getDiagnosticBaseline(userId: string): Promise<DiagnosticB
     score: session.score ?? 0,
     maxScore: DIAGNOSTIC_PAIR_MAX_SCORE,
     topicStats,
+  };
+}
+
+export type WeeklyTestSummary = {
+  /** false, если за текущую ISO-неделю уже есть weekly-сессия (в любом статусе). */
+  availableThisWeek: boolean;
+  /** ISO-строка начала следующей доступной недели (понедельник). */
+  nextAvailableAt: string;
+  lastScore: number | null;
+  previousScore: number | null;
+  /** lastScore - previousScore, или null, если завершённых тестов меньше двух. */
+  delta: number | null;
+  maxScore: number;
+};
+
+/**
+ * Сводка для карточки на дашборде и интро-экрана /weekly: доступен ли новый
+ * тест на этой ISO-неделе, и балл/дельта по последним завершённым. «Уже была
+ * сессия на этой неделе» считаем по ЛЮБОЙ (не только завершённой) weekly-сессии —
+ * та же логика, что в startWeeklyTest, чтобы интро не обещало то, чего старт
+ * не позволит.
+ */
+export async function getWeeklyTestSummary(userId: string): Promise<WeeklyTestSummary> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('sessions')
+    .select('score, started_at, finished_at')
+    .eq('user_id', userId)
+    .eq('mode', 'weekly');
+
+  const sessions = (data ?? []) as {
+    score: number | null;
+    started_at: string;
+    finished_at: string | null;
+  }[];
+
+  const now = new Date();
+  const availableThisWeek = !sessions.some((s) => isSameIsoWeek(new Date(s.started_at), now));
+
+  const finished = sessions
+    .filter((s) => s.finished_at != null)
+    .sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime());
+
+  const lastScore = finished[0]?.score ?? null;
+  const previousScore = finished[1]?.score ?? null;
+  const delta = lastScore !== null && previousScore !== null ? lastScore - previousScore : null;
+
+  return {
+    availableThisWeek,
+    nextAvailableAt: nextIsoWeekMonday(now).toISOString(),
+    lastScore,
+    previousScore,
+    delta,
+    maxScore: WEEKLY_PAIR_MAX_SCORE,
   };
 }

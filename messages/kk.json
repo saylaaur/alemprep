@@ -128,6 +128,26 @@
     "resultTitle": "Диагностика нәтижесі",
     "goToPlanButton": "Жоспарымды көру"
   },
+  "weekly": {
+    "title": "Апталық тест",
+    "subtitle": "{count} тапсырма · барысында кері байланыс жоқ — нәтижені соңында көресің",
+    "pairLabel": "Жұп: {pair}",
+    "noFeedbackNotice": "Бұл жаттығу емес: жауаптың дұрыстығы барысында көрсетілмейді — өлшем солай әділ болады.",
+    "startButton": "Тестті бастау",
+    "startError": "Тестті бастау мүмкін болмады. Байланысты тексеріп, қайталап көр.",
+    "submitButton": "Тестті аяқтау",
+    "submitError": "Нәтижені сақтау мүмкін болмады. Байланысты тексеріп, аяқтауды қайта көр.",
+    "confirmSubmit": "Тестті аяқтау керек пе?",
+    "confirmSubmitDesc": "{total} сұрақтан {answered} жауапталды. Жалғастырасың ба?",
+    "confirmYes": "Аяқтау",
+    "confirmNo": "Болдырмау",
+    "loading": "Дайындалуда…",
+    "resultTitle": "Апта нәтижесі",
+    "goToDashboardButton": "Дашбордқа өту",
+    "alreadyDoneTitle": "Бұл аптаның тесті өтілді",
+    "alreadyDoneDesc": "Келесі тест {date} қолжетімді болады.",
+    "alreadyDoneScore": "Сенің балың: {score}"
+  },
   "dashboard": {
     "greeting": "Сәлем, {name}",
     "defaultName": "оқушы",

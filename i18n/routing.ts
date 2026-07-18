@@ -15,6 +15,7 @@ export const routing = defineRouting({
     '/practice/topic/[topic]': '/practice/topic/[topic]',
     '/full-practice': '/full-practice',
     '/diagnostic': '/diagnostic',
+    '/weekly': '/weekly',
     '/progress': '/progress',
     '/settings': '/settings',
   },
