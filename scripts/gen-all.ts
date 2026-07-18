@@ -2,7 +2,10 @@
  * Orchestrator: transcribe → generate → check → insert (one command)
  *
  * Usage:
- *   npm run gen:all -- --dir <path> --subject <slug> [--variants N] [--limit N]
+ *   npm run gen:all -- --dir <path> --subject <slug> [--variants N] [--limit N] [--sync]
+ *
+ * Default mode batches each API-calling step through the Message Batches API (−50% cost).
+ * --sync forwards to every sub-script and restores the old one-request-at-a-time loops.
  *
  * ⚠️  Uses paid Anthropic account — costs ~$0.01–0.10 per 10 questions depending on complexity
  */
@@ -22,6 +25,7 @@ function parseArgs(): {
   limit: number | undefined;
   noVerify: boolean;
   publish: boolean;
+  sync: boolean;
 } {
   const args = process.argv.slice(2);
   let dir = '';
@@ -30,6 +34,7 @@ function parseArgs(): {
   let limit: number | undefined;
   let noVerify = false;
   let publish = false;
+  let sync = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--dir' && args[i + 1]) dir = expandPath(args[++i]);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
@@ -37,14 +42,15 @@ function parseArgs(): {
     if (args[i] === '--limit' && args[i + 1]) limit = parseInt(args[++i], 10);
     if (args[i] === '--no-verify') noVerify = true;
     if (args[i] === '--publish') publish = true;
+    if (args[i] === '--sync') sync = true;
   }
   if (!dir) {
     console.error(
-      'Usage: npm run gen:all -- --dir <path> --subject <slug> [--variants N] [--limit N] [--no-verify] [--publish]',
+      'Usage: npm run gen:all -- --dir <path> --subject <slug> [--variants N] [--limit N] [--no-verify] [--publish] [--sync]',
     );
     process.exit(1);
   }
-  return { dir, subject, variants, limit, noVerify, publish };
+  return { dir, subject, variants, limit, noVerify, publish, sync };
 }
 
 function newestJson(dir: string, prefix: string): string | null {
@@ -63,9 +69,11 @@ function run(cmd: string): void {
 }
 
 function main() {
-  const { dir, subject, variants, limit, noVerify, publish } = parseArgs();
+  const { dir, subject, variants, limit, noVerify, publish, sync } = parseArgs();
   const tsx = 'npx tsx --tsconfig tsconfig.scripts.json';
   const steps = noVerify ? 3 : 4;
+  const mode = sync ? 'sync' : 'batch (−50%)';
+  const syncArg = sync ? ' --sync' : '';
 
   console.log(`\n🚀  gen:all`);
   console.log(`   subject:  ${subject}`);
@@ -73,13 +81,14 @@ function main() {
   console.log(`   variants: ${variants}`);
   if (limit) console.log(`   limit:    ${limit}`);
   console.log(`   verify:   ${noVerify ? 'OFF (--no-verify)' : 'ON (Sonnet)'}`);
+  console.log(`   mode:     ${mode}`);
   console.log('═══════════════════════════════════════════════════════════\n');
 
   // ── Step 1: Transcribe ──────────────────────────────────────────
-  console.log(`STEP 1/${steps}  Transcription (PNG → reference JSON)`);
+  console.log(`STEP 1/${steps}  Transcription (PNG → reference JSON, ${mode})`);
   const limitArg = limit !== undefined ? ` --limit ${limit}` : '';
   run(
-    `${tsx} scripts/transcribe-questions.ts --dir "${dir}" --subject ${subject}${limitArg}`,
+    `${tsx} scripts/transcribe-questions.ts --dir "${dir}" --subject ${subject}${limitArg}${syncArg}`,
   );
 
   const refDir = path.join(process.cwd(), 'scripts', 'references');
@@ -91,9 +100,9 @@ function main() {
   console.log(`\n   → Reference: ${refFile}`);
 
   // ── Step 2: Generate variants ───────────────────────────────────
-  console.log(`\nSTEP 2/${steps}  Generation (reference JSON → variants + checks)`);
+  console.log(`\nSTEP 2/${steps}  Generation (reference JSON → variants + checks, ${mode})`);
   run(
-    `${tsx} scripts/generate-variants.ts --input "${refFile}" --subject ${subject} --variants ${variants}`,
+    `${tsx} scripts/generate-variants.ts --input "${refFile}" --subject ${subject} --variants ${variants}${syncArg}`,
   );
 
   const genDir = path.join(process.cwd(), 'scripts', 'generated');
@@ -107,8 +116,10 @@ function main() {
   // ── Step 3: Verify (Sonnet re-solves, mismatches dropped) ───────
   let insertFile = genFile;
   if (!noVerify) {
-    console.log(`\nSTEP 3/${steps}  Verification (Sonnet независимо перерешивает, брак отсеивается)`);
-    run(`${tsx} scripts/verify-questions.ts --input "${genFile}" --subject ${subject}`);
+    console.log(
+      `\nSTEP 3/${steps}  Verification (Sonnet независимо перерешивает, брак отсеивается, ${mode})`,
+    );
+    run(`${tsx} scripts/verify-questions.ts --input "${genFile}" --subject ${subject}${syncArg}`);
     const verDir = path.join(process.cwd(), 'scripts', 'verified');
     const verFile = newestJson(verDir, subject);
     if (!verFile) {
