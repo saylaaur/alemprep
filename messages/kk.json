@@ -142,11 +142,11 @@
     "confirmYes": "Аяқтау",
     "confirmNo": "Болдырмау",
     "loading": "Дайындалуда…",
-    "resultTitle": "Апта нәтижесі",
+    "resultTitle": "Апталық тест нәтижесі",
     "goToDashboardButton": "Дашбордқа өту",
     "alreadyDoneTitle": "Бұл аптаның тесті өтілді",
     "alreadyDoneDesc": "Келесі тест {date} қолжетімді болады.",
-    "alreadyDoneScore": "Сенің балың: {score}"
+    "alreadyDoneScore": "Сенің баллың: {score}"
   },
   "dashboard": {
     "greeting": "Сәлем, {name}",
@@ -175,7 +175,7 @@
     "weeklyTest": "Апталық тест",
     "weeklyTestAvailable": "Жаңа тест қолжетімді",
     "weeklyTestDone": "Бұл аптада өтілді",
-    "weeklyTestNextIn": "келесісі {days, plural, other {# күннен}} кейін",
+    "weeklyTestNextIn": "келесі тест {days, plural, other {# күннен}} кейін",
     "weeklyTestStart": "Тестті өту",
     "weeklyTestLastScore": "Балл: {score}",
     "weeklyTestDelta": "өткен аптаға {delta}",
