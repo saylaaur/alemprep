@@ -1,12 +1,14 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Link } from '@/i18n/routing';
-import { Flame, Target, Zap, TriangleAlert, Sparkles, Snowflake } from 'lucide-react';
+import { Flame, Target, Zap, TriangleAlert, Sparkles, Snowflake, CalendarClock } from 'lucide-react';
 import {
   getProfile,
   getGamification,
   getSubjectsWithCounts,
+  getWeeklyTestSummary,
   displayName,
   subjectName,
 } from '@/lib/supabase/queries';
@@ -38,12 +40,13 @@ export default async function DashboardPage({
   const profile = await getProfile();
   const userId = profile?.id;
 
-  const [t, tSubjects, tAch, g, subjects] = await Promise.all([
+  const [t, tSubjects, tAch, g, subjects, weeklyTest] = await Promise.all([
     getTranslations('dashboard'),
     getTranslations('subjects'),
     getTranslations('achievements'),
     userId ? getGamification(userId) : Promise.resolve(null),
     getSubjectsWithCounts(),
+    userId && profile?.second_subject ? getWeeklyTestSummary(userId) : Promise.resolve(null),
   ]);
 
   const name = displayName(profile) ?? t('defaultName');
@@ -84,6 +87,12 @@ export default async function DashboardPage({
   const earnedCount = g?.earned.length ?? 0;
   const totalBadges = ACHIEVEMENT_KEYS.length;
   const upcoming = g?.upcoming ?? [];
+
+  const weeklyDaysUntilNext = weeklyTest
+    ? Math.max(1, Math.ceil((new Date(weeklyTest.nextAvailableAt).getTime() - Date.now()) / 86_400_000))
+    : 0;
+  const weeklyDeltaLabel =
+    weeklyTest?.delta != null ? (weeklyTest.delta > 0 ? `+${weeklyTest.delta}` : `${weeklyTest.delta}`) : null;
 
   const streakChip =
     currentStreak > 0 ? (
@@ -227,6 +236,43 @@ export default async function DashboardPage({
         {/* ── Персональный план (только когда онбординг пройден) ── */}
         {profile && profile.second_subject && (
           <PlanSection profile={profile} topicMastery={g?.topicMastery ?? []} locale={locale as Locale} />
+        )}
+
+        {/* ── Еженедельный тест (только когда онбординг пройден) ── */}
+        {weeklyTest && (
+          <section>
+            <Card>
+              <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary">
+                    <CalendarClock className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold">{t('weeklyTest')}</div>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      {weeklyTest.availableThisWeek
+                        ? t('weeklyTestAvailable')
+                        : t('weeklyTestDone')}
+                      {!weeklyTest.availableThisWeek &&
+                        ` · ${t('weeklyTestNextIn', { days: weeklyDaysUntilNext })}`}
+                    </p>
+                    {weeklyTest.lastScore !== null && (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {t('weeklyTestLastScore', { score: weeklyTest.lastScore })}
+                        {weeklyDeltaLabel !== null &&
+                          ` · ${t('weeklyTestDelta', { delta: weeklyDeltaLabel })}`}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {weeklyTest.availableThisWeek && (
+                  <Button asChild size="lg" className="shrink-0 shadow-primary">
+                    <Link href="/weekly">{t('weeklyTestStart')}</Link>
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </section>
         )}
 
         {/* ── Subjects with mastery ── */}
