@@ -50,6 +50,19 @@ describe('isoWeekKey', () => {
     const sunday = isoWeekKey(new Date(Date.UTC(2026, 6, 19))); // Sunday
     expect(sunday).toBe(monday);
   });
+
+  it('is computed from the UTC calendar date, not the process\'s local timezone', () => {
+    // Regression: a naive `new Date(date.getFullYear(), date.getMonth(), date.getDate())`
+    // reads LOCAL components, which in any positive-offset timezone (e.g. UTC+5) rolls a
+    // late-UTC Sunday forward into local Monday — silently bumping it into the next ISO
+    // week. This must stay pinned to the UTC calendar date regardless of where the code runs.
+    const sundayLateUtc = new Date('2026-07-19T23:00:00.000Z'); // Sunday, still July 19 in UTC
+    const mondaySameWeek = new Date('2026-07-13T00:00:00.000Z'); // Monday of the same week
+    const mondayNextWeek = new Date('2026-07-20T00:00:00.000Z'); // Monday of the NEXT week
+
+    expect(isoWeekKey(sundayLateUtc)).toBe(isoWeekKey(mondaySameWeek));
+    expect(isoWeekKey(sundayLateUtc)).not.toBe(isoWeekKey(mondayNextWeek));
+  });
 });
 
 describe('isSameIsoWeek', () => {
@@ -81,6 +94,12 @@ describe('nextIsoWeekMonday', () => {
     const mon = new Date(Date.UTC(2026, 6, 13));
     const next = nextIsoWeekMonday(mon);
     expect(next.getTime()).toBe(Date.UTC(2026, 6, 20));
+  });
+
+  it('is computed from the UTC calendar date, not the process\'s local timezone', () => {
+    const sundayLateUtc = new Date('2026-07-19T23:00:00.000Z'); // still Sunday July 19 in UTC
+    const next = nextIsoWeekMonday(sundayLateUtc);
+    expect(next.getTime()).toBe(Date.UTC(2026, 6, 20)); // Monday July 20, not July 27
   });
 });
 

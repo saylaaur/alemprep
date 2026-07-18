@@ -30,7 +30,7 @@ export const WEEKLY_PAIR_MAX_SCORE = 2 * WEEKLY_BLOCK_MAX_SCORE;
 
 /** Части ISO-8601 недели (год недели + номер), в UTC — без сдвига таймзоной. */
 function isoWeekParts(date: Date): { isoYear: number; week: number } {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
   const dayNum = (d.getUTCDay() + 6) % 7; // Пн=0 … Вс=6
   d.setUTCDate(d.getUTCDate() - dayNum + 3); // четверг той же недели — определяет ISO-год
   const isoYear = d.getUTCFullYear();
@@ -56,7 +56,7 @@ export function isSameIsoWeek(a: Date, b: Date): boolean {
 
 /** Начало (понедельник, 00:00 UTC) ISO-недели, СЛЕДУЮЩЕЙ за неделей date. */
 export function nextIsoWeekMonday(date: Date): Date {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
   const dayNum = (d.getUTCDay() + 6) % 7; // Пн=0 … Вс=6
   d.setUTCDate(d.getUTCDate() - dayNum + 7);
   return d;
