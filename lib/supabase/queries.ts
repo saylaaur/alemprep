@@ -18,6 +18,7 @@ import {
 } from '@/lib/gamification';
 import { DIAGNOSTIC_PAIR_MAX_SCORE } from '@/lib/exam';
 import { WEEKLY_PAIR_MAX_SCORE, isSameIsoWeek, nextIsoWeekMonday } from '@/lib/weekly';
+import { buildTrajectory, type TrajectoryPoint, type TrajectorySessionMode } from '@/lib/progress';
 import type { BaselineTopicStat } from '@/lib/plan';
 import type { QuestionType } from '@/types/db';
 import type { Profile, Subject, Topic, Locale, Question, ContextContent } from '@/types/db';
@@ -865,4 +866,26 @@ export async function getWeeklyTestSummary(userId: string): Promise<WeeklyTestSu
     delta,
     maxScore: WEEKLY_PAIR_MAX_SCORE,
   };
+}
+
+/**
+ * Точки для графика траектории на /progress: завершённые diagnostic + weekly
+ * сессии, по возрастанию даты. [] если данных ещё нет. Как и getWeeklyTestSummary —
+ * фильтруем только eq (без .in/.order), сортировка/срез на стороне JS.
+ */
+export async function getProgressTrajectory(userId: string): Promise<TrajectoryPoint[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('sessions')
+    .select('mode, score, finished_at')
+    .eq('user_id', userId);
+
+  const sessions = (data ?? []) as { mode: string; score: number | null; finished_at: string | null }[];
+  const relevant = sessions
+    .filter((s): s is { mode: TrajectorySessionMode; score: number | null; finished_at: string | null } =>
+      s.mode === 'diagnostic' || s.mode === 'weekly'
+    )
+    .map((s) => ({ mode: s.mode, score: s.score, finishedAt: s.finished_at }));
+
+  return buildTrajectory(relevant);
 }
