@@ -10,7 +10,7 @@
 export type Locale = 'ru' | 'kk';
 
 export type QuestionType = 'single' | 'multi' | 'matching';
-export type SessionMode = 'practice' | 'topic_drill' | 'mock_exam' | 'diagnostic';
+export type SessionMode = 'practice' | 'topic_drill' | 'mock_exam' | 'diagnostic' | 'weekly';
 
 /** Второй профильный предмет пары ЕНТ (первый всегда математика). */
 export type SecondSubject = 'physics' | 'informatics';
