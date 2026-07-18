@@ -4,11 +4,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/routing';
 import { CheckCircle2, XCircle, Flame, TrendingUp, Award } from 'lucide-react';
-import { getProgressData, getProfile, getGamification } from '@/lib/supabase/queries';
+import {
+  getProgressData,
+  getProfile,
+  getGamification,
+  getProgressTrajectory,
+} from '@/lib/supabase/queries';
 import type { DailyActivity, TopicStat, RecentAttemptItem } from '@/lib/supabase/queries';
 import { ACHIEVEMENT_KEYS } from '@/lib/gamification';
 import { ACHIEVEMENT_META } from '@/components/gamification/achievement-meta';
+import { TrajectoryChart } from '@/components/progress/TrajectoryChart';
 import { localDateStr } from '@/lib/streak';
+import { EXAM_PAIR_MAX_SCORE } from '@/lib/exam';
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/types/db';
 
@@ -23,11 +30,12 @@ export default async function ProgressPage({
   const profile = await getProfile();
   const userId = profile?.id;
 
-  const [t, tAch, data, g] = await Promise.all([
+  const [t, tAch, data, g, trajectory] = await Promise.all([
     getTranslations('progress'),
     getTranslations('achievements'),
     getProgressData(),
     userId ? getGamification(userId) : Promise.resolve(null),
+    userId ? getProgressTrajectory(userId) : Promise.resolve([]),
   ]);
 
   const l = locale as Locale;
@@ -61,6 +69,7 @@ export default async function ProgressPage({
       : 0;
 
   const heatmap = buildHeatmap(data.dailyActivity);
+  const targetPercent = profile?.target_score ? profile.target_score / EXAM_PAIR_MAX_SCORE : undefined;
 
   return (
     <>
@@ -107,6 +116,41 @@ export default async function ProgressPage({
                   </p>
                 ) : null}
               </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Trajectory: диагностика + еженедельные тесты по времени */}
+        <section>
+          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            {t('trajectoryTitle')}
+            <span className="ml-1.5 normal-case font-normal">· {t('trajectorySub')}</span>
+          </h2>
+          <Card>
+            <CardContent className="p-5">
+              {trajectory.length === 0 ? (
+                <div className="flex flex-col items-center gap-4 py-6 text-center">
+                  <div>
+                    <h3 className="text-sm font-semibold">{t('trajectoryEmptyTitle')}</h3>
+                    <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+                      {t('trajectoryEmptyText')}
+                    </p>
+                  </div>
+                  <Button asChild size="sm">
+                    <Link href="/diagnostic">{t('trajectoryEmptyAction')}</Link>
+                  </Button>
+                </div>
+              ) : (
+                <TrajectoryChart
+                  points={trajectory}
+                  targetPercent={targetPercent}
+                  labels={{
+                    diagnostic: t('trajectoryDiagnosticLabel'),
+                    week: (n) => t('trajectoryWeekLabel', { n }),
+                    target: t('trajectoryTargetLabel'),
+                  }}
+                />
+              )}
             </CardContent>
           </Card>
         </section>

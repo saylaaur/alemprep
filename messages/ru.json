@@ -283,7 +283,15 @@
     "streakRecord": "рекорд — {count, plural, one {# день} few {# дня} other {# дней}}",
     "heatmapLess": "меньше",
     "heatmapMore": "больше",
-    "badgesTitle": "Бейджи"
+    "badgesTitle": "Бейджи",
+    "trajectoryTitle": "Твой прогресс по неделям",
+    "trajectorySub": "диагностика → еженедельные тесты",
+    "trajectoryDiagnosticLabel": "Диагностика",
+    "trajectoryWeekLabel": "Неделя {n}",
+    "trajectoryTargetLabel": "Цель",
+    "trajectoryEmptyTitle": "Пока нет данных для графика",
+    "trajectoryEmptyText": "Пройди диагностику — и здесь появится график роста результата по неделям",
+    "trajectoryEmptyAction": "Пройти диагностику"
   },
   "exam": {
     "title": "Полный пробник",

@@ -283,7 +283,15 @@
     "streakRecord": "рекорд — {count, plural, other {# күн}}",
     "heatmapLess": "аз",
     "heatmapMore": "көп",
-    "badgesTitle": "Бейджтер"
+    "badgesTitle": "Бейджтер",
+    "trajectoryTitle": "Апта сайынғы прогресің",
+    "trajectorySub": "диагностика → апталық тесттер",
+    "trajectoryDiagnosticLabel": "Диагностика",
+    "trajectoryWeekLabel": "{n}-апта",
+    "trajectoryTargetLabel": "Мақсат",
+    "trajectoryEmptyTitle": "Графикке деректер әлі жоқ",
+    "trajectoryEmptyText": "Диагностикадан өт — осы жерде апта сайынғы нәтиже графигі пайда болады",
+    "trajectoryEmptyAction": "Диагностиканы бастау"
   },
   "exam": {
     "title": "Толық сынақ",
