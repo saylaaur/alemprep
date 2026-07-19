@@ -9,6 +9,11 @@ import type { Explanation, MatchingBody, MultiBody, QuestionBody, QuestionType, 
 /** Базовая дневная норма запросов к ИИ-ассистенту — каждому поровну (v1, без бонусов). */
 export const AI_DAILY_LIMIT = 5;
 
+/** Выбор модели через env, с дефолтом — тот же подход, что в scripts/lib/models.ts. */
+export function resolveModel(envVar: string, fallback: string): string {
+  return process.env[envVar]?.trim() || fallback;
+}
+
 export type AssistantMode = 'hint' | 'why-wrong' | 'simpler';
 
 /**
