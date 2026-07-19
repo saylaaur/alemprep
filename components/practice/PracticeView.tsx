@@ -15,10 +15,20 @@ import {
   Minimize2,
   Trophy,
   Zap,
+  Sparkles,
+  ChevronDown,
 } from 'lucide-react';
 import type { Question, Explanation, ContextContent } from '@/types/db';
 import { recordAttempt } from '@/lib/supabase/practice-actions';
+import { askAssistant } from '@/lib/supabase/assistant-actions';
+import { AI_DAILY_LIMIT, type AssistantMode } from '@/lib/assistant';
 import { checkAnswer, isAnswerComplete, type AnswerState } from '@/lib/practice';
+
+type AssistantQuestionState = {
+  loading: boolean;
+  error: boolean;
+  result: { mode: AssistantMode; text: string } | null;
+};
 
 type Props = {
   questions: Question[];
@@ -35,6 +45,10 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
   const [xpPop, setXpPop] = useState<{ id: number; amount: number } | null>(null);
   const [pendingAttempts, setPendingAttempts] = useState<Record<string, boolean>>({});
   const [saveErrors, setSaveErrors] = useState<Record<string, boolean>>({});
+  const [explanationOpen, setExplanationOpen] = useState<Record<string, boolean>>({});
+  const [assistantState, setAssistantState] = useState<Record<string, AssistantQuestionState>>({});
+  const [assistantRemaining, setAssistantRemaining] = useState<number | null>(null);
+  const [assistantLimitReached, setAssistantLimitReached] = useState(false);
   const questionShownAt = useRef<Record<string, number>>({});
   const recordedRef = useRef<Set<string>>(new Set());
 
@@ -113,6 +127,47 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
     const timer = window.setTimeout(() => setXpPop(null), 1200);
     return () => window.clearTimeout(timer);
   }, [xpPop]);
+
+  // Слой 2 (ИИ-помощь): ответ хранится по вопросу, remaining/limitReached — общие
+  // на сессию тренажёра (сервер знает точный лимит, клиент только отражает его).
+  const askAI = (mode: AssistantMode) => {
+    if (!current) return;
+    const qId = current.id;
+    setAssistantState((prev) => ({
+      ...prev,
+      [qId]: { loading: true, error: false, result: prev[qId]?.result ?? null },
+    }));
+    void askAssistant({ questionId: qId, mode, userAnswer: answer })
+      .then((res) => {
+        if (res.ok) {
+          setAssistantState((prev) => ({
+            ...prev,
+            [qId]: { loading: false, error: false, result: { mode, text: res.answer } },
+          }));
+          setAssistantRemaining(res.remaining);
+          return;
+        }
+        if (res.error === 'daily-limit') {
+          setAssistantLimitReached(true);
+          setAssistantRemaining(0);
+          setAssistantState((prev) => ({
+            ...prev,
+            [qId]: { loading: false, error: false, result: prev[qId]?.result ?? null },
+          }));
+          return;
+        }
+        setAssistantState((prev) => ({
+          ...prev,
+          [qId]: { loading: false, error: true, result: prev[qId]?.result ?? null },
+        }));
+      })
+      .catch(() => {
+        setAssistantState((prev) => ({
+          ...prev,
+          [qId]: { loading: false, error: true, result: prev[qId]?.result ?? null },
+        }));
+      });
+  };
 
   const goNext = () => {
     if (idx < total - 1) setIdx(idx + 1);
@@ -317,7 +372,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
           )}
         </div>
 
-        {/* Verdict + explanation */}
+        {/* Verdict + explanation + ИИ-помощь */}
         {isRevealed ? (
           <div className="mb-6 space-y-3">
             <div
@@ -346,18 +401,50 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
                 </span>
               ) : null}
             </div>
+
+            {/* Слой 1 — «Разбор»: бесплатно, безлимитно, без API (уже сохранён в БД) */}
             {current.explanation ? (
-              <div className="animate-slide-up space-y-2 rounded-xl border bg-card p-5 text-sm leading-relaxed text-muted-foreground shadow-xs">
-                <div className="font-medium text-foreground">{t('explanation')}</div>
-                {((current.explanation as Explanation).blocks ?? []).map((b, i) => (
-                  <div key={i}>
-                    <MathText text={b.value} display={b.type === 'latex'} />
-                  </div>
-                ))}
-              </div>
+              explanationOpen[current.id] ? (
+                <div className="animate-slide-up space-y-2 rounded-xl border bg-card p-5 text-sm leading-relaxed text-muted-foreground shadow-xs">
+                  <div className="font-medium text-foreground">{t('explanation')}</div>
+                  {((current.explanation as Explanation).blocks ?? []).map((b, i) => (
+                    <div key={i}>
+                      <MathText text={b.value} display={b.type === 'latex'} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setExplanationOpen((prev) => ({ ...prev, [current.id]: true }))}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                  {t('showExplanation')}
+                </button>
+              )
             ) : null}
+
+            {/* Слой 2 — ИИ-помощь: «почему неверно» (если ошибся) и «объясни проще» */}
+            <AssistantHelp
+              availableModes={isCorrect ? ['simpler'] : ['why-wrong', 'simpler']}
+              state={assistantState[current.id] ?? { loading: false, error: false, result: null }}
+              remaining={assistantRemaining}
+              limitReached={assistantLimitReached}
+              onAsk={askAI}
+            />
           </div>
-        ) : null}
+        ) : (
+          <div className="mb-6">
+            <AssistantHelp
+              availableModes={['hint']}
+              state={assistantState[current.id] ?? { loading: false, error: false, result: null }}
+              remaining={assistantRemaining}
+              limitReached={assistantLimitReached}
+              onAsk={askAI}
+            />
+          </div>
+        )}
         {!isRevealed && hasSaveError ? (
           <div className="mb-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
             {t('saveError')}
@@ -604,6 +691,62 @@ function MatchingAnswer({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+const ASSISTANT_MODE_KEY: Record<AssistantMode, 'assistantHint' | 'assistantWhyWrong' | 'assistantSimpler'> = {
+  hint: 'assistantHint',
+  'why-wrong': 'assistantWhyWrong',
+  simpler: 'assistantSimpler',
+};
+
+/** Слой 2 — кнопки ИИ-помощи по режимам, остаток дневного лимита, ответ модели. */
+function AssistantHelp({
+  availableModes,
+  state,
+  remaining,
+  limitReached,
+  onAsk,
+}: {
+  availableModes: AssistantMode[];
+  state: { loading: boolean; error: boolean; result: { mode: AssistantMode; text: string } | null };
+  remaining: number | null;
+  limitReached: boolean;
+  onAsk: (mode: AssistantMode) => void;
+}) {
+  const t = useTranslations('practice');
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex flex-wrap items-center gap-2">
+        {availableModes.map((mode) => (
+          <Button
+            key={mode}
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={state.loading || limitReached}
+            onClick={() => onAsk(mode)}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {t(ASSISTANT_MODE_KEY[mode])}
+          </Button>
+        ))}
+        {remaining != null && !limitReached ? (
+          <span className="text-xs text-muted-foreground">
+            {t('assistantRemaining', { remaining, limit: AI_DAILY_LIMIT })}
+          </span>
+        ) : null}
+      </div>
+      {limitReached ? <p className="text-xs text-muted-foreground">{t('assistantLimitReached')}</p> : null}
+      {state.loading ? <p className="text-xs text-muted-foreground">{t('assistantLoading')}</p> : null}
+      {state.error ? <p className="text-xs text-destructive">{t('assistantError')}</p> : null}
+      {state.result ? (
+        <div className="animate-slide-up rounded-xl border bg-accent/30 p-4 text-sm leading-relaxed">
+          <MathText text={state.result.text} />
+        </div>
+      ) : null}
     </div>
   );
 }
