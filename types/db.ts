@@ -164,6 +164,13 @@ export type Attempt = {
   attempted_at: string;
 };
 
+/** ai_usage — дневной счётчик запросов к ИИ-ассистенту (Слой 2), PK (user_id, usage_date) */
+export type AiUsage = {
+  user_id: string;
+  usage_date: string;
+  count: number;
+};
+
 /** Заглушка для типизации Supabase-клиента (можно заменить автогенерацией) */
 export type Database = {
   public: {
