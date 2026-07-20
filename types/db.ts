@@ -7,6 +7,8 @@
 // Позже можно заменить автогенерацией:
 //   npx supabase gen types typescript --project-id <id> > types/db.ts
 
+import type { AssistantMode } from '@/lib/assistant';
+
 export type Locale = 'ru' | 'kk';
 
 export type QuestionType = 'single' | 'multi' | 'matching';
@@ -169,6 +171,17 @@ export type AiUsage = {
   user_id: string;
   usage_date: string;
   count: number;
+};
+
+/** ai_turns — история диалога с ИИ-ассистентом по (user_id, question_id) */
+export type AiTurn = {
+  id: string;
+  user_id: string;
+  question_id: string;
+  role: 'student' | 'assistant';
+  mode: AssistantMode | null;
+  text: string;
+  created_at: string;
 };
 
 /** Заглушка для типизации Supabase-клиента (можно заменить автогенерацией) */

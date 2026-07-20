@@ -18,6 +18,8 @@ function builder(state: InMemoryState, table: string) {
   const eqs: Array<[string, unknown]> = [];
   const ins: Array<[string, unknown[]]> = [];
   const iss: Array<[string, unknown]> = [];
+  let orderBy: { column: string; ascending: boolean } | null = null;
+  let limitTo: number | null = null;
   const rows = (): Row[] => (state.store[table] ??= []);
 
   const match = (r: Row) =>
@@ -55,7 +57,19 @@ function builder(state: InMemoryState, table: string) {
       state.store[table] = table_.filter((row) => !match(row));
       return { data: deleted.map((row) => ({ ...row })), error: null };
     }
-    return { data: table_.filter(match).map((row) => ({ ...row })), error: null };
+    let result = table_.filter(match).map((row) => ({ ...row }));
+    if (orderBy) {
+      const { column, ascending } = orderBy;
+      result = [...result].sort((a, b) => {
+        const av = a[column];
+        const bv = b[column];
+        if (av === bv) return 0;
+        const cmp = av! > bv! ? 1 : -1;
+        return ascending ? cmp : -cmp;
+      });
+    }
+    if (limitTo != null) result = result.slice(0, limitTo);
+    return { data: result, error: null };
   };
 
   const api = {
@@ -66,6 +80,10 @@ function builder(state: InMemoryState, table: string) {
     eq: (c: string, v: unknown) => (eqs.push([c, v]), api),
     in: (c: string, v: unknown[]) => (ins.push([c, v]), api),
     is: (c: string, v: unknown) => (iss.push([c, v]), api),
+    order: (column: string, opts?: { ascending?: boolean }) => (
+      (orderBy = { column, ascending: opts?.ascending ?? true }), api
+    ),
+    limit: (n: number) => ((limitTo = n), api),
     maybeSingle: () => {
       const { data, error } = run();
       return Promise.resolve({ data: data[0] ?? null, error });
