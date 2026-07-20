@@ -1,5 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { AI_DAILY_LIMIT, buildAssistantContext, ASSISTANT_SYSTEM_PROMPT, splitAssistantAnswer } from './assistant';
+import {
+  AI_DAILY_LIMIT,
+  buildAssistantContext,
+  ASSISTANT_SYSTEM_PROMPT,
+  splitAssistantAnswer,
+  ASSISTANT_MODES,
+  ASSISTANT_MAX_TURNS_PER_QUESTION,
+  ASSISTANT_MAX_QUESTION_LENGTH,
+  studentTurnLabel,
+  type AssistantTurn,
+} from './assistant';
 import type { SingleBody, MultiBody, MatchingBody } from '@/types/db';
 
 const singleQuestion = {
@@ -41,17 +51,17 @@ describe('buildAssistantContext', () => {
   });
 
   it('в режиме why-wrong включает ответ ученика', () => {
-    const ctx = buildAssistantContext(singleQuestion, 'A', 'why-wrong');
+    const ctx = buildAssistantContext(singleQuestion, 'A', 'why-wrong', { answerRevealed: true });
     expect(ctx).toContain('Ответ ученика: A');
   });
 
   it('в режиме why-wrong НЕ содержит запрет называть ответ (уже проверено)', () => {
-    const ctx = buildAssistantContext(singleQuestion, 'A', 'why-wrong');
+    const ctx = buildAssistantContext(singleQuestion, 'A', 'why-wrong', { answerRevealed: true });
     expect(ctx.toLowerCase()).not.toContain('не называй');
   });
 
   it('в режиме simpler включает готовый разбор задачи', () => {
-    const ctx = buildAssistantContext(singleQuestion, 'B', 'simpler');
+    const ctx = buildAssistantContext(singleQuestion, 'B', 'simpler', { answerRevealed: true });
     expect(ctx).toContain('2^3 = 8');
   });
 
@@ -69,7 +79,7 @@ describe('buildAssistantContext', () => {
       } satisfies MultiBody,
       explanation: null,
     };
-    const ctx = buildAssistantContext(multiQuestion, ['A', 'B'], 'why-wrong');
+    const ctx = buildAssistantContext(multiQuestion, ['A', 'B'], 'why-wrong', { answerRevealed: true });
     expect(ctx).toContain('Ответ ученика: A, B');
   });
 
@@ -84,7 +94,7 @@ describe('buildAssistantContext', () => {
       } satisfies MatchingBody,
       explanation: null,
     };
-    const ctx = buildAssistantContext(matchingQuestion, { A: '$1$' }, 'why-wrong');
+    const ctx = buildAssistantContext(matchingQuestion, { A: '$1$' }, 'why-wrong', { answerRevealed: true });
     expect(ctx).toContain('A → $1$');
   });
 
@@ -96,6 +106,56 @@ describe('buildAssistantContext', () => {
     expect(ASSISTANT_SYSTEM_PROMPT).toContain('#');
     expect(ASSISTANT_SYSTEM_PROMPT).toContain('**');
     expect(ASSISTANT_SYSTEM_PROMPT.toLowerCase()).toContain('markdown');
+  });
+
+  it('hint без answerRevealed: в контексте нет ни правильного ответа, ни разбора', () => {
+    const ctx = buildAssistantContext(singleQuestion, null, 'hint');
+    expect(ctx).not.toContain('Правильный ответ: B');
+    expect(ctx).not.toContain('2^3 = 8');
+  });
+
+  it('ask без answerRevealed: в контексте нет ни правильного ответа, ни разбора', () => {
+    const ctx = buildAssistantContext(singleQuestion, null, 'ask', { answerRevealed: false, userQuestion: 'А почему не A?' });
+    expect(ctx).not.toContain('Правильный ответ: B');
+    expect(ctx).not.toContain('2^3 = 8');
+  });
+
+  it('ask до раскрытия: запрещает называть ответ и включает буквальный текст вопроса ученика', () => {
+    const ctx = buildAssistantContext(singleQuestion, null, 'ask', { answerRevealed: false, userQuestion: 'А почему не A?' });
+    expect(ctx.toLowerCase()).toContain('не называй');
+    expect(ctx).toContain('А почему не A?');
+  });
+
+  it('ask после раскрытия: не запрещает называть ответ и включает правильный ответ', () => {
+    const ctx = buildAssistantContext(singleQuestion, 'A', 'ask', { answerRevealed: true, userQuestion: 'А почему не A?' });
+    expect(ctx.toLowerCase()).not.toContain('не называй');
+    expect(ctx).toContain('Правильный ответ: B');
+  });
+});
+
+describe('ASSISTANT_MODES / лимиты', () => {
+  it('ASSISTANT_MODES перечисляет все четыре режима', () => {
+    expect(ASSISTANT_MODES).toEqual(['hint', 'why-wrong', 'simpler', 'ask']);
+  });
+
+  it('ASSISTANT_MAX_TURNS_PER_QUESTION равен 4', () => {
+    expect(ASSISTANT_MAX_TURNS_PER_QUESTION).toBe(4);
+  });
+
+  it('ASSISTANT_MAX_QUESTION_LENGTH равен 300', () => {
+    expect(ASSISTANT_MAX_QUESTION_LENGTH).toBe(300);
+  });
+});
+
+describe('studentTurnLabel', () => {
+  it('для реплики-пресета возвращает русскую метку режима', () => {
+    const turn: AssistantTurn = { role: 'student', mode: 'hint', text: 'hint' };
+    expect(studentTurnLabel(turn)).toBe('Подсказка');
+  });
+
+  it('для реплики со свободным вопросом (mode=null) возвращает текст как есть', () => {
+    const turn: AssistantTurn = { role: 'student', mode: null, text: 'А почему не A?' };
+    expect(studentTurnLabel(turn)).toBe('А почему не A?');
   });
 });
 

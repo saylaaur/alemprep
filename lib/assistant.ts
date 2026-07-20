@@ -14,7 +14,20 @@ export function resolveModel(envVar: string, fallback: string): string {
   return process.env[envVar]?.trim() || fallback;
 }
 
-export type AssistantMode = 'hint' | 'why-wrong' | 'simpler';
+/** Общий источник истины для типа режима И рантайм-проверки (TS стирается на границе server action). */
+export const ASSISTANT_MODES = ['hint', 'why-wrong', 'simpler', 'ask'] as const;
+export type AssistantMode = (typeof ASSISTANT_MODES)[number];
+
+/** Диалог по одной задаче ограничен: не больше реплик ученика и не длиннее свободный вопрос. */
+export const ASSISTANT_MAX_TURNS_PER_QUESTION = 4;
+export const ASSISTANT_MAX_QUESTION_LENGTH = 300;
+
+/** Реплика диалога — форма 1:1 со строкой ai_turns. */
+export type AssistantTurn = {
+  role: 'student' | 'assistant';
+  mode: AssistantMode | null;
+  text: string;
+};
 
 /**
  * Системный промпт: жёсткая граница тем (школьная программа ЕНТ), отказ на
@@ -42,20 +55,29 @@ function formatOptions(options: { id: string; content: string }[]): string {
   return options.map((o) => `${o.id}) ${o.content}`).join('\n');
 }
 
-function formatQuestionBody(type: QuestionType, body: QuestionBody): string {
+/** Правильный ответ попадает в контекст ТОЛЬКО когда answerRevealed — иначе подсказка/ask до проверки его выдаст. */
+function formatQuestionBody(type: QuestionType, body: QuestionBody, answerRevealed: boolean): string {
   if (type === 'single') {
     const b = body as SingleBody;
-    return `Условие: ${b.stem}\nВарианты:\n${formatOptions(b.options)}\nПравильный ответ: ${b.correct}`;
+    const parts = [`Условие: ${b.stem}`, `Варианты:\n${formatOptions(b.options)}`];
+    if (answerRevealed) parts.push(`Правильный ответ: ${b.correct}`);
+    return parts.join('\n');
   }
   if (type === 'multi') {
     const b = body as MultiBody;
-    return `Условие: ${b.stem}\nВарианты:\n${formatOptions(b.options)}\nПравильные ответы: ${b.correct.join(', ')}`;
+    const parts = [`Условие: ${b.stem}`, `Варианты:\n${formatOptions(b.options)}`];
+    if (answerRevealed) parts.push(`Правильные ответы: ${b.correct.join(', ')}`);
+    return parts.join('\n');
   }
   const b = body as MatchingBody;
-  const correct = Object.entries(b.correct)
-    .map(([left, right]) => `${left} → ${right}`)
-    .join('; ');
-  return `Условие: ${b.stem}\nЛевый список:\n${formatOptions(b.left)}\nПравый список: ${b.right.join(', ')}\nПравильные соответствия: ${correct}`;
+  const parts = [`Условие: ${b.stem}`, `Левый список:\n${formatOptions(b.left)}`, `Правый список: ${b.right.join(', ')}`];
+  if (answerRevealed) {
+    const correct = Object.entries(b.correct)
+      .map(([left, right]) => `${left} → ${right}`)
+      .join('; ');
+    parts.push(`Правильные соответствия: ${correct}`);
+  }
+  return parts.join('\n');
 }
 
 function formatUserAnswer(type: QuestionType, userAnswer: unknown): string {
@@ -72,7 +94,7 @@ function formatUserAnswer(type: QuestionType, userAnswer: unknown): string {
   return `Ответ ученика: ${String(userAnswer)}`;
 }
 
-const MODE_INSTRUCTIONS: Record<AssistantMode, string> = {
+const MODE_INSTRUCTIONS: Record<Exclude<AssistantMode, 'ask'>, string> = {
   hint:
     'Режим: подсказка ДО проверки ответа. Направь ход мысли ученика к решению наводящим вопросом или указанием на нужную формулу/шаг. НЕ называй правильный вариант или итоговый ответ напрямую.',
   'why-wrong':
@@ -80,6 +102,31 @@ const MODE_INSTRUCTIONS: Record<AssistantMode, string> = {
   simpler:
     'Режим: объясни решение задачи проще и понятнее, чем в стандартном разборе ниже — на бытовых примерах или по шагам.',
 };
+
+/** Режим 'ask' (свободный вопрос) — запрет называть ответ зависит от того, раскрыт ли он уже. */
+const ASK_INSTRUCTION_HIDDEN =
+  'Режим: ученик задаёт свой вопрос по задаче ДО проверки ответа. Отвечай по существу вопроса, но НЕ называй правильный вариант или итоговый ответ напрямую — как в режиме подсказки.';
+const ASK_INSTRUCTION_REVEALED =
+  'Режим: ученик задаёт свой вопрос по задаче ПОСЛЕ проверки ответа. Можно свободно называть правильный ответ и опираться на разбор.';
+
+/** Русские метки пресетов — ТОЛЬКО для сборки контекста модели (транскрипт истории), не для UI (там next-intl). */
+const STUDENT_PRESET_LABELS: Record<Exclude<AssistantMode, 'ask'>, string> = {
+  hint: 'Подсказка',
+  'why-wrong': 'Почему неверно',
+  simpler: 'Объясни проще',
+};
+
+/** Реплика ученика по пресету → русская метка; свободный вопрос (mode=null) → буквальный текст. */
+export function studentTurnLabel(turn: AssistantTurn): string {
+  if (turn.mode && turn.mode !== 'ask') return STUDENT_PRESET_LABELS[turn.mode];
+  return turn.text;
+}
+
+function formatHistory(history: AssistantTurn[]): string {
+  return history
+    .map((turn) => (turn.role === 'student' ? `Ученик: ${studentTurnLabel(turn)}` : `Ассистент: ${turn.text}`))
+    .join('\n');
+}
 
 /** Разбивает ответ модели на абзацы по пустым строкам — для рендера по одному <MathText> на абзац. */
 export function splitAssistantAnswer(text: string): string[] {
@@ -89,20 +136,46 @@ export function splitAssistantAnswer(text: string): string[] {
     .filter((p) => p.length > 0);
 }
 
-/** Сборка скоуп-контекста для модели: условие + правильный ответ + ответ ученика + разбор + инструкция режима. */
+type BuildContextOptions = {
+  history?: AssistantTurn[];
+  userQuestion?: string;
+  answerRevealed?: boolean;
+};
+
+/**
+ * Сборка скоуп-контекста для модели: условие (+ правильный ответ и готовый
+ * разбор — ТОЛЬКО если answerRevealed) + ответ ученика + история диалога +
+ * инструкция режима. options опционален для обратной совместимости.
+ */
 export function buildAssistantContext(
   question: AssistantQuestion,
   userAnswer: unknown,
-  mode: AssistantMode
+  mode: AssistantMode,
+  options?: BuildContextOptions
 ): string {
-  const parts = [formatQuestionBody(question.type, question.body), formatUserAnswer(question.type, userAnswer)];
+  const answerRevealed = options?.answerRevealed ?? false;
+  const history = options?.history ?? [];
 
-  if (question.explanation) {
+  const parts = [
+    formatQuestionBody(question.type, question.body, answerRevealed),
+    formatUserAnswer(question.type, userAnswer),
+  ];
+
+  if (answerRevealed && question.explanation) {
     const text = question.explanation.blocks.map((b) => b.value).join(' ');
     parts.push(`Готовый разбор задачи: ${text}`);
   }
 
-  parts.push(MODE_INSTRUCTIONS[mode]);
+  if (history.length > 0) {
+    parts.push(`История диалога:\n${formatHistory(history)}`);
+  }
+
+  if (mode === 'ask') {
+    parts.push(answerRevealed ? ASK_INSTRUCTION_REVEALED : ASK_INSTRUCTION_HIDDEN);
+    if (options?.userQuestion) parts.push(`Вопрос ученика: ${options.userQuestion}`);
+  } else {
+    parts.push(MODE_INSTRUCTIONS[mode]);
+  }
 
   return parts.join('\n\n');
 }
