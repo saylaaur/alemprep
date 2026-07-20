@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AI_DAILY_LIMIT, buildAssistantContext, ASSISTANT_SYSTEM_PROMPT } from './assistant';
+import { AI_DAILY_LIMIT, buildAssistantContext, ASSISTANT_SYSTEM_PROMPT, splitAssistantAnswer } from './assistant';
 import type { SingleBody, MultiBody, MatchingBody } from '@/types/db';
 
 const singleQuestion = {
@@ -90,5 +90,34 @@ describe('buildAssistantContext', () => {
 
   it('на постороннюю тему системный промпт задаёт границу школьной программы ЕНТ', () => {
     expect(ASSISTANT_SYSTEM_PROMPT).toContain('ЕНТ');
+  });
+
+  it('системный промпт запрещает markdown-разметку (#, **, списки)', () => {
+    expect(ASSISTANT_SYSTEM_PROMPT).toContain('#');
+    expect(ASSISTANT_SYSTEM_PROMPT).toContain('**');
+    expect(ASSISTANT_SYSTEM_PROMPT.toLowerCase()).toContain('markdown');
+  });
+});
+
+describe('splitAssistantAnswer', () => {
+  it('разбивает несколько абзацев по пустой строке на N элементов', () => {
+    const text = 'Первый абзац.\n\nВторой абзац.\n\nТретий абзац.';
+    expect(splitAssistantAnswer(text)).toEqual(['Первый абзац.', 'Второй абзац.', 'Третий абзац.']);
+  });
+
+  it('один абзац без пустых строк → один элемент', () => {
+    expect(splitAssistantAnswer('Единственный абзац без разрывов.')).toEqual([
+      'Единственный абзац без разрывов.',
+    ]);
+  });
+
+  it('схлопывает лишние пустые строки между абзацами', () => {
+    const text = 'Первый.\n\n\n\nВторой.';
+    expect(splitAssistantAnswer(text)).toEqual(['Первый.', 'Второй.']);
+  });
+
+  it('обрезает пробелы вокруг абзацев и отбрасывает пустые', () => {
+    const text = '  Первый.  \n\n   \n\nВторой.  ';
+    expect(splitAssistantAnswer(text)).toEqual(['Первый.', 'Второй.']);
   });
 });

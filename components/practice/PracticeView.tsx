@@ -21,7 +21,7 @@ import {
 import type { Question, Explanation, ContextContent } from '@/types/db';
 import { recordAttempt } from '@/lib/supabase/practice-actions';
 import { askAssistant } from '@/lib/supabase/assistant-actions';
-import { AI_DAILY_LIMIT, type AssistantMode } from '@/lib/assistant';
+import { AI_DAILY_LIMIT, splitAssistantAnswer, type AssistantMode } from '@/lib/assistant';
 import { checkAnswer, isAnswerComplete, type AnswerState } from '@/lib/practice';
 
 type AssistantQuestionState = {
@@ -743,8 +743,10 @@ function AssistantHelp({
       {state.loading ? <p className="text-xs text-muted-foreground">{t('assistantLoading')}</p> : null}
       {state.error ? <p className="text-xs text-destructive">{t('assistantError')}</p> : null}
       {state.result ? (
-        <div className="animate-slide-up rounded-xl border bg-accent/30 p-4 text-sm leading-relaxed">
-          <MathText text={state.result.text} />
+        <div className="animate-slide-up space-y-2.5 rounded-xl border bg-accent/30 p-4 text-sm leading-relaxed">
+          {splitAssistantAnswer(state.result.text).map((paragraph, i) => (
+            <MathText key={i} text={paragraph} />
+          ))}
         </div>
       ) : null}
     </div>
