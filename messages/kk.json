@@ -267,7 +267,13 @@
     "assistantRemaining": "бүгін {remaining} / {limit} мүмкіндік қалды",
     "assistantLimitReached": "ИИ көмегінің күндізгі лимиті таусылды. Жаңа сұраныстар — ертең. «Шешім» шектеусіз қолжетімді болып қалады.",
     "assistantLoading": "ИИ-ден сұрап жатырмыз…",
-    "assistantError": "Жауап алу мүмкін болмады. Қайталап көр."
+    "assistantError": "Жауап алу мүмкін болмады. Қайталап көр.",
+    "assistantHelp": "ИИ көмегі",
+    "assistantYouLabel": "Сен",
+    "assistantAskPlaceholder": "Өз сөзіңмен сұра…",
+    "assistantAskSubmit": "Сұрау",
+    "assistantQuestionLimitReached": "Бұл тапсырма бойынша сұрақтар аяқталды. «Шешім» шектеусіз қолжетімді болып қалады.",
+    "assistantInvalidQuestion": "Сұрақ бос немесе тым ұзын (300 таңбаға дейін)."
   },
   "progress": {
     "title": "Прогресс",

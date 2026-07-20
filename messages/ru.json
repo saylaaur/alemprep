@@ -267,7 +267,13 @@
     "assistantRemaining": "осталось {remaining} из {limit} сегодня",
     "assistantLimitReached": "Дневной лимит ИИ-помощи исчерпан. Новые запросы — завтра. «Разбор» по-прежнему доступен без ограничений.",
     "assistantLoading": "Спрашиваем ИИ…",
-    "assistantError": "Не удалось получить ответ. Попробуй ещё раз."
+    "assistantError": "Не удалось получить ответ. Попробуй ещё раз.",
+    "assistantHelp": "Помощь ИИ",
+    "assistantYouLabel": "Ты",
+    "assistantAskPlaceholder": "Спроси своими словами…",
+    "assistantAskSubmit": "Спросить",
+    "assistantQuestionLimitReached": "По этой задаче реплики закончились. «Разбор» по-прежнему доступен без ограничений.",
+    "assistantInvalidQuestion": "Вопрос пустой или слишком длинный (до 300 символов)."
   },
   "progress": {
     "title": "Прогресс",

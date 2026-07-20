@@ -20,15 +20,23 @@ import {
 } from 'lucide-react';
 import type { Question, Explanation, ContextContent } from '@/types/db';
 import { recordAttempt } from '@/lib/supabase/practice-actions';
-import { askAssistant } from '@/lib/supabase/assistant-actions';
-import { AI_DAILY_LIMIT, splitAssistantAnswer, type AssistantMode } from '@/lib/assistant';
+import { askAssistant, getAssistantHistory } from '@/lib/supabase/assistant-actions';
+import {
+  AI_DAILY_LIMIT,
+  ASSISTANT_MAX_QUESTION_LENGTH,
+  splitAssistantAnswer,
+  type AssistantMode,
+  type AssistantTurn,
+} from '@/lib/assistant';
 import { checkAnswer, isAnswerComplete, type AnswerState } from '@/lib/practice';
 
 type AssistantQuestionState = {
   loading: boolean;
   error: boolean;
-  result: { mode: AssistantMode; text: string } | null;
+  history: AssistantTurn[];
 };
+
+const EMPTY_ASSISTANT_STATE: AssistantQuestionState = { loading: false, error: false, history: [] };
 
 type Props = {
   questions: Question[];
@@ -47,10 +55,20 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
   const [saveErrors, setSaveErrors] = useState<Record<string, boolean>>({});
   const [explanationOpen, setExplanationOpen] = useState<Record<string, boolean>>({});
   const [assistantState, setAssistantState] = useState<Record<string, AssistantQuestionState>>({});
+  const [assistantPanelOpen, setAssistantPanelOpen] = useState<Record<string, boolean>>({});
   const [assistantRemaining, setAssistantRemaining] = useState<number | null>(null);
   const [assistantLimitReached, setAssistantLimitReached] = useState(false);
+  const [assistantQuestionLimitReached, setAssistantQuestionLimitReached] = useState<Record<string, boolean>>({});
+  const [assistantInvalidQuestion, setAssistantInvalidQuestion] = useState<Record<string, boolean>>({});
+  const [askInput, setAskInput] = useState('');
   const questionShownAt = useRef<Record<string, number>>({});
   const recordedRef = useRef<Set<string>>(new Set());
+  // Раз загруженную историю для вопроса больше не перезапрашиваем при повторном
+  // открытии панели; mountedRef глушит setState, если ответ getAssistantHistory
+  // придёт уже после размонтирования компонента.
+  const historyLoadedRef = useRef<Set<string>>(new Set());
+  const mountedRef = useRef(true);
+  useEffect(() => () => { mountedRef.current = false; }, []);
 
   const total = questions.length;
   const current = questions[idx];
@@ -61,6 +79,11 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
       questionShownAt.current[current.id] = Date.now();
     }
   }, [current]);
+
+  // Черновик свободного вопроса не должен переезжать на следующую задачу.
+  useEffect(() => {
+    setAskInput('');
+  }, [current?.id]);
 
   // Focus mode — скрываем sidebar и второстепенные элементы
   useEffect(() => {
@@ -128,45 +151,82 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
     return () => window.clearTimeout(timer);
   }, [xpPop]);
 
-  // Слой 2 (ИИ-помощь): ответ хранится по вопросу, remaining/limitReached — общие
-  // на сессию тренажёра (сервер знает точный лимит, клиент только отражает его).
-  const askAI = (mode: AssistantMode) => {
+  // Слой 2 (ИИ-помощь): история диалога хранится по вопросу; remaining/дневной
+  // лимит — общие на сессию тренажёра (сервер знает точный лимит, клиент
+  // только отражает его). Лимит реплик на задачу — per-вопрос, отдельно от
+  // дневного: у них разные сообщения и разный сброс.
+  const askAI = (mode: AssistantMode, userQuestion?: string) => {
     if (!current) return;
     const qId = current.id;
     setAssistantState((prev) => ({
       ...prev,
-      [qId]: { loading: true, error: false, result: prev[qId]?.result ?? null },
+      [qId]: { loading: true, error: false, history: prev[qId]?.history ?? [] },
     }));
-    void askAssistant({ questionId: qId, mode, userAnswer: answer })
+    void askAssistant({ questionId: qId, mode, userAnswer: answer, userQuestion })
       .then((res) => {
         if (res.ok) {
-          setAssistantState((prev) => ({
-            ...prev,
-            [qId]: { loading: false, error: false, result: { mode, text: res.answer } },
-          }));
+          setAssistantState((prev) => ({ ...prev, [qId]: { loading: false, error: false, history: res.history } }));
           setAssistantRemaining(res.remaining);
-          return;
-        }
-        if (res.error === 'daily-limit') {
-          setAssistantLimitReached(true);
-          setAssistantRemaining(0);
-          setAssistantState((prev) => ({
-            ...prev,
-            [qId]: { loading: false, error: false, result: prev[qId]?.result ?? null },
-          }));
+          setAssistantQuestionLimitReached((prev) => ({ ...prev, [qId]: false }));
+          setAssistantInvalidQuestion((prev) => ({ ...prev, [qId]: false }));
+          if (mode === 'ask') setAskInput('');
           return;
         }
         setAssistantState((prev) => ({
           ...prev,
-          [qId]: { loading: false, error: true, result: prev[qId]?.result ?? null },
+          [qId]: { loading: false, error: res.error === 'model-error', history: prev[qId]?.history ?? [] },
         }));
+        if (res.error === 'daily-limit') {
+          setAssistantLimitReached(true);
+          setAssistantRemaining(0);
+        } else if (res.error === 'question-limit') {
+          setAssistantQuestionLimitReached((prev) => ({ ...prev, [qId]: true }));
+        } else if (res.error === 'invalid-input') {
+          setAssistantInvalidQuestion((prev) => ({ ...prev, [qId]: true }));
+        }
       })
       .catch(() => {
         setAssistantState((prev) => ({
           ...prev,
-          [qId]: { loading: false, error: true, result: prev[qId]?.result ?? null },
+          [qId]: { loading: false, error: true, history: prev[qId]?.history ?? [] },
         }));
       });
+  };
+
+  // Первое раскрытие панели ассистента для задачи — лениво грузит историю
+  // диалога (большинство задач ассистентом не пользуются вовсе: грузить на
+  // маунт каждого вопроса — 19 пустых запросов из 20 при узкой БД и медленном
+  // интернете у сельских школьников). Повторное открытие переиспользует кэш.
+  const toggleAssistantPanel = () => {
+    if (!current) return;
+    const qId = current.id;
+    const willOpen = !assistantPanelOpen[qId];
+    setAssistantPanelOpen((prev) => ({ ...prev, [qId]: willOpen }));
+    if (!willOpen || historyLoadedRef.current.has(qId)) return;
+
+    historyLoadedRef.current.add(qId);
+    setAssistantState((prev) => ({
+      ...prev,
+      [qId]: { loading: true, error: false, history: prev[qId]?.history ?? [] },
+    }));
+    void getAssistantHistory(qId)
+      .then((history) => {
+        if (!mountedRef.current) return;
+        setAssistantState((prev) => ({ ...prev, [qId]: { loading: false, error: false, history } }));
+      })
+      .catch(() => {
+        if (!mountedRef.current) return;
+        setAssistantState((prev) => ({
+          ...prev,
+          [qId]: { loading: false, error: true, history: prev[qId]?.history ?? [] },
+        }));
+      });
+  };
+
+  const submitAskInput = () => {
+    const trimmed = askInput.trim();
+    if (trimmed.length === 0 || trimmed.length > ASSISTANT_MAX_QUESTION_LENGTH) return;
+    askAI('ask', trimmed);
   };
 
   const goNext = () => {
@@ -425,12 +485,28 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
               )
             ) : null}
 
-            {/* Слой 2 — ИИ-помощь: «почему неверно» (если ошибся) и «объясни проще» */}
+            {/*
+              Слой 2 — ИИ-помощь: «почему неверно» (если ошибся) и «объясни проще».
+              ИНВАРИАНТ: эти кнопки рендерятся ТОЛЬКО внутри isRevealed-ветки, а
+              isRevealed выставляется единственно в успешном .then() recordAttempt
+              выше (после подтверждённой записи попытки). Не переносить их наружу
+              и не выставлять isRevealed раньше: сервер сам вычисляет
+              answerRevealed по наличию попытки в БД, и если клиент попросит
+              «почему неверно» до того, как попытка реально сохранилась, сервер
+              решит, что ответ не раскрыт, и откажется называть ошибку.
+            */}
             <AssistantHelp
               availableModes={isCorrect ? ['simpler'] : ['why-wrong', 'simpler']}
-              state={assistantState[current.id] ?? { loading: false, error: false, result: null }}
+              panelOpen={!!assistantPanelOpen[current.id]}
+              onTogglePanel={toggleAssistantPanel}
+              state={assistantState[current.id] ?? EMPTY_ASSISTANT_STATE}
+              askInput={askInput}
+              onAskInputChange={setAskInput}
+              onSubmitAsk={submitAskInput}
               remaining={assistantRemaining}
-              limitReached={assistantLimitReached}
+              dailyLimitReached={assistantLimitReached}
+              questionLimitReached={!!assistantQuestionLimitReached[current.id]}
+              invalidQuestion={!!assistantInvalidQuestion[current.id]}
               onAsk={askAI}
             />
           </div>
@@ -438,9 +514,16 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
           <div className="mb-6">
             <AssistantHelp
               availableModes={['hint']}
-              state={assistantState[current.id] ?? { loading: false, error: false, result: null }}
+              panelOpen={!!assistantPanelOpen[current.id]}
+              onTogglePanel={toggleAssistantPanel}
+              state={assistantState[current.id] ?? EMPTY_ASSISTANT_STATE}
+              askInput={askInput}
+              onAskInputChange={setAskInput}
+              onSubmitAsk={submitAskInput}
               remaining={assistantRemaining}
-              limitReached={assistantLimitReached}
+              dailyLimitReached={assistantLimitReached}
+              questionLimitReached={!!assistantQuestionLimitReached[current.id]}
+              invalidQuestion={!!assistantInvalidQuestion[current.id]}
               onAsk={askAI}
             />
           </div>
@@ -695,30 +778,96 @@ function MatchingAnswer({
   );
 }
 
-const ASSISTANT_MODE_KEY: Record<AssistantMode, 'assistantHint' | 'assistantWhyWrong' | 'assistantSimpler'> = {
+const ASSISTANT_MODE_KEY: Record<Exclude<AssistantMode, 'ask'>, 'assistantHint' | 'assistantWhyWrong' | 'assistantSimpler'> = {
   hint: 'assistantHint',
   'why-wrong': 'assistantWhyWrong',
   simpler: 'assistantSimpler',
 };
 
-/** Слой 2 — кнопки ИИ-помощи по режимам, остаток дневного лимита, ответ модели. */
+/** Реплика ученика — пресет переводится через next-intl, свободный вопрос (mode=null) показывается как есть. */
+function studentTurnLabelUi(t: ReturnType<typeof useTranslations>, turn: AssistantTurn): string {
+  if (turn.mode && turn.mode !== 'ask') return t(ASSISTANT_MODE_KEY[turn.mode]);
+  return turn.text;
+}
+
+/**
+ * Слой 2 — диалог с ИИ-ассистентом: свёрнутая панель по умолчанию (история
+ * грузится лениво при первом раскрытии, см. toggleAssistantPanel), внутри —
+ * транскрипт, кнопки пресетов и поле свободного вопроса. Доступно и до, и
+ * после проверки ответа — availableModes меняет только состав кнопок.
+ */
 function AssistantHelp({
   availableModes,
+  panelOpen,
+  onTogglePanel,
   state,
+  askInput,
+  onAskInputChange,
+  onSubmitAsk,
   remaining,
-  limitReached,
+  dailyLimitReached,
+  questionLimitReached,
+  invalidQuestion,
   onAsk,
 }: {
-  availableModes: AssistantMode[];
-  state: { loading: boolean; error: boolean; result: { mode: AssistantMode; text: string } | null };
+  availableModes: Exclude<AssistantMode, 'ask'>[];
+  panelOpen: boolean;
+  onTogglePanel: () => void;
+  state: AssistantQuestionState;
+  askInput: string;
+  onAskInputChange: (v: string) => void;
+  onSubmitAsk: () => void;
   remaining: number | null;
-  limitReached: boolean;
+  dailyLimitReached: boolean;
+  questionLimitReached: boolean;
+  invalidQuestion: boolean;
   onAsk: (mode: AssistantMode) => void;
 }) {
   const t = useTranslations('practice');
+  const blocked = state.loading || dailyLimitReached || questionLimitReached;
+
+  if (!panelOpen) {
+    return (
+      <button
+        type="button"
+        onClick={onTogglePanel}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+      >
+        <Sparkles className="h-4 w-4" />
+        {t('assistantHelp')}
+      </button>
+    );
+  }
 
   return (
-    <div className="space-y-2.5">
+    <div className="animate-slide-up space-y-3 rounded-xl border bg-card p-4">
+      <button
+        type="button"
+        onClick={onTogglePanel}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground"
+      >
+        <ChevronDown className="h-4 w-4" />
+        {t('assistantHelp')}
+      </button>
+
+      {state.history.length > 0 ? (
+        <div className="space-y-2.5">
+          {state.history.map((turn, i) =>
+            turn.role === 'student' ? (
+              <div key={i} className="text-sm font-medium text-muted-foreground">
+                {t('assistantYouLabel')}: {studentTurnLabelUi(t, turn)}
+              </div>
+            ) : (
+              <div key={i} className="space-y-2 rounded-xl border bg-accent/30 p-4 text-sm leading-relaxed">
+                {splitAssistantAnswer(turn.text).map((paragraph, j) => (
+                  <MathText key={j} text={paragraph} />
+                ))}
+              </div>
+            )
+          )}
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         {availableModes.map((mode) => (
           <Button
@@ -726,29 +875,48 @@ function AssistantHelp({
             type="button"
             variant="outline"
             size="sm"
-            disabled={state.loading || limitReached}
+            disabled={blocked}
             onClick={() => onAsk(mode)}
           >
             <Sparkles className="h-3.5 w-3.5" />
             {t(ASSISTANT_MODE_KEY[mode])}
           </Button>
         ))}
-        {remaining != null && !limitReached ? (
+        {remaining != null && !dailyLimitReached ? (
           <span className="text-xs text-muted-foreground">
             {t('assistantRemaining', { remaining, limit: AI_DAILY_LIMIT })}
           </span>
         ) : null}
       </div>
-      {limitReached ? <p className="text-xs text-muted-foreground">{t('assistantLimitReached')}</p> : null}
+
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          value={askInput}
+          maxLength={ASSISTANT_MAX_QUESTION_LENGTH}
+          disabled={blocked}
+          placeholder={t('assistantAskPlaceholder')}
+          onChange={(e) => onAskInputChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              onSubmitAsk();
+            }
+          }}
+          className="flex-1 rounded-lg border bg-background px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25 disabled:opacity-60"
+        />
+        <Button type="button" size="sm" disabled={blocked || askInput.trim().length === 0} onClick={onSubmitAsk}>
+          {t('assistantAskSubmit')}
+        </Button>
+      </div>
+
+      {dailyLimitReached ? <p className="text-xs text-muted-foreground">{t('assistantLimitReached')}</p> : null}
+      {!dailyLimitReached && questionLimitReached ? (
+        <p className="text-xs text-muted-foreground">{t('assistantQuestionLimitReached')}</p>
+      ) : null}
+      {invalidQuestion ? <p className="text-xs text-destructive">{t('assistantInvalidQuestion')}</p> : null}
       {state.loading ? <p className="text-xs text-muted-foreground">{t('assistantLoading')}</p> : null}
       {state.error ? <p className="text-xs text-destructive">{t('assistantError')}</p> : null}
-      {state.result ? (
-        <div className="animate-slide-up space-y-2.5 rounded-xl border bg-accent/30 p-4 text-sm leading-relaxed">
-          {splitAssistantAnswer(state.result.text).map((paragraph, i) => (
-            <MathText key={i} text={paragraph} />
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
