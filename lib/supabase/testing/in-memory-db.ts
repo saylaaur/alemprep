@@ -97,12 +97,51 @@ function builder(state: InMemoryState, table: string) {
   return api;
 }
 
-/** Клиент вида Supabase server client: auth.getUser() + from(table). */
+/** YYYY-MM-DD в UTC — тот же базис, что CURRENT_DATE в Postgres (см. 0017_ai_global_usage.sql). */
+function utcDateStr(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+type AiGlobalUsageRow = { usage_date: string; request_count: number; input_tokens: number; output_tokens: number };
+
+/**
+ * Мок ровно двух SECURITY DEFINER функций из 0017_ai_global_usage.sql — не
+ * общий SQL-движок, только то, что реально вызывает askAssistant.
+ */
+const rpcHandlers: Record<string, (state: InMemoryState, args: Record<string, unknown>) => unknown> = {
+  get_ai_global_usage_count: (state) => {
+    const rows = (state.store.ai_global_usage ??= []) as unknown as AiGlobalUsageRow[];
+    const row = rows.find((r) => r.usage_date === utcDateStr());
+    return row?.request_count ?? 0;
+  },
+  increment_ai_global_usage: (state, args) => {
+    const pInput = Number(args.p_input);
+    const pOutput = Number(args.p_output);
+    const rows = (state.store.ai_global_usage ??= []) as unknown as AiGlobalUsageRow[];
+    const today = utcDateStr();
+    const row = rows.find((r) => r.usage_date === today);
+    if (row) {
+      row.request_count += 1;
+      row.input_tokens += pInput;
+      row.output_tokens += pOutput;
+    } else {
+      rows.push({ usage_date: today, request_count: 1, input_tokens: pInput, output_tokens: pOutput });
+    }
+    return null;
+  },
+};
+
+/** Клиент вида Supabase server client: auth.getUser() + from(table) + rpc(fn). */
 export function makeClient(state: InMemoryState, userId = 'U1') {
   return {
     auth: {
       getUser: async () => ({ data: { user: { id: userId } }, error: null }),
     },
     from: (table: string) => builder(state, table),
+    rpc: async (fn: string, args: Record<string, unknown> = {}) => {
+      const handler = rpcHandlers[fn];
+      if (!handler) throw new Error(`in-memory-db mock: неизвестная RPC-функция "${fn}"`);
+      return { data: handler(state, args), error: null };
+    },
   };
 }

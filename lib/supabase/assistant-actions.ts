@@ -10,6 +10,7 @@ import {
   ASSISTANT_MODES,
   ASSISTANT_SYSTEM_PROMPT,
   buildAssistantContext,
+  isGlobalBudgetExhausted,
   resolveModel,
   type AssistantMode,
   type AssistantTurn,
@@ -26,6 +27,7 @@ export type AskAssistantResult =
         | 'unauthenticated'
         | 'not-found'
         | 'daily-limit'
+        | 'global-limit'
         | 'usage-write-failed'
         | 'model-error'
         | 'invalid-input'
@@ -137,6 +139,14 @@ export async function askAssistant(input: {
     return { ok: false, error: 'daily-limit', resetsAt: nextLocalMidnightIso() };
   }
 
+  // Глобальный потолок — ПОСЛЕ персонального лимита и ДО его инкремента:
+  // ученик не виноват, что общий бюджет партнёра исчерпан, поэтому личную
+  // квоту в этом случае не жжём (см. 0017_ai_global_usage.sql).
+  const { data: globalCount } = await supabase.rpc('get_ai_global_usage_count');
+  if (isGlobalBudgetExhausted((globalCount as number | null) ?? 0)) {
+    return { ok: false, error: 'global-limit' };
+  }
+
   // Инкремент — вручную select-затем-insert/update (upsert), т.к. общий
   // in-memory тест-мок не поддерживает настоящий upsert. 0 затронутых строк
   // на update — ошибка (урок 0008: RLS может молча заблокировать запись).
@@ -188,6 +198,12 @@ export async function askAssistant(input: {
       { user_id: user.id, question_id: input.questionId, role: studentTurn.role, mode: studentTurn.mode, text: studentTurn.text },
       { user_id: user.id, question_id: input.questionId, role: assistantTurn.role, mode: assistantTurn.mode, text: assistantTurn.text },
     ]);
+    // Best-effort, как и запись ai_turns выше — отчёт о расходах не должен
+    // проваливать уже полученный и оплаченный ответ ученику.
+    await supabase.rpc('increment_ai_global_usage', {
+      p_input: response.usage.input_tokens,
+      p_output: response.usage.output_tokens,
+    });
 
     return {
       ok: true,

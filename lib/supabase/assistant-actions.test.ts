@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { makeClient, type Store, type FailPoint } from './testing/in-memory-db';
 import { localDateStr } from '@/lib/streak';
-import { AI_DAILY_LIMIT } from '@/lib/assistant';
+import { AI_DAILY_LIMIT, AI_GLOBAL_DAILY_REQUEST_LIMIT } from '@/lib/assistant';
 
 /**
  * askAssistant против общего in-memory «Supabase»-мока (см. practice-actions.test.ts).
@@ -37,6 +37,8 @@ import { askAssistant } from './assistant-actions';
 import { recordAttempt } from './practice-actions';
 
 const today = localDateStr();
+/** UTC-дата — тот же базис, что CURRENT_DATE в Postgres и мок в in-memory-db.ts. */
+const todayUtc = new Date().toISOString().slice(0, 10);
 
 function seed(): Store {
   return {
@@ -58,6 +60,7 @@ function seed(): Store {
     ],
     ai_usage: [],
     ai_turns: [],
+    ai_global_usage: [],
     attempts: [],
     profiles: [
       {
@@ -83,6 +86,7 @@ beforeEach(() => {
   h.createSpy.mockReset();
   h.createSpy.mockResolvedValue({
     content: [{ type: 'text', text: 'Подумай, какая степень двойки даёт 8.' }],
+    usage: { input_tokens: 120, output_tokens: 80 },
   });
   process.env.ANTHROPIC_API_KEY = 'test-key';
 });
@@ -139,6 +143,71 @@ describe('askAssistant — дневной лимит', () => {
 
     expect(h.store.ai_usage[0].count).toBe(2);
     expect(h.createSpy).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('askAssistant — глобальный дневной потолок', () => {
+  it('request_count ровно на глобальном лимите → global-limit, без вызова модели и без списания персонального лимита', async () => {
+    h.store.ai_global_usage = [
+      { usage_date: todayUtc, request_count: AI_GLOBAL_DAILY_REQUEST_LIMIT, input_tokens: 1000, output_tokens: 500 },
+    ];
+
+    const res = await askAssistant({ questionId: 'Q1', mode: 'hint', userAnswer: null });
+
+    expect(res).toMatchObject({ ok: false, error: 'global-limit' });
+    expect(h.createSpy).not.toHaveBeenCalled();
+    expect(h.store.ai_usage).toHaveLength(0);
+    expect(h.store.ai_global_usage[0].request_count).toBe(AI_GLOBAL_DAILY_REQUEST_LIMIT);
+  });
+
+  it('request_count выше глобального лимита → global-limit', async () => {
+    h.store.ai_global_usage = [
+      { usage_date: todayUtc, request_count: AI_GLOBAL_DAILY_REQUEST_LIMIT + 10, input_tokens: 0, output_tokens: 0 },
+    ];
+
+    const res = await askAssistant({ questionId: 'Q1', mode: 'hint', userAnswer: null });
+
+    expect(res).toMatchObject({ ok: false, error: 'global-limit' });
+    expect(h.createSpy).not.toHaveBeenCalled();
+  });
+
+  it('request_count на 1 меньше лимита → проходит, зовёт модель и инкрементирует ai_global_usage токенами из ответа', async () => {
+    h.store.ai_global_usage = [
+      { usage_date: todayUtc, request_count: AI_GLOBAL_DAILY_REQUEST_LIMIT - 1, input_tokens: 1000, output_tokens: 500 },
+    ];
+
+    const res = await askAssistant({ questionId: 'Q1', mode: 'hint', userAnswer: null });
+
+    expect(res.ok).toBe(true);
+    expect(h.createSpy).toHaveBeenCalledTimes(1);
+    expect(h.store.ai_global_usage[0]).toMatchObject({
+      request_count: AI_GLOBAL_DAILY_REQUEST_LIMIT,
+      input_tokens: 1120,
+      output_tokens: 580,
+    });
+  });
+
+  it('без строки за сегодня (первый запрос дня глобально) → проходит и заводит счётчик count=1 с токенами из ответа', async () => {
+    const res = await askAssistant({ questionId: 'Q1', mode: 'hint', userAnswer: null });
+
+    expect(res.ok).toBe(true);
+    expect(h.store.ai_global_usage[0]).toMatchObject({
+      usage_date: todayUtc,
+      request_count: 1,
+      input_tokens: 120,
+      output_tokens: 80,
+    });
+  });
+
+  it('исчерпанный персональный лимит проверяется раньше глобального — daily-limit, а не global-limit', async () => {
+    h.store.ai_usage = [{ user_id: 'U1', usage_date: today, count: AI_DAILY_LIMIT }];
+    h.store.ai_global_usage = [
+      { usage_date: todayUtc, request_count: AI_GLOBAL_DAILY_REQUEST_LIMIT, input_tokens: 0, output_tokens: 0 },
+    ];
+
+    const res = await askAssistant({ questionId: 'Q1', mode: 'hint', userAnswer: null });
+
+    expect(res).toMatchObject({ ok: false, error: 'daily-limit' });
   });
 });
 
