@@ -273,7 +273,8 @@
     "assistantAskPlaceholder": "Өз сөзіңмен сұра…",
     "assistantAskSubmit": "Сұрау",
     "assistantQuestionLimitReached": "Бұл тапсырма бойынша сұрақтар аяқталды. «Шешім» шектеусіз қолжетімді болып қалады.",
-    "assistantInvalidQuestion": "Сұрақ бос немесе тым ұзын (300 таңбаға дейін)."
+    "assistantInvalidQuestion": "Сұрақ бос немесе тым ұзын (300 таңбаға дейін).",
+    "assistantGlobalLimit": "ИИ-кеңестерінің күндізгі қоры бүгінге таусылды, ертең қайта қолжетімді болады. Есептің шешімі әрқашан қолжетімді болады."
   },
   "progress": {
     "title": "Прогресс",

@@ -58,6 +58,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
   const [assistantPanelOpen, setAssistantPanelOpen] = useState<Record<string, boolean>>({});
   const [assistantRemaining, setAssistantRemaining] = useState<number | null>(null);
   const [assistantLimitReached, setAssistantLimitReached] = useState(false);
+  const [assistantGlobalLimitReached, setAssistantGlobalLimitReached] = useState(false);
   const [assistantQuestionLimitReached, setAssistantQuestionLimitReached] = useState<Record<string, boolean>>({});
   const [assistantInvalidQuestion, setAssistantInvalidQuestion] = useState<Record<string, boolean>>({});
   const [askInput, setAskInput] = useState('');
@@ -179,6 +180,10 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
         if (res.error === 'daily-limit') {
           setAssistantLimitReached(true);
           setAssistantRemaining(0);
+        } else if (res.error === 'global-limit') {
+          // Общий бюджет партнёра исчерпан — личная квота ученика не тронута
+          // (сервер её не списывал), поэтому assistantRemaining не трогаем.
+          setAssistantGlobalLimitReached(true);
         } else if (res.error === 'question-limit') {
           setAssistantQuestionLimitReached((prev) => ({ ...prev, [qId]: true }));
         } else if (res.error === 'invalid-input') {
@@ -505,6 +510,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
               onSubmitAsk={submitAskInput}
               remaining={assistantRemaining}
               dailyLimitReached={assistantLimitReached}
+              globalLimitReached={assistantGlobalLimitReached}
               questionLimitReached={!!assistantQuestionLimitReached[current.id]}
               invalidQuestion={!!assistantInvalidQuestion[current.id]}
               onAsk={askAI}
@@ -522,6 +528,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
               onSubmitAsk={submitAskInput}
               remaining={assistantRemaining}
               dailyLimitReached={assistantLimitReached}
+              globalLimitReached={assistantGlobalLimitReached}
               questionLimitReached={!!assistantQuestionLimitReached[current.id]}
               invalidQuestion={!!assistantInvalidQuestion[current.id]}
               onAsk={askAI}
@@ -806,6 +813,7 @@ function AssistantHelp({
   onSubmitAsk,
   remaining,
   dailyLimitReached,
+  globalLimitReached,
   questionLimitReached,
   invalidQuestion,
   onAsk,
@@ -819,12 +827,13 @@ function AssistantHelp({
   onSubmitAsk: () => void;
   remaining: number | null;
   dailyLimitReached: boolean;
+  globalLimitReached: boolean;
   questionLimitReached: boolean;
   invalidQuestion: boolean;
   onAsk: (mode: AssistantMode) => void;
 }) {
   const t = useTranslations('practice');
-  const blocked = state.loading || dailyLimitReached || questionLimitReached;
+  const blocked = state.loading || dailyLimitReached || globalLimitReached || questionLimitReached;
 
   if (!panelOpen) {
     return (
@@ -911,7 +920,10 @@ function AssistantHelp({
       </div>
 
       {dailyLimitReached ? <p className="text-xs text-muted-foreground">{t('assistantLimitReached')}</p> : null}
-      {!dailyLimitReached && questionLimitReached ? (
+      {!dailyLimitReached && globalLimitReached ? (
+        <p className="text-xs text-muted-foreground">{t('assistantGlobalLimit')}</p>
+      ) : null}
+      {!dailyLimitReached && !globalLimitReached && questionLimitReached ? (
         <p className="text-xs text-muted-foreground">{t('assistantQuestionLimitReached')}</p>
       ) : null}
       {invalidQuestion ? <p className="text-xs text-destructive">{t('assistantInvalidQuestion')}</p> : null}
