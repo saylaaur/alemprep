@@ -9,6 +9,19 @@ import type { Explanation, MatchingBody, MultiBody, QuestionBody, QuestionType, 
 /** Базовая дневная норма запросов к ИИ-ассистенту — каждому поровну (v1, без бонусов). */
 export const AI_DAILY_LIMIT = 5;
 
+/**
+ * Глобальный дневной потолок запросов ко всем ученикам разом — предохранитель
+ * бюджета пилота (~$50/мес из кармана партнёра). 600 запросов/день ≈ $1.5/день
+ * ≈ $45/мес, с запасом под лимит. Персональный лимит (AI_DAILY_LIMIT) не
+ * спасает от перерасхода при масштабе школы: 300 учеников × 5 = 1500/день.
+ */
+export const AI_GLOBAL_DAILY_REQUEST_LIMIT = 600;
+
+/** Чистая проверка глобального дневного бюджета — тестируется без БД. */
+export function isGlobalBudgetExhausted(requestCount: number): boolean {
+  return requestCount >= AI_GLOBAL_DAILY_REQUEST_LIMIT;
+}
+
 /** Выбор модели через env, с дефолтом — тот же подход, что в scripts/lib/models.ts. */
 export function resolveModel(envVar: string, fallback: string): string {
   return process.env[envVar]?.trim() || fallback;
