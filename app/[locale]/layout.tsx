@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
@@ -7,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { ThemeProvider } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
+import 'katex/dist/katex.min.css';
 import '../globals.css';
 
 const inter = Inter({
@@ -60,13 +60,6 @@ export default async function LocaleLayout({
       suppressHydrationWarning
       className={cn(inter.variable, jetbrainsMono.variable)}
     >
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css"
-          crossOrigin="anonymous"
-        />
-      </head>
       <body className={cn('min-h-dvh antialiased font-sans')}>
         <ThemeProvider
           attribute="class"
@@ -78,16 +71,6 @@ export default async function LocaleLayout({
             {children}
           </NextIntlClientProvider>
         </ThemeProvider>
-        <Script
-          src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
-        <Script
-          src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js"
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
       </body>
     </html>
   );
