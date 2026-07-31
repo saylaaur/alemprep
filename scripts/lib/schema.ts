@@ -124,3 +124,17 @@ export type ReferenceQuestion = z.infer<typeof ReferenceQuestionSchema>;
 export type SkipItem = z.infer<typeof SkipItemSchema>;
 export type TranscriptionItem = ReferenceQuestion | SkipItem;
 export type GeneratedQuestion = z.infer<typeof GeneratedQuestionSchema>;
+
+export type ContentBlock = z.infer<typeof ContentBlockSchema>;
+export type SingleBody = z.infer<typeof SingleBodySchema>;
+export type MultiBody = z.infer<typeof MultiBodySchema>;
+export type MatchingBody = z.infer<typeof MatchingBodySchema>;
+export type QuestionBody = z.infer<typeof QuestionBodySchema>;
+export type ExplanationType = z.infer<typeof ExplanationSchema>;
+
+/** Ответ переводчика (scripts/translate-questions.ts): та же структура body+explanation. */
+export const TranslationResponseSchema = z.object({
+  body: QuestionBodySchema,
+  explanation: ExplanationSchema,
+});
+export type TranslationResponse = z.infer<typeof TranslationResponseSchema>;
