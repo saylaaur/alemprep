@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
     "test": "vitest run",
+    "gen:glossary": "tsx --tsconfig tsconfig.scripts.json scripts/build-glossary.ts",
     "gen:transcribe": "tsx --tsconfig tsconfig.scripts.json scripts/transcribe-questions.ts",
     "gen:variants": "tsx --tsconfig tsconfig.scripts.json scripts/generate-variants.ts",
     "gen:verify": "tsx --tsconfig tsconfig.scripts.json scripts/verify-questions.ts",
