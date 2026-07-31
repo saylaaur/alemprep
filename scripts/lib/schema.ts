@@ -138,3 +138,20 @@ export const TranslationResponseSchema = z.object({
   explanation: ExplanationSchema,
 });
 export type TranslationResponse = z.infer<typeof TranslationResponseSchema>;
+
+/**
+ * Проверенный перевод, готовый к вставке (scripts/translated,
+ * scripts/verified-translations → insert-to-db.ts --language kk).
+ * topic_id/context_id — те же, что у оригинала (не ищем по slug заново).
+ */
+export const TranslatedQuestionSchema = z.object({
+  source_question_id: z.string().min(1),
+  topic_id: z.string().min(1),
+  context_id: z.string().nullable(),
+  type: z.enum(['single', 'multi', 'matching']),
+  difficulty: z.number().int().min(1).max(5),
+  body: QuestionBodySchema,
+  explanation: ExplanationSchema,
+  sort_order: z.number().int(),
+});
+export type TranslatedQuestion = z.infer<typeof TranslatedQuestionSchema>;
