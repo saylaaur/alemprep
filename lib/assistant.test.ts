@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
   AI_DAILY_LIMIT,
+  AI_GLOBAL_DAILY_REQUEST_LIMIT,
   buildAssistantContext,
   ASSISTANT_SYSTEM_PROMPT,
+  isGlobalBudgetExhausted,
   splitAssistantAnswer,
   ASSISTANT_MODES,
   ASSISTANT_MAX_TURNS_PER_QUESTION,
@@ -31,6 +33,30 @@ const singleQuestion = {
 describe('AI_DAILY_LIMIT', () => {
   it('равен 5 — базовая дневная норма из v1', () => {
     expect(AI_DAILY_LIMIT).toBe(5);
+  });
+});
+
+describe('AI_GLOBAL_DAILY_REQUEST_LIMIT', () => {
+  it('равен 600 — потолок под бюджет пилота ~$50/мес', () => {
+    expect(AI_GLOBAL_DAILY_REQUEST_LIMIT).toBe(600);
+  });
+});
+
+describe('isGlobalBudgetExhausted', () => {
+  it('ниже лимита — бюджет не исчерпан', () => {
+    expect(isGlobalBudgetExhausted(AI_GLOBAL_DAILY_REQUEST_LIMIT - 1)).toBe(false);
+  });
+
+  it('ровно на лимите — бюджет исчерпан', () => {
+    expect(isGlobalBudgetExhausted(AI_GLOBAL_DAILY_REQUEST_LIMIT)).toBe(true);
+  });
+
+  it('выше лимита — бюджет исчерпан', () => {
+    expect(isGlobalBudgetExhausted(AI_GLOBAL_DAILY_REQUEST_LIMIT + 1)).toBe(true);
+  });
+
+  it('ноль запросов — бюджет не исчерпан', () => {
+    expect(isGlobalBudgetExhausted(0)).toBe(false);
   });
 });
 

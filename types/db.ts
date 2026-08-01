@@ -184,6 +184,14 @@ export type AiTurn = {
   created_at: string;
 };
 
+/** ai_global_usage — суммарный дневной расход ИИ-ассистента по всем ученикам, PK usage_date (UTC) */
+export type AiGlobalUsage = {
+  usage_date: string;
+  request_count: number;
+  input_tokens: number;
+  output_tokens: number;
+};
+
 /** Заглушка для типизации Supabase-клиента (можно заменить автогенерацией) */
 export type Database = {
   public: {
