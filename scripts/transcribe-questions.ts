@@ -166,6 +166,10 @@ Output ONLY a valid JSON array — no markdown, no code fences, just raw JSON. O
 
 ⚠️  IGNORE fragments of a neighboring page or column bleeding in at the edge of the photo — only take problems visible IN FULL (condition + all options). Do not take a problem that shows a number but not its full text.
 
+⚠️  SELF-CONTAINED STEMS. Some problems share a preceding context block (a passage, a described figure with given measurements, a shared condition) that applies to several numbered problems at once. Each problem you extract MUST stand alone: copy the relevant shared context (the given numbers, the described figure, the passage) INTO that problem's own stem. Never rely on a previous array entry to supply missing information — a problem shown by itself, without its neighbors, must still be fully solvable.
+
+⚠️  TWO-PART PROBLEMS. If one problem number presents two independently-answered parts, each with its OWN lettered options (e.g. "Найдите f(g(x)): A) B) C) D)" followed by "Найдите g(f(x)): E) F) G) H)"), extract them as TWO SEPARATE single-choice problems — one per lettered option set, each with the shared condition copied into its stem. Do NOT also emit a combined "multi" entry whose options are the sub-questions themselves — that produces a nonsensical question.
+
 If a problem is unclear or not a recognizable ${label} question, skip it the same way:
 {"skip": "unsupported", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
 
