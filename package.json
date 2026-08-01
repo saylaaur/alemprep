@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
     "test": "vitest run",
     "gen:glossary": "tsx --tsconfig tsconfig.scripts.json scripts/build-glossary.ts",
+    "gen:prepare": "tsx --tsconfig tsconfig.scripts.json scripts/prepare-photos.ts",
     "gen:translate": "tsx --tsconfig tsconfig.scripts.json scripts/translate-questions.ts",
     "gen:transcribe": "tsx --tsconfig tsconfig.scripts.json scripts/transcribe-questions.ts",
     "gen:variants": "tsx --tsconfig tsconfig.scripts.json scripts/generate-variants.ts",
@@ -26,6 +27,7 @@
     "@supabase/supabase-js": "^2.45.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "heic-convert": "^2.1.0",
     "katex": "^0.16.21",
     "lucide-react": "^0.460.0",
     "next": "^15.1.0",
@@ -38,6 +40,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/heic-convert": "^2.1.1",
     "@types/katex": "^0.16.8",
     "@types/node": "^22.9.0",
     "@types/react": "^19.0.0",
