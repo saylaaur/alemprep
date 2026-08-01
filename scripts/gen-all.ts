@@ -26,6 +26,7 @@ function parseArgs(): {
   noVerify: boolean;
   publish: boolean;
   sync: boolean;
+  multi: boolean;
 } {
   const args = process.argv.slice(2);
   let dir = '';
@@ -35,6 +36,7 @@ function parseArgs(): {
   let noVerify = false;
   let publish = false;
   let sync = false;
+  let multi = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--dir' && args[i + 1]) dir = expandPath(args[++i]);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
@@ -43,14 +45,15 @@ function parseArgs(): {
     if (args[i] === '--no-verify') noVerify = true;
     if (args[i] === '--publish') publish = true;
     if (args[i] === '--sync') sync = true;
+    if (args[i] === '--multi') multi = true;
   }
   if (!dir) {
     console.error(
-      'Usage: npm run gen:all -- --dir <path> --subject <slug> [--variants N] [--limit N] [--no-verify] [--publish] [--sync]',
+      'Usage: npm run gen:all -- --dir <path> --subject <slug> [--variants N] [--limit N] [--no-verify] [--publish] [--sync] [--multi]',
     );
     process.exit(1);
   }
-  return { dir, subject, variants, limit, noVerify, publish, sync };
+  return { dir, subject, variants, limit, noVerify, publish, sync, multi };
 }
 
 function newestJson(dir: string, prefix: string): string | null {
@@ -69,11 +72,12 @@ function run(cmd: string): void {
 }
 
 function main() {
-  const { dir, subject, variants, limit, noVerify, publish, sync } = parseArgs();
+  const { dir, subject, variants, limit, noVerify, publish, sync, multi } = parseArgs();
   const tsx = 'npx tsx --tsconfig tsconfig.scripts.json';
   const steps = noVerify ? 3 : 4;
   const mode = sync ? 'sync' : 'batch (−50%)';
   const syncArg = sync ? ' --sync' : '';
+  const multiArg = multi ? ' --multi' : '';
 
   console.log(`\n🚀  gen:all`);
   console.log(`   subject:  ${subject}`);
@@ -82,13 +86,14 @@ function main() {
   if (limit) console.log(`   limit:    ${limit}`);
   console.log(`   verify:   ${noVerify ? 'OFF (--no-verify)' : 'ON (Sonnet)'}`);
   console.log(`   mode:     ${mode}`);
+  if (multi) console.log(`   multi:    ON (несколько заданий на фото)`);
   console.log('═══════════════════════════════════════════════════════════\n');
 
   // ── Step 1: Transcribe ──────────────────────────────────────────
   console.log(`STEP 1/${steps}  Transcription (PNG → reference JSON, ${mode})`);
   const limitArg = limit !== undefined ? ` --limit ${limit}` : '';
   run(
-    `${tsx} scripts/transcribe-questions.ts --dir "${dir}" --subject ${subject}${limitArg}${syncArg}`,
+    `${tsx} scripts/transcribe-questions.ts --dir "${dir}" --subject ${subject}${limitArg}${syncArg}${multiArg}`,
   );
 
   const refDir = path.join(process.cwd(), 'scripts', 'references');
