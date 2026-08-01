@@ -23,6 +23,7 @@ import {
   type TranscriptionItem,
 } from './lib/schema';
 import { resolveModel } from './lib/models';
+import { parseMultiItems } from './lib/multi-transcribe';
 import {
   collectBatchResults,
   describeFailure,
@@ -53,25 +54,33 @@ function loadEnv(): void {
   }
 }
 
-function parseArgs(): { dir: string; limit: number; subject: string; sync: boolean } {
+function parseArgs(): {
+  dir: string;
+  limit: number;
+  subject: string;
+  sync: boolean;
+  multi: boolean;
+} {
   const args = process.argv.slice(2);
   let dir = '';
   let limit = Infinity;
   let subject = 'math';
   let sync = false;
+  let multi = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--dir' && args[i + 1]) dir = expandPath(args[++i]);
     if (args[i] === '--limit' && args[i + 1]) limit = parseInt(args[++i], 10);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
     if (args[i] === '--sync') sync = true;
+    if (args[i] === '--multi') multi = true;
   }
   if (!dir) {
     console.error(
-      'Usage: npm run gen:transcribe -- --dir <path> [--subject math] [--limit N] [--sync]',
+      'Usage: npm run gen:transcribe -- --dir <path> [--subject math] [--limit N] [--sync] [--multi]',
     );
     process.exit(1);
   }
-  return { dir, limit, subject, sync };
+  return { dir, limit, subject, sync, multi };
 }
 
 function getMediaType(
@@ -136,8 +145,65 @@ Rules:
 - difficulty: honest assessment — typical ЕНТ = 3`;
 }
 
+/**
+ * --multi: изображение — разворот печатной книжки, несколько заданий на кадре.
+ * В отличие от одиночного режима, возвращаем JSON-массив и явно предупреждаем
+ * про рукописные пометки ученика и обрывки соседних страниц/колонок в кадре.
+ */
+function buildMultiSystemInstruction(subject: string): string {
+  const label = SUBJECT_LABEL[subject] ?? 'mathematics';
+  const slugs = getTopicSlugs(subject).join('|');
+  return `You are a ${label} teacher transcribing ЕНТ (Unified National Testing, Kazakhstan) ${label} problems from a photographed page of a printed practice booklet.
+
+The image contains SEVERAL test problems (a two-column book spread). Extract ALL problems that are FULLY visible — condition and all answer options.
+
+Output ONLY a valid JSON array — no markdown, no code fences, just raw JSON. One entry per problem, in reading order.
+
+⚠️  IGNORE HANDWRITTEN MARKS. Circled letters, checkmarks, crossed-out text, and margin calculations are a STUDENT'S OWN ANSWERS and MAY BE WRONG. Determine the correct answer yourself by solving the problem — never read it off the handwritten marks.
+
+⚠️  SKIP any problem that requires a picture, diagram, chart, or graph to understand (electrical circuits, geometric drawings, function graphs, image-based tables). We have no support for images in questions. For each skipped problem, still emit an entry:
+{"skip": "graph", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
+
+⚠️  IGNORE fragments of a neighboring page or column bleeding in at the edge of the photo — only take problems visible IN FULL (condition + all options). Do not take a problem that shows a number but not its full text.
+
+If a problem is unclear or not a recognizable ${label} question, skip it the same way:
+{"skip": "unsupported", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
+
+Otherwise, for each transcribed problem:
+{
+  "topic_slug": "<${slugs}>",
+  "type": "<single|multi|matching>",
+  "difficulty": <1–5: 1=trivial, 2=easy, 3=typical ЕНТ, 4=hard, 5=olympiad>,
+  "body": { ... see formats below ... },
+  "explanation": { "blocks": [{"type": "text"|"latex", "value": "..."}] },
+  "source_file": "<PLACEHOLDER>"
+}
+
+Body formats:
+• single  — {"stem":"...","options":[{"id":"a","content":"..."},{"id":"b","content":"..."},{"id":"c","content":"..."},{"id":"d","content":"..."}],"correct":"b"}
+• multi   — {"stem":"...","options":[...],"correct":["a","c"]}
+• matching — {"stem":"...","left":[{"id":"1","content":"..."},...],"right":["А текст","Б текст",...],"correct":{"1":"А","2":"Б",...}}
+
+Rules:
+- All text in Russian
+- Use $...$ for inline LaTeX: $x^2 + 1$, $\\log_2 8$, $\\sin\\frac{\\pi}{6}$
+- Pick the most specific topic_slug from the list above
+- For informatics: code fragments go inside the stem as plain text
+- For physics: always keep correct units (м/с, кг, Н, Дж и т.п.)
+- difficulty: honest assessment — typical ЕНТ = 3`;
+}
+
 interface ParsedTranscription {
   item: TranscriptionItem;
+  inputTok: number;
+  outputTok: number;
+  cacheRead: number;
+  cacheWrite: number;
+}
+
+interface ParsedMultiTranscription {
+  items: TranscriptionItem[];
+  discardedReasons: string[];
   inputTok: number;
   outputTok: number;
   cacheRead: number;
@@ -148,14 +214,18 @@ function buildTranscribeParams(
   imagePath: string,
   model: string,
   system: Anthropic.Messages.MessageCreateParamsNonStreaming['system'],
+  multi = false,
 ): Anthropic.Messages.MessageCreateParamsNonStreaming {
   const filename = path.basename(imagePath);
   const imageData = fs.readFileSync(imagePath).toString('base64');
   const mediaType = getMediaType(imagePath);
+  const text = multi
+    ? `Extract every fully visible ЕНТ problem from this page. Set source_file to "${filename}" for each item.`
+    : `Transcribe this ЕНТ problem. Set source_file to "${filename}".`;
 
   return {
     model,
-    max_tokens: 2048,
+    max_tokens: multi ? 8192 : 2048,
     system,
     messages: [
       {
@@ -167,7 +237,7 @@ function buildTranscribeParams(
           },
           {
             type: 'text',
-            text: `Transcribe this ЕНТ problem. Set source_file to "${filename}".`,
+            text,
           },
         ],
       },
@@ -242,10 +312,51 @@ async function transcribeImage(
   return parseTranscribeResponse(response, filename);
 }
 
+function parseTranscribeResponseMulti(
+  message: Anthropic.Message,
+  filename: string,
+): ParsedMultiTranscription {
+  const inputTok = message.usage.input_tokens;
+  const outputTok = message.usage.output_tokens;
+  const cacheRead = message.usage.cache_read_input_tokens ?? 0;
+  const cacheWrite = message.usage.cache_creation_input_tokens ?? 0;
+  const raw = message.content
+    .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
+    .map((b) => b.text)
+    .join('')
+    .trim();
+
+  const { items, discardedReasons, parseError } = parseMultiItems(raw, filename);
+  if (parseError) {
+    return {
+      items: [{ skip: 'unsupported', reason: parseError, source_file: filename }],
+      discardedReasons: [],
+      inputTok,
+      outputTok,
+      cacheRead,
+      cacheWrite,
+    };
+  }
+
+  return { items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite };
+}
+
+async function transcribeImageMulti(
+  client: Anthropic,
+  imagePath: string,
+  model: string,
+  system: Anthropic.Messages.MessageCreateParamsNonStreaming['system'],
+): Promise<ParsedMultiTranscription> {
+  const filename = path.basename(imagePath);
+  const params = buildTranscribeParams(imagePath, model, system, true);
+  const response = await client.messages.create(params);
+  return parseTranscribeResponseMulti(response, filename);
+}
+
 async function main() {
   loadEnv();
 
-  const { dir, limit, subject, sync } = parseArgs();
+  const { dir, limit, subject, sync, multi } = parseArgs();
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -274,12 +385,18 @@ async function main() {
   const mode = sync ? 'sync' : 'batch (−50%)';
 
   console.log(`\n📂  ${dir}`);
-  console.log(`📋  Processing ${files.length} image(s)  [model: ${model}, mode: ${mode}]`);
+  console.log(
+    `📋  Processing ${files.length} image(s)  [model: ${model}, mode: ${mode}${multi ? ', multi' : ''}]`,
+  );
   console.log(`   ⚠️  Paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output\n`);
 
   const anthropic = new Anthropic({ apiKey });
   const system: Anthropic.Messages.MessageCreateParamsNonStreaming['system'] = [
-    { type: 'text', text: buildSystemInstruction(subject), cache_control: { type: 'ephemeral' } },
+    {
+      type: 'text',
+      text: multi ? buildMultiSystemInstruction(subject) : buildSystemInstruction(subject),
+      cache_control: { type: 'ephemeral' },
+    },
   ];
 
   const results: TranscriptionItem[] = [];
@@ -289,6 +406,8 @@ async function main() {
   let totalCacheWrite = 0;
   let skipped = 0;
   let graphs = 0;
+  let extracted = 0;
+  let discardedBySchema = 0;
   const costMultiplier = sync ? 1 : 0.5;
 
   function record(
@@ -316,20 +435,66 @@ async function main() {
     }
   }
 
+  function recordMulti(
+    items: TranscriptionItem[],
+    discardedReasons: string[],
+    inputTok: number,
+    outputTok: number,
+    cacheRead: number,
+    cacheWrite: number,
+  ): void {
+    totalInput += inputTok;
+    totalOutput += outputTok;
+    totalCacheRead += cacheRead;
+    totalCacheWrite += cacheWrite;
+
+    for (const item of items) {
+      results.push(item);
+      if ('skip' in item) {
+        skipped++;
+        if (item.skip === 'graph') graphs++;
+        console.log(`  ⏭  skip(${item.skip}): ${item.reason}`);
+      } else {
+        extracted++;
+        console.log(`  ✓  ${item.topic_slug} / ${item.type} / diff=${item.difficulty}`);
+      }
+    }
+
+    for (const reason of discardedReasons) {
+      discardedBySchema++;
+      console.log(`  ❌  discarded (schema): ${reason}`);
+    }
+  }
+
   if (sync) {
     for (const file of files) {
-      process.stdout.write(`  ${file}  …  `);
+      process.stdout.write(`  ${file}  …  ${multi ? '\n' : ''}`);
       try {
-        const { item, inputTok, outputTok, cacheRead, cacheWrite } = await transcribeImage(
-          anthropic,
-          path.join(dir, file),
-          model,
-          system,
-        );
-        record(item, inputTok, outputTok, cacheRead, cacheWrite);
+        if (multi) {
+          const { items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite } =
+            await transcribeImageMulti(anthropic, path.join(dir, file), model, system);
+          recordMulti(items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite);
+        } else {
+          const { item, inputTok, outputTok, cacheRead, cacheWrite } = await transcribeImage(
+            anthropic,
+            path.join(dir, file),
+            model,
+            system,
+          );
+          record(item, inputTok, outputTok, cacheRead, cacheWrite);
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        record({ skip: 'unsupported', reason: `API error: ${msg}`, source_file: file }, 0, 0, 0, 0);
+        const errorItem: TranscriptionItem = {
+          skip: 'unsupported',
+          reason: `API error: ${msg}`,
+          source_file: file,
+        };
+        if (multi) {
+          recordMulti([errorItem], [], 0, 0, 0, 0);
+        } else {
+          record(errorItem, 0, 0, 0, 0);
+        }
         console.log(`❌  ${msg}`);
       }
     }
@@ -337,7 +502,7 @@ async function main() {
     const built = files.map((file, i) => ({
       customId: indexCustomId(i),
       file,
-      params: buildTranscribeParams(path.join(dir, file), model, system),
+      params: buildTranscribeParams(path.join(dir, file), model, system, multi),
     }));
 
     console.log(`📦  Submitting batch of ${built.length} request(s)…`);
@@ -362,22 +527,31 @@ async function main() {
     );
 
     for (const { item: file, result } of mapped) {
-      process.stdout.write(`  ${file}  …  `);
+      process.stdout.write(`  ${file}  …  ${multi ? '\n' : ''}`);
       if (isSucceeded(result)) {
-        const { item, inputTok, outputTok, cacheRead, cacheWrite } = parseTranscribeResponse(
-          result.result.message,
-          file,
-        );
-        record(item, inputTok, outputTok, cacheRead, cacheWrite);
+        if (multi) {
+          const { items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite } =
+            parseTranscribeResponseMulti(result.result.message, file);
+          recordMulti(items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite);
+        } else {
+          const { item, inputTok, outputTok, cacheRead, cacheWrite } = parseTranscribeResponse(
+            result.result.message,
+            file,
+          );
+          record(item, inputTok, outputTok, cacheRead, cacheWrite);
+        }
       } else {
         const reason = describeFailure(result);
-        record(
-          { skip: 'unsupported', reason: `batch: ${reason}`, source_file: file },
-          0,
-          0,
-          0,
-          0,
-        );
+        const errorItem: TranscriptionItem = {
+          skip: 'unsupported',
+          reason: `batch: ${reason}`,
+          source_file: file,
+        };
+        if (multi) {
+          recordMulti([errorItem], [], 0, 0, 0, 0);
+        } else {
+          record(errorItem, 0, 0, 0, 0);
+        }
       }
     }
   }
@@ -389,9 +563,9 @@ async function main() {
   fs.writeFileSync(outFile, JSON.stringify(results, null, 2));
 
   const totalCost = calcCost(totalInput, totalOutput, costMultiplier);
-  const transcribed = files.length - skipped;
+  const transcribed = multi ? extracted : files.length - skipped;
   console.log(
-    `\n✅  ${transcribed} transcribed, ${skipped} skipped (${graphs} graph, ${skipped - graphs} other)`,
+    `\n✅  ${transcribed} transcribed, ${skipped} skipped (${graphs} graph, ${skipped - graphs} other)${multi ? `, ${discardedBySchema} discarded (schema)` : ''}`,
   );
   console.log(
     `💰  Tokens: ${totalInput} in / ${totalOutput} out  ~$${totalCost.toFixed(4)} USD  [${model}, ${sync ? 'standard' : 'batch −50%'} rate]`,
