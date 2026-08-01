@@ -137,6 +137,8 @@ export type Question = {
   source: string;
   is_published: boolean;
   sort_order: number;
+  /** Оригинал, из которого сделан перевод (NULL для оригиналов). См. 0017. */
+  source_question_id: string | null;
   created_at: string;
 };
 

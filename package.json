@@ -9,11 +9,15 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
     "test": "vitest run",
+    "gen:glossary": "tsx --tsconfig tsconfig.scripts.json scripts/build-glossary.ts",
+    "gen:translate": "tsx --tsconfig tsconfig.scripts.json scripts/translate-questions.ts",
     "gen:transcribe": "tsx --tsconfig tsconfig.scripts.json scripts/transcribe-questions.ts",
     "gen:variants": "tsx --tsconfig tsconfig.scripts.json scripts/generate-variants.ts",
     "gen:verify": "tsx --tsconfig tsconfig.scripts.json scripts/verify-questions.ts",
+    "gen:verify-translation": "tsx --tsconfig tsconfig.scripts.json scripts/verify-translation.ts",
     "gen:insert": "tsx --tsconfig tsconfig.scripts.json scripts/insert-to-db.ts",
-    "gen:all": "tsx --tsconfig tsconfig.scripts.json scripts/gen-all.ts"
+    "gen:all": "tsx --tsconfig tsconfig.scripts.json scripts/gen-all.ts",
+    "gen:translate-all": "tsx --tsconfig tsconfig.scripts.json scripts/translate-all.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

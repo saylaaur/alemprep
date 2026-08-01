@@ -124,3 +124,34 @@ export type ReferenceQuestion = z.infer<typeof ReferenceQuestionSchema>;
 export type SkipItem = z.infer<typeof SkipItemSchema>;
 export type TranscriptionItem = ReferenceQuestion | SkipItem;
 export type GeneratedQuestion = z.infer<typeof GeneratedQuestionSchema>;
+
+export type ContentBlock = z.infer<typeof ContentBlockSchema>;
+export type SingleBody = z.infer<typeof SingleBodySchema>;
+export type MultiBody = z.infer<typeof MultiBodySchema>;
+export type MatchingBody = z.infer<typeof MatchingBodySchema>;
+export type QuestionBody = z.infer<typeof QuestionBodySchema>;
+export type ExplanationType = z.infer<typeof ExplanationSchema>;
+
+/** Ответ переводчика (scripts/translate-questions.ts): та же структура body+explanation. */
+export const TranslationResponseSchema = z.object({
+  body: QuestionBodySchema,
+  explanation: ExplanationSchema,
+});
+export type TranslationResponse = z.infer<typeof TranslationResponseSchema>;
+
+/**
+ * Проверенный перевод, готовый к вставке (scripts/translated,
+ * scripts/verified-translations → insert-to-db.ts --language kk).
+ * topic_id/context_id — те же, что у оригинала (не ищем по slug заново).
+ */
+export const TranslatedQuestionSchema = z.object({
+  source_question_id: z.string().min(1),
+  topic_id: z.string().min(1),
+  context_id: z.string().nullable(),
+  type: z.enum(['single', 'multi', 'matching']),
+  difficulty: z.number().int().min(1).max(5),
+  body: QuestionBodySchema,
+  explanation: ExplanationSchema,
+  sort_order: z.number().int(),
+});
+export type TranslatedQuestion = z.infer<typeof TranslatedQuestionSchema>;

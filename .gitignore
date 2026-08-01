@@ -22,6 +22,8 @@ next-env.d.ts
 scripts/references/
 scripts/generated/
 scripts/verified/
+scripts/translated/
+scripts/verified-translations/
 scripts/insert-batch.sql
 
 # Исходные материалы пробников (скрины НЦТ) — НЕ коммитить в публичный репо.
