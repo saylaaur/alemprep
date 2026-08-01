@@ -283,40 +283,33 @@ export default async function DashboardPage({
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {subjects.map((s) => {
               const Icon = getSubjectIcon(s.icon);
-              const ready = s.is_active && s.question_count > 0;
               const m = masteryBySubject.get(s.id);
               const masteryVal = m && m.total > 0 ? m.correct / m.total : 0;
 
-              const inner = (
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between">
-                    <div
-                      className={
-                        ready
-                          ? 'grid h-11 w-11 place-items-center rounded-xl bg-primary/12 text-primary'
-                          : 'grid h-11 w-11 place-items-center rounded-xl bg-muted text-muted-foreground'
-                      }
-                    >
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    {ready ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/12 px-2.5 py-0.5 text-xs font-medium text-primary">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        {t('continue')}
-                      </span>
-                    ) : (
-                      <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
-                        {tSubjects('comingSoon')}
-                      </span>
-                    )}
-                  </div>
+              return (
+                <Card
+                  key={s.id}
+                  className="group border-primary/25 transition-all duration-300 ease-smooth hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                >
+                  <Link
+                    href={{ pathname: '/subjects/[subject]', params: { subject: s.slug } }}
+                    className="block rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
+                  >
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between">
+                        <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary/12 text-primary">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/12 px-2.5 py-0.5 text-xs font-medium text-primary">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                          {t('continue')}
+                        </span>
+                      </div>
 
-                  <h3 className="mt-4 text-base font-semibold">
-                    {subjectName(s, locale as Locale)}
-                  </h3>
+                      <h3 className="mt-4 text-base font-semibold">
+                        {subjectName(s, locale as Locale)}
+                      </h3>
 
-                  {ready ? (
-                    <>
                       <MasteryBar
                         label={t('mastery')}
                         value={masteryVal}
@@ -326,30 +319,8 @@ export default async function DashboardPage({
                         {tSubjects('topicsCount', { count: s.topic_count })} ·{' '}
                         {tSubjects('questionsCount', { count: s.question_count })}
                       </p>
-                    </>
-                  ) : (
-                    <p className="mt-3 text-sm text-muted-foreground">
-                      {tSubjects('comingSoon')}
-                    </p>
-                  )}
-                </CardContent>
-              );
-
-              return ready ? (
-                <Card
-                  key={s.id}
-                  className="group border-primary/25 transition-all duration-300 ease-smooth hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-                >
-                  <Link
-                    href={{ pathname: '/subjects/[subject]', params: { subject: s.slug } }}
-                    className="block rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
-                  >
-                    {inner}
+                    </CardContent>
                   </Link>
-                </Card>
-              ) : (
-                <Card key={s.id} className="opacity-70">
-                  {inner}
                 </Card>
               );
             })}

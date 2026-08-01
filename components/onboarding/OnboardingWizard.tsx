@@ -11,7 +11,6 @@ import {
   GraduationCap,
   Atom,
   Code2,
-  Sparkles,
   Clock,
   Zap,
   Target,
@@ -212,17 +211,6 @@ export function OnboardingWizard() {
                 </button>
               );
             })}
-            <div className="flex items-center gap-3 rounded-xl border border-dashed px-4 py-3.5 opacity-60">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold text-muted-foreground">
-                  {t('subjectComingSoonTitle')}
-                </div>
-                <div className="mt-0.5 text-xs text-muted-foreground">{t('subjectComingSoonDesc')}</div>
-              </div>
-            </div>
           </div>
         </div>
       )}

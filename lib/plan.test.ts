@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { daysUntilExam, projectedPairScore, buildPriorityTopics } from './plan';
+import { EXAM_PAIR_MAX_SCORE, DIAGNOSTIC_PAIR_MAX_SCORE } from './exam';
 
 describe('daysUntilExam', () => {
   it('положительное число дней для будущей даты', () => {
@@ -17,15 +18,15 @@ describe('projectedPairScore', () => {
   it('0 баллов диагностики → 0 прогноз', () => {
     expect(projectedPairScore(0)).toBe(0);
   });
-  it('максимум диагностики (24) → максимум пары (110)', () => {
-    expect(projectedPairScore(24)).toBe(110);
+  it('максимум диагностики → максимум пары', () => {
+    expect(projectedPairScore(DIAGNOSTIC_PAIR_MAX_SCORE)).toBe(EXAM_PAIR_MAX_SCORE);
   });
   it('половина диагностики → примерно половина пары', () => {
-    expect(projectedPairScore(12)).toBe(55);
+    expect(projectedPairScore(DIAGNOSTIC_PAIR_MAX_SCORE / 2)).toBe(EXAM_PAIR_MAX_SCORE / 2);
   });
   it('клэмпит отрицательные и превышающие значения', () => {
     expect(projectedPairScore(-5)).toBe(0);
-    expect(projectedPairScore(100)).toBe(110);
+    expect(projectedPairScore(DIAGNOSTIC_PAIR_MAX_SCORE * 5)).toBe(EXAM_PAIR_MAX_SCORE);
   });
 });
 

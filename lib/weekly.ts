@@ -7,10 +7,11 @@ import type { QuestionType } from '@/types/db';
 import { pickBalancedByTopic, type ExamShortfall } from '@/lib/exam';
 
 /**
- * Блюпринт еженедельного теста: как DIAGNOSTIC_BLUEPRINT (9 заданий/предмет,
- * 18/пару) — постоянная сложность, та же пропорция типов, что у EXAM/DIAGNOSTIC.
- * В отличие от диагностики (замер один раз), это тест на регулярной основе —
- * сложность НЕ растёт со временем, чтобы рост балла отражал реальный прогресс.
+ * Блюпринт еженедельного теста: как DIAGNOSTIC_BLUEPRINT (8 заданий/предмет,
+ * 16/пару) — постоянная сложность, та же пропорция типов, что у EXAM/DIAGNOSTIC
+ * (6:1:1). В отличие от диагностики (замер один раз), это тест на регулярной
+ * основе — сложность НЕ растёт со временем, чтобы рост балла отражал реальный
+ * прогресс.
  */
 export const WEEKLY_BLUEPRINT: ReadonlyArray<{
   type: QuestionType;
@@ -18,7 +19,7 @@ export const WEEKLY_BLUEPRINT: ReadonlyArray<{
   points: number;
 }> = [
   { type: 'single', count: 6, points: 1 },
-  { type: 'multi', count: 2, points: 2 },
+  { type: 'multi', count: 1, points: 2 },
   { type: 'matching', count: 1, points: 2 },
 ];
 

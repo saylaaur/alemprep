@@ -78,8 +78,6 @@
       "physics": "Инженерлік және техникалық мамандықтар үшін",
       "informatics": "IT және бағдарламалау мамандықтары үшін"
     },
-    "subjectComingSoonTitle": "Басқа пән жұбы",
-    "subjectComingSoonDesc": "Жақында қосылады",
     "examDateStepTitle": "ҰБТ қашан?",
     "examDateStepDesc": "Осылай дайындыққа қанша күн қалғанын есептейміз.",
     "examDateLabel": "Емтихан күні",
@@ -104,7 +102,7 @@
     "dailyGoalProjection": "Осы қарқынмен {days, plural, other {# күн}} ішінде ≈{total} есеп шығарасың — {target} мақсатына жеткілікті.",
     "saveError": "Сақтау мүмкін болмады. Қайталап көр.",
     "doneTitle": "Жоспар дайын!",
-    "doneDesc": "Қысқа диагностикадан өт (18 тапсырма, ~20 минут) — сонда сенің мықты және әлсіз тақырыптарыңды көреміз.",
+    "doneDesc": "Қысқа диагностикадан өт (16 тапсырма, ~15 минут) — сонда сенің мықты және әлсіз тақырыптарыңды көреміз.",
     "doneSummaryExam": "{days, plural, other {# күн}} · ҰБТ {date}",
     "doneSummaryTarget": "Мақсат — {target} / {max}",
     "doneSummaryDaily": "{count, plural, other {# есеп/күн}}",
@@ -234,8 +232,7 @@
     "informatics": "Информатика",
     "topicsCount": "{count, plural, =0 {тақырыптар жоқ} other {# тақырып}}",
     "questionsCount": "{count, plural, =0 {есептер жоқ} other {# есеп}}",
-    "startTopic": "Шешу",
-    "comingSoon": "жақында"
+    "startTopic": "Шешу"
   },
   "practice": {
     "title": "Жаттығу",
@@ -248,7 +245,6 @@
     "focusMode": "Фокус режимі",
     "exitFocusMode": "Фокус режимінен шығу",
     "shortcuts": "Жылдам пернелер",
-    "comingSoon": "Жақында. 3-қадамда осы жерде жаттықтырғыш пайда болады.",
     "noQuestions": "Бұл тақырып бойынша әзірше есептер жоқ.",
     "correct": "Дұрыс!",
     "incorrect": "Дұрыс емес",
@@ -309,6 +305,7 @@
   "exam": {
     "title": "Толық сынақ",
     "subtitle": "{count} тапсырма · {duration} минут · ең көбі {max} балл",
+    "pairScopeNote": "Бейіндік блок: 2 пән × 40 тапсырма, ең көбі 100 балл",
     "totalQuestions": "тапсырма",
     "minutesLabel": "минут",
     "maxPointsLabel": "балл",
@@ -320,7 +317,7 @@
     "partCount": "{count} × {points} б.",
     "pointsChip": "{points} б.",
     "pointsOf": "{earned}/{max} б.",
-    "shortfallWarningSubject": "{subject}: «{type}» түріндегі {required} тапсырманың тек {available} қолжетімді",
+    "shortfallWarningSubject": "{subject}: бұл блокта «{type}» түріндегі {required} тапсырманың орнына {available} бар — тапсырмалар банкі толықтырылуда",
     "scorePoints": "{max} балдан {score} балл",
     "timeSpent": "уақыт",
     "byType": "Тапсырма түрлері бойынша",
@@ -367,7 +364,6 @@
     "error": "Өрнекте қате бар"
   },
   "common": {
-    "comingSoon": "Жақында",
     "loading": "Жүктелуде…"
   },
   "settings": {

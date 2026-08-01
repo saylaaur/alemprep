@@ -78,8 +78,6 @@
       "physics": "Для инженерных и технических специальностей",
       "informatics": "Для IT и специальностей, связанных с программированием"
     },
-    "subjectComingSoonTitle": "Другая пара предметов",
-    "subjectComingSoonDesc": "Скоро появится",
     "examDateStepTitle": "Когда у тебя ЕНТ?",
     "examDateStepDesc": "Так мы посчитаем, сколько дней осталось на подготовку.",
     "examDateLabel": "Дата экзамена",
@@ -104,7 +102,7 @@
     "dailyGoalProjection": "В этом темпе за {days, plural, one {# день} few {# дня} other {# дней}} ты решишь ≈{total} задач — этого хватит для цели {target}.",
     "saveError": "Не удалось сохранить. Попробуй ещё раз.",
     "doneTitle": "План готов!",
-    "doneDesc": "Пройди короткую диагностику (18 заданий, ~20 минут), чтобы мы увидели твои сильные и слабые темы.",
+    "doneDesc": "Пройди короткую диагностику (16 заданий, ~15 минут), чтобы мы увидели твои сильные и слабые темы.",
     "doneSummaryExam": "{days, plural, =0 {# дней} one {# день} few {# дня} other {# дней}} · ЕНТ {date}",
     "doneSummaryTarget": "Цель — {target} / {max}",
     "doneSummaryDaily": "{count, plural, one {# задача в день} few {# задачи в день} other {# задач в день}}",
@@ -234,8 +232,7 @@
     "informatics": "Информатика",
     "topicsCount": "{count, plural, =0 {нет тем} one {# тема} few {# темы} other {# тем}}",
     "questionsCount": "{count, plural, =0 {нет задач} one {# задача} few {# задачи} other {# задач}}",
-    "startTopic": "Решать",
-    "comingSoon": "скоро"
+    "startTopic": "Решать"
   },
   "practice": {
     "title": "Тренировка",
@@ -248,7 +245,6 @@
     "focusMode": "Фокус-режим",
     "exitFocusMode": "Выйти из фокус-режима",
     "shortcuts": "Шорткаты",
-    "comingSoon": "Скоро. На Шаге 3 здесь появится тренажёр.",
     "noQuestions": "Пока нет задач по этой теме.",
     "correct": "Правильно!",
     "incorrect": "Неверно",
@@ -309,6 +305,7 @@
   "exam": {
     "title": "Полный пробник",
     "subtitle": "{count} заданий · {duration} минут · максимум {max} баллов",
+    "pairScopeNote": "Профильный блок: 2 предмета × 40 заданий, максимум 100 баллов",
     "totalQuestions": "заданий",
     "minutesLabel": "минут",
     "maxPointsLabel": "баллов",
@@ -320,7 +317,7 @@
     "partCount": "{count} × {points} б.",
     "pointsChip": "{points} б.",
     "pointsOf": "{earned}/{max} б.",
-    "shortfallWarningSubject": "{subject}: доступно {available} из {required} заданий типа «{type}»",
+    "shortfallWarningSubject": "{subject}: в этом блоке {available} заданий типа «{type}» вместо {required} — банк задач пополняется",
     "scorePoints": "{score} из {max} баллов",
     "timeSpent": "время",
     "byType": "По типам заданий",
@@ -367,7 +364,6 @@
     "error": "Ошибка в выражении"
   },
   "common": {
-    "comingSoon": "Скоро",
     "loading": "Загрузка…"
   },
   "settings": {

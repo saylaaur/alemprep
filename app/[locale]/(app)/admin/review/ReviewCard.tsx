@@ -3,6 +3,7 @@
 import { MathText } from '@/components/math/MathText';
 import { Button } from '@/components/ui/button';
 import { publishQuestion, deleteQuestion } from '@/lib/supabase/admin-actions';
+import { normalizeExplanationBlocks } from '@/lib/explanation';
 import type { UnpublishedQuestion } from '@/lib/supabase/queries';
 import type { SingleBody, MultiBody, MatchingBody } from '@/types/db';
 import { CheckCircle2, Trash2, BookOpen, Tag, Gauge } from 'lucide-react';
@@ -35,6 +36,7 @@ export function ReviewCard({
   labels: Labels;
 }) {
   const topicName = locale === 'kk' ? q.topic_name_kk : q.topic_name_ru;
+  const explanationBlocks = normalizeExplanationBlocks(q.explanation);
 
   return (
     <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
@@ -108,14 +110,16 @@ export function ReviewCard({
       )}
 
       {/* Explanation */}
-      {q.explanation && q.explanation.blocks.length > 0 && (
+      {explanationBlocks.length > 0 && (
         <details className="group">
           <summary className="cursor-pointer text-xs font-medium text-muted-foreground hover:text-foreground select-none">
             {labels.explanation}
           </summary>
-          <div className="mt-2 rounded-lg bg-muted/30 px-4 py-3 text-sm space-y-1">
-            {q.explanation.blocks.map((block, i) => (
-              <MathText key={i} text={block.value} />
+          <div className="mt-2 rounded-lg bg-muted/30 px-4 py-3 text-sm space-y-2">
+            {explanationBlocks.map((block, i) => (
+              <p key={i}>
+                <MathText text={block.value} display={block.type === 'latex'} />
+              </p>
             ))}
           </div>
         </details>

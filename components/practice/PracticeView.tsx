@@ -18,7 +18,8 @@ import {
   Sparkles,
   ChevronDown,
 } from 'lucide-react';
-import type { Question, Explanation, ContextContent } from '@/types/db';
+import type { Question, ContextContent } from '@/types/db';
+import { normalizeExplanationBlocks } from '@/lib/explanation';
 import { recordAttempt } from '@/lib/supabase/practice-actions';
 import { askAssistant, getAssistantHistory } from '@/lib/supabase/assistant-actions';
 import {
@@ -308,6 +309,8 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
     );
   }
 
+  const explanationBlocks = normalizeExplanationBlocks(current.explanation);
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
       {/* Header */}
@@ -463,14 +466,14 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
             </div>
 
             {/* Слой 1 — «Разбор»: бесплатно, безлимитно, без API (уже сохранён в БД) */}
-            {current.explanation ? (
+            {explanationBlocks.length > 0 ? (
               explanationOpen[current.id] ? (
                 <div className="animate-slide-up space-y-2 rounded-xl border bg-card p-5 text-sm leading-relaxed text-muted-foreground shadow-xs">
                   <div className="font-medium text-foreground">{t('explanation')}</div>
-                  {((current.explanation as Explanation).blocks ?? []).map((b, i) => (
-                    <div key={i}>
+                  {explanationBlocks.map((b, i) => (
+                    <p key={i}>
                       <MathText text={b.value} display={b.type === 'latex'} />
-                    </div>
+                    </p>
                   ))}
                 </div>
               ) : (

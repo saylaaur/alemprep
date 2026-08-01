@@ -1,16 +1,18 @@
 import type { QuestionType, QuestionBody } from '@/types/db';
 
 /**
- * Формат профильного блока ЕНТ (математика): 40 заданий, 55 баллов, 80 минут.
- * Порядок частей фиксирован: single (1–25) → multi (26–35) → matching (36–40).
+ * Формат профильного блока ЕНТ (математика): 40 заданий, 50 баллов, 80 минут.
+ * Порядок частей фиксирован: single (1–30) → multi (31–35) → matching (36–40).
+ * 5 из этих 30 в реальном ЕНТ — задания на основе общего контекста; выделить
+ * в отдельную часть блюпринта, когда появится контент с contexts.
  */
 export const EXAM_BLUEPRINT: ReadonlyArray<{
   type: QuestionType;
   count: number;
   points: number;
 }> = [
-  { type: 'single', count: 25, points: 1 },
-  { type: 'multi', count: 10, points: 2 },
+  { type: 'single', count: 30, points: 1 },
+  { type: 'multi', count: 5, points: 2 },
   { type: 'matching', count: 5, points: 2 },
 ];
 
@@ -25,7 +27,7 @@ export const EXAM_MAX_SCORE = EXAM_BLUEPRINT.reduce(
  * Пара профильных предметов: первый блок всегда математика,
  * второй — физика или информатика. Других пар в ЕНТ-профиле нет.
  * 2 блока × 40 заданий, 160 минут (пропорция ЕНТ: 80 заданий из 120 минут
- * на предмет → ×2), максимум 110 баллов.
+ * на предмет → ×2), максимум 100 баллов.
  */
 export const EXAM_FIRST_SUBJECT = 'math' as const;
 export const EXAM_SECOND_SUBJECTS = ['physics', 'informatics'] as const;
@@ -35,9 +37,9 @@ export const EXAM_PAIR_DURATION_S = 160 * 60;
 export const EXAM_PAIR_MAX_SCORE = 2 * EXAM_MAX_SCORE;
 
 /**
- * Блюпринт диагностики: короткий замер (9 заданий/предмет, 18/пару) без
- * мгновенной обратной связи. Пропорции типов те же, что у EXAM_BLUEPRINT,
- * но меньше вопросов на тип.
+ * Блюпринт диагностики: короткий замер (8 заданий/предмет, 16/пару) без
+ * мгновенной обратной связи. Пропорции типов те же, что у EXAM_BLUEPRINT
+ * (6:1:1), но меньше вопросов на тип.
  */
 export const DIAGNOSTIC_BLUEPRINT: ReadonlyArray<{
   type: QuestionType;
@@ -45,7 +47,7 @@ export const DIAGNOSTIC_BLUEPRINT: ReadonlyArray<{
   points: number;
 }> = [
   { type: 'single', count: 6, points: 1 },
-  { type: 'multi', count: 2, points: 2 },
+  { type: 'multi', count: 1, points: 2 },
   { type: 'matching', count: 1, points: 2 },
 ];
 

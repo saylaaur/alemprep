@@ -23,9 +23,8 @@ export default async function SubjectTopicsPage({
   const subject = await getSubjectBySlug(subjectSlug);
   if (!subject) notFound();
 
-  const [t, tCommon, topics] = await Promise.all([
+  const [t, topics] = await Promise.all([
     getTranslations('subjects'),
-    getTranslations('common'),
     getTopicsForSubject(subjectSlug),
   ]);
 
@@ -38,51 +37,29 @@ export default async function SubjectTopicsPage({
 
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {topics.map((topic) => {
-            const ready = topic.question_count > 0;
-            const card = (
-              <Card
-                className={`h-full transition-colors ${
-                  ready ? 'hover:border-primary/40' : 'opacity-60'
-                }`}
-              >
+          {topics.map((topic) => (
+            <Link
+              key={topic.id}
+              href={{ pathname: '/practice/topic/[topic]', params: { topic: topic.slug } }}
+            >
+              <Card className="h-full transition-colors hover:border-primary/40">
                 <CardHeader>
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base">
-                      {topicName(topic, locale as Locale)}
-                    </CardTitle>
-                    {!ready ? (
-                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                        {tCommon('comingSoon')}
-                      </span>
-                    ) : null}
-                  </div>
+                  <CardTitle className="text-base">
+                    {topicName(topic, locale as Locale)}
+                  </CardTitle>
                   <CardDescription>
                     {t('questionsCount', { count: topic.question_count })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {ready ? (
-                    <div className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-                      {t('startTopic')}
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </div>
-                  ) : null}
+                  <div className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                    {t('startTopic')}
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </div>
                 </CardContent>
               </Card>
-            );
-
-            return ready ? (
-              <Link
-                key={topic.id}
-                href={{ pathname: '/practice/topic/[topic]', params: { topic: topic.slug } }}
-              >
-                {card}
-              </Link>
-            ) : (
-              <div key={topic.id}>{card}</div>
-            );
-          })}
+            </Link>
+          ))}
         </div>
       </div>
     </>

@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
 import { Check, X, Minus, Flag, Clock, ChevronLeft, ChevronRight, Trophy, AlertCircle, Calculator as CalculatorIcon } from 'lucide-react';
 import { Calculator } from '@/components/practice/Calculator';
 import { QuestionAnswerInput } from '@/components/practice/QuestionAnswerInput';
-import type { Question, Explanation, Locale, QuestionType } from '@/types/db';
+import type { Question, Locale, QuestionType } from '@/types/db';
+import { normalizeExplanationBlocks } from '@/lib/explanation';
 import {
   startPairExam,
   finishExamSession,
@@ -344,6 +345,7 @@ export function MockExamView({ availability, locale, userId }: Props) {
             max: EXAM_PAIR_MAX_SCORE,
           })}
         </p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('pairScopeNote')}</p>
 
         {/* Выбор пары предметов */}
         <div className="mt-8 text-left">
@@ -386,21 +388,18 @@ export function MockExamView({ availability, locale, userId }: Props) {
           </div>
         </div>
 
-        {/* Нехватка задач в банке выбранной пары */}
+        {/* Нехватка задач в банке выбранной пары — приглушённая информация, не алерт */}
         {pairShortfalls.length > 0 && (
-          <div className="mt-4 space-y-2">
+          <div className="mt-3 space-y-1">
             {pairShortfalls.map((s) => (
-              <div key={`${s.slug}-${s.type}`} className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 px-4 py-2.5 text-left text-sm text-warning">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>
-                  {t('shortfallWarningSubject', {
-                    subject: tSubjects(s.slug),
-                    available: s.available,
-                    required: s.required,
-                    type: t(PART_TITLE_KEY[s.type]),
-                  })}
-                </span>
-              </div>
+              <p key={`${s.slug}-${s.type}`} className="text-left text-xs text-muted-foreground">
+                {t('shortfallWarningSubject', {
+                  subject: tSubjects(s.slug),
+                  available: s.available,
+                  required: s.required,
+                  type: t(PART_TITLE_KEY[s.type]),
+                })}
+              </p>
             ))}
           </div>
         )}
@@ -842,7 +841,7 @@ function ResultScreen({ blocks, answers, locale, elapsedS, t }: ResultProps) {
                     const i = offset + qi;
                     const isOpen = expandedId === q.id;
                     const stem = (q.body as { stem: string }).stem;
-                    const exp = q.explanation as Explanation | null;
+                    const explanationBlocks = normalizeExplanationBlocks(q.explanation);
                     const isPartial = !isCorrect && points > 0;
                     const isSkipped = isAnswerEmpty(answer);
                     return (
@@ -864,10 +863,14 @@ function ResultScreen({ blocks, answers, locale, elapsedS, t }: ResultProps) {
                         {isOpen && (
                           <div className="border-t px-4 pb-4 pt-3 space-y-3">
                             <CorrectAnswerBlock q={q} answer={answer} isCorrect={isCorrect} t={t} />
-                            {exp && exp.blocks.length > 0 && (
-                              <div className="rounded-lg bg-muted/30 px-4 py-3 text-sm space-y-1">
+                            {explanationBlocks.length > 0 && (
+                              <div className="rounded-lg bg-muted/30 px-4 py-3 text-sm space-y-2">
                                 <div className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('explanationLabel')}</div>
-                                {exp.blocks.map((eb, ebi) => <MathText key={ebi} text={eb.value} />)}
+                                {explanationBlocks.map((eb, ebi) => (
+                                  <p key={ebi}>
+                                    <MathText text={eb.value} display={eb.type === 'latex'} />
+                                  </p>
+                                ))}
                               </div>
                             )}
                           </div>

@@ -48,27 +48,27 @@ const matchingBody: QuestionBody = {
 } as QuestionBody;
 
 describe('scoreAnswer: константы формата', () => {
-  it('максимум 55 баллов: 25×1 + 10×2 + 5×2', () => {
-    expect(EXAM_MAX_SCORE).toBe(55);
+  it('максимум 50 баллов: 30×1 + 5×2 + 5×2', () => {
+    expect(EXAM_MAX_SCORE).toBe(50);
     expect(QUESTION_POINTS).toEqual({ single: 1, multi: 2, matching: 2 });
   });
-  it('пара: 110 баллов, 160 минут', () => {
-    expect(EXAM_PAIR_MAX_SCORE).toBe(110);
+  it('пара: 100 баллов, 160 минут', () => {
+    expect(EXAM_PAIR_MAX_SCORE).toBe(100);
     expect(EXAM_PAIR_DURATION_S).toBe(160 * 60);
   });
 });
 
 describe('DIAGNOSTIC_BLUEPRINT: константы', () => {
-  it('9 заданий и 12 баллов на предмет, 18 заданий и 24 балла на пару', () => {
-    expect(DIAGNOSTIC_BLOCK_COUNT).toBe(9);
-    expect(DIAGNOSTIC_BLOCK_MAX_SCORE).toBe(12);
-    expect(DIAGNOSTIC_PAIR_MAX_SCORE).toBe(24);
+  it('8 заданий и 10 баллов на предмет, 16 заданий и 20 баллов на пару', () => {
+    expect(DIAGNOSTIC_BLOCK_COUNT).toBe(8);
+    expect(DIAGNOSTIC_BLOCK_MAX_SCORE).toBe(10);
+    expect(DIAGNOSTIC_PAIR_MAX_SCORE).toBe(20);
   });
 
   it('pickBalancedByTopic работает с DIAGNOSTIC_BLUEPRINT', () => {
-    const pool = makePool({ t1: { single: 6, multi: 2, matching: 1 } });
+    const pool = makePool({ t1: { single: 6, multi: 1, matching: 1 } });
     const { picked, shortfall } = pickBalancedByTopic(pool, DIAGNOSTIC_BLUEPRINT);
-    expect(picked).toHaveLength(9);
+    expect(picked).toHaveLength(8);
     expect(shortfall).toEqual([]);
   });
 });
@@ -102,8 +102,8 @@ describe('pickBalancedByTopic', () => {
     const { picked, shortfall } = pickBalancedByTopic(pool);
     expect(picked).toHaveLength(40);
     expect(shortfall).toEqual([]);
-    expect(picked.slice(0, 25).every((q) => q.type === 'single')).toBe(true);
-    expect(picked.slice(25, 35).every((q) => q.type === 'multi')).toBe(true);
+    expect(picked.slice(0, 30).every((q) => q.type === 'single')).toBe(true);
+    expect(picked.slice(30, 35).every((q) => q.type === 'multi')).toBe(true);
     expect(picked.slice(35, 40).every((q) => q.type === 'matching')).toBe(true);
     // без дублей
     expect(new Set(picked.map((q) => q.id)).size).toBe(40);
@@ -133,8 +133,8 @@ describe('pickBalancedByTopic', () => {
     const { picked, shortfall } = pickBalancedByTopic(pool);
     expect(picked).toHaveLength(4);
     expect(shortfall).toEqual([
-      { type: 'single', available: 3, required: 25 },
-      { type: 'multi', available: 0, required: 10 },
+      { type: 'single', available: 3, required: 30 },
+      { type: 'multi', available: 0, required: 5 },
       { type: 'matching', available: 1, required: 5 },
     ]);
   });
