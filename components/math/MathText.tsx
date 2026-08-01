@@ -1,21 +1,10 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-
-declare global {
-  interface Window {
-    renderMathInElement?: (
-      element: HTMLElement,
-      options?: {
-        delimiters?: { left: string; right: string; display: boolean }[];
-        throwOnError?: boolean;
-      }
-    ) => void;
-  }
-}
+import renderMathInElement from 'katex/contrib/auto-render';
 
 /**
- * Рендерит строку с LaTeX-формулами в $...$ через KaTeX (CDN).
+ * Рендерит строку с LaTeX-формулами в $...$ через самохостинг KaTeX (npm-пакет).
  * Использование: <MathText text="Найдите $\\ln x$" />
  * display=true: если текст не содержит $-разделителей, оборачивает в $$...$$ (блочный режим).
  */
@@ -28,23 +17,13 @@ export function MathText({ text, className, display = false }: { text: string; c
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const tryRender = () => {
-      if (window.renderMathInElement) {
-        window.renderMathInElement(el, {
-          delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '$', right: '$', display: false },
-          ],
-          throwOnError: false,
-        });
-      } else {
-        timer = setTimeout(tryRender, 100);
-      }
-    };
-    tryRender();
-    // без cleanup ретрай-цикл продолжал жить после смены вопроса/анмаунта
-    return () => clearTimeout(timer);
+    renderMathInElement(el, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false },
+      ],
+      throwOnError: false,
+    });
   }, [content]);
 
   return (
