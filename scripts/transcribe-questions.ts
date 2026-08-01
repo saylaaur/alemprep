@@ -564,9 +564,18 @@ async function main() {
 
   const totalCost = calcCost(totalInput, totalOutput, costMultiplier);
   const transcribed = multi ? extracted : files.length - skipped;
-  console.log(
-    `\n✅  ${transcribed} transcribed, ${skipped} skipped (${graphs} graph, ${skipped - graphs} other)${multi ? `, ${discardedBySchema} discarded (schema)` : ''}`,
-  );
+  if (multi) {
+    console.log(`\n📊  Сводка:`);
+    console.log(`   обработано изображений:        ${files.length}`);
+    console.log(`   извлечено заданий:             ${extracted}`);
+    console.log(`   пропущено из-за графики:       ${graphs}`);
+    console.log(`   пропущено (прочее):            ${skipped - graphs}`);
+    console.log(`   отброшено схемой (невалидные): ${discardedBySchema}`);
+  } else {
+    console.log(
+      `\n✅  ${transcribed} transcribed, ${skipped} skipped (${graphs} graph, ${skipped - graphs} other)`,
+    );
+  }
   console.log(
     `💰  Tokens: ${totalInput} in / ${totalOutput} out  ~$${totalCost.toFixed(4)} USD  [${model}, ${sync ? 'standard' : 'batch −50%'} rate]`,
   );
