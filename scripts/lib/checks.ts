@@ -56,13 +56,26 @@ function bodyTexts(body: QuestionBody): string[] {
 }
 
 /**
- * true, если stem или варианты ответа (для matching — также left/right)
- * ссылаются на рисунок/схему/график/чертёж/диаграмму/таблицу, приведённые
- * в оригинале. У нас нет поддержки изображений в заданиях — такой вопрос
- * нерешаем и должен быть отброшен, даже если прошёл Zod-валидацию.
+ * true, если stem, варианты ответа (для matching — также left/right) ИЛИ
+ * пояснение ссылаются на рисунок/схему/график/чертёж/диаграмму/таблицу,
+ * приведённые в оригинале. У нас нет поддержки изображений в заданиях —
+ * такой вопрос нерешаем и должен быть отброшен, даже если прошёл Zod-валидацию.
+ *
+ * Пояснение проверяем не просто для полноты: на живом прогоне модель иногда
+ * зачищает ссылку на картинку из stem/options (условие выглядит валидно —
+ * «Работа газа при переходе из состояния A в состояние B равна» без данных),
+ * но пояснение всё равно выдаёт источник — «На графике показаны состояния
+ * A(V, 2P) и B(3V, 2P)». Без данных из графика condition нерешаем, и это
+ * видно только в explanation.
  */
-export function referencesMissingVisual(question: { body: QuestionBody }): boolean {
-  const texts = bodyTexts(question.body).map(normalizeForVisualCheck);
+export function referencesMissingVisual(question: {
+  body: QuestionBody;
+  explanation: ExplanationType;
+}): boolean {
+  const texts = [
+    ...bodyTexts(question.body),
+    ...question.explanation.blocks.map((b) => b.value),
+  ].map(normalizeForVisualCheck);
   return texts.some((text) => VISUAL_REFERENCE_PATTERNS.some((re) => re.test(text)));
 }
 

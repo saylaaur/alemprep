@@ -216,8 +216,13 @@ describe('validateTranslation: защита от битых данных', () =>
 // scripts/generate-variants.ts via validateAndFilter)
 // =====================================================
 
-function singleQuestionBody(stem: string, optionContents: string[] = ['1', '2']): {
+function singleQuestionBody(
+  stem: string,
+  optionContents: string[] = ['1', '2'],
+  explanationText = 'Пояснение без ссылок на картинку.',
+): {
   body: SingleBody;
+  explanation: { blocks: { type: 'text'; value: string }[] };
 } {
   return {
     body: {
@@ -225,6 +230,7 @@ function singleQuestionBody(stem: string, optionContents: string[] = ['1', '2'])
       options: optionContents.map((content, i) => ({ id: String.fromCharCode(97 + i), content })),
       correct: 'a',
     },
+    explanation: { blocks: [{ type: 'text', value: explanationText }] },
   };
 }
 
@@ -232,7 +238,7 @@ function matchingQuestionBody(
   stem: string,
   left: string[],
   right: string[],
-): { body: MatchingBody } {
+): { body: MatchingBody; explanation: { blocks: { type: 'text'; value: string }[] } } {
   return {
     body: {
       stem,
@@ -240,6 +246,7 @@ function matchingQuestionBody(
       right,
       correct: { '1': right[0] },
     },
+    explanation: { blocks: [{ type: 'text', value: 'Пояснение без ссылок на картинку.' }] },
   };
 }
 
@@ -328,6 +335,22 @@ describe('referencesMissingVisual: НЕ ловит самостоятельно�
       expect(referencesMissingVisual(singleQuestionBody(stem))).toBe(false);
     });
   }
+});
+
+describe('referencesMissingVisual: ссылка утекла только в explanation (реальный кейс с фото физики)', () => {
+  it('stem/options не решаемы без картинки, но пояснение выдаёт, что данные — с графика', () => {
+    const q = singleQuestionBody(
+      'Работа, совершённая одноатомным идеальным газом при переходе из состояния A в состояние B равна',
+      ['2PV', '4PV', '6PV', '8PV'],
+      'На графике P-V диаграмме показаны два состояния газа: состояние A при объёме V и давлении 2P, и состояние B при объёме 3V и давлении 2P.',
+    );
+    expect(referencesMissingVisual(q)).toBe(true);
+  });
+
+  it('пояснение без ссылок на картинку не срабатывает', () => {
+    const q = singleQuestionBody('Решите уравнение $x^2 - 5x + 6 = 0$.', ['2', '3'], 'Раскладываем на множители и находим корни.');
+    expect(referencesMissingVisual(q)).toBe(false);
+  });
 });
 
 describe('validateAndFilter: отбраковывает вопросы со ссылкой на отсутствующую картинку', () => {
