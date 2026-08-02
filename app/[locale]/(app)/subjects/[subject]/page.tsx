@@ -10,7 +10,17 @@ import {
   subjectName,
   topicName,
 } from '@/lib/supabase/queries';
+import { groupTopicsBySection } from '@/lib/topics';
 import type { Locale } from '@/types/db';
+
+function sectionTitle(
+  section: { sectionNameRu: string | null; sectionNameKk: string | null },
+  locale: Locale,
+  otherLabel: string,
+): string {
+  if (section.sectionNameRu === null) return otherLabel;
+  return locale === 'kk' ? (section.sectionNameKk ?? section.sectionNameRu) : section.sectionNameRu;
+}
 
 export default async function SubjectTopicsPage({
   params,
@@ -28,6 +38,8 @@ export default async function SubjectTopicsPage({
     getTopicsForSubject(subjectSlug),
   ]);
 
+  const sections = groupTopicsBySection(topics);
+
   return (
     <>
       <PageHeader
@@ -35,32 +47,39 @@ export default async function SubjectTopicsPage({
         subtitle={t('topicsSubtitle')}
       />
 
-      <div className="p-4 sm:p-6 lg:p-8">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {topics.map((topic) => (
-            <Link
-              key={topic.id}
-              href={{ pathname: '/practice/topic/[topic]', params: { topic: topic.slug } }}
-            >
-              <Card className="h-full transition-colors hover:border-primary/40">
-                <CardHeader>
-                  <CardTitle className="text-base">
-                    {topicName(topic, locale as Locale)}
-                  </CardTitle>
-                  <CardDescription>
-                    {t('questionsCount', { count: topic.question_count })}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-                    {t('startTopic')}
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+      <div className="space-y-8 p-4 sm:p-6 lg:p-8">
+        {sections.map((section) => (
+          <section key={section.sectionNo ?? 'other'}>
+            <h2 className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {sectionTitle(section, locale as Locale, t('otherTopics'))}
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {section.topics.map((topic) => (
+                <Link
+                  key={topic.id}
+                  href={{ pathname: '/practice/topic/[topic]', params: { topic: topic.slug } }}
+                >
+                  <Card className="h-full transition-colors hover:border-primary/40">
+                    <CardHeader>
+                      <CardTitle className="text-base">
+                        {topicName(topic, locale as Locale)}
+                      </CardTitle>
+                      <CardDescription>
+                        {t('questionsCount', { count: topic.question_count })}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                        {t('startTopic')}
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
     </>
   );

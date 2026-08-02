@@ -232,7 +232,8 @@
     "informatics": "Информатика",
     "topicsCount": "{count, plural, =0 {нет тем} one {# тема} few {# темы} other {# тем}}",
     "questionsCount": "{count, plural, =0 {нет задач} one {# задача} few {# задачи} other {# задач}}",
-    "startTopic": "Решать"
+    "startTopic": "Решать",
+    "otherTopics": "Другое"
   },
   "practice": {
     "title": "Тренировка",

@@ -232,7 +232,8 @@
     "informatics": "Информатика",
     "topicsCount": "{count, plural, =0 {тақырыптар жоқ} other {# тақырып}}",
     "questionsCount": "{count, plural, =0 {есептер жоқ} other {# есеп}}",
-    "startTopic": "Шешу"
+    "startTopic": "Шешу",
+    "otherTopics": "Басқа"
   },
   "practice": {
     "title": "Жаттығу",
