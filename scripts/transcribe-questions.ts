@@ -24,6 +24,7 @@ import {
 } from './lib/schema';
 import { resolveModel } from './lib/models';
 import { parseMultiItems } from './lib/multi-transcribe';
+import { referencesMissingVisual } from './lib/checks';
 import {
   collectBatchResults,
   describeFailure,
@@ -159,10 +160,10 @@ The image contains SEVERAL test problems (a two-column book spread). Extract ALL
 
 Output ONLY a valid JSON array — no markdown, no code fences, just raw JSON. One entry per problem, in reading order.
 
-⚠️  IGNORE HANDWRITTEN MARKS. Circled letters, checkmarks, crossed-out text, and margin calculations are a STUDENT'S OWN ANSWERS and MAY BE WRONG. Determine the correct answer yourself by solving the problem — never read it off the handwritten marks.
-
-⚠️  SKIP any problem that requires a picture, diagram, chart, or graph to understand (electrical circuits, geometric drawings, function graphs, image-based tables). We have no support for images in questions. For each skipped problem, still emit an entry:
+⚠️  DO NOT EXTRACT PROBLEMS THAT DEPEND ON A PICTURE — not even partially, not even if you can guess the rest. We have NO support for images in questions; a problem whose condition needs a picture, diagram, chart, or graph to understand (electrical circuits, geometric drawings, function graphs, image-based tables) is UNUSABLE no matter how well you transcribe its text. Watch for these exact phrases in the Russian text — any of them means the problem POINTS AT a picture that exists outside the text and MUST be skipped: "как показано на рисунке", "на схеме", "на графике", "изображён на" / "изображена на", "указаны на рисунке", "приведён на рисунке", "см. рис.". Do not confuse this with a problem that asks the student to build a graph themselves ("постройте график функции") — that one has no missing picture and stays. For each skipped problem, still emit an entry:
 {"skip": "graph", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
+
+⚠️  IGNORE HANDWRITTEN MARKS. Circled letters, checkmarks, crossed-out text, and margin calculations are a STUDENT'S OWN ANSWERS and MAY BE WRONG. Determine the correct answer yourself by solving the problem — never read it off the handwritten marks.
 
 ⚠️  IGNORE fragments of a neighboring page or column bleeding in at the edge of the photo — only take problems visible IN FULL (condition + all options). Do not take a problem that shows a number but not its full text.
 
@@ -412,6 +413,7 @@ async function main() {
   let graphs = 0;
   let extracted = 0;
   let discardedBySchema = 0;
+  let filteredGraphs = 0;
   const costMultiplier = sync ? 1 : 0.5;
 
   function record(
@@ -453,6 +455,19 @@ async function main() {
     totalCacheWrite += cacheWrite;
 
     for (const item of items) {
+      if (!('skip' in item) && referencesMissingVisual(item)) {
+        const filtered: TranscriptionItem = {
+          skip: 'graph',
+          reason: `Ссылается на отсутствующий визуальный материал (детерминантный фильтр): "${item.body.stem.slice(0, 60)}"`,
+          source_file: item.source_file,
+        };
+        results.push(filtered);
+        skipped++;
+        filteredGraphs++;
+        console.log(`  🚫  filtered(graph): ${filtered.reason}`);
+        continue;
+      }
+
       results.push(item);
       if ('skip' in item) {
         skipped++;
@@ -572,8 +587,10 @@ async function main() {
     console.log(`\n📊  Сводка:`);
     console.log(`   обработано изображений:        ${files.length}`);
     console.log(`   извлечено заданий:             ${extracted}`);
-    console.log(`   пропущено из-за графики:       ${graphs}`);
-    console.log(`   пропущено (прочее):            ${skipped - graphs}`);
+    console.log(
+      `   пропущено из-за графики:       ${graphs + filteredGraphs} (модель: ${graphs}, фильтр: ${filteredGraphs})`,
+    );
+    console.log(`   пропущено (прочее):            ${skipped - graphs - filteredGraphs}`);
     console.log(`   отброшено схемой (невалидные): ${discardedBySchema}`);
   } else {
     console.log(

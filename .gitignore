@@ -27,8 +27,11 @@ scripts/verified-translations/
 scripts/insert-batch.sql
 
 # Подготовленные фото (scripts/prepare-photos.ts) — те же материалы НЦТ, только перекодированные.
+# --out может называться как угодно — покрываем и дефолтное имя, и вариант scripts/photos*/.
 scripts/prepared-photos/
 **/prepared-photos/
+scripts/photos/
+scripts/photos-*/
 
 # Исходные материалы пробников (скрины НЦТ) — НЕ коммитить в публичный репо.
 # Репозиторий ПУБЛИЧНЫЙ, материалы НЦТ защищены авторским правом.

@@ -8,6 +8,64 @@ import {
   type MatchingBody,
 } from './schema';
 
+/**
+ * Ссылки на визуальный материал, которого у нас нет (никогда не на само слово
+ * «график»/«таблица» — иначе ловим и «постройте график функции», где ученик
+ * строит график сам, а не смотрит на готовый).
+ */
+const VISUAL_REFERENCE_PATTERNS: RegExp[] = [
+  /на\s+рисун/,
+  /см\.?\s*рис/,
+  /как\s+показан/,
+  /на\s+схем/,
+  /на\s+график/,
+  /на\s+чертеж/,
+  /на\s+диаграмм/,
+  // причастие «изображён/-а/-о/-ы», но не существительное «изображение/-ия/-ию»
+  /изображен(?!и)/,
+  /указан[а-я]*\s+на\s/,
+  /привед[а-я]*\s+на\s/,
+  /в\s+таблиц/,
+];
+
+function normalizeForVisualCheck(text: string): string {
+  return text.toLowerCase().replace(/ё/g, 'е');
+}
+
+function bodyTexts(body: QuestionBody): string[] {
+  const texts: string[] = [(body as { stem: string }).stem];
+  const b = body as Record<string, unknown>;
+
+  if (Array.isArray(b.options)) {
+    for (const opt of b.options as Array<{ content?: string }>) {
+      if (typeof opt.content === 'string') texts.push(opt.content);
+    }
+  }
+  if (Array.isArray(b.left)) {
+    for (const item of b.left as Array<{ content?: string }>) {
+      if (typeof item.content === 'string') texts.push(item.content);
+    }
+  }
+  if (Array.isArray(b.right)) {
+    for (const r of b.right as string[]) {
+      if (typeof r === 'string') texts.push(r);
+    }
+  }
+
+  return texts;
+}
+
+/**
+ * true, если stem или варианты ответа (для matching — также left/right)
+ * ссылаются на рисунок/схему/график/чертёж/диаграмму/таблицу, приведённые
+ * в оригинале. У нас нет поддержки изображений в заданиях — такой вопрос
+ * нерешаем и должен быть отброшен, даже если прошёл Zod-валидацию.
+ */
+export function referencesMissingVisual(question: { body: QuestionBody }): boolean {
+  const texts = bodyTexts(question.body).map(normalizeForVisualCheck);
+  return texts.some((text) => VISUAL_REFERENCE_PATTERNS.some((re) => re.test(text)));
+}
+
 function stemOf(q: GeneratedQuestion): string {
   return ((q.body as { stem?: string }).stem ?? '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
@@ -67,6 +125,11 @@ export function validateAndFilter(questions: GeneratedQuestion[]): CheckResult {
   const seenStems = new Set<string>();
 
   for (const q of questions) {
+    if (referencesMissingVisual(q)) {
+      rejected.push({ question: q, reason: 'References missing visual material' });
+      continue;
+    }
+
     const latexErr = latexError(q);
     if (latexErr) {
       rejected.push({ question: q, reason: `LaTeX error: ${latexErr}` });
