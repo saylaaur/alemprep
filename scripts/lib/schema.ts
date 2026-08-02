@@ -1,48 +1,48 @@
 import { z } from 'zod';
+import officialTopics from '../data/official-topics.json';
 
-export const MATH_TOPIC_SLUGS = [
-  'algebra',
-  'equations',
-  'functions',
-  'logarithms',
-  'trigonometry',
-  'progressions',
-  'planimetry',
-  'stereometry',
-  'derivatives',
-  'combinatorics',
-  'statistics',
-  'text_problems',
-] as const;
+interface OfficialTopic {
+  no: number;
+  slug: string;
+  name_ru: string;
+}
 
-export type MathTopicSlug = (typeof MATH_TOPIC_SLUGS)[number];
+interface OfficialSection {
+  no: number;
+  name_ru: string;
+  topics: OfficialTopic[];
+}
 
-// Темы информатики и физики (совпадают с миграциями 0004/0005)
-export const INFORMATICS_TOPIC_SLUGS = [
-  'number-systems',
-  'algorithms',
-  'programming',
-  'databases',
-  'networks',
-  'logic',
-] as const;
+interface OfficialSubject {
+  name_ru: string;
+  questions: number;
+  max_score: number;
+  sections: OfficialSection[];
+}
 
-export const PHYSICS_TOPIC_SLUGS = [
-  'mechanics',
-  'molecular-physics',
-  'thermodynamics',
-  'electrostatics',
-  'electric-current',
-  'magnetism',
-  'optics',
-  'atomic-nuclear',
-] as const;
+function slugsForSubject(subject: OfficialSubject): readonly string[] {
+  return subject.sections.flatMap((section) => section.topics.map((topic) => topic.slug));
+}
+
+/**
+ * Списки topic_slug генерируются из официальных спецификаций НЦТ
+ * (scripts/data/official-topics.json — извлечено из PDF testcenter.kz,
+ * без переписывания формулировок), а не держатся руками — иначе разъедутся
+ * при обновлении спецификаций. См. supabase/migrations/0019.
+ */
+export const MATH_TOPIC_SLUGS = slugsForSubject(officialTopics.math as OfficialSubject);
+export const PHYSICS_TOPIC_SLUGS = slugsForSubject(officialTopics.physics as OfficialSubject);
+export const INFORMATICS_TOPIC_SLUGS = slugsForSubject(officialTopics.informatics as OfficialSubject);
+export const MATH_LITERACY_TOPIC_SLUGS = slugsForSubject(
+  officialTopics['math-literacy'] as OfficialSubject,
+);
 
 /** Список допустимых topic_slug по предмету — для промптов и валидации пайплайна. */
 export const SUBJECT_TOPIC_SLUGS: Record<string, readonly string[]> = {
   math: MATH_TOPIC_SLUGS,
   informatics: INFORMATICS_TOPIC_SLUGS,
   physics: PHYSICS_TOPIC_SLUGS,
+  'math-literacy': MATH_LITERACY_TOPIC_SLUGS,
 };
 
 /** Человекочитаемое название предмета (для system-промпта на англ.). */
@@ -50,11 +50,24 @@ export const SUBJECT_LABEL: Record<string, string> = {
   math: 'mathematics',
   informatics: 'computer science (informatics)',
   physics: 'physics',
+  'math-literacy': 'mathematical literacy',
 };
 
 export function getTopicSlugs(subject: string): readonly string[] {
   return SUBJECT_TOPIC_SLUGS[subject] ?? MATH_TOPIC_SLUGS;
 }
+
+/**
+ * Уровни трудности из официальной спецификации НЦТ (один вариант: 50% базовый,
+ * 30% средний, 20% высокий — scripts/data/official-topics.json:_difficulty).
+ * Модель определяет уровень по описанию, маппинг в существующую шкалу
+ * difficulty (1–5) — A→2, B→3, C→4; крайние значения 1/5 остаются свободны,
+ * схему БД не меняем.
+ */
+export const DIFFICULTY_LEVEL_PROMPT = `Determine the difficulty level per the official ЕНТ specification (one variant is 50% A, 30% B, 20% C), then map it to the numeric "difficulty" field:
+- A (базовый) — reproduction of simple skills by direct instructions → difficulty 2
+- B (средний) — recognition of simple models, analysis and comparison → difficulty 3
+- C (высокий) — integration of knowledge, complex models, generalization → difficulty 4`;
 
 const AnswerOptionSchema = z.object({
   id: z.string(),
