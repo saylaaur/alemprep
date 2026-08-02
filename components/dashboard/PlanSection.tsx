@@ -8,6 +8,7 @@ import { MasteryBar, type MasteryTone } from '@/components/gamification/MasteryB
 import { getDiagnosticBaseline, type TopicMasteryStat } from '@/lib/supabase/queries';
 import { daysUntilExam, projectedPairScore, buildPriorityTopics } from '@/lib/plan';
 import { EXAM_PAIR_MAX_SCORE } from '@/lib/exam';
+import { thresholdStatus } from '@/lib/ent-score';
 import type { Locale, Profile } from '@/types/db';
 
 type Props = {
@@ -48,6 +49,7 @@ export async function PlanSection({ profile, topicMastery, locale }: Props) {
   const projected = projectedPairScore(baseline.score);
   const target = profile.target_score ?? EXAM_PAIR_MAX_SCORE;
   const progressToTarget = target > 0 ? Math.min(1, projected / target) : 0;
+  const toTarget = thresholdStatus(projected, target);
 
   const currentByTopic = new Map(topicMastery.map((tm) => [tm.topicId, tm.accuracy]));
   const priority = buildPriorityTopics(baseline.topicStats).map((p) => ({
@@ -114,6 +116,9 @@ export async function PlanSection({ profile, topicMastery, locale }: Props) {
                   <div className="text-[11px] text-muted-foreground">{t('targetLabel')}</div>
                 </div>
               </div>
+              <p className="mt-2 text-xs font-medium text-muted-foreground">
+                {toTarget.meetsTarget ? t('targetReached') : t('pointsToTarget', { points: toTarget.gap })}
+              </p>
             </div>
           </div>
 
