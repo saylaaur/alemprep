@@ -1,0 +1,73 @@
+{
+  "_source": "НЦТ, testcenter.kz — «Формат тестирования» (page_id=15074) и «Предметы ЕНТ» (page_id=15562), получено 2026-08-03.",
+
+  "exam": {
+    "subjects_total": 5,
+    "questions_total": 120,
+    "max_score": 140,
+    "duration_minutes": 240
+  },
+
+  "mandatory": {
+    "_note": "Обязательные предметы: задания с выбором одного правильного ответа ИЗ ПЯТИ предложенных (в профильных — из четырёх!).",
+    "options_per_question": 5,
+    "subjects": [
+      { "slug": "history-kz",       "name_ru": "История Казахстана",         "questions": 20, "max_score": 20, "min_score": 5 },
+      { "slug": "reading-literacy", "name_ru": "Грамотность чтения",         "questions": 10, "max_score": 10, "min_score": 3, "_note": "на языке обучения" },
+      { "slug": "math-literacy",    "name_ru": "Математическая грамотность", "questions": 10, "max_score": 10, "min_score": 3 }
+    ]
+  },
+
+  "profile": {
+    "_note": "Два профильных предмета. Задания с одним ответом — из ЧЕТЫРЁХ вариантов.",
+    "options_per_question": 4,
+    "count": 2,
+    "questions_per_subject": 40,
+    "max_score_per_subject": 50,
+    "min_score_per_subject": 5,
+    "blueprint": [
+      { "type": "single",         "count": 25, "points": 1, "name_ru": "Задания с выбором одного правильного ответа из четырёх" },
+      { "type": "context-single", "count": 5,  "points": 1, "name_ru": "Задания на основе контекста" },
+      { "type": "matching",       "count": 5,  "points": 2, "name_ru": "Задания на установление соответствия" },
+      { "type": "multi",          "count": 5,  "points": 2, "name_ru": "Задания с выбором одного или нескольких правильных ответов" }
+    ],
+    "valid_pairs": [
+      { "first": "Математика",                  "second": "Физика",                                  "supported": true },
+      { "first": "Математика",                  "second": "Информатика",                             "supported": true },
+      { "first": "Математика",                  "second": "География",                               "supported": false },
+      { "first": "Биология",                    "second": "Химия",                                   "supported": false },
+      { "first": "Биология",                    "second": "География",                               "supported": false },
+      { "first": "Иностранный язык",            "second": "Всемирная история",                       "supported": false },
+      { "first": "География",                   "second": "Иностранный язык",                        "supported": false },
+      { "first": "Всемирная история",           "second": "Основы права",                            "supported": false },
+      { "first": "Всемирная история",           "second": "География",                               "supported": false },
+      { "first": "Казахский язык/Русский язык", "second": "Казахская литература/Русская литература", "supported": false },
+      { "first": "Химия",                       "second": "Физика",                                  "supported": false }
+    ]
+  },
+
+  "thresholds": {
+    "_note": "Базовый проходной балл. Каждый ВУЗ может устанавливать свой порог по группам образовательных программ — это МИНИМУМЫ.",
+    "national_universities": 65,
+    "other_universities": 50,
+    "by_field": [
+      { "field_ru": "Педагогические науки",            "score": 75 },
+      { "field_ru": "Здравоохранение",                 "score": 70 },
+      { "field_ru": "Право",                           "score": 75 },
+      { "field_ru": "Сельское хозяйство и биоресурсы", "score": 50, "_note": "только для национальных ВУЗов" },
+      { "field_ru": "Ветеринария",                     "score": 50, "_note": "только для национальных ВУЗов" }
+    ],
+    "per_subject_minimums": {
+      "_note": "Не набрал минимум хотя бы по одному предмету — не проходишь, каким бы ни был общий балл.",
+      "history_and_each_profile": 5,
+      "reading_and_math_literacy": 3
+    }
+  },
+
+  "difficulty_distribution": {
+    "_source": "Спецификации тестов НЦТ",
+    "basic_A": 0.5,
+    "medium_B": 0.3,
+    "high_C": 0.2
+  }
+}
