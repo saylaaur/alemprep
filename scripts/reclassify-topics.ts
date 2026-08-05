@@ -7,7 +7,7 @@
  *
  * Читает опубликованные задачи предмета вместе с текущей темой, батчем через
  * Haiku классифицирует каждую по ОФИЦИАЛЬНОМУ списку тем предмета (условие +
- * варианты → ANSWER: {"topic_slug": "...", "confidence": 0..1}).
+ * варианты → строго одна строка JSON: {"topic_slug": "...", "confidence": 0..1}).
  *
  * Детерминантная проверка (не доверяем модели): вернувшийся topic_slug ОБЯЗАН
  * быть в официальном списке предмета, иначе задача остаётся на прежней теме.
@@ -105,13 +105,12 @@ function buildSystemInstruction(subject: string, officialSlugs: readonly string[
 Given a problem's condition and answer options, pick the SINGLE best-matching topic from this exact list — never invent a slug outside it:
 <${slugs}>
 
-Work step by step (briefly), then on the LAST line output:
-ANSWER: {"topic_slug": "<one of the slugs above, verbatim>", "confidence": <0..1>}
-
 Rules:
 - confidence reflects how certain you are the problem belongs to THAT SPECIFIC topic, not just that it's a valid problem.
 - If the problem could plausibly fit more than one topic, pick the most specific match and lower confidence accordingly.
-- Output ONLY your brief reasoning followed by the ANSWER line.`;
+
+Respond with ONLY a single line of JSON — no reasoning, no explanation, no markdown fences, nothing before or after it:
+{"topic_slug": "<one of the slugs above, verbatim>", "confidence": <0..1>}`;
 }
 
 function buildClassifyParams(

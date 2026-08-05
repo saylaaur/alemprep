@@ -63,6 +63,48 @@ describe('parseClassification', () => {
     const result = parseClassification('ANSWER: "kinematics"', VALID_SLUGS);
     expect(result.kind).toBe('parse_error');
   });
+
+  it('parses correctly when LaTeX reasoning with brace-heavy formulas precedes the ANSWER line', () => {
+    const raw = [
+      'Рассмотрим уравнение движения: $\\frac{d^2x}{dt^2} + \\omega^2 x = 0$.',
+      'Начальные условия задают $x(0) = \\sqrt{2}$, значит это классическая задача.',
+      'ANSWER: {"topic_slug": "dynamics", "confidence": 0.85}',
+    ].join('\n');
+    const result = parseClassification(raw, VALID_SLUGS);
+    expect(result).toEqual({ kind: 'classified', topicSlug: 'dynamics', confidence: 0.85 });
+  });
+
+  it('parses correctly when LaTeX appears inline on the same line as the JSON object', () => {
+    const raw = 'ANSWER: since $\\frac{a}{b} = x$, {"topic_slug": "kinematics", "confidence": 0.9}';
+    const result = parseClassification(raw, VALID_SLUGS);
+    expect(result).toEqual({ kind: 'classified', topicSlug: 'kinematics', confidence: 0.9 });
+  });
+
+  it('takes the last JSON object when the response contains more than one', () => {
+    const raw = [
+      'ANSWER: {"topic_slug": "dynamics", "confidence": 0.5}',
+      'Wait, reconsidering the problem statement more carefully.',
+      'ANSWER: {"topic_slug": "kinematics", "confidence": 0.9}',
+    ].join('\n');
+    const result = parseClassification(raw, VALID_SLUGS);
+    expect(result).toEqual({ kind: 'classified', topicSlug: 'kinematics', confidence: 0.9 });
+  });
+
+  it('returns a parse error for garbage without a topic_slug key, even with braces present', () => {
+    const raw = 'Незаконченное рассуждение про $\\frac{a}{b}$ и {"foo": "bar"} без ответа.';
+    const result = parseClassification(raw, VALID_SLUGS);
+    expect(result.kind).toBe('parse_error');
+  });
+
+  it('includes up to 200 chars of the raw response in the parse_error reason', () => {
+    const raw = 'x'.repeat(300);
+    const result = parseClassification(raw, VALID_SLUGS);
+    expect(result.kind).toBe('parse_error');
+    if (result.kind === 'parse_error') {
+      expect(result.reason).toContain('x'.repeat(200));
+      expect(result.reason).not.toContain('x'.repeat(201));
+    }
+  });
 });
 
 describe('summarizeReclassification', () => {

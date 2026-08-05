@@ -7,17 +7,19 @@ export type ClassificationOutcome =
   | { kind: 'invalid_slug'; rawSlug: string; confidence: number }
   | { kind: 'parse_error'; reason: string };
 
-/** Извлекаем JSON из хвоста ответа (после маркера ANSWER:), тот же приём, что в verify-questions.ts. */
-function extractAnswerJson(raw: string): string {
-  let s = raw.trim();
-  const marker = s.lastIndexOf('ANSWER:');
-  if (marker !== -1) s = s.slice(marker + 'ANSWER:'.length);
-  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  if (fence) s = fence[1].trim();
-  const start = s.indexOf('{');
-  const end = s.lastIndexOf('}');
-  if (start !== -1 && end > start) s = s.slice(start, end + 1);
-  return s.trim();
+/**
+ * Ищет последний самодостаточный (без вложенных `{`/`}`) JSON-объект с ключом
+ * topic_slug. В отличие от прежнего приёма «первая { … последняя }», LaTeX в
+ * рассуждении модели (\frac{a}{b}, \sqrt{x}) не мешает: такие скобки не
+ * содержат литерал "topic_slug" внутри себя, поэтому regex их просто
+ * пропускает и находит настоящий объект-ответ, где бы он ни стоял.
+ */
+const TOPIC_SLUG_OBJECT = /\{[^{}]*"topic_slug"\s*:\s*"[^"]*"[^{}]*\}/g;
+
+function extractAnswerJson(raw: string): string | null {
+  const matches = raw.match(TOPIC_SLUG_OBJECT);
+  if (!matches || matches.length === 0) return null;
+  return matches[matches.length - 1];
 }
 
 /**
@@ -31,11 +33,19 @@ export function parseClassification(
   raw: string,
   officialSlugs: readonly string[],
 ): ClassificationOutcome {
+  const candidate = extractAnswerJson(raw);
+  if (candidate === null) {
+    return {
+      kind: 'parse_error',
+      reason: `No JSON object with topic_slug found: ${raw.slice(0, 200).replace(/\s+/g, ' ')}`,
+    };
+  }
+
   let parsed: unknown;
   try {
-    parsed = JSON.parse(extractAnswerJson(raw));
+    parsed = JSON.parse(candidate);
   } catch {
-    return { kind: 'parse_error', reason: `Not JSON: ${raw.slice(0, 80).replace(/\s+/g, ' ')}` };
+    return { kind: 'parse_error', reason: `Not JSON: ${raw.slice(0, 200).replace(/\s+/g, ' ')}` };
   }
 
   if (typeof parsed !== 'object' || parsed === null) {
