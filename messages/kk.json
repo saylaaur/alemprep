@@ -205,6 +205,8 @@
     "projectedLabel": "болжам",
     "targetLabel": "мақсат",
     "targetHint": "Болжам {projected}, мақсат {target}",
+    "pointsToTarget": "Мақсатқа дейін: {points} балл",
+    "targetReached": "Мақсатқа жеттің",
     "priorityTopics": "Басым тақырыптар",
     "priorityStart": "бастапқы: {percent}%",
     "priorityEmpty": "Тақырыптар бойынша деректер әлі жоқ",
@@ -232,7 +234,8 @@
     "informatics": "Информатика",
     "topicsCount": "{count, plural, =0 {тақырыптар жоқ} other {# тақырып}}",
     "questionsCount": "{count, plural, =0 {есептер жоқ} other {# есеп}}",
-    "startTopic": "Шешу"
+    "startTopic": "Шешу",
+    "otherTopics": "Басқа"
   },
   "practice": {
     "title": "Жаттығу",
@@ -336,6 +339,10 @@
     "loading": "Дайындалуда…",
     "resultTitle": "Сынақ нәтижесі",
     "score": "{total} сұрақтан {correct} дұрыс",
+    "entProjection": "ҰБТ шкаласы бойынша болжам: {total}-дан {score}",
+    "entProjectionNote": "Міндетті пәндер (Қазақстан тарихы, оқу сауаттылығы, математикалық сауаттылық) — тағы {uncovered} балл, әзірге тренажёрда жоқ",
+    "belowMinimum": "{name}: минимум {min} кезінде {score} балл — жалпы балға қарамастан, түсу үшін жеткіліксіз",
+    "subjectMinimum": "минимум {min} балл",
     "correctLabel": "дұрыс",
     "wrongLabel": "қате",
     "skippedLabel": "өткізілді",

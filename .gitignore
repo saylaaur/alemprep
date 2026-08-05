@@ -36,3 +36,9 @@ unt recources/
 unt*resources/
 unt*recources/
 *.unt/
+
+# Подготовленные фото (scripts/prepare-photos.ts) — те же материалы НЦТ, только перекодированные.
+scripts/prepared-photos/
+**/prepared-photos/
+scripts/photos/
+scripts/photos-*/

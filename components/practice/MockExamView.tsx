@@ -34,6 +34,7 @@ import {
   scoreAnswer,
   type ExamSecondSubject,
 } from '@/lib/exam';
+import { entProjection, meetsSubjectMinimum, subjectMinimum } from '@/lib/ent-score';
 import { isAnswerEmpty, type AnswerState } from '@/lib/practice';
 
 const PART_TITLE_KEY: Record<QuestionType, 'partSingleTitle' | 'partMultiTitle' | 'partMatchingTitle'> = {
@@ -718,6 +719,11 @@ function ResultScreen({ blocks, answers, locale, elapsedS, t }: ResultProps) {
   const skipped = allResults.filter((r) => isAnswerEmpty(r.answer)).length;
   const wrong = totalQuestions - correctCount - skipped;
 
+  const projection = entProjection(
+    blockResults.map((b) => ({ slug: b.block.subjectSlug, score: b.earned, maxScore: b.max })),
+  );
+  const belowMinimum = blockResults.filter((b) => !meetsSubjectMinimum(b.block.subjectSlug, b.earned));
+
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:px-6">
       {/* Summary card: суммарный балл пары */}
@@ -729,15 +735,39 @@ function ResultScreen({ blocks, answers, locale, elapsedS, t }: ResultProps) {
         <div className="mt-4 font-mono text-5xl font-bold tabular-nums text-primary">{earnedScore}</div>
         <p className="mt-2 text-muted-foreground">{t('scorePoints', { score: earnedScore, max: maxScore })}</p>
         <p className="mt-1 text-sm text-muted-foreground">{t('score', { correct: correctCount, total: totalQuestions })}</p>
+        <p className="mt-3 text-sm font-medium">
+          {t('entProjection', { score: projection.measuredScore, total: projection.totalScale })}
+        </p>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {t('entProjectionNote', { uncovered: projection.uncoveredMax })}
+        </p>
+
+        {belowMinimum.length > 0 && (
+          <div className="mt-4 space-y-1.5 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-left">
+            {belowMinimum.map((b) => (
+              <p key={b.block.subjectSlug} className="flex items-start gap-2 text-xs text-destructive">
+                <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                {t('belowMinimum', { name: b.name, score: b.earned, min: subjectMinimum(b.block.subjectSlug) })}
+              </p>
+            ))}
+          </div>
+        )}
 
         {/* Балл по каждому предмету */}
         <div className="mt-5 grid grid-cols-2 divide-x divide-border border-t pt-5">
-          {blockResults.map((b) => (
-            <div key={b.block.subjectSlug}>
-              <div className="font-mono text-2xl font-bold tabular-nums">{b.earned}<span className="text-sm font-normal text-muted-foreground"> / {b.max}</span></div>
-              <div className="mt-1 text-xs text-muted-foreground">{b.name}</div>
-            </div>
-          ))}
+          {blockResults.map((b) => {
+            const min = subjectMinimum(b.block.subjectSlug);
+            const meetsMin = b.earned >= min;
+            return (
+              <div key={b.block.subjectSlug}>
+                <div className="font-mono text-2xl font-bold tabular-nums">{b.earned}<span className="text-sm font-normal text-muted-foreground"> / {b.max}</span></div>
+                <div className="mt-1 text-xs text-muted-foreground">{b.name}</div>
+                <div className={cn('mt-0.5 text-[11px]', meetsMin ? 'text-muted-foreground' : 'font-medium text-destructive')}>
+                  {t('subjectMinimum', { min })}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         <div className="mt-5 grid grid-cols-4 divide-x divide-border border-t pt-5">

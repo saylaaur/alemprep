@@ -58,6 +58,26 @@ export const DIAGNOSTIC_BLOCK_MAX_SCORE = DIAGNOSTIC_BLUEPRINT.reduce(
 );
 export const DIAGNOSTIC_PAIR_MAX_SCORE = 2 * DIAGNOSTIC_BLOCK_MAX_SCORE;
 
+/**
+ * Математическая грамотность — обязательный блок ЕНТ (10 заданий, 10 баллов
+ * из 140 на реальном экзамене). Только single — multi и matching в этом
+ * предмете не бывает (см. official-exam-format.json:mandatory).
+ * Пока не подключён ни к пробнику, ни к диагностике: обязательный блок ЕНТ
+ * (история 20 + грамотность чтения 10 + мат. грамотность 10) — это три
+ * предмета, собирать его из одного нечестно. Появятся остальные два — будет
+ * отдельный полный пробник.
+ */
+export const MATH_LITERACY_BLUEPRINT: ReadonlyArray<{
+  type: QuestionType;
+  count: number;
+  points: number;
+}> = [{ type: 'single', count: 10, points: 1 }];
+
+export const MATH_LITERACY_MAX_SCORE = MATH_LITERACY_BLUEPRINT.reduce(
+  (sum, part) => sum + part.count * part.points,
+  0
+);
+
 export const QUESTION_POINTS: Record<QuestionType, number> = Object.fromEntries(
   EXAM_BLUEPRINT.map((part) => [part.type, part.points])
 ) as Record<QuestionType, number>;
