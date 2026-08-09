@@ -45,27 +45,40 @@ export type UserAchievement = {
   earned_at: string;
 };
 
-/** subjects — Математика / Физика / Информатика */
+/** subjects — Математика / Физика / Информатика / Математическая грамотность */
 export type Subject = {
   id: string;
   slug: string;
   name_ru: string;
-  name_kk: string;
+  /** NULL, пока нет официального казахского перевода (см. 0019) — fallback на name_ru. */
+  name_kk: string | null;
   icon: string | null;
   is_active: boolean;
   sort_order: number;
   created_at: string;
 };
 
-/** topics — темы внутри предмета */
+/**
+ * topics — темы внутри предмета. Двухуровневая структура (Раздел → Тема) по
+ * официальным спецификациям НЦТ (см. 0019): section_no/section_name_ru/
+ * section_name_kk/topic_no. Раздел хранится прямо на строке темы (без
+ * отдельной таблицы sections), повторяясь по темам одного раздела.
+ * У тем без официального раздела (старый контент вне спецификации) эти поля
+ * NULL.
+ */
 export type Topic = {
   id: string;
   subject_id: string;
   slug: string;
   name_ru: string;
-  name_kk: string;
+  /** NULL, пока нет официального казахского перевода (см. 0019) — fallback на name_ru. */
+  name_kk: string | null;
   description_ru: string | null;
   description_kk: string | null;
+  section_no: number | null;
+  section_name_ru: string | null;
+  section_name_kk: string | null;
+  topic_no: number | null;
   sort_order: number;
   created_at: string;
 };

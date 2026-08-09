@@ -20,6 +20,7 @@ import {
   SkipItemSchema,
   getTopicSlugs,
   SUBJECT_LABEL,
+  DIFFICULTY_LEVEL_PROMPT,
   type TranscriptionItem,
 } from './lib/schema';
 import { resolveModel } from './lib/models';
@@ -126,7 +127,7 @@ Otherwise transcribe the problem:
 {
   "topic_slug": "<${slugs}>",
   "type": "<single|multi|matching>",
-  "difficulty": <1–5: 1=trivial, 2=easy, 3=typical ЕНТ, 4=hard, 5=olympiad>,
+  "difficulty": <2|3|4 — see difficulty levels below>,
   "body": { ... see formats below ... },
   "explanation": { "blocks": [{"type": "text"|"latex", "value": "..."}] },
   "source_file": "<PLACEHOLDER>"
@@ -137,13 +138,14 @@ Body formats:
 • multi   — {"stem":"...","options":[...],"correct":["a","c"]}
 • matching — {"stem":"...","left":[{"id":"1","content":"..."},...],"right":["А текст","Б текст",...],"correct":{"1":"А","2":"Б",...}}
 
+${DIFFICULTY_LEVEL_PROMPT}
+
 Rules:
 - All text in Russian
 - Use $...$ for inline LaTeX: $x^2 + 1$, $\\log_2 8$, $\\sin\\frac{\\pi}{6}$
 - Pick the most specific topic_slug from the list above
 - For informatics: code fragments go inside the stem as plain text
-- For physics: always keep correct units (м/с, кг, Н, Дж и т.п.)
-- difficulty: honest assessment — typical ЕНТ = 3`;
+- For physics: always keep correct units (м/с, кг, Н, Дж и т.п.)`;
 }
 
 /**

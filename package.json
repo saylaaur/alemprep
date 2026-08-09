@@ -17,6 +17,8 @@
     "gen:verify": "tsx --tsconfig tsconfig.scripts.json scripts/verify-questions.ts",
     "gen:verify-translation": "tsx --tsconfig tsconfig.scripts.json scripts/verify-translation.ts",
     "gen:insert": "tsx --tsconfig tsconfig.scripts.json scripts/insert-to-db.ts",
+    "gen:reclassify": "tsx --tsconfig tsconfig.scripts.json scripts/reclassify-topics.ts",
+    "gen:prune-topics": "tsx --tsconfig tsconfig.scripts.json scripts/prune-empty-topics.ts",
     "gen:all": "tsx --tsconfig tsconfig.scripts.json scripts/gen-all.ts",
     "gen:translate-all": "tsx --tsconfig tsconfig.scripts.json scripts/translate-all.ts"
   },

@@ -20,6 +20,7 @@ import {
   ReferenceQuestionSchema,
   getTopicSlugs,
   SUBJECT_LABEL,
+  DIFFICULTY_LEVEL_PROMPT,
   type GeneratedQuestion,
   type ReferenceQuestion,
   type TranscriptionItem,
@@ -105,7 +106,7 @@ Each variant must have:
 {
   "topic_slug": "<${slugs}>",
   "type": "<single|multi|matching — must match reference>",
-  "difficulty": <integer 1-5, similar to reference>,
+  "difficulty": <2|3|4 — see difficulty levels below>,
   "body": <body object>,
   "explanation": {"blocks": [{"type": "text"|"latex", "value": "..."}]}
 }
@@ -115,9 +116,11 @@ Body formats:
 • multi: {"stem":"...","options":[{"id":"a",...},...],"correct":["<id1>","<id2>"]}
 • matching: {"stem":"...","left":[{"id":"1","content":"..."},{"id":"2","content":"..."},{"id":"3","content":"..."},{"id":"4","content":"..."}],"right":["А ...","Б ...","В ...","Г ...","Д ..."],"correct":{"1":"А","2":"Б","3":"В","4":"Г"}}
 
+${DIFFICULTY_LEVEL_PROMPT}
+
 RULES:
 1. Change ALL specific values — numbers, roots, exponents, angles. NEVER copy originals.
-2. Keep the same mathematical topic, question structure, and similar difficulty.
+2. Keep the same mathematical topic and question structure; re-assess the difficulty level independently (aim for the same level as the reference, but judge the variant on its own).
 3. Use $...$ for inline LaTeX: $x^2 - 5x + 6 = 0$, $\\log_3 27$, $\\sin\\frac{\\pi}{4}$.
 4. All text in Russian.
 5. single: exactly 4 options (ids a/b/c/d), exactly one correct; wrong options must be plausible mistakes.

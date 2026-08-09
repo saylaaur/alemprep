@@ -213,11 +213,11 @@ export function displayName(profile: Profile | null): string | null {
 }
 
 export function subjectName(subject: Pick<Subject, 'name_ru' | 'name_kk'>, locale: Locale): string {
-  return locale === 'kk' ? subject.name_kk : subject.name_ru;
+  return locale === 'kk' ? (subject.name_kk ?? subject.name_ru) : subject.name_ru;
 }
 
 export function topicName(topic: Pick<Topic, 'name_ru' | 'name_kk'>, locale: Locale): string {
-  return locale === 'kk' ? topic.name_kk : topic.name_ru;
+  return locale === 'kk' ? (topic.name_kk ?? topic.name_ru) : topic.name_ru;
 }
 
 // ---- Progress data ----
@@ -339,7 +339,7 @@ export async function getProgressData(): Promise<ProgressData | null> {
       topicStatsMap.set(topicId, {
         topic_id: topicId,
         topic_name_ru: topic.name_ru,
-        topic_name_kk: topic.name_kk,
+        topic_name_kk: topic.name_kk ?? topic.name_ru,
         total: 0,
         correct: 0,
       });
@@ -361,7 +361,7 @@ export async function getProgressData(): Promise<ProgressData | null> {
       is_correct: a.is_correct,
       attempted_at: a.attempted_at,
       topic_name_ru: topic?.name_ru ?? '—',
-      topic_name_kk: topic?.name_kk ?? '—',
+      topic_name_kk: topic ? (topic.name_kk ?? topic.name_ru) : '—',
     };
   });
 
@@ -505,7 +505,7 @@ export async function getGamification(userId: string): Promise<Gamification | nu
         topicId,
         subjectId: topic?.subject_id ?? '',
         nameRu: topic?.name_ru ?? '—',
-        nameKk: topic?.name_kk ?? '—',
+        nameKk: topic ? (topic.name_kk ?? topic.name_ru) : '—',
         total: stat.total,
         correct: stat.correct,
         accuracy,
@@ -661,10 +661,10 @@ export async function getPairExamBlocks(
       subjectSlug: subject.slug,
       subjectId: subject.id,
       name_ru: subject.name_ru,
-      name_kk: subject.name_kk,
+      name_kk: subject.name_kk ?? subject.name_ru,
       topics: topicRows
         .filter((t) => t.subject_id === subject.id)
-        .map(({ id, name_ru, name_kk }) => ({ id, name_ru, name_kk })),
+        .map(({ id, name_ru, name_kk }) => ({ id, name_ru, name_kk: name_kk ?? name_ru })),
       questions: picked,
       shortfall,
     };
@@ -801,7 +801,7 @@ export async function getDiagnosticBaseline(userId: string): Promise<DiagnosticB
     for (const [topicId, stat] of byTopic) {
       const topic = topicMap.get(topicId);
       if (!topic) continue;
-      topicStats.push({ topicId, nameRu: topic.name_ru, nameKk: topic.name_kk, ...stat });
+      topicStats.push({ topicId, nameRu: topic.name_ru, nameKk: topic.name_kk ?? topic.name_ru, ...stat });
     }
   }
 

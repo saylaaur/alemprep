@@ -11,6 +11,8 @@ import {
   DIAGNOSTIC_BLOCK_COUNT,
   DIAGNOSTIC_BLOCK_MAX_SCORE,
   DIAGNOSTIC_PAIR_MAX_SCORE,
+  MATH_LITERACY_BLUEPRINT,
+  MATH_LITERACY_MAX_SCORE,
 } from './exam';
 import type { QuestionBody, QuestionType } from '@/types/db';
 
@@ -68,8 +70,16 @@ describe('DIAGNOSTIC_BLUEPRINT: константы', () => {
   it('pickBalancedByTopic работает с DIAGNOSTIC_BLUEPRINT', () => {
     const pool = makePool({ t1: { single: 6, multi: 1, matching: 1 } });
     const { picked, shortfall } = pickBalancedByTopic(pool, DIAGNOSTIC_BLUEPRINT);
+
     expect(picked).toHaveLength(8);
     expect(shortfall).toEqual([]);
+  });
+});
+
+describe('MATH_LITERACY_BLUEPRINT: константы', () => {
+  it('10 заданий, 10 баллов, только single (multi/matching в этом предмете не бывает)', () => {
+    expect(MATH_LITERACY_BLUEPRINT).toEqual([{ type: 'single', count: 10, points: 1 }]);
+    expect(MATH_LITERACY_MAX_SCORE).toBe(10);
   });
 });
 
