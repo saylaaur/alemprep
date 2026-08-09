@@ -20,12 +20,15 @@ import {
   SkipItemSchema,
   getTopicSlugs,
   SUBJECT_LABEL,
+  SUBJECT_VALUES,
+  AUTO_SUBJECT_PREFIX,
   DIFFICULTY_LEVEL_PROMPT,
   type TranscriptionItem,
 } from './lib/schema';
 import { resolveModel } from './lib/models';
 import { parseMultiItems } from './lib/multi-transcribe';
 import { referencesMissingVisual } from './lib/checks';
+import { applySubjectFilter, summarizeBySubject, UNDETERMINED_SUBJECT_REASON } from './lib/subject-filter';
 import {
   collectBatchResults,
   describeFailure,
@@ -59,14 +62,14 @@ function loadEnv(): void {
 function parseArgs(): {
   dir: string;
   limit: number;
-  subject: string;
+  subject: string | undefined;
   sync: boolean;
   multi: boolean;
 } {
   const args = process.argv.slice(2);
   let dir = '';
   let limit = Infinity;
-  let subject = 'math';
+  let subject: string | undefined;
   let sync = false;
   let multi = false;
   for (let i = 0; i < args.length; i++) {
@@ -148,19 +151,26 @@ Rules:
 - For physics: always keep correct units (м/с, кг, Н, Дж и т.п.)`;
 }
 
+function subjectTopicCatalog(): string {
+  return SUBJECT_VALUES.map((s) => `  ${s} — ${getTopicSlugs(s).join('|')}`).join('\n');
+}
+
 /**
  * --multi: изображение — разворот печатной книжки, несколько заданий на кадре.
- * В отличие от одиночного режима, возвращаем JSON-массив и явно предупреждаем
- * про рукописные пометки ученика и обрывки соседних страниц/колонок в кадре.
+ * Всегда просим модель определить subject у каждого задания отдельно (даже
+ * если --subject передан флагом) — фильтрация по флагу происходит потом, в
+ * коде (applySubjectFilter), а не здесь в промпте. Это ловит случайно
+ * подмешанные страницы другого предмета вместо того, чтобы молча пихать их в
+ * тему целевого предмета.
  */
-function buildMultiSystemInstruction(subject: string): string {
-  const label = SUBJECT_LABEL[subject] ?? 'mathematics';
-  const slugs = getTopicSlugs(subject).join('|');
-  return `You are a ${label} teacher transcribing ЕНТ (Unified National Testing, Kazakhstan) ${label} problems from a photographed page of a printed practice booklet.
+function buildMultiSystemInstruction(): string {
+  return `You are an experienced Kazakhstani ЕНТ (Unified National Testing) teacher — covering mathematics, physics, computer science (informatics), and mathematical literacy — transcribing test problems from a photographed page of a printed practice booklet.
 
 The image contains SEVERAL test problems (a two-column book spread). Extract ALL problems that are FULLY visible — condition and all answer options.
 
 Output ONLY a valid JSON array — no markdown, no code fences, just raw JSON. One entry per problem, in reading order.
+
+⚠️  DETERMINE THE SUBJECT OF EACH PROBLEM. The page header usually prints the subject name in Russian: МАТЕМАТИКА → "math", ФИЗИКА → "physics", ИНФОРМАТИКА → "informatics", МАТЕМАТИЧЕСКАЯ ГРАМОТНОСТЬ → "math-literacy". If the header is visible, use it. If there is no header (a continuation page bleeding in from the previous spread), determine the subject from the problem's own content: Python/SQL code, networks, encodings, binary/logic circuits → informatics; forces, current, gas laws, optics, and other physical quantities with units → physics; equations, functions, geometry, progressions, abstract algebra → math; everyday word problems about percentages, charts, diagrams, averages, real-world data → math-literacy. Report it in a "subject" field on EVERY extracted problem separately — a single spread can mix problems from different subjects, so never assume the whole image is one subject. If you cannot determine the subject with confidence, set "subject": null.
 
 ⚠️  DO NOT EXTRACT PROBLEMS THAT DEPEND ON A PICTURE — not even partially, not even if you can guess the rest. We have NO support for images in questions; a problem whose condition needs a picture, diagram, chart, or graph to understand (electrical circuits, geometric drawings, function graphs, image-based tables) is UNUSABLE no matter how well you transcribe its text. Watch for these exact phrases in the Russian text — any of them means the problem POINTS AT a picture that exists outside the text and MUST be skipped: "как показано на рисунке", "на схеме", "на графике", "изображён на" / "изображена на", "указаны на рисунке", "приведён на рисунке", "см. рис.". Do not confuse this with a problem that asks the student to build a graph themselves ("постройте график функции") — that one has no missing picture and stays. For each skipped problem, still emit an entry:
 {"skip": "graph", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
@@ -175,18 +185,22 @@ Output ONLY a valid JSON array — no markdown, no code fences, just raw JSON. O
 
 ⚠️  TWO-PART PROBLEMS. If one problem number presents two independently-answered parts, each with its OWN lettered options (e.g. "Найдите f(g(x)): A) B) C) D)" followed by "Найдите g(f(x)): E) F) G) H)"), extract them as TWO SEPARATE single-choice problems — one per lettered option set, each with the shared condition copied into its stem. Do NOT also emit a combined "multi" entry whose options are the sub-questions themselves — that produces a nonsensical question.
 
-If a problem is unclear or not a recognizable ${label} question, skip it the same way:
+If a problem is unclear or not a recognizable ЕНТ question, skip it the same way:
 {"skip": "unsupported", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
 
 Otherwise, for each transcribed problem:
 {
-  "topic_slug": "<${slugs}>",
+  "subject": "<math|physics|informatics|math-literacy|null>",
+  "topic_slug": "<pick from the list for the subject above>",
   "type": "<single|multi|matching>",
   "difficulty": <1–5: 1=trivial, 2=easy, 3=typical ЕНТ, 4=hard, 5=olympiad>,
   "body": { ... see formats below ... },
   "explanation": { "blocks": [{"type": "text"|"latex", "value": "..."}] },
   "source_file": "<PLACEHOLDER>"
 }
+
+Topic slugs by subject:
+${subjectTopicCatalog()}
 
 Body formats:
 • single  — {"stem":"...","options":[{"id":"a","content":"..."},{"id":"b","content":"..."},{"id":"c","content":"..."},{"id":"d","content":"..."}],"correct":"b"}
@@ -196,7 +210,7 @@ Body formats:
 Rules:
 - All text in Russian
 - Use $...$ for inline LaTeX: $x^2 + 1$, $\\log_2 8$, $\\sin\\frac{\\pi}{6}$
-- Pick the most specific topic_slug from the list above
+- Pick topic_slug only from the list of the subject you determined
 - For informatics: code fragments go inside the stem as plain text
 - For physics: always keep correct units (м/с, кг, Н, Дж и т.п.)
 - difficulty: honest assessment — typical ЕНТ = 3`;
@@ -365,7 +379,12 @@ async function transcribeImageMulti(
 async function main() {
   loadEnv();
 
-  const { dir, limit, subject, sync, multi } = parseArgs();
+  const args = parseArgs();
+  const { dir, limit, sync, multi } = args;
+  let { subject } = args;
+  if (subject === undefined && !multi) {
+    subject = 'math'; // историческое поведение одиночного режима: без --subject — математика
+  }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -403,7 +422,7 @@ async function main() {
   const system: Anthropic.Messages.MessageCreateParamsNonStreaming['system'] = [
     {
       type: 'text',
-      text: multi ? buildMultiSystemInstruction(subject) : buildSystemInstruction(subject),
+      text: multi ? buildMultiSystemInstruction() : buildSystemInstruction(subject ?? 'math'),
       cache_control: { type: 'ephemeral' },
     },
   ];
@@ -418,6 +437,8 @@ async function main() {
   let extracted = 0;
   let discardedBySchema = 0;
   let filteredGraphs = 0;
+  let filteredForeignSubject = 0;
+  let undeterminedSubject = 0;
   const costMultiplier = sync ? 1 : 0.5;
 
   function record(
@@ -472,6 +493,26 @@ async function main() {
         continue;
       }
 
+      if (!('skip' in item)) {
+        const subjectResult = applySubjectFilter(item, subject);
+        if (!subjectResult.keep) {
+          const filtered: TranscriptionItem = {
+            skip: 'unsupported',
+            reason: subjectResult.reason,
+            source_file: item.source_file,
+          };
+          results.push(filtered);
+          skipped++;
+          if (subjectResult.reason === UNDETERMINED_SUBJECT_REASON) {
+            undeterminedSubject++;
+          } else {
+            filteredForeignSubject++;
+          }
+          console.log(`  🚫  filtered(subject): ${filtered.reason}`);
+          continue;
+        }
+      }
+
       results.push(item);
       if ('skip' in item) {
         skipped++;
@@ -479,7 +520,7 @@ async function main() {
         console.log(`  ⏭  skip(${item.skip}): ${item.reason}`);
       } else {
         extracted++;
-        console.log(`  ✓  ${item.topic_slug} / ${item.type} / diff=${item.difficulty}`);
+        console.log(`  ✓  [${item.subject}] ${item.topic_slug} / ${item.type} / diff=${item.difficulty}`);
       }
     }
 
@@ -582,20 +623,30 @@ async function main() {
   const outDir = path.join(process.cwd(), 'scripts', 'references');
   fs.mkdirSync(outDir, { recursive: true });
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 16);
-  const outFile = path.join(outDir, `${subject}-${ts}.json`);
+  const filePrefix = subject ?? AUTO_SUBJECT_PREFIX;
+  const outFile = path.join(outDir, `${filePrefix}-${ts}.json`);
   fs.writeFileSync(outFile, JSON.stringify(results, null, 2));
 
   const totalCost = calcCost(totalInput, totalOutput, costMultiplier);
   const transcribed = multi ? extracted : files.length - skipped;
   if (multi) {
+    const subjectSummary = summarizeBySubject(results);
     console.log(`\n📊  Сводка:`);
     console.log(`   обработано изображений:        ${files.length}`);
     console.log(`   извлечено заданий:             ${extracted}`);
     console.log(
       `   пропущено из-за графики:       ${graphs + filteredGraphs} (модель: ${graphs}, фильтр: ${filteredGraphs})`,
     );
-    console.log(`   пропущено (прочее):            ${skipped - graphs - filteredGraphs}`);
+    console.log(`   пропущено (чужой предмет):     ${filteredForeignSubject}`);
+    console.log(`   предмет не определён:          ${undeterminedSubject}`);
+    console.log(
+      `   пропущено (прочее):            ${skipped - graphs - filteredGraphs - filteredForeignSubject - undeterminedSubject}`,
+    );
     console.log(`   отброшено схемой (невалидные): ${discardedBySchema}`);
+    console.log(`   📚  по предметам:`);
+    for (const s of SUBJECT_VALUES) {
+      console.log(`      ${s}: ${subjectSummary.bySubject[s]}`);
+    }
   } else {
     console.log(
       `\n✅  ${transcribed} transcribed, ${skipped} skipped (${graphs} graph, ${skipped - graphs} other)`,
