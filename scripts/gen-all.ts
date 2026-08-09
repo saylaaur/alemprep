@@ -2,7 +2,8 @@
  * Orchestrator: transcribe → generate → check → insert (one command)
  *
  * Usage:
- *   npm run gen:all -- --dir <path> --subject <slug> [--variants N] [--limit N] [--sync]
+ *   npm run gen:all -- --dir <path> --subject <slug> [--variants N] [--limit N] [--sync] [--multi]
+ *   npm run gen:all -- --dir <path> --multi [--variants N] [--limit N] [--sync] [--no-verify] [--publish]
  *
  * --subject can be omitted only together with --multi: the model then determines the
  * subject (math/physics/informatics/math-literacy) per extracted question on its own —
