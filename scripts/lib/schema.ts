@@ -57,6 +57,13 @@ export function getTopicSlugs(subject: string): readonly string[] {
   return SUBJECT_TOPIC_SLUGS[subject] ?? MATH_TOPIC_SLUGS;
 }
 
+export const SUBJECT_VALUES = ['math', 'physics', 'informatics', 'math-literacy'] as const;
+export const SubjectSchema = z.enum(SUBJECT_VALUES);
+export type Subject = z.infer<typeof SubjectSchema>;
+
+/** Префикс имени файла, когда транскрипция идёт без --subject (см. gen-all.ts). */
+export const AUTO_SUBJECT_PREFIX = 'mixed';
+
 /**
  * Уровни трудности из официальной спецификации НЦТ (один вариант: 50% базовый,
  * 30% средний, 20% высокий — scripts/data/official-topics.json:_difficulty).
@@ -110,6 +117,7 @@ export const QuestionBodySchema = z.union([
 
 export const ReferenceQuestionSchema = z.object({
   topic_slug: z.string().min(1), // валидируется против списка предмета в пайплайне + при insert
+  subject: SubjectSchema.nullable().optional(), // --multi: предмет, определённый моделью по странице
   type: z.enum(['single', 'multi', 'matching']),
   difficulty: z.number().int().min(1).max(5),
   body: QuestionBodySchema,
@@ -126,6 +134,7 @@ export const SkipItemSchema = z.object({
 
 export const GeneratedQuestionSchema = z.object({
   topic_slug: z.string().min(1), // валидируется против списка предмета в пайплайне + при insert
+  subject: SubjectSchema.nullable().optional(), // унаследован от reference, если был определён
   type: z.enum(['single', 'multi', 'matching']),
   difficulty: z.number().int().min(1).max(5),
   body: QuestionBodySchema,

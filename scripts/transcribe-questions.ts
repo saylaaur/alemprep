@@ -20,10 +20,15 @@ import {
   SkipItemSchema,
   getTopicSlugs,
   SUBJECT_LABEL,
+  SUBJECT_VALUES,
+  AUTO_SUBJECT_PREFIX,
   DIFFICULTY_LEVEL_PROMPT,
   type TranscriptionItem,
 } from './lib/schema';
 import { resolveModel } from './lib/models';
+import { parseMultiItems } from './lib/multi-transcribe';
+import { referencesMissingVisual } from './lib/checks';
+import { applySubjectFilter, summarizeBySubject, UNDETERMINED_SUBJECT_REASON } from './lib/subject-filter';
 import {
   collectBatchResults,
   describeFailure,
@@ -54,25 +59,33 @@ function loadEnv(): void {
   }
 }
 
-function parseArgs(): { dir: string; limit: number; subject: string; sync: boolean } {
+function parseArgs(): {
+  dir: string;
+  limit: number;
+  subject: string | undefined;
+  sync: boolean;
+  multi: boolean;
+} {
   const args = process.argv.slice(2);
   let dir = '';
   let limit = Infinity;
-  let subject = 'math';
+  let subject: string | undefined;
   let sync = false;
+  let multi = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--dir' && args[i + 1]) dir = expandPath(args[++i]);
     if (args[i] === '--limit' && args[i + 1]) limit = parseInt(args[++i], 10);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
     if (args[i] === '--sync') sync = true;
+    if (args[i] === '--multi') multi = true;
   }
   if (!dir) {
     console.error(
-      'Usage: npm run gen:transcribe -- --dir <path> [--subject math] [--limit N] [--sync]',
+      'Usage: npm run gen:transcribe -- --dir <path> [--subject math] [--limit N] [--sync] [--multi]',
     );
     process.exit(1);
   }
-  return { dir, limit, subject, sync };
+  return { dir, limit, subject, sync, multi };
 }
 
 function getMediaType(
@@ -138,8 +151,82 @@ Rules:
 - For physics: always keep correct units (м/с, кг, Н, Дж и т.п.)`;
 }
 
+function subjectTopicCatalog(): string {
+  return SUBJECT_VALUES.map((s) => `  ${s} — ${getTopicSlugs(s).join('|')}`).join('\n');
+}
+
+/**
+ * --multi: изображение — разворот печатной книжки, несколько заданий на кадре.
+ * Всегда просим модель определить subject у каждого задания отдельно (даже
+ * если --subject передан флагом) — фильтрация по флагу происходит потом, в
+ * коде (applySubjectFilter), а не здесь в промпте. Это ловит случайно
+ * подмешанные страницы другого предмета вместо того, чтобы молча пихать их в
+ * тему целевого предмета.
+ */
+function buildMultiSystemInstruction(): string {
+  return `You are an experienced Kazakhstani ЕНТ (Unified National Testing) teacher — covering mathematics, physics, computer science (informatics), and mathematical literacy — transcribing test problems from a photographed page of a printed practice booklet.
+
+The image contains SEVERAL test problems (a two-column book spread). Extract ALL problems that are FULLY visible — condition and all answer options.
+
+Output ONLY a valid JSON array — no markdown, no code fences, just raw JSON. One entry per problem, in reading order.
+
+⚠️  DETERMINE THE SUBJECT OF EACH PROBLEM. The page header usually prints the subject name in Russian: МАТЕМАТИКА → "math", ФИЗИКА → "physics", ИНФОРМАТИКА → "informatics", МАТЕМАТИЧЕСКАЯ ГРАМОТНОСТЬ → "math-literacy". If the header is visible, use it. If there is no header (a continuation page bleeding in from the previous spread), determine the subject from the problem's own content: Python/SQL code, networks, encodings, binary/logic circuits → informatics; forces, current, gas laws, optics, and other physical quantities with units → physics; equations, functions, geometry, progressions, abstract algebra → math; everyday word problems about percentages, charts, diagrams, averages, real-world data → math-literacy. Report it in a "subject" field on EVERY extracted problem separately — a single spread can mix problems from different subjects, so never assume the whole image is one subject. If you cannot determine the subject with confidence, set "subject": null.
+
+⚠️  DO NOT EXTRACT PROBLEMS THAT DEPEND ON A PICTURE — not even partially, not even if you can guess the rest. We have NO support for images in questions; a problem whose condition needs a picture, diagram, chart, or graph to understand (electrical circuits, geometric drawings, function graphs, image-based tables) is UNUSABLE no matter how well you transcribe its text. Watch for these exact phrases in the Russian text — any of them means the problem POINTS AT a picture that exists outside the text and MUST be skipped: "как показано на рисунке", "на схеме", "на графике", "изображён на" / "изображена на", "указаны на рисунке", "приведён на рисунке", "см. рис.". Do not confuse this with a problem that asks the student to build a graph themselves ("постройте график функции") — that one has no missing picture and stays. For each skipped problem, still emit an entry:
+{"skip": "graph", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
+
+⚠️  THIS APPLIES TO EVERY SUB-PART, NOT JUST THE WHOLE PROBLEM. A picture-dependent setup (e.g. a circuit diagram) is often followed by SEVERAL short sub-questions that each ask for one quantity ("Общее сопротивление цепи", "Значение силы тока $I_1$", "Мощность резистора R"). Each of those sub-questions is JUST AS UNUSABLE as the main problem — do not extract any of them as separate stand-alone problems, and NEVER invent or guess a numeric answer for one just because it looks like a normal multiple-choice question. Skip the whole group with one "skip":"graph" entry.
+
+⚠️  IGNORE HANDWRITTEN MARKS. Circled letters, checkmarks, crossed-out text, and margin calculations are a STUDENT'S OWN ANSWERS and MAY BE WRONG. Determine the correct answer yourself by solving the problem — never read it off the handwritten marks.
+
+⚠️  IGNORE fragments of a neighboring page or column bleeding in at the edge of the photo — only take problems visible IN FULL (condition + all options). Do not take a problem that shows a number but not its full text.
+
+⚠️  SELF-CONTAINED STEMS. Some problems share a preceding context block (a passage, a described figure with given measurements, a shared condition) that applies to several numbered problems at once. Each problem you extract MUST stand alone: copy the relevant shared context (the given numbers, the described figure, the passage) INTO that problem's own stem. Never rely on a previous array entry to supply missing information — a problem shown by itself, without its neighbors, must still be fully solvable.
+
+⚠️  TWO-PART PROBLEMS. If one problem number presents two independently-answered parts, each with its OWN lettered options (e.g. "Найдите f(g(x)): A) B) C) D)" followed by "Найдите g(f(x)): E) F) G) H)"), extract them as TWO SEPARATE single-choice problems — one per lettered option set, each with the shared condition copied into its stem. Do NOT also emit a combined "multi" entry whose options are the sub-questions themselves — that produces a nonsensical question.
+
+If a problem is unclear or not a recognizable ЕНТ question, skip it the same way:
+{"skip": "unsupported", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
+
+Otherwise, for each transcribed problem:
+{
+  "subject": "<math|physics|informatics|math-literacy|null>",
+  "topic_slug": "<pick from the list for the subject above>",
+  "type": "<single|multi|matching>",
+  "difficulty": <1–5: 1=trivial, 2=easy, 3=typical ЕНТ, 4=hard, 5=olympiad>,
+  "body": { ... see formats below ... },
+  "explanation": { "blocks": [{"type": "text"|"latex", "value": "..."}] },
+  "source_file": "<PLACEHOLDER>"
+}
+
+Topic slugs by subject:
+${subjectTopicCatalog()}
+
+Body formats:
+• single  — {"stem":"...","options":[{"id":"a","content":"..."},{"id":"b","content":"..."},{"id":"c","content":"..."},{"id":"d","content":"..."}],"correct":"b"}
+• multi   — {"stem":"...","options":[...],"correct":["a","c"]}
+• matching — {"stem":"...","left":[{"id":"1","content":"..."},...],"right":["А текст","Б текст",...],"correct":{"1":"А","2":"Б",...}}
+
+Rules:
+- All text in Russian
+- Use $...$ for inline LaTeX: $x^2 + 1$, $\\log_2 8$, $\\sin\\frac{\\pi}{6}$
+- Pick topic_slug only from the list of the subject you determined
+- For informatics: code fragments go inside the stem as plain text
+- For physics: always keep correct units (м/с, кг, Н, Дж и т.п.)
+- difficulty: honest assessment — typical ЕНТ = 3`;
+}
+
 interface ParsedTranscription {
   item: TranscriptionItem;
+  inputTok: number;
+  outputTok: number;
+  cacheRead: number;
+  cacheWrite: number;
+}
+
+interface ParsedMultiTranscription {
+  items: TranscriptionItem[];
+  discardedReasons: string[];
   inputTok: number;
   outputTok: number;
   cacheRead: number;
@@ -150,14 +237,18 @@ function buildTranscribeParams(
   imagePath: string,
   model: string,
   system: Anthropic.Messages.MessageCreateParamsNonStreaming['system'],
+  multi = false,
 ): Anthropic.Messages.MessageCreateParamsNonStreaming {
   const filename = path.basename(imagePath);
   const imageData = fs.readFileSync(imagePath).toString('base64');
   const mediaType = getMediaType(imagePath);
+  const text = multi
+    ? `Extract every fully visible ЕНТ problem from this page. Set source_file to "${filename}" for each item.`
+    : `Transcribe this ЕНТ problem. Set source_file to "${filename}".`;
 
   return {
     model,
-    max_tokens: 2048,
+    max_tokens: multi ? 8192 : 2048,
     system,
     messages: [
       {
@@ -169,7 +260,7 @@ function buildTranscribeParams(
           },
           {
             type: 'text',
-            text: `Transcribe this ЕНТ problem. Set source_file to "${filename}".`,
+            text,
           },
         ],
       },
@@ -244,10 +335,56 @@ async function transcribeImage(
   return parseTranscribeResponse(response, filename);
 }
 
+function parseTranscribeResponseMulti(
+  message: Anthropic.Message,
+  filename: string,
+): ParsedMultiTranscription {
+  const inputTok = message.usage.input_tokens;
+  const outputTok = message.usage.output_tokens;
+  const cacheRead = message.usage.cache_read_input_tokens ?? 0;
+  const cacheWrite = message.usage.cache_creation_input_tokens ?? 0;
+  const raw = message.content
+    .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
+    .map((b) => b.text)
+    .join('')
+    .trim();
+
+  const { items, discardedReasons, parseError } = parseMultiItems(raw, filename);
+  if (parseError) {
+    return {
+      items: [{ skip: 'unsupported', reason: parseError, source_file: filename }],
+      discardedReasons: [],
+      inputTok,
+      outputTok,
+      cacheRead,
+      cacheWrite,
+    };
+  }
+
+  return { items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite };
+}
+
+async function transcribeImageMulti(
+  client: Anthropic,
+  imagePath: string,
+  model: string,
+  system: Anthropic.Messages.MessageCreateParamsNonStreaming['system'],
+): Promise<ParsedMultiTranscription> {
+  const filename = path.basename(imagePath);
+  const params = buildTranscribeParams(imagePath, model, system, true);
+  const response = await client.messages.create(params);
+  return parseTranscribeResponseMulti(response, filename);
+}
+
 async function main() {
   loadEnv();
 
-  const { dir, limit, subject, sync } = parseArgs();
+  const args = parseArgs();
+  const { dir, limit, sync, multi } = args;
+  let { subject } = args;
+  if (subject === undefined && !multi) {
+    subject = 'math'; // историческое поведение одиночного режима: без --subject — математика
+  }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -276,12 +413,18 @@ async function main() {
   const mode = sync ? 'sync' : 'batch (−50%)';
 
   console.log(`\n📂  ${dir}`);
-  console.log(`📋  Processing ${files.length} image(s)  [model: ${model}, mode: ${mode}]`);
+  console.log(
+    `📋  Processing ${files.length} image(s)  [model: ${model}, mode: ${mode}${multi ? ', multi' : ''}]`,
+  );
   console.log(`   ⚠️  Paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output\n`);
 
   const anthropic = new Anthropic({ apiKey });
   const system: Anthropic.Messages.MessageCreateParamsNonStreaming['system'] = [
-    { type: 'text', text: buildSystemInstruction(subject), cache_control: { type: 'ephemeral' } },
+    {
+      type: 'text',
+      text: multi ? buildMultiSystemInstruction() : buildSystemInstruction(subject ?? 'math'),
+      cache_control: { type: 'ephemeral' },
+    },
   ];
 
   const results: TranscriptionItem[] = [];
@@ -291,6 +434,11 @@ async function main() {
   let totalCacheWrite = 0;
   let skipped = 0;
   let graphs = 0;
+  let extracted = 0;
+  let discardedBySchema = 0;
+  let filteredGraphs = 0;
+  let filteredForeignSubject = 0;
+  let undeterminedSubject = 0;
   const costMultiplier = sync ? 1 : 0.5;
 
   function record(
@@ -318,20 +466,99 @@ async function main() {
     }
   }
 
+  function recordMulti(
+    items: TranscriptionItem[],
+    discardedReasons: string[],
+    inputTok: number,
+    outputTok: number,
+    cacheRead: number,
+    cacheWrite: number,
+  ): void {
+    totalInput += inputTok;
+    totalOutput += outputTok;
+    totalCacheRead += cacheRead;
+    totalCacheWrite += cacheWrite;
+
+    for (const item of items) {
+      if (!('skip' in item) && referencesMissingVisual(item)) {
+        const filtered: TranscriptionItem = {
+          skip: 'graph',
+          reason: `Ссылается на отсутствующий визуальный материал (детерминантный фильтр): "${item.body.stem.slice(0, 60)}"`,
+          source_file: item.source_file,
+        };
+        results.push(filtered);
+        skipped++;
+        filteredGraphs++;
+        console.log(`  🚫  filtered(graph): ${filtered.reason}`);
+        continue;
+      }
+
+      if (!('skip' in item)) {
+        const subjectResult = applySubjectFilter(item, subject);
+        if (!subjectResult.keep) {
+          const filtered: TranscriptionItem = {
+            skip: 'unsupported',
+            reason: subjectResult.reason,
+            source_file: item.source_file,
+          };
+          results.push(filtered);
+          skipped++;
+          if (subjectResult.reason === UNDETERMINED_SUBJECT_REASON) {
+            undeterminedSubject++;
+          } else {
+            filteredForeignSubject++;
+          }
+          console.log(`  🚫  filtered(subject): ${filtered.reason}`);
+          continue;
+        }
+      }
+
+      results.push(item);
+      if ('skip' in item) {
+        skipped++;
+        if (item.skip === 'graph') graphs++;
+        console.log(`  ⏭  skip(${item.skip}): ${item.reason}`);
+      } else {
+        extracted++;
+        console.log(`  ✓  [${item.subject}] ${item.topic_slug} / ${item.type} / diff=${item.difficulty}`);
+      }
+    }
+
+    for (const reason of discardedReasons) {
+      discardedBySchema++;
+      console.log(`  ❌  discarded (schema): ${reason}`);
+    }
+  }
+
   if (sync) {
     for (const file of files) {
-      process.stdout.write(`  ${file}  …  `);
+      process.stdout.write(`  ${file}  …  ${multi ? '\n' : ''}`);
       try {
-        const { item, inputTok, outputTok, cacheRead, cacheWrite } = await transcribeImage(
-          anthropic,
-          path.join(dir, file),
-          model,
-          system,
-        );
-        record(item, inputTok, outputTok, cacheRead, cacheWrite);
+        if (multi) {
+          const { items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite } =
+            await transcribeImageMulti(anthropic, path.join(dir, file), model, system);
+          recordMulti(items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite);
+        } else {
+          const { item, inputTok, outputTok, cacheRead, cacheWrite } = await transcribeImage(
+            anthropic,
+            path.join(dir, file),
+            model,
+            system,
+          );
+          record(item, inputTok, outputTok, cacheRead, cacheWrite);
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        record({ skip: 'unsupported', reason: `API error: ${msg}`, source_file: file }, 0, 0, 0, 0);
+        const errorItem: TranscriptionItem = {
+          skip: 'unsupported',
+          reason: `API error: ${msg}`,
+          source_file: file,
+        };
+        if (multi) {
+          recordMulti([errorItem], [], 0, 0, 0, 0);
+        } else {
+          record(errorItem, 0, 0, 0, 0);
+        }
         console.log(`❌  ${msg}`);
       }
     }
@@ -339,7 +566,7 @@ async function main() {
     const built = files.map((file, i) => ({
       customId: indexCustomId(i),
       file,
-      params: buildTranscribeParams(path.join(dir, file), model, system),
+      params: buildTranscribeParams(path.join(dir, file), model, system, multi),
     }));
 
     console.log(`📦  Submitting batch of ${built.length} request(s)…`);
@@ -364,22 +591,31 @@ async function main() {
     );
 
     for (const { item: file, result } of mapped) {
-      process.stdout.write(`  ${file}  …  `);
+      process.stdout.write(`  ${file}  …  ${multi ? '\n' : ''}`);
       if (isSucceeded(result)) {
-        const { item, inputTok, outputTok, cacheRead, cacheWrite } = parseTranscribeResponse(
-          result.result.message,
-          file,
-        );
-        record(item, inputTok, outputTok, cacheRead, cacheWrite);
+        if (multi) {
+          const { items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite } =
+            parseTranscribeResponseMulti(result.result.message, file);
+          recordMulti(items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite);
+        } else {
+          const { item, inputTok, outputTok, cacheRead, cacheWrite } = parseTranscribeResponse(
+            result.result.message,
+            file,
+          );
+          record(item, inputTok, outputTok, cacheRead, cacheWrite);
+        }
       } else {
         const reason = describeFailure(result);
-        record(
-          { skip: 'unsupported', reason: `batch: ${reason}`, source_file: file },
-          0,
-          0,
-          0,
-          0,
-        );
+        const errorItem: TranscriptionItem = {
+          skip: 'unsupported',
+          reason: `batch: ${reason}`,
+          source_file: file,
+        };
+        if (multi) {
+          recordMulti([errorItem], [], 0, 0, 0, 0);
+        } else {
+          record(errorItem, 0, 0, 0, 0);
+        }
       }
     }
   }
@@ -387,14 +623,35 @@ async function main() {
   const outDir = path.join(process.cwd(), 'scripts', 'references');
   fs.mkdirSync(outDir, { recursive: true });
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 16);
-  const outFile = path.join(outDir, `${subject}-${ts}.json`);
+  const filePrefix = subject ?? AUTO_SUBJECT_PREFIX;
+  const outFile = path.join(outDir, `${filePrefix}-${ts}.json`);
   fs.writeFileSync(outFile, JSON.stringify(results, null, 2));
 
   const totalCost = calcCost(totalInput, totalOutput, costMultiplier);
-  const transcribed = files.length - skipped;
-  console.log(
-    `\n✅  ${transcribed} transcribed, ${skipped} skipped (${graphs} graph, ${skipped - graphs} other)`,
-  );
+  const transcribed = multi ? extracted : files.length - skipped;
+  if (multi) {
+    const subjectSummary = summarizeBySubject(results);
+    console.log(`\n📊  Сводка:`);
+    console.log(`   обработано изображений:        ${files.length}`);
+    console.log(`   извлечено заданий:             ${extracted}`);
+    console.log(
+      `   пропущено из-за графики:       ${graphs + filteredGraphs} (модель: ${graphs}, фильтр: ${filteredGraphs})`,
+    );
+    console.log(`   пропущено (чужой предмет):     ${filteredForeignSubject}`);
+    console.log(`   предмет не определён:          ${undeterminedSubject}`);
+    console.log(
+      `   пропущено (прочее):            ${skipped - graphs - filteredGraphs - filteredForeignSubject - undeterminedSubject}`,
+    );
+    console.log(`   отброшено схемой (невалидные): ${discardedBySchema}`);
+    console.log(`   📚  по предметам:`);
+    for (const s of SUBJECT_VALUES) {
+      console.log(`      ${s}: ${subjectSummary.bySubject[s]}`);
+    }
+  } else {
+    console.log(
+      `\n✅  ${transcribed} transcribed, ${skipped} skipped (${graphs} graph, ${skipped - graphs} other)`,
+    );
+  }
   console.log(
     `💰  Tokens: ${totalInput} in / ${totalOutput} out  ~$${totalCost.toFixed(4)} USD  [${model}, ${sync ? 'standard' : 'batch −50%'} rate]`,
   );

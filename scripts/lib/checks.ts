@@ -8,6 +8,84 @@ import {
   type MatchingBody,
 } from './schema';
 
+/**
+ * Ссылки на визуальный материал, которого у нас нет (никогда не на само слово
+ * «график»/«таблица» — иначе ловим и «постройте график функции», где ученик
+ * строит график сам, а не смотрит на готовый).
+ */
+const VISUAL_REFERENCE_PATTERNS: RegExp[] = [
+  /на\s+рисун/,
+  /см\.?\s*рис/,
+  /как\s+показан/,
+  /на\s+схем/,
+  /на\s+график/,
+  /на\s+чертеж/,
+  /на\s+диаграмм/,
+  // причастие «изображён/-а/-о/-ы», но не существительное «изображение/-ия/-ию»
+  /изображен(?!и)/,
+  /указан[а-я]*\s+на\s/,
+  /привед[а-я]*\s+на\s/,
+  /в\s+таблиц/,
+  // модель иногда честно признаётся в пояснении, что решает без картинки
+  // («без полной схемы... точное решение невозможно, однако ответ указан как...»)
+  /без\s+(?:\S+\s+){0,2}рисун/,
+  /без\s+(?:\S+\s+){0,2}схем/,
+  /без\s+(?:\S+\s+){0,2}график/,
+  /без\s+(?:\S+\s+){0,2}чертеж/,
+  /без\s+(?:\S+\s+){0,2}диаграмм/,
+];
+
+function normalizeForVisualCheck(text: string): string {
+  return text.toLowerCase().replace(/ё/g, 'е');
+}
+
+function bodyTexts(body: QuestionBody): string[] {
+  const texts: string[] = [(body as { stem: string }).stem];
+  const b = body as Record<string, unknown>;
+
+  if (Array.isArray(b.options)) {
+    for (const opt of b.options as Array<{ content?: string }>) {
+      if (typeof opt.content === 'string') texts.push(opt.content);
+    }
+  }
+  if (Array.isArray(b.left)) {
+    for (const item of b.left as Array<{ content?: string }>) {
+      if (typeof item.content === 'string') texts.push(item.content);
+    }
+  }
+  if (Array.isArray(b.right)) {
+    for (const r of b.right as string[]) {
+      if (typeof r === 'string') texts.push(r);
+    }
+  }
+
+  return texts;
+}
+
+/**
+ * true, если stem, варианты ответа (для matching — также left/right) ИЛИ
+ * пояснение ссылаются на рисунок/схему/график/чертёж/диаграмму/таблицу,
+ * приведённые в оригинале. У нас нет поддержки изображений в заданиях —
+ * такой вопрос нерешаем и должен быть отброшен, даже если прошёл Zod-валидацию.
+ *
+ * Пояснение проверяем не просто для полноты: на живом прогоне модель иногда
+ * зачищает ссылку на картинку из stem/options (условие выглядит валидно —
+ * «Работа газа при переходе из состояния A в состояние B равна» без данных),
+ * но пояснение всё равно выдаёт источник — «На графике показаны состояния
+ * A(V, 2P) и B(3V, 2P)». Без данных из графика condition нерешаем, и это
+ * видно только в explanation.
+ */
+export function referencesMissingVisual(question: {
+  body: QuestionBody;
+  explanation: ExplanationType;
+}): boolean {
+  const texts = [
+    ...bodyTexts(question.body),
+    ...question.explanation.blocks.map((b) => b.value),
+  ].map(normalizeForVisualCheck);
+  return texts.some((text) => VISUAL_REFERENCE_PATTERNS.some((re) => re.test(text)));
+}
+
 function stemOf(q: GeneratedQuestion): string {
   return ((q.body as { stem?: string }).stem ?? '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
@@ -67,6 +145,11 @@ export function validateAndFilter(questions: GeneratedQuestion[]): CheckResult {
   const seenStems = new Set<string>();
 
   for (const q of questions) {
+    if (referencesMissingVisual(q)) {
+      rejected.push({ question: q, reason: 'References missing visual material' });
+      continue;
+    }
+
     const latexErr = latexError(q);
     if (latexErr) {
       rejected.push({ question: q, reason: `LaTeX error: ${latexErr}` });
