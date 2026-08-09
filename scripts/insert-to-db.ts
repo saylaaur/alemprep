@@ -18,10 +18,13 @@ import * as path from 'path';
 import * as os from 'os';
 import {
   GeneratedQuestionSchema,
+  ReferenceQuestionSchema,
   TranslatedQuestionSchema,
   type GeneratedQuestion,
+  type ReferenceQuestion,
   type TranslatedQuestion,
 } from './lib/schema';
+import { resolveTopic } from './lib/topic-resolve';
 import type { Locale } from '@/types/db';
 
 function expandPath(p: string): string {
@@ -80,45 +83,20 @@ function createServiceClient(url: string, key: string) {
 
 type SupabaseServiceClient = ReturnType<typeof createServiceClient>;
 
-async function insertRuQuestions(
+/** Тянет subjects+topics для одного предмета; null (с warn) если предмет не найден в БД. */
+async function fetchTopicMap(
   supabase: SupabaseServiceClient,
-  rawBatch: unknown[],
-  subject: string,
-  publish: boolean,
-): Promise<void> {
-  const questions: GeneratedQuestion[] = [];
-  for (const item of rawBatch) {
-    const r = GeneratedQuestionSchema.safeParse(item);
-    if (r.success) {
-      questions.push(r.data);
-    } else {
-      const src = (item as Record<string, unknown>).variant_of ?? '?';
-      console.warn(
-        `⚠️  Skipping invalid question (${String(src)}): ${r.error.issues[0]?.message ?? 'unknown'}`,
-      );
-    }
-  }
-
-  if (questions.length === 0) {
-    console.error('\n❌  No valid questions in input file.\n');
-    process.exit(1);
-  }
-
-  console.log(
-    `📋  Inserting ${questions.length} questions (subject: ${subject}, language: ru, is_published: ${publish})\n`,
-  );
-
+  subjectSlug: string,
+): Promise<ReadonlyMap<string, string> | null> {
   const { data: subjectRow, error: subjectErr } = await supabase
     .from('subjects')
     .select('id')
-    .eq('slug', subject)
+    .eq('slug', subjectSlug)
     .single<SubjectRow>();
 
   if (subjectErr || !subjectRow) {
-    console.error(
-      `\n❌  Subject "${subject}" not found in DB: ${subjectErr?.message ?? 'no data'}\n`,
-    );
-    process.exit(1);
+    console.warn(`  ⚠️  Предмет "${subjectSlug}" не найден в БД: ${subjectErr?.message ?? 'no data'}`);
+    return null;
   }
 
   const { data: topicRows, error: topicsErr } = await supabase
@@ -127,27 +105,78 @@ async function insertRuQuestions(
     .eq('subject_id', subjectRow.id);
 
   if (topicsErr || !topicRows) {
-    console.error(`\n❌  Failed to fetch topics: ${topicsErr?.message ?? 'no data'}\n`);
+    console.warn(`  ⚠️  Не удалось получить темы для "${subjectSlug}": ${topicsErr?.message ?? 'no data'}`);
+    return null;
+  }
+
+  return new Map((topicRows as TopicRow[]).map((t) => [t.slug, t.id]));
+}
+
+async function insertRuQuestions(
+  supabase: SupabaseServiceClient,
+  rawBatch: unknown[],
+  subject: string,
+  publish: boolean,
+): Promise<void> {
+  type InsertCandidate = GeneratedQuestion | ReferenceQuestion;
+  const questions: InsertCandidate[] = [];
+  for (const item of rawBatch) {
+    const genResult = GeneratedQuestionSchema.safeParse(item);
+    if (genResult.success) {
+      questions.push(genResult.data);
+      continue;
+    }
+    const refResult = ReferenceQuestionSchema.safeParse(item);
+    if (refResult.success) {
+      questions.push(refResult.data);
+      continue;
+    }
+    const record = item as Record<string, unknown>;
+    const src = record.variant_of ?? record.source_file ?? '?';
+    console.warn(
+      `⚠️  Skipping invalid question (${String(src)}): ${genResult.error.issues[0]?.message ?? 'unknown'}`,
+    );
+  }
+
+  if (questions.length === 0) {
+    console.error('\n❌  No valid questions in input file.\n');
     process.exit(1);
   }
 
-  const topicMap = new Map<string, string>(
-    (topicRows as TopicRow[]).map((t) => [t.slug, t.id]),
+  console.log(
+    `📋  Inserting ${questions.length} questions (default subject: ${subject}, language: ru, is_published: ${publish})\n`,
   );
+
+  const neededSubjects = new Set<string>([subject]);
+  for (const q of questions) {
+    if (q.subject) neededSubjects.add(q.subject);
+  }
+
+  const topicMapsBySubject = new Map<string, ReadonlyMap<string, string> | null>();
+  for (const s of neededSubjects) {
+    topicMapsBySubject.set(s, await fetchTopicMap(supabase, s));
+  }
 
   let inserted = 0;
   let failed = 0;
 
   for (const [i, q] of questions.entries()) {
-    const topicId = topicMap.get(q.topic_slug);
-    if (!topicId) {
-      console.warn(`  ⚠️  No DB topic for slug "${q.topic_slug}" — skipped`);
+    const resolution = resolveTopic(q, subject, topicMapsBySubject);
+    if (resolution.kind === 'unknown_subject') {
+      console.warn(`  ⚠️  Предмет "${resolution.subject}" недоступен в БД — задача пропущена`);
+      failed++;
+      continue;
+    }
+    if (resolution.kind === 'unknown_topic') {
+      console.warn(
+        `  ⚠️  No DB topic for slug "${resolution.topicSlug}" (${resolution.subject}) — skipped`,
+      );
       failed++;
       continue;
     }
 
     const { error } = await supabase.from('questions').insert({
-      topic_id: topicId,
+      topic_id: resolution.topicId,
       context_id: null,
       source_question_id: null,
       language: 'ru',
@@ -172,8 +201,8 @@ async function insertRuQuestions(
   console.log(`\n\n✅  Inserted: ${inserted}  Failed: ${failed}  Total: ${questions.length}`);
   console.log(
     publish
-      ? `   Subject: ${subject}  |  is_published: true  |  Задачи уже ЖИВЫЕ на сайте ✅\n`
-      : `   Subject: ${subject}  |  is_published: false  |  Ready for review at /admin/review\n`,
+      ? `   Subjects: ${[...neededSubjects].join(', ')}  |  is_published: true  |  Задачи уже ЖИВЫЕ на сайте ✅\n`
+      : `   Subjects: ${[...neededSubjects].join(', ')}  |  is_published: false  |  Ready for review at /admin/review\n`,
   );
 }
 
