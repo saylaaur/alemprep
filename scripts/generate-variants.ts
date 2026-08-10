@@ -9,6 +9,10 @@
  * Default mode batches one request per reference into a single Message Batches API call
  * (−50% cost, separate rate limit). --sync falls back to the old one-request-per-reference loop.
  *
+ * If a run dies mid-poll (network outage, etc.), the batch keeps processing on Anthropic's side —
+ * the failure prints a command to pick it back up without resubmitting (and repaying):
+ *   npm run gen:variants -- --input <same file> [--subject math] --resume msgbatch_xxx
+ *
  * ⚠️  Uses paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output (batch: half that)
  */
 import Anthropic from '@anthropic-ai/sdk';
@@ -33,6 +37,8 @@ import {
   indexCustomId,
   isSucceeded,
   mapResultsByCustomId,
+  printResumeHint,
+  saveBatchState,
   submitAndAwaitBatch,
 } from './lib/batch';
 
@@ -71,25 +77,33 @@ function loadEnv(): void {
   }
 }
 
-function parseArgs(): { input: string; variants: number; subject: string; sync: boolean } {
+function parseArgs(): {
+  input: string;
+  variants: number;
+  subject: string;
+  sync: boolean;
+  resume: string | undefined;
+} {
   const args = process.argv.slice(2);
   let input = '';
   let variants = 3;
   let subject = 'math';
   let sync = false;
+  let resume: string | undefined;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--input' && args[i + 1]) input = expandPath(args[++i]);
     if (args[i] === '--variants' && args[i + 1]) variants = parseInt(args[++i], 10);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
     if (args[i] === '--sync') sync = true;
+    if (args[i] === '--resume' && args[i + 1]) resume = args[++i];
   }
   if (!input) {
     console.error(
-      'Usage: npm run gen:variants -- --input <path.json> [--subject math] [--variants N] [--sync]',
+      'Usage: npm run gen:variants -- --input <path.json> [--subject math] [--variants N] [--sync] [--resume <batchId>]',
     );
     process.exit(1);
   }
-  return { input, variants, subject, sync };
+  return { input, variants, subject, sync, resume };
 }
 
 function buildSystemInstruction(subject: string): string {
@@ -231,7 +245,7 @@ async function generateVariants(
 async function main() {
   loadEnv();
 
-  const { input, variants: numVariants, subject, sync } = parseArgs();
+  const { input, variants: numVariants, subject, sync, resume } = parseArgs();
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -323,30 +337,53 @@ async function main() {
       }
     }
   } else {
-    const built = references.map((ref, i) => ({
-      customId: indexCustomId(i),
-      ref,
-      params: buildGenerateParams(ref, variantCountFor(ref, numVariants), model, system),
-    }));
+    const items = references.map((ref, i) => ({ customId: indexCustomId(i), ref }));
+    // --resume: the batch already exists on Anthropic's side — skip re-sending.
+    const requests = resume
+      ? []
+      : items.map(({ customId, ref }) => ({
+          custom_id: customId,
+          params: buildGenerateParams(ref, variantCountFor(ref, numVariants), model, system),
+        }));
 
-    console.log(`📦  Submitting batch of ${built.length} request(s)…`);
-    const batch = await submitAndAwaitBatch(
-      anthropic,
-      built.map(({ customId, params }) => ({ custom_id: customId, params })),
-      {
+    let trackedBatchId = resume;
+    let resultsMap: Map<string, Anthropic.Messages.MessageBatchIndividualResponse>;
+    try {
+      if (resume) {
+        console.log(`♻️  Resuming batch ${resume} — skipping submission`);
+      } else {
+        console.log(`📦  Submitting batch of ${requests.length} request(s)…`);
+      }
+      const batch = await submitAndAwaitBatch(anthropic, requests, {
+        resumeBatchId: resume,
+        onSubmitted: (b) => {
+          trackedBatchId = b.id;
+          const file = saveBatchState({
+            batchId: b.id,
+            step: 'generate',
+            subject,
+            dir: input,
+            createdAt: new Date().toISOString(),
+          });
+          console.log(`   📎  batch id saved: ${b.id} → ${file}`);
+        },
         onPoll: (b) =>
           console.log(
             `   …  batch ${b.id} still ${b.processing_status} (${b.request_counts.succeeded} done, ${b.request_counts.processing} processing)`,
           ),
-      },
-    );
-    console.log(
-      `   ✓  batch ${batch.id} ended — ${batch.request_counts.succeeded} succeeded, ${batch.request_counts.errored} errored, ${batch.request_counts.expired} expired, ${batch.request_counts.canceled} canceled\n`,
-    );
+      });
+      console.log(
+        `   ✓  batch ${batch.id} ended — ${batch.request_counts.succeeded} succeeded, ${batch.request_counts.errored} errored, ${batch.request_counts.expired} expired, ${batch.request_counts.canceled} canceled\n`,
+      );
 
-    const resultsMap = await collectBatchResults(anthropic, batch.id);
+      resultsMap = await collectBatchResults(anthropic, batch.id);
+    } catch (err) {
+      if (trackedBatchId) printResumeHint('gen:variants', trackedBatchId);
+      throw err;
+    }
+
     const mapped = mapResultsByCustomId(
-      built.map(({ customId, ref }) => ({ customId, item: ref })),
+      items.map(({ customId, ref }) => ({ customId, item: ref })),
       resultsMap,
     );
 

@@ -25,6 +25,7 @@ scripts/verified/
 scripts/translated/
 scripts/verified-translations/
 scripts/insert-batch.sql
+scripts/.batches/
 
 # Подготовленные фото (scripts/prepare-photos.ts) — те же материалы НЦТ, только перекодированные.
 # --out может называться как угодно — покрываем и дефолтное имя, и вариант scripts/photos*/.

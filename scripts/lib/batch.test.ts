@@ -1,11 +1,22 @@
 import { describe, expect, it, vi } from 'vitest';
-import type Anthropic from '@anthropic-ai/sdk';
+import Anthropic, {
+  APIConnectionError,
+  AuthenticationError,
+  InternalServerError,
+  NotFoundError,
+  PermissionDeniedError,
+  RateLimitError,
+} from '@anthropic-ai/sdk';
 import {
+  collectBatchResults,
+  DEFAULT_RETRY_DELAYS_MS,
   describeFailure,
   indexCustomId,
   isSucceeded,
+  isTransientError,
   mapResultsByCustomId,
   pollUntilEnded,
+  withRetry,
 } from './batch';
 
 type Batch = Anthropic.Messages.MessageBatch;
@@ -175,5 +186,205 @@ describe('pollUntilEnded', () => {
     await expect(
       pollUntilEnded(retrieve, { pollIntervalMs: 2, maxWaitMs: 5 }),
     ).rejects.toThrow(/did not finish/);
+  });
+
+  it('retries a transient failure on retrieve() and still succeeds', async () => {
+    let calls = 0;
+    const retrieve = vi.fn(async () => {
+      calls++;
+      if (calls <= 2) throw new APIConnectionError({ message: 'network blip' });
+      return makeBatch('ended');
+    });
+
+    const result = await pollUntilEnded(retrieve, {
+      pollIntervalMs: 1,
+      retry: { retryDelaysMs: [1, 1] },
+    });
+
+    expect(result.processing_status).toBe('ended');
+    expect(calls).toBe(3);
+  });
+
+  it('does not retry a fatal error (401) on retrieve()', async () => {
+    const retrieve = vi.fn(async () => {
+      throw new AuthenticationError(401, {}, 'bad key', new Headers());
+    });
+
+    await expect(
+      pollUntilEnded(retrieve, { pollIntervalMs: 1, retry: { retryDelaysMs: [1, 1] } }),
+    ).rejects.toThrow(AuthenticationError);
+    expect(retrieve).toHaveBeenCalledTimes(1);
+  });
+
+  it('resets the retry counter after each successful poll — failures in separate polls do not accumulate', async () => {
+    // Each poll cycle fails twice then succeeds. Budget per call is 2 retries (retryDelaysMs
+    // has length 2), so 3 poll cycles × 2 failures = 6 total failures would exceed a *shared*
+    // budget of 2, but must succeed if the counter resets after every successful retrieve().
+    const script: (() => Anthropic.Messages.MessageBatch)[] = [];
+    let failuresThisCycle = 0;
+    const statuses: Anthropic.Messages.MessageBatch['processing_status'][] = [
+      'in_progress',
+      'in_progress',
+      'ended',
+    ];
+    const retrieve = vi.fn(async () => {
+      if (failuresThisCycle < 2) {
+        failuresThisCycle++;
+        throw new APIConnectionError({ message: 'blip' });
+      }
+      failuresThisCycle = 0;
+      return makeBatch(statuses.shift() ?? 'ended');
+    });
+
+    const result = await pollUntilEnded(retrieve, {
+      pollIntervalMs: 1,
+      retry: { retryDelaysMs: [1, 1] },
+    });
+
+    expect(result.processing_status).toBe('ended');
+    // 3 poll cycles × (2 failures + 1 success) = 9 calls total.
+    expect(retrieve).toHaveBeenCalledTimes(9);
+    void script;
+  });
+});
+
+describe('isTransientError', () => {
+  it('treats APIConnectionError (DNS/network failures) as transient', () => {
+    expect(isTransientError(new APIConnectionError({ message: 'getaddrinfo ENOTFOUND' }))).toBe(
+      true,
+    );
+  });
+
+  it('treats 429 rate limits as transient', () => {
+    expect(isTransientError(new RateLimitError(429, {}, 'slow down', new Headers()))).toBe(true);
+  });
+
+  it('treats 5xx server errors as transient', () => {
+    expect(isTransientError(new InternalServerError(503, {}, 'overloaded', new Headers()))).toBe(
+      true,
+    );
+  });
+
+  it('treats 401/403 auth errors as fatal, not transient', () => {
+    expect(isTransientError(new AuthenticationError(401, {}, 'bad key', new Headers()))).toBe(
+      false,
+    );
+    expect(
+      isTransientError(new PermissionDeniedError(403, {}, 'forbidden', new Headers())),
+    ).toBe(false);
+  });
+
+  it('treats 404 (batch not found) as fatal, not transient', () => {
+    expect(isTransientError(new NotFoundError(404, {}, 'no such batch', new Headers()))).toBe(
+      false,
+    );
+  });
+
+  it('treats raw Node network error codes as transient', () => {
+    expect(isTransientError(Object.assign(new Error('boom'), { code: 'ENOTFOUND' }))).toBe(true);
+    expect(isTransientError(Object.assign(new Error('boom'), { code: 'ECONNRESET' }))).toBe(true);
+    expect(isTransientError(Object.assign(new Error('boom'), { code: 'ETIMEDOUT' }))).toBe(true);
+  });
+
+  it('treats an unrecognized error as fatal, not transient', () => {
+    expect(isTransientError(new Error('something unexpected'))).toBe(false);
+  });
+});
+
+describe('DEFAULT_RETRY_DELAYS_MS', () => {
+  it('is the specified exponential backoff schedule: 5s, 15s, 45s, 2m', () => {
+    expect(DEFAULT_RETRY_DELAYS_MS).toEqual([5_000, 15_000, 45_000, 120_000]);
+  });
+});
+
+describe('withRetry', () => {
+  it('retries a transient error using the delays in order, then succeeds', async () => {
+    const delaysSeen: number[] = [];
+    let attempts = 0;
+    const fn = vi.fn(async () => {
+      attempts++;
+      if (attempts <= 2) throw new APIConnectionError({ message: 'blip' });
+      return 'ok';
+    });
+
+    const result = await withRetry(fn, {
+      retryDelaysMs: [10, 20, 30],
+      onRetry: ({ delayMs }) => delaysSeen.push(delayMs),
+    });
+
+    expect(result).toBe('ok');
+    expect(attempts).toBe(3);
+    expect(delaysSeen).toEqual([10, 20]);
+  });
+
+  it('throws immediately on a fatal error without waiting or retrying', async () => {
+    const fn = vi.fn(async () => {
+      throw new NotFoundError(404, {}, 'batch not found', new Headers());
+    });
+
+    await expect(withRetry(fn, { retryDelaysMs: [10, 20] })).rejects.toThrow(NotFoundError);
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('gives up once the retry budget is exhausted', async () => {
+    const fn = vi.fn(async () => {
+      throw new APIConnectionError({ message: 'always down' });
+    });
+
+    await expect(withRetry(fn, { retryDelaysMs: [1, 1] })).rejects.toThrow(APIConnectionError);
+    // initial attempt + 2 retries = 3 calls
+    expect(fn).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('collectBatchResults', () => {
+  function makeFakeClient(behaviors: (() => AsyncIterable<Result>)[]): Anthropic {
+    let call = 0;
+    return {
+      messages: {
+        batches: {
+          results: vi.fn(async () => {
+            const behavior = behaviors[Math.min(call, behaviors.length - 1)];
+            call++;
+            return behavior();
+          }),
+        },
+      },
+    } as unknown as Anthropic;
+  }
+
+  it('retries a transient failure raised while iterating results, then succeeds', async () => {
+    const client = makeFakeClient([
+      () => ({
+        [Symbol.asyncIterator]: async function* () {
+          throw new APIConnectionError({ message: 'dropped mid-stream' });
+        },
+      }),
+      () => ({
+        [Symbol.asyncIterator]: async function* () {
+          yield succeeded('0000', 'ok');
+        },
+      }),
+    ]);
+
+    const map = await collectBatchResults(client, 'batch_1', { retryDelaysMs: [1] });
+
+    expect(map.get('0000')).toBeDefined();
+    expect(client.messages.batches.results).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not retry a fatal error while collecting results', async () => {
+    const client = makeFakeClient([
+      () => ({
+        [Symbol.asyncIterator]: async function* () {
+          throw new NotFoundError(404, {}, 'no such batch', new Headers());
+        },
+      }),
+    ]);
+
+    await expect(
+      collectBatchResults(client, 'batch_1', { retryDelaysMs: [1, 1] }),
+    ).rejects.toThrow(NotFoundError);
+    expect(client.messages.batches.results).toHaveBeenCalledTimes(1);
   });
 });

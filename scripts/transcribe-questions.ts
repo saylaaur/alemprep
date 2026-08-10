@@ -9,6 +9,10 @@
  * limit, may take a few minutes to finish processing). --sync falls back to the old one-request-
  * per-image loop.
  *
+ * If a run dies mid-poll (network outage, etc.), the batch keeps processing on Anthropic's side —
+ * the failure prints a command to pick it back up without resubmitting (and repaying):
+ *   npm run gen:transcribe -- --dir "~/Desktop/images" [--subject math] --resume msgbatch_xxx
+ *
  * ⚠️  Uses paid Anthropic account — Haiku 4.5: $1/1M input, $5/1M output (batch: half that)
  */
 import Anthropic from '@anthropic-ai/sdk';
@@ -35,6 +39,8 @@ import {
   indexCustomId,
   isSucceeded,
   mapResultsByCustomId,
+  printResumeHint,
+  saveBatchState,
   submitAndAwaitBatch,
 } from './lib/batch';
 
@@ -65,6 +71,7 @@ function parseArgs(): {
   subject: string | undefined;
   sync: boolean;
   multi: boolean;
+  resume: string | undefined;
 } {
   const args = process.argv.slice(2);
   let dir = '';
@@ -72,20 +79,22 @@ function parseArgs(): {
   let subject: string | undefined;
   let sync = false;
   let multi = false;
+  let resume: string | undefined;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--dir' && args[i + 1]) dir = expandPath(args[++i]);
     if (args[i] === '--limit' && args[i + 1]) limit = parseInt(args[++i], 10);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
     if (args[i] === '--sync') sync = true;
     if (args[i] === '--multi') multi = true;
+    if (args[i] === '--resume' && args[i + 1]) resume = args[++i];
   }
   if (!dir) {
     console.error(
-      'Usage: npm run gen:transcribe -- --dir <path> [--subject math] [--limit N] [--sync] [--multi]',
+      'Usage: npm run gen:transcribe -- --dir <path> [--subject math] [--limit N] [--sync] [--multi] [--resume <batchId>]',
     );
     process.exit(1);
   }
-  return { dir, limit, subject, sync, multi };
+  return { dir, limit, subject, sync, multi, resume };
 }
 
 function getMediaType(
@@ -380,7 +389,7 @@ async function main() {
   loadEnv();
 
   const args = parseArgs();
-  const { dir, limit, sync, multi } = args;
+  const { dir, limit, sync, multi, resume } = args;
   let { subject } = args;
   if (subject === undefined && !multi) {
     subject = 'math'; // историческое поведение одиночного режима: без --subject — математика
@@ -563,30 +572,54 @@ async function main() {
       }
     }
   } else {
-    const built = files.map((file, i) => ({
-      customId: indexCustomId(i),
-      file,
-      params: buildTranscribeParams(path.join(dir, file), model, system, multi),
-    }));
+    const items = files.map((file, i) => ({ customId: indexCustomId(i), file }));
+    // --resume: the batch already exists on Anthropic's side — skip re-sending (and skip the
+    // (potentially costly) base64-encoding of every image, since it won't be used).
+    const requests = resume
+      ? []
+      : items.map(({ customId, file }) => ({
+          custom_id: customId,
+          params: buildTranscribeParams(path.join(dir, file), model, system, multi),
+        }));
 
-    console.log(`📦  Submitting batch of ${built.length} request(s)…`);
-    const batch = await submitAndAwaitBatch(
-      anthropic,
-      built.map(({ customId, params }) => ({ custom_id: customId, params })),
-      {
+    let trackedBatchId = resume;
+    let resultsMap: Map<string, Anthropic.Messages.MessageBatchIndividualResponse>;
+    try {
+      if (resume) {
+        console.log(`♻️  Resuming batch ${resume} — skipping submission`);
+      } else {
+        console.log(`📦  Submitting batch of ${requests.length} request(s)…`);
+      }
+      const batch = await submitAndAwaitBatch(anthropic, requests, {
+        resumeBatchId: resume,
+        onSubmitted: (b) => {
+          trackedBatchId = b.id;
+          const file = saveBatchState({
+            batchId: b.id,
+            step: 'transcribe',
+            subject,
+            dir,
+            createdAt: new Date().toISOString(),
+          });
+          console.log(`   📎  batch id saved: ${b.id} → ${file}`);
+        },
         onPoll: (b) =>
           console.log(
             `   …  batch ${b.id} still ${b.processing_status} (${b.request_counts.succeeded} done, ${b.request_counts.processing} processing)`,
           ),
-      },
-    );
-    console.log(
-      `   ✓  batch ${batch.id} ended — ${batch.request_counts.succeeded} succeeded, ${batch.request_counts.errored} errored, ${batch.request_counts.expired} expired, ${batch.request_counts.canceled} canceled\n`,
-    );
+      });
+      console.log(
+        `   ✓  batch ${batch.id} ended — ${batch.request_counts.succeeded} succeeded, ${batch.request_counts.errored} errored, ${batch.request_counts.expired} expired, ${batch.request_counts.canceled} canceled\n`,
+      );
 
-    const resultsMap = await collectBatchResults(anthropic, batch.id);
+      resultsMap = await collectBatchResults(anthropic, batch.id);
+    } catch (err) {
+      if (trackedBatchId) printResumeHint('gen:transcribe', trackedBatchId);
+      throw err;
+    }
+
     const mapped = mapResultsByCustomId(
-      built.map(({ customId, file }) => ({ customId, item: file })),
+      items.map(({ customId, file }) => ({ customId, item: file })),
       resultsMap,
     );
 
@@ -594,9 +627,9 @@ async function main() {
       process.stdout.write(`  ${file}  …  ${multi ? '\n' : ''}`);
       if (isSucceeded(result)) {
         if (multi) {
-          const { items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite } =
+          const { items: parsedItems, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite } =
             parseTranscribeResponseMulti(result.result.message, file);
-          recordMulti(items, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite);
+          recordMulti(parsedItems, discardedReasons, inputTok, outputTok, cacheRead, cacheWrite);
         } else {
           const { item, inputTok, outputTok, cacheRead, cacheWrite } = parseTranscribeResponse(
             result.result.message,

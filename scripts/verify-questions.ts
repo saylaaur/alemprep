@@ -12,6 +12,10 @@
  * Default mode batches one request per question into a single Message Batches API call
  * (−50% cost, separate rate limit). --sync falls back to the old one-request-per-question loop.
  *
+ * If a run dies mid-poll (network outage, etc.), the batch keeps processing on Anthropic's side —
+ * the failure prints a command to pick it back up without resubmitting (and repaying):
+ *   npm run gen:verify -- --input <same file> [--subject math] --resume msgbatch_xxx
+ *
  * ⚠️  Uses paid Anthropic account — Sonnet дороже Haiku, но точнее как проверяющий.
  *     Переопределить модель: VERIFIER_MODEL=<id> в .env.local
  */
@@ -27,6 +31,8 @@ import {
   indexCustomId,
   isSucceeded,
   mapResultsByCustomId,
+  printResumeHint,
+  saveBatchState,
   submitAndAwaitBatch,
 } from './lib/batch';
 
@@ -64,21 +70,30 @@ function extractJson(raw: string): string {
   return s.trim();
 }
 
-function parseArgs(): { input: string; subject: string; sync: boolean } {
+function parseArgs(): {
+  input: string;
+  subject: string;
+  sync: boolean;
+  resume: string | undefined;
+} {
   const args = process.argv.slice(2);
   let input = '';
   let subject = 'math';
   let sync = false;
+  let resume: string | undefined;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--input' && args[i + 1]) input = expandPath(args[++i]);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
     if (args[i] === '--sync') sync = true;
+    if (args[i] === '--resume' && args[i + 1]) resume = args[++i];
   }
   if (!input) {
-    console.error('Usage: npm run gen:verify -- --input <path.json> [--subject math] [--sync]');
+    console.error(
+      'Usage: npm run gen:verify -- --input <path.json> [--subject math] [--sync] [--resume <batchId>]',
+    );
     process.exit(1);
   }
-  return { input, subject, sync };
+  return { input, subject, sync, resume };
 }
 
 const SYSTEM_INSTRUCTION = `You are a rigorous mathematics examiner for ЕНТ (Kazakhstan). You are given a multiple-choice problem WITHOUT the marked answer. Solve it independently and precisely.
@@ -230,7 +245,7 @@ async function verifyOne(
 
 async function main() {
   loadEnv();
-  const { input, subject, sync } = parseArgs();
+  const { input, subject, sync, resume } = parseArgs();
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -312,30 +327,53 @@ async function main() {
       }
     }
   } else {
-    const built = questions.map((q, i) => ({
-      customId: indexCustomId(i),
-      q,
-      params: buildVerifyParams(q, model, system),
-    }));
+    const items = questions.map((q, i) => ({ customId: indexCustomId(i), q }));
+    // --resume: the batch already exists on Anthropic's side — skip re-sending.
+    const requests = resume
+      ? []
+      : items.map(({ customId, q }) => ({
+          custom_id: customId,
+          params: buildVerifyParams(q, model, system),
+        }));
 
-    console.log(`📦  Submitting batch of ${built.length} request(s)…`);
-    const batch = await submitAndAwaitBatch(
-      client,
-      built.map(({ customId, params }) => ({ custom_id: customId, params })),
-      {
+    let trackedBatchId = resume;
+    let resultsMap: Map<string, Anthropic.Messages.MessageBatchIndividualResponse>;
+    try {
+      if (resume) {
+        console.log(`♻️  Resuming batch ${resume} — skipping submission`);
+      } else {
+        console.log(`📦  Submitting batch of ${requests.length} request(s)…`);
+      }
+      const batch = await submitAndAwaitBatch(client, requests, {
+        resumeBatchId: resume,
+        onSubmitted: (b) => {
+          trackedBatchId = b.id;
+          const file = saveBatchState({
+            batchId: b.id,
+            step: 'verify',
+            subject,
+            dir: input,
+            createdAt: new Date().toISOString(),
+          });
+          console.log(`   📎  batch id saved: ${b.id} → ${file}`);
+        },
         onPoll: (b) =>
           console.log(
             `   …  batch ${b.id} still ${b.processing_status} (${b.request_counts.succeeded} done, ${b.request_counts.processing} processing)`,
           ),
-      },
-    );
-    console.log(
-      `   ✓  batch ${batch.id} ended — ${batch.request_counts.succeeded} succeeded, ${batch.request_counts.errored} errored, ${batch.request_counts.expired} expired, ${batch.request_counts.canceled} canceled\n`,
-    );
+      });
+      console.log(
+        `   ✓  batch ${batch.id} ended — ${batch.request_counts.succeeded} succeeded, ${batch.request_counts.errored} errored, ${batch.request_counts.expired} expired, ${batch.request_counts.canceled} canceled\n`,
+      );
 
-    const resultsMap = await collectBatchResults(client, batch.id);
+      resultsMap = await collectBatchResults(client, batch.id);
+    } catch (err) {
+      if (trackedBatchId) printResumeHint('gen:verify', trackedBatchId);
+      throw err;
+    }
+
     const mapped = mapResultsByCustomId(
-      built.map(({ customId, q }) => ({ customId, item: q })),
+      items.map(({ customId, q }) => ({ customId, item: q })),
       resultsMap,
     );
 
