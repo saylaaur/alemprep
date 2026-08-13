@@ -61,6 +61,10 @@ export const SUBJECT_VALUES = ['math', 'physics', 'informatics', 'math-literacy'
 export const SubjectSchema = z.enum(SUBJECT_VALUES);
 export type Subject = z.infer<typeof SubjectSchema>;
 
+export const QUESTION_TYPES = ['single', 'multi', 'matching'] as const;
+export const QuestionTypeSchema = z.enum(QUESTION_TYPES);
+export type QuestionType = z.infer<typeof QuestionTypeSchema>;
+
 /** Префикс имени файла, когда транскрипция идёт без --subject (см. gen-all.ts). */
 export const AUTO_SUBJECT_PREFIX = 'mixed';
 

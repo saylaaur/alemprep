@@ -9,6 +9,10 @@
  * limit, may take a few minutes to finish processing). --sync falls back to the old one-request-
  * per-image loop.
  *
+ * --types single,multi,matching (usually with --multi): keep ONLY the given type(s), skipping the
+ * rest with a counter in the summary. Useful for targeted top-ups — re-running every page just for
+ * the rare multi/matching problems, without re-saving 30x as many single duplicates.
+ *
  * If a run dies mid-poll (network outage, etc.), the batch keeps processing on Anthropic's side —
  * the failure prints a command to pick it back up without resubmitting (and repaying):
  *   npm run gen:transcribe -- --dir "~/Desktop/images" [--subject math] --resume msgbatch_xxx
@@ -33,6 +37,14 @@ import { resolveModel } from './lib/models';
 import { parseMultiItems } from './lib/multi-transcribe';
 import { referencesMissingVisual } from './lib/checks';
 import { applySubjectFilter, summarizeBySubject, UNDETERMINED_SUBJECT_REASON } from './lib/subject-filter';
+import {
+  applyTypeFilter,
+  detectTypeMismatch,
+  parseTypesFlag,
+  QUESTION_TYPES,
+  summarizeByType,
+  type QuestionType,
+} from './lib/type-signals';
 import {
   collectBatchResults,
   describeFailure,
@@ -72,6 +84,7 @@ function parseArgs(): {
   sync: boolean;
   multi: boolean;
   resume: string | undefined;
+  types: QuestionType[] | undefined;
 } {
   const args = process.argv.slice(2);
   let dir = '';
@@ -80,6 +93,7 @@ function parseArgs(): {
   let sync = false;
   let multi = false;
   let resume: string | undefined;
+  let typesRaw: string | undefined;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--dir' && args[i + 1]) dir = expandPath(args[++i]);
     if (args[i] === '--limit' && args[i + 1]) limit = parseInt(args[++i], 10);
@@ -87,14 +101,30 @@ function parseArgs(): {
     if (args[i] === '--sync') sync = true;
     if (args[i] === '--multi') multi = true;
     if (args[i] === '--resume' && args[i + 1]) resume = args[++i];
+    if (args[i] === '--types' && args[i + 1]) typesRaw = args[++i];
   }
   if (!dir) {
     console.error(
-      'Usage: npm run gen:transcribe -- --dir <path> [--subject math] [--limit N] [--sync] [--multi] [--resume <batchId>]',
+      'Usage: npm run gen:transcribe -- --dir <path> [--subject math] [--limit N] [--sync] [--multi] [--resume <batchId>] [--types single,multi,matching]',
     );
     process.exit(1);
   }
-  return { dir, limit, subject, sync, multi, resume };
+  let types: QuestionType[] | undefined;
+  if (typesRaw !== undefined) {
+    const { types: parsed, invalid } = parseTypesFlag(typesRaw);
+    if (invalid.length > 0) {
+      console.error(
+        `\n❌  --types: неизвестные значения ${invalid.join(',')} (допустимо: ${QUESTION_TYPES.join(',')})\n`,
+      );
+      process.exit(1);
+    }
+    if (parsed.length === 0) {
+      console.error('\n❌  --types: список типов пуст\n');
+      process.exit(1);
+    }
+    types = parsed;
+  }
+  return { dir, limit, subject, sync, multi, resume, types };
 }
 
 function getMediaType(
@@ -181,6 +211,15 @@ Output ONLY a valid JSON array — no markdown, no code fences, just raw JSON. O
 
 ⚠️  DETERMINE THE SUBJECT OF EACH PROBLEM. The page header usually prints the subject name in Russian: МАТЕМАТИКА → "math", ФИЗИКА → "physics", ИНФОРМАТИКА → "informatics", МАТЕМАТИЧЕСКАЯ ГРАМОТНОСТЬ → "math-literacy". If the header is visible, use it. If there is no header (a continuation page bleeding in from the previous spread), determine the subject from the problem's own content: Python/SQL code, networks, encodings, binary/logic circuits → informatics; forces, current, gas laws, optics, and other physical quantities with units → physics; equations, functions, geometry, progressions, abstract algebra → math; everyday word problems about percentages, charts, diagrams, averages, real-world data → math-literacy. Report it in a "subject" field on EVERY extracted problem separately — a single spread can mix problems from different subjects, so never assume the whole image is one subject. If you cannot determine the subject with confidence, set "subject": null.
 
+⚠️  DETERMINE THE TYPE OF EACH PROBLEM CAREFULLY — "single" is over-used by default. A profile ЕНТ block of 40 problems is 30 single, 5 multi, 5 matching; defaulting to "single" whenever you see a lettered option list silently destroys the multi/matching problems we need most. Check these signals, most reliable first:
+1. A BOXED INSTRUCTION LINE printed above a run of problems tells you the type directly, and applies to EVERY problem below it — across columns and onto the next page — until a new instruction line appears. Match by meaning, exact wording varies by booklet edition:
+   - «Инструкция: Вам предлагаются задания, в которых могут быть один или несколько правильных ответов» (also seen as «...не более трёх правильных...», or «Тестовые задания с одним или несколькими правильными ответами») → type: "multi" for every problem below.
+   - «Инструкция: Вам предлагаются задания с двумя правильными ответами» (also seen as «Задания на установление соответствия») → type: "matching" for every problem below — see TWO-BLOCK PROBLEMS below for how these are laid out and how to build the body.
+   - «Задания на основе контекста» → type: "single", but the problems below it share one context block — copy it into each stem (see SELF-CONTAINED STEMS below).
+2. NUMBER OF LETTERED OPTIONS IN A SINGLE BLOCK is a strong signal even without a visible instruction line: exactly 4 (A–D) → almost always "single"; 5 or more (A–E, A–F…) in ONE block → almost always "multi". If you're about to mark a 5-6-option problem "single", stop and reconsider. Inside a "multi" section, solve rigorously and check EVERY option's value, not just the first correct-looking one — this exam sometimes lists the same correct value twice in different units or forms among the options (e.g. "4 м/с²" and "40 дм/с²"), and both must go into the "correct" array. A stem phrased with a parenthetical plural — "Принцип(-ы)...", "Величина(-ы), равная(-ые)...", "Форма(-ы)..." — is extra confirmation, not required.
+3. TWO OPTION BLOCKS UNDER ONE PROBLEM NUMBER (first block A–D, a second block continuing the alphabet) — see TWO-BLOCK PROBLEMS below; almost always "matching" when the two blocks list the same option values.
+4. PROBLEM NUMBER as the weakest hint, only when the signals above are unclear: in a 40-problem profile block, matching tends to cluster around #31–35 and multi around #36–40 — but always defer to the instruction line and option-count signals above when they disagree with this.
+
 ⚠️  DO NOT EXTRACT PROBLEMS THAT DEPEND ON A PICTURE — not even partially, not even if you can guess the rest. We have NO support for images in questions; a problem whose condition needs a picture, diagram, chart, or graph to understand (electrical circuits, geometric drawings, function graphs, image-based tables) is UNUSABLE no matter how well you transcribe its text. Watch for these exact phrases in the Russian text — any of them means the problem POINTS AT a picture that exists outside the text and MUST be skipped: "как показано на рисунке", "на схеме", "на графике", "изображён на" / "изображена на", "указаны на рисунке", "приведён на рисунке", "см. рис.". Do not confuse this with a problem that asks the student to build a graph themselves ("постройте график функции") — that one has no missing picture and stays. For each skipped problem, still emit an entry:
 {"skip": "graph", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
 
@@ -192,7 +231,9 @@ Output ONLY a valid JSON array — no markdown, no code fences, just raw JSON. O
 
 ⚠️  SELF-CONTAINED STEMS. Some problems share a preceding context block (a passage, a described figure with given measurements, a shared condition) that applies to several numbered problems at once. Each problem you extract MUST stand alone: copy the relevant shared context (the given numbers, the described figure, the passage) INTO that problem's own stem. Never rely on a previous array entry to supply missing information — a problem shown by itself, without its neighbors, must still be fully solvable.
 
-⚠️  TWO-PART PROBLEMS. If one problem number presents two independently-answered parts, each with its OWN lettered options (e.g. "Найдите f(g(x)): A) B) C) D)" followed by "Найдите g(f(x)): E) F) G) H)"), extract them as TWO SEPARATE single-choice problems — one per lettered option set, each with the shared condition copied into its stem. Do NOT also emit a combined "multi" entry whose options are the sub-questions themselves — that produces a nonsensical question.
+⚠️  TWO-BLOCK PROBLEMS. One problem number followed by TWO lettered option blocks (first A)-D), a second block continuing the alphabet, e.g. E)-H)) is common and easy to misclassify — check which case this is:
+   - If both blocks list the SAME set of option values, just re-lettered (e.g. "Гипотенуза треугольника (см): A)10 B)14 C)24 D)48" then "Площадь треугольника (см²): E)10 F)14 G)24 H)48") — this is ONE "matching" problem, not two singles. It is usually introduced by «Установите соответствие» / «Соотнесите» / «Сопоставьте» in the stem and/or the boxed instruction from DETERMINE THE TYPE above. Build ONE type:"matching" entry: "left" = one short item per block naming what it asks for (e.g. "Гипотенуза треугольника (см)", "Площадь треугольника (см²)"), "right" = the shared option values taken from the FIRST block only (do not repeat them), "correct" = for each left id, the value text that correctly answers that label. Do NOT emit this as two singles, and do NOT emit it as "multi" with 8 options.
+   - Only if the two blocks list DIFFERENT, unrelated option values (e.g. "Найдите f(g(x)): A).. B).. C).. D).." then "Найдите g(f(x)): E).. F).. G).. H)..") are these genuinely two independent questions — extract them as TWO SEPARATE type:"single" problems, one per block, each with the shared condition copied into its stem. Do NOT emit a combined "multi" entry whose options are the sub-questions themselves — that produces a nonsensical question.
 
 If a problem is unclear or not a recognizable ЕНТ question, skip it the same way:
 {"skip": "unsupported", "reason": "<brief reason>", "source_file": "<PLACEHOLDER>"}
@@ -389,7 +430,7 @@ async function main() {
   loadEnv();
 
   const args = parseArgs();
-  const { dir, limit, sync, multi, resume } = args;
+  const { dir, limit, sync, multi, resume, types } = args;
   let { subject } = args;
   if (subject === undefined && !multi) {
     subject = 'math'; // историческое поведение одиночного режима: без --subject — математика
@@ -448,6 +489,8 @@ async function main() {
   let filteredGraphs = 0;
   let filteredForeignSubject = 0;
   let undeterminedSubject = 0;
+  let filteredByType = 0;
+  let typeMismatches = 0;
   const costMultiplier = sync ? 1 : 0.5;
 
   function record(
@@ -457,12 +500,34 @@ async function main() {
     cacheRead: number,
     cacheWrite: number,
   ): void {
-    results.push(item);
     totalInput += inputTok;
     totalOutput += outputTok;
     totalCacheRead += cacheRead;
     totalCacheWrite += cacheWrite;
 
+    if (!('skip' in item)) {
+      const mismatch = detectTypeMismatch(item);
+      if (mismatch) {
+        typeMismatches++;
+        console.log(`  ⚠️  type mismatch: reported "${mismatch.reported}" — ${mismatch.reason}`);
+      }
+
+      const typeResult = applyTypeFilter(item.type, types);
+      if (!typeResult.keep) {
+        const filtered: TranscriptionItem = {
+          skip: 'unsupported',
+          reason: typeResult.reason,
+          source_file: item.source_file,
+        };
+        results.push(filtered);
+        skipped++;
+        filteredByType++;
+        console.log(`⏭  filtered(type): ${typeResult.reason}`);
+        return;
+      }
+    }
+
+    results.push(item);
     if ('skip' in item) {
       skipped++;
       if (item.skip === 'graph') graphs++;
@@ -518,6 +583,26 @@ async function main() {
             filteredForeignSubject++;
           }
           console.log(`  🚫  filtered(subject): ${filtered.reason}`);
+          continue;
+        }
+
+        const mismatch = detectTypeMismatch(item);
+        if (mismatch) {
+          typeMismatches++;
+          console.log(`  ⚠️  type mismatch: reported "${mismatch.reported}" — ${mismatch.reason}`);
+        }
+
+        const typeResult = applyTypeFilter(item.type, types);
+        if (!typeResult.keep) {
+          const filtered: TranscriptionItem = {
+            skip: 'unsupported',
+            reason: typeResult.reason,
+            source_file: item.source_file,
+          };
+          results.push(filtered);
+          skipped++;
+          filteredByType++;
+          console.log(`  🚫  filtered(type): ${typeResult.reason}`);
           continue;
         }
       }
@@ -680,10 +765,31 @@ async function main() {
     for (const s of SUBJECT_VALUES) {
       console.log(`      ${s}: ${subjectSummary.bySubject[s]}`);
     }
+    const typeSummary = summarizeByType(results);
+    console.log(`   📐  по типам:`);
+    for (const t of QUESTION_TYPES) {
+      console.log(`      ${t}: ${typeSummary[t]}`);
+    }
+    if (typeMismatches > 0) {
+      console.log(`   ⚠️  подозрительных несовпадений type/структура: ${typeMismatches}`);
+    }
+    if (filteredByType > 0) {
+      console.log(`   🚫  отфильтровано по --types: ${filteredByType}`);
+    }
   } else {
+    const typeSummary = summarizeByType(results);
     console.log(
       `\n✅  ${transcribed} transcribed, ${skipped} skipped (${graphs} graph, ${skipped - graphs} other)`,
     );
+    console.log(
+      `   📐  по типам: single ${typeSummary.single}, multi ${typeSummary.multi}, matching ${typeSummary.matching}`,
+    );
+    if (typeMismatches > 0) {
+      console.log(`   ⚠️  подозрительных несовпадений type/структура: ${typeMismatches}`);
+    }
+    if (filteredByType > 0) {
+      console.log(`   🚫  отфильтровано по --types: ${filteredByType}`);
+    }
   }
   console.log(
     `💰  Tokens: ${totalInput} in / ${totalOutput} out  ~$${totalCost.toFixed(4)} USD  [${model}, ${sync ? 'standard' : 'batch −50%'} rate]`,
