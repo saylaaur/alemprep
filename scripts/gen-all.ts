@@ -18,6 +18,11 @@
  * Default mode batches each API-calling step through the Message Batches API (−50% cost).
  * --sync forwards to every sub-script and restores the old one-request-at-a-time loops.
  *
+ * --types single,multi,matching forwards to transcribe-questions.ts: keep ONLY the given
+ * type(s) out of transcription, skipping the rest with a counter. For targeted top-ups of
+ * under-represented types (e.g. --types multi,matching) without re-saving thousands of
+ * duplicate singles.
+ *
  * ⚠️  Uses paid Anthropic account — costs ~$0.01–0.10 per 10 questions depending on complexity
  */
 import * as fs from 'fs';
@@ -41,6 +46,7 @@ function parseArgs(): {
   publish: boolean;
   sync: boolean;
   multi: boolean;
+  types: string | undefined;
 } {
   const args = process.argv.slice(2);
   let dir = '';
@@ -51,6 +57,7 @@ function parseArgs(): {
   let publish = false;
   let sync = false;
   let multi = false;
+  let types: string | undefined;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--dir' && args[i + 1]) dir = expandPath(args[++i]);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
@@ -60,10 +67,11 @@ function parseArgs(): {
     if (args[i] === '--publish') publish = true;
     if (args[i] === '--sync') sync = true;
     if (args[i] === '--multi') multi = true;
+    if (args[i] === '--types' && args[i + 1]) types = args[++i];
   }
   if (!dir) {
     console.error(
-      'Usage: npm run gen:all -- --dir <path> [--subject <slug>] [--variants N] [--limit N] [--no-verify] [--publish] [--sync] [--multi]',
+      'Usage: npm run gen:all -- --dir <path> [--subject <slug>] [--variants N] [--limit N] [--no-verify] [--publish] [--sync] [--multi] [--types single,multi,matching]',
     );
     process.exit(1);
   }
@@ -73,7 +81,7 @@ function parseArgs(): {
     );
     process.exit(1);
   }
-  return { dir, subject, variants, limit, noVerify, publish, sync, multi };
+  return { dir, subject, variants, limit, noVerify, publish, sync, multi, types };
 }
 
 function newestJson(dir: string, prefix: string): string | null {
@@ -180,12 +188,13 @@ function runSubjectPipeline(
 }
 
 function main() {
-  const { dir, subject, variants, limit, noVerify, publish, sync, multi } = parseArgs();
+  const { dir, subject, variants, limit, noVerify, publish, sync, multi, types } = parseArgs();
   const tsx = 'npx tsx --tsconfig tsconfig.scripts.json';
   const steps = noVerify ? 3 : 4;
   const mode = sync ? 'sync' : 'batch (−50%)';
   const syncArg = sync ? ' --sync' : '';
   const multiArg = multi ? ' --multi' : '';
+  const typesArg = types ? ` --types ${types}` : '';
 
   console.log(`\n🚀  gen:all`);
   console.log(`   subject:  ${subject ?? 'auto (определяется по странице)'}`);
@@ -195,6 +204,7 @@ function main() {
   console.log(`   verify:   ${noVerify ? 'OFF (--no-verify)' : 'ON (Sonnet)'}`);
   console.log(`   mode:     ${mode}`);
   if (multi) console.log(`   multi:    ON (несколько заданий на фото)`);
+  if (types) console.log(`   types:    ${types} (остальные типы пропускаются при транскрипции)`);
   if (subject === undefined) {
     console.log(`   ⚠️  Без --subject: после транскрипции — авто-цикл generate→verify→insert по каждому найденному предмету.`);
   }
@@ -206,7 +216,7 @@ function main() {
   const limitArg = limit !== undefined ? ` --limit ${limit}` : '';
   const subjectArg = subject ? ` --subject ${subject}` : '';
   run(
-    `${tsx} scripts/transcribe-questions.ts --dir "${dir}"${subjectArg}${limitArg}${syncArg}${multiArg}`,
+    `${tsx} scripts/transcribe-questions.ts --dir "${dir}"${subjectArg}${limitArg}${syncArg}${multiArg}${typesArg}`,
   );
 
   const refDir = path.join(process.cwd(), 'scripts', 'references');
