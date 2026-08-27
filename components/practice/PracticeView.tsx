@@ -121,13 +121,11 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
     // Сохраняем попытку в БД и показываем «+N XP» по реально начисленному XP.
     const shownAt = questionShownAt.current[current.id] ?? Date.now();
     const timeSpent = Date.now() - shownAt;
-    const correct = checkAnswer(current.type, answer, current.body);
     setPendingAttempts((prev) => ({ ...prev, [current.id]: true }));
     setSaveErrors((prev) => ({ ...prev, [current.id]: false }));
     void recordAttempt({
       questionId: current.id,
       givenAnswer: answer,
-      isCorrect: correct,
       timeSpentMs: timeSpent,
     }).then((res) => {
       if (!res.ok) {

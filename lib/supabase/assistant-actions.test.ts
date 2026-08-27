@@ -26,6 +26,9 @@ vi.mock('./queries', () => ({ getPairExamBlocks: vi.fn() }));
 vi.mock('./server', () => ({
   createClient: async () => makeClient(h),
 }));
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: () => makeClient(h),
+}));
 
 vi.mock('@anthropic-ai/sdk', () => ({
   default: class MockAnthropic {
@@ -83,15 +86,53 @@ function callContext(): string {
 
 beforeEach(() => {
   h.store = seed();
+  h.failOnce = null;
   h.createSpy.mockReset();
   h.createSpy.mockResolvedValue({
     content: [{ type: 'text', text: 'Подумай, какая степень двойки даёт 8.' }],
     usage: { input_tokens: 120, output_tokens: 80 },
   });
   process.env.ANTHROPIC_API_KEY = 'test-key';
+  process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
+});
+
+describe('consume_ai_daily_quota RPC contract', () => {
+  it('atomically stops at the daily limit and never creates duplicate rows', async () => {
+    const client = makeClient(h);
+    const counts = await Promise.all(
+      Array.from({ length: AI_DAILY_LIMIT + 1 }, async () => {
+        const { data, error } = await client.rpc('consume_ai_daily_quota');
+        expect(error).toBeNull();
+        return data;
+      }),
+    );
+
+    expect(counts).toEqual([...Array.from({ length: AI_DAILY_LIMIT }, (_, index) => index + 1), null]);
+    expect(h.store.ai_usage).toEqual([{ user_id: 'U1', usage_date: today, count: AI_DAILY_LIMIT }]);
+  });
+
+  it('rejects a client-supplied usage date', async () => {
+    const client = makeClient(h);
+
+    await expect(
+      client.rpc('consume_ai_daily_quota', { p_usage_date: '2099-01-01' }),
+    ).rejects.toThrow('does not accept client arguments');
+    expect(h.store.ai_usage).toHaveLength(0);
+  });
 });
 
 describe('askAssistant — дневной лимит', () => {
+  it('без server-only service role конфигурации не вызывает модель и не списывает квоту', async () => {
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    const res = await askAssistant({ questionId: 'Q1', mode: 'hint', userAnswer: null });
+
+    expect(res).toMatchObject({ ok: false, error: 'usage-write-failed' });
+    expect(h.createSpy).not.toHaveBeenCalled();
+    expect(h.store.ai_usage).toHaveLength(0);
+  });
+
   it('первый запрос за день: заводит счётчик count=1 и зовёт модель', async () => {
     const res = await askAssistant({ questionId: 'Q1', mode: 'hint', userAnswer: null });
 
@@ -107,6 +148,17 @@ describe('askAssistant — дневной лимит', () => {
 
     expect(res).toMatchObject({ ok: true, remaining: AI_DAILY_LIMIT - 3 });
     expect(h.store.ai_usage[0].count).toBe(3);
+  });
+
+  it('не пишет ai_usage напрямую: квота списывается только через защищённый RPC', async () => {
+    h.store.ai_usage = [{ user_id: 'U1', usage_date: today, count: 2 }];
+    h.failOnce = { table: 'ai_usage', op: 'update', message: 'direct writes are revoked' };
+
+    const res = await askAssistant({ questionId: 'Q1', mode: 'hint', userAnswer: null });
+
+    expect(res).toMatchObject({ ok: true, remaining: AI_DAILY_LIMIT - 3 });
+    expect(h.store.ai_usage[0].count).toBe(3);
+    expect(h.failOnce).toMatchObject({ table: 'ai_usage', op: 'update' });
   });
 
   it('при исчерпании лимита отказывает и НЕ вызывает модель', async () => {
@@ -350,7 +402,6 @@ describe('askAssistant — сервер-авторитетная история 
     const attemptRes = await recordAttempt({
       questionId: 'Q1',
       givenAnswer: 'A',
-      isCorrect: false,
       timeSpentMs: 5000,
     });
     expect(attemptRes.ok).toBe(true);

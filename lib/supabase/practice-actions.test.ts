@@ -276,7 +276,6 @@ describe('recordAttempt — сохранение прогресса', () => {
     const res = await recordAttempt({
       questionId: 'Q1',
       givenAnswer: 'A',
-      isCorrect: true,
       timeSpentMs: 1000,
     });
 
@@ -293,13 +292,30 @@ describe('recordAttempt — сохранение прогресса', () => {
     const res = await recordAttempt({
       questionId: 'Q2',
       givenAnswer: 'wrong',
-      isCorrect: false,
       timeSpentMs: 1000,
     });
 
     expect(res).toEqual({ ok: true, xpAwarded: 0 });
     expect(h.store.profiles[0].xp).toBe(0);
     expect(h.store.attempts).toHaveLength(1);
+    expect(h.store.attempts[0]).toMatchObject({
+      question_id: 'Q2',
+      is_correct: false,
+    });
+  });
+
+  it('не доверяет поддельному isCorrect от клиента', async () => {
+    const forgedInput = {
+      questionId: 'Q2',
+      givenAnswer: 'wrong',
+      isCorrect: true,
+      timeSpentMs: 1000,
+    };
+
+    const res = await recordAttempt(forgedInput);
+
+    expect(res).toEqual({ ok: true, xpAwarded: 0 });
+    expect(h.store.profiles[0].xp).toBe(0);
     expect(h.store.attempts[0]).toMatchObject({
       question_id: 'Q2',
       is_correct: false,
@@ -313,7 +329,6 @@ describe('recordAttempt — сохранение прогресса', () => {
     const res = await recordAttempt({
       questionId: 'Q1',
       givenAnswer: 'A',
-      isCorrect: true,
       timeSpentMs: 1000,
     });
 
@@ -332,7 +347,6 @@ describe('recordAttempt — сохранение прогресса', () => {
     const res = await recordAttempt({
       questionId: 'Q1',
       givenAnswer: 'A',
-      isCorrect: true,
       timeSpentMs: 1000,
     });
 

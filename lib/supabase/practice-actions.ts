@@ -21,7 +21,6 @@ import type { QuestionType, QuestionBody, Locale } from '@/types/db';
 type RecordInput = {
   questionId: string;
   givenAnswer: unknown;
-  isCorrect: boolean;
   timeSpentMs: number;
 };
 
@@ -30,6 +29,20 @@ export async function recordAttempt(input: RecordInput) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: 'unauthenticated' };
 
+  // Правильность и XP нельзя принимать от браузера: клиентский payload легко
+  // подменить. Эталонный ответ читаем заново на сервере.
+  const { data: question, error: questionError } = await supabase
+    .from('questions')
+    .select('type, body')
+    .eq('id', input.questionId)
+    .maybeSingle();
+  if (questionError || !question) {
+    return { ok: false as const, error: questionError?.message ?? 'question not found' };
+  }
+  const questionType = question.type as QuestionType;
+  const points = scoreAnswer(questionType, question.body as QuestionBody, input.givenAnswer);
+  const isCorrect = points === QUESTION_POINTS[questionType];
+
   // 1. Записываем попытку
   const { data: insertedAttempt, error: insertError } = await supabase
     .from('attempts')
@@ -37,7 +50,7 @@ export async function recordAttempt(input: RecordInput) {
       user_id: user.id,
       question_id: input.questionId,
       given_answer: input.givenAnswer,
-      is_correct: input.isCorrect,
+      is_correct: isCorrect,
       time_spent_ms: input.timeSpentMs,
     })
     .select('id')
@@ -72,7 +85,7 @@ export async function recordAttempt(input: RecordInput) {
       const longest = (profile.longest_streak as number | null) ?? 0;
       if (next.streak > longest) update.longest_streak = next.streak;
     }
-    if (input.isCorrect) {
+    if (isCorrect) {
       update.xp = ((profile.xp as number | null) ?? 0) + XP_PER_CORRECT;
       xpAwarded = XP_PER_CORRECT;
     }

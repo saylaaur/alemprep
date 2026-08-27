@@ -102,13 +102,43 @@ function utcDateStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** YYYY-MM-DD по часовому поясу продукта — как timezone(..., now()) в 0021. */
+function almatyDateStr(): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Almaty',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? '';
+  return `${value('year')}-${value('month')}-${value('day')}`;
+}
+
 type AiGlobalUsageRow = { usage_date: string; request_count: number; input_tokens: number; output_tokens: number };
 
 /**
- * Мок ровно двух SECURITY DEFINER функций из 0017_ai_global_usage.sql — не
+ * Мок SECURITY DEFINER функций из миграций AI-лимитов — не
  * общий SQL-движок, только то, что реально вызывает askAssistant.
  */
-const rpcHandlers: Record<string, (state: InMemoryState, args: Record<string, unknown>) => unknown> = {
+const rpcHandlers: Record<string, (state: InMemoryState, args: Record<string, unknown>, userId: string) => unknown> = {
+  consume_ai_daily_quota: (state, args, userId) => {
+    if (Object.keys(args).length > 0) {
+      throw new Error('consume_ai_daily_quota does not accept client arguments');
+    }
+    const usageDate = almatyDateStr();
+    const rows = (state.store.ai_usage ??= []);
+    const existing = rows.find((row) => row.user_id === userId && row.usage_date === usageDate);
+    // Держим лимит синхронно с SQL-функцией из 0021 и AI_DAILY_LIMIT.
+    const dailyLimit = 5;
+    if (existing) {
+      const count = Number(existing.count);
+      if (count >= dailyLimit) return null;
+      existing.count = count + 1;
+      return existing.count;
+    }
+    rows.push({ user_id: userId, usage_date: usageDate, count: 1 });
+    return 1;
+  },
   get_ai_global_usage_count: (state) => {
     const rows = (state.store.ai_global_usage ??= []) as unknown as AiGlobalUsageRow[];
     const row = rows.find((r) => r.usage_date === utcDateStr());
@@ -141,7 +171,7 @@ export function makeClient(state: InMemoryState, userId = 'U1') {
     rpc: async (fn: string, args: Record<string, unknown> = {}) => {
       const handler = rpcHandlers[fn];
       if (!handler) throw new Error(`in-memory-db mock: неизвестная RPC-функция "${fn}"`);
-      return { data: handler(state, args), error: null };
+      return { data: handler(state, args, userId), error: null };
     },
   };
 }

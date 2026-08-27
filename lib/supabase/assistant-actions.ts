@@ -1,6 +1,7 @@
 'use server';
 
 import Anthropic from '@anthropic-ai/sdk';
+import { createClient as createSupabaseAdminClient } from '@supabase/supabase-js';
 import { createClient } from './server';
 import { localDateStr } from '@/lib/streak';
 import {
@@ -18,6 +19,22 @@ import {
 import type { Explanation, QuestionBody, QuestionType } from '@/types/db';
 
 const ASSISTANT_MAX_TOKENS = 350;
+
+/**
+ * Отдельный серверный клиент нужен только для общей (не пользовательской)
+ * статистики расходов. Ключ без префикса NEXT_PUBLIC и эта функция живут в
+ * `use server` модуле, поэтому service role не попадает в клиентский bundle.
+ */
+function createGlobalUsageClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!url || !serviceRoleKey) {
+    throw new Error('AI usage accounting is not configured: missing Supabase URL or SUPABASE_SERVICE_ROLE_KEY');
+  }
+  return createSupabaseAdminClient(url, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 export type AskAssistantResult =
   | { ok: true; answer: string; remaining: number; history: AssistantTurn[] }
@@ -127,12 +144,13 @@ export async function askAssistant(input: {
   }
 
   const today = localDateStr();
-  const { data: usageRow } = await supabase
+  const { data: usageRow, error: usageReadError } = await supabase
     .from('ai_usage')
     .select('count')
     .eq('user_id', user.id)
     .eq('usage_date', today)
     .maybeSingle();
+  if (usageReadError) return { ok: false, error: 'usage-write-failed' };
   const currentCount = (usageRow as { count: number } | null)?.count ?? 0;
 
   if (currentCount >= AI_DAILY_LIMIT) {
@@ -147,22 +165,25 @@ export async function askAssistant(input: {
     return { ok: false, error: 'global-limit' };
   }
 
-  // Инкремент — вручную select-затем-insert/update (upsert), т.к. общий
-  // in-memory тест-мок не поддерживает настоящий upsert. 0 затронутых строк
-  // на update — ошибка (урок 0008: RLS может молча заблокировать запись).
-  if (usageRow) {
-    const { data: updated, error } = await supabase
-      .from('ai_usage')
-      .update({ count: currentCount + 1 })
-      .eq('user_id', user.id)
-      .eq('usage_date', today)
-      .select('count');
-    if (error || !updated || updated.length === 0) {
-      return { ok: false, error: 'usage-write-failed' };
-    }
-  } else {
-    const { error } = await supabase.from('ai_usage').insert({ user_id: user.id, usage_date: today, count: 1 });
-    if (error) return { ok: false, error: 'usage-write-failed' };
+  // Общий счётчик нельзя менять с пользовательской JWT: соответствующий RPC
+  // доступен только service_role. Проверяем конфигурацию до списания личной
+  // квоты и вызова модели, чтобы при ошибке окружения не «сжечь» запрос.
+  let globalUsageClient: ReturnType<typeof createGlobalUsageClient>;
+  try {
+    globalUsageClient = createGlobalUsageClient();
+  } catch {
+    return { ok: false, error: 'usage-write-failed' };
+  }
+
+  // Атомарный SECURITY DEFINER RPC сам привязан к auth.uid(). Обычному
+  // authenticated пользователю прямые INSERT/UPDATE ai_usage отозваны.
+  const { data: consumedCountRaw, error: consumeError } = await supabase.rpc('consume_ai_daily_quota');
+  const consumedCount = typeof consumedCountRaw === 'number' ? consumedCountRaw : null;
+  if (consumeError) return { ok: false, error: 'usage-write-failed' };
+  if (consumedCount == null) {
+    // Между предварительным SELECT и атомарным RPC другой параллельный запрос
+    // мог занять последний слот.
+    return { ok: false, error: 'daily-limit', resetsAt: nextLocalMidnightIso() };
   }
 
   const question = questionRow as { type: QuestionType; body: QuestionBody; explanation: Explanation | null };
@@ -200,7 +221,7 @@ export async function askAssistant(input: {
     ]);
     // Best-effort, как и запись ai_turns выше — отчёт о расходах не должен
     // проваливать уже полученный и оплаченный ответ ученику.
-    await supabase.rpc('increment_ai_global_usage', {
+    await globalUsageClient.rpc('increment_ai_global_usage', {
       p_input: response.usage.input_tokens,
       p_output: response.usage.output_tokens,
     });
@@ -208,7 +229,7 @@ export async function askAssistant(input: {
     return {
       ok: true,
       answer,
-      remaining: AI_DAILY_LIMIT - (currentCount + 1),
+      remaining: AI_DAILY_LIMIT - consumedCount,
       history: [...history, studentTurn, assistantTurn],
     };
   } catch {
