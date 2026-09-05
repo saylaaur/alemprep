@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
     "test": "vitest run",
     "audit:content": "tsx --tsconfig tsconfig.scripts.json scripts/audit-content.ts",
+    "repair:quarantine": "tsx --tsconfig tsconfig.scripts.json scripts/repair-quarantined-questions.ts",
     "gen:glossary": "tsx --tsconfig tsconfig.scripts.json scripts/build-glossary.ts",
     "gen:prepare": "tsx --tsconfig tsconfig.scripts.json scripts/prepare-photos.ts",
     "gen:translate": "tsx --tsconfig tsconfig.scripts.json scripts/translate-questions.ts",
