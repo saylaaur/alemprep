@@ -128,7 +128,11 @@ function describeSide(label: string, body: QuestionBody, explanation: Explanatio
     lines.push(`${label} correct: ${JSON.stringify(b.correct)}`);
   }
   if (explanation.blocks.length > 0) {
-    lines.push(`${label} explanation: ${explanation.blocks.map((bl) => bl.value).join(' ')}`);
+    lines.push(
+      `${label} explanation: ${explanation.blocks
+        .map((block) => ('value' in block ? block.value : [block.columns, ...block.rows].flat().join(' | ')))
+        .join(' ')}`,
+    );
   }
   return lines.join('\n');
 }

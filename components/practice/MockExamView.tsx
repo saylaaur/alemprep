@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { MathText } from '@/components/math/MathText';
+import { ContentBlocks } from '@/components/content/ContentBlocks';
+import { QuestionStem } from '@/components/content/QuestionStem';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Check, X, Minus, Flag, Clock, ChevronLeft, ChevronRight, Trophy, AlertCircle, Calculator as CalculatorIcon } from 'lucide-react';
@@ -561,17 +563,15 @@ export function MockExamView({ availability, locale, userId }: Props) {
             {ctx && (
               <div className="mb-4 rounded-xl border bg-muted/40 p-4">
                 {ctx.title && <div className="mb-2 text-sm font-semibold">{ctx.title}</div>}
-                <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
-                  {(ctx.content.blocks ?? []).map((b, bi) => (
-                    <div key={bi}><MathText text={b.value} /></div>
-                  ))}
+                <div className="text-sm leading-relaxed text-muted-foreground">
+                  <ContentBlocks blocks={ctx.content.blocks ?? []} />
                 </div>
               </div>
             )}
 
             {/* Question stem */}
             <div className="mb-6 text-[17px] leading-relaxed">
-              <MathText text={(current.body as { stem: string }).stem} />
+              <QuestionStem body={current.body} />
             </div>
 
             {/* Answer options */}
@@ -896,11 +896,7 @@ function ResultScreen({ blocks, answers, locale, elapsedS, t }: ResultProps) {
                             {explanationBlocks.length > 0 && (
                               <div className="rounded-lg bg-muted/30 px-4 py-3 text-sm space-y-2">
                                 <div className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('explanationLabel')}</div>
-                                {explanationBlocks.map((eb, ebi) => (
-                                  <p key={ebi}>
-                                    <MathText text={eb.value} display={eb.type === 'latex'} />
-                                  </p>
-                                ))}
+                                <ContentBlocks blocks={explanationBlocks} />
                               </div>
                             )}
                           </div>

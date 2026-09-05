@@ -84,10 +84,10 @@ export type Topic = {
 };
 
 /** Блок контента (условие, разбор, контекст). value может содержать LaTeX в $…$ */
-export type ContentBlock = {
-  type?: 'text' | 'latex' | 'image';
-  value: string;
-};
+export type ContentBlock =
+  | { type?: 'text' | 'latex'; value: string }
+  | { type: 'image'; value: string }
+  | { type: 'table'; columns: string[]; rows: string[][] };
 
 /** contexts.content (JSONB) */
 export type ContextContent = {
@@ -113,18 +113,21 @@ export type AnswerOption = {
 /** questions.body (JSONB) — полиморфно по типу вопроса */
 export type SingleBody = {
   stem: string;
+  stem_blocks?: ContentBlock[];
   options: AnswerOption[];
   correct: string;
 };
 
 export type MultiBody = {
   stem: string;
+  stem_blocks?: ContentBlock[];
   options: AnswerOption[];
   correct: string[];
 };
 
 export type MatchingBody = {
   stem: string;
+  stem_blocks?: ContentBlock[];
   left: AnswerOption[];
   right: string[];
   correct: Record<string, string>;

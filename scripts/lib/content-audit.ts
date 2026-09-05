@@ -120,7 +120,9 @@ function auditAnswer(body: QuestionBody, questionIndex: number): ContentAuditFin
 }
 
 function explanationIsContradictory(question: AuditedQuestion): boolean {
-  const explanation = question.explanation.blocks.map((block) => block.value).join(' ');
+  const explanation = question.explanation.blocks
+    .map((block) => ('value' in block ? block.value : [block.columns, ...block.rows].flat().join(' | ')))
+    .join(' ');
   return CONTRADICTORY_EXPLANATION_PATTERNS.some((pattern) => pattern.test(explanation));
 }
 

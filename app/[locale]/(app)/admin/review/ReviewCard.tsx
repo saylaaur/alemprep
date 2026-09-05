@@ -1,6 +1,7 @@
 'use client';
 
 import { MathText } from '@/components/math/MathText';
+import { ContentBlocks } from '@/components/content/ContentBlocks';
 import { Button } from '@/components/ui/button';
 import { publishQuestion, deleteQuestion } from '@/lib/supabase/admin-actions';
 import { normalizeExplanationBlocks } from '@/lib/explanation';
@@ -116,11 +117,7 @@ export function ReviewCard({
             {labels.explanation}
           </summary>
           <div className="mt-2 rounded-lg bg-muted/30 px-4 py-3 text-sm space-y-2">
-            {explanationBlocks.map((block, i) => (
-              <p key={i}>
-                <MathText text={block.value} display={block.type === 'latex'} />
-              </p>
-            ))}
+            <ContentBlocks blocks={explanationBlocks} />
           </div>
         </details>
       )}

@@ -337,6 +337,28 @@ describe('referencesMissingVisual: НЕ ловит самостоятельно�
   }
 });
 
+describe('referencesMissingVisual: встроенная таблица', () => {
+  it('не отклоняет условие, когда требуемая таблица уже хранится в stem_blocks', () => {
+    expect(
+      referencesMissingVisual({
+        body: {
+          stem: 'По данным в таблице найдите значение.',
+          stem_blocks: [
+            { type: 'text', value: 'По данным в таблице найдите значение.' },
+            { type: 'table', columns: ['x', 'y'], rows: [['1', '2']] },
+          ],
+          options: [
+            { id: 'a', content: '2' },
+            { id: 'b', content: '3' },
+          ],
+          correct: 'a',
+        },
+        explanation: { blocks: [{ type: 'text', value: 'Считываем значение из таблицы.' }] },
+      }),
+    ).toBe(false);
+  });
+});
+
 describe('referencesMissingVisual: ссылка утекла только в explanation (реальный кейс с фото физики)', () => {
   it('stem/options не решаемы без картинки, но пояснение выдаёт, что данные — с графика', () => {
     const q = singleQuestionBody(

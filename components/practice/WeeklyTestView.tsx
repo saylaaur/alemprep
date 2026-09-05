@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { MathText } from '@/components/math/MathText';
+import { ContentBlocks } from '@/components/content/ContentBlocks';
+import { QuestionStem } from '@/components/content/QuestionStem';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
@@ -302,16 +303,14 @@ export function WeeklyTestView({ second, locale, summary }: Props) {
             {ctx && (
               <div className="mb-4 rounded-xl border bg-muted/40 p-4">
                 {ctx.title && <div className="mb-2 text-sm font-semibold">{ctx.title}</div>}
-                <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
-                  {(ctx.content.blocks ?? []).map((b, bi) => (
-                    <div key={bi}><MathText text={b.value} /></div>
-                  ))}
+                <div className="text-sm leading-relaxed text-muted-foreground">
+                  <ContentBlocks blocks={ctx.content.blocks ?? []} />
                 </div>
               </div>
             )}
 
             <div className="mb-6 text-[17px] leading-relaxed">
-              <MathText text={(current.body as { stem: string }).stem} />
+              <QuestionStem body={current.body} />
             </div>
 
             <div className="mb-8">

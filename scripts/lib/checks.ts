@@ -1,12 +1,17 @@
 import {
   TranslationResponseSchema,
   type GeneratedQuestion,
+  type ContentBlock,
   type QuestionBody,
   type ExplanationType,
   type SingleBody,
   type MultiBody,
   type MatchingBody,
 } from './schema';
+
+function blockText(block: ContentBlock): string {
+  return 'value' in block ? block.value : [block.columns, ...block.rows].flat().join(' | ');
+}
 
 /**
  * Ссылки на визуальный материал, которого у нас нет (никогда не на само слово
@@ -25,7 +30,6 @@ const VISUAL_REFERENCE_PATTERNS: RegExp[] = [
   /изображен(?!и)/,
   /указан[а-я]*\s+на\s/,
   /привед[а-я]*\s+на\s/,
-  /в\s+таблиц/,
   // модель иногда честно признаётся в пояснении, что решает без картинки
   // («без полной схемы... точное решение невозможно, однако ответ указан как...»)
   /без\s+(?:\S+\s+){0,2}рисун/,
@@ -34,6 +38,8 @@ const VISUAL_REFERENCE_PATTERNS: RegExp[] = [
   /без\s+(?:\S+\s+){0,2}чертеж/,
   /без\s+(?:\S+\s+){0,2}диаграмм/,
 ];
+
+const TABLE_REFERENCE_PATTERN = /в\s+таблиц/;
 
 function normalizeForVisualCheck(text: string): string {
   return text.toLowerCase().replace(/ё/g, 'е');
@@ -81,9 +87,20 @@ export function referencesMissingVisual(question: {
 }): boolean {
   const texts = [
     ...bodyTexts(question.body),
-    ...question.explanation.blocks.map((b) => b.value),
+    ...question.explanation.blocks.map(blockText),
   ].map(normalizeForVisualCheck);
-  return texts.some((text) => VISUAL_REFERENCE_PATTERNS.some((re) => re.test(text)));
+  const stemBlocks = (question.body as { stem_blocks?: unknown }).stem_blocks;
+  const hasEmbeddedTable =
+    Array.isArray(stemBlocks) &&
+    stemBlocks.some(
+      (block) => block && typeof block === 'object' && !Array.isArray(block) && (block as { type?: unknown }).type === 'table',
+    );
+
+  return texts.some(
+    (text) =>
+      VISUAL_REFERENCE_PATTERNS.some((re) => re.test(text)) ||
+      (!hasEmbeddedTable && TABLE_REFERENCE_PATTERN.test(text)),
+  );
 }
 
 function stemOf(q: GeneratedQuestion): string {
@@ -120,7 +137,7 @@ function latexError(q: GeneratedQuestion): string | null {
   }
 
   for (const block of q.explanation.blocks) {
-    texts.push(block.value);
+    texts.push(blockText(block));
   }
 
   for (const text of texts) {
@@ -312,7 +329,21 @@ export function validateTranslation(
     if (oType !== nType) {
       return { ok: false, reason: `explanation block ${i} type changed: ${oType} → ${nType}` };
     }
-    if (oType === 'latex') {
+    if (oType === 'table') {
+      if (ob.type !== 'table' || nb.type !== 'table') {
+        return { ok: false, reason: `table explanation block ${i} malformed` };
+      }
+      if (ob.columns.length !== nb.columns.length || ob.rows.length !== nb.rows.length) {
+        return { ok: false, reason: `table explanation block ${i} shape changed` };
+      }
+      const originalCells = [...ob.columns, ...ob.rows.flat()];
+      const translatedCells = [...nb.columns, ...nb.rows.flat()];
+      if (originalCells.some((cell, cellIndex) => !latexPreserved(cell, translatedCells[cellIndex]))) {
+        return { ok: false, reason: `LaTeX altered in table explanation block ${i}` };
+      }
+    } else if (!('value' in ob) || !('value' in nb)) {
+      return { ok: false, reason: `explanation block ${i} has no text value` };
+    } else if (oType === 'latex') {
       if (ob.value !== nb.value) {
         return { ok: false, reason: `LaTeX explanation block ${i} altered` };
       }
@@ -350,6 +381,6 @@ function collectTranslatableText(
     const b = body as MatchingBody;
     parts.push(...b.left.map((l) => l.content), ...b.right);
   }
-  parts.push(...explanation.blocks.filter((b) => (b.type ?? 'text') !== 'latex').map((b) => b.value));
+  parts.push(...explanation.blocks.filter((b) => (b.type ?? 'text') !== 'latex').map(blockText));
   return parts.join(' ');
 }

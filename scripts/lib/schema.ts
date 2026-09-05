@@ -85,10 +85,22 @@ const AnswerOptionSchema = z.object({
   content: z.string(),
 });
 
-const ContentBlockSchema = z.object({
+const TextContentBlockSchema = z.object({
   type: z.enum(['text', 'latex', 'image']).optional(),
   value: z.string(),
 });
+
+const TableContentBlockSchema = z
+  .object({
+    type: z.literal('table'),
+    columns: z.array(z.string()).min(1),
+    rows: z.array(z.array(z.string())),
+  })
+  .refine((block) => block.rows.every((row) => row.length === block.columns.length), {
+    message: 'each table row must have the same number of cells as columns',
+  });
+
+const ContentBlockSchema = z.union([TextContentBlockSchema, TableContentBlockSchema]);
 
 export const ExplanationSchema = z.object({
   blocks: z.array(ContentBlockSchema).min(1),
@@ -96,18 +108,21 @@ export const ExplanationSchema = z.object({
 
 export const SingleBodySchema = z.object({
   stem: z.string().min(1),
+  stem_blocks: z.array(ContentBlockSchema).min(1).optional(),
   options: z.array(AnswerOptionSchema).min(2),
   correct: z.string(),
 });
 
 export const MultiBodySchema = z.object({
   stem: z.string().min(1),
+  stem_blocks: z.array(ContentBlockSchema).min(1).optional(),
   options: z.array(AnswerOptionSchema).min(2),
   correct: z.array(z.string()).min(1),
 });
 
 export const MatchingBodySchema = z.object({
   stem: z.string().min(1),
+  stem_blocks: z.array(ContentBlockSchema).min(1).optional(),
   left: z.array(AnswerOptionSchema).min(2),
   right: z.array(z.string()).min(2),
   correct: z.record(z.string(), z.string()),

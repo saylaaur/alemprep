@@ -3,6 +3,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { MathText } from '@/components/math/MathText';
+import { ContentBlocks } from '@/components/content/ContentBlocks';
+import { QuestionStem } from '@/components/content/QuestionStem';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -396,7 +398,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
         {/* Question */}
         <div className="mb-6">
           <div className="text-lg leading-relaxed">
-            <MathText text={(current.body as { stem: string }).stem} />
+            <QuestionStem body={current.body} />
           </div>
         </div>
 
@@ -473,11 +475,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
               explanationOpen[current.id] ? (
                 <div className="animate-slide-up space-y-2 rounded-xl border bg-card p-5 text-sm leading-relaxed text-muted-foreground shadow-xs">
                   <div className="font-medium text-foreground">{t('explanation')}</div>
-                  {explanationBlocks.map((b, i) => (
-                    <p key={i}>
-                      <MathText text={b.value} display={b.type === 'latex'} />
-                    </p>
-                  ))}
+                  <ContentBlocks blocks={explanationBlocks} />
                 </div>
               ) : (
                 <button
@@ -580,12 +578,8 @@ function ContextBlock({
   return (
     <div className="mb-6 rounded-xl border bg-muted/40 p-4">
       {ctx.title ? <div className="mb-2 text-sm font-semibold">{ctx.title}</div> : null}
-      <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
-        {(ctx.content.blocks ?? []).map((b, i) => (
-          <div key={i}>
-            <MathText text={b.value} display={b.type === 'latex'} />
-          </div>
-        ))}
+      <div className="text-sm leading-relaxed text-muted-foreground">
+        <ContentBlocks blocks={ctx.content.blocks ?? []} />
       </div>
     </div>
   );

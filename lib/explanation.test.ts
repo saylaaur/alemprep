@@ -37,8 +37,8 @@ describe('normalizeExplanationBlocks: валидные данные', () => {
   });
 });
 
-describe('normalizeExplanationBlocks: type: "image"', () => {
-  it('блоки-картинки аккуратно пропускаются (не поддерживаются)', () => {
+describe('normalizeExplanationBlocks: визуальные блоки', () => {
+  it('сохраняет безопасную ссылку на изображение', () => {
     expect(
       normalizeExplanationBlocks({
         blocks: [
@@ -49,8 +49,43 @@ describe('normalizeExplanationBlocks: type: "image"', () => {
       })
     ).toEqual([
       { type: 'text', value: 'До картинки.' },
+      { type: 'image', value: 'https://example.com/pic.png' },
       { type: 'text', value: 'После картинки.' },
     ]);
+  });
+
+  it('сохраняет таблицу с согласованными колонками и строками', () => {
+    expect(
+      normalizeExplanationBlocks({
+        blocks: [
+          {
+            type: 'table',
+            columns: ['x', 'y'],
+            rows: [
+              ['1', '2'],
+              ['3', '4'],
+            ],
+          },
+        ],
+      }),
+    ).toEqual([
+      {
+        type: 'table',
+        columns: ['x', 'y'],
+        rows: [
+          ['1', '2'],
+          ['3', '4'],
+        ],
+      },
+    ]);
+  });
+
+  it('отбрасывает таблицу с разным числом ячеек', () => {
+    expect(
+      normalizeExplanationBlocks({
+        blocks: [{ type: 'table', columns: ['x', 'y'], rows: [['1']] }],
+      }),
+    ).toEqual([]);
   });
 });
 

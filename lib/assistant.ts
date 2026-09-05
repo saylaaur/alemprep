@@ -175,7 +175,9 @@ export function buildAssistantContext(
   ];
 
   if (answerRevealed && question.explanation) {
-    const text = question.explanation.blocks.map((b) => b.value).join(' ');
+    const text = question.explanation.blocks
+      .map((block) => ('value' in block ? block.value : [block.columns, ...block.rows].flat().join(' | ')))
+      .join(' ');
     parts.push(`Готовый разбор задачи: ${text}`);
   }
 
