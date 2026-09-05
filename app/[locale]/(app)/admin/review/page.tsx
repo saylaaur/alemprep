@@ -1,10 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Button } from '@/components/ui/button';
-import { CheckCircle2 } from 'lucide-react';
 import { getProfile, getUnpublishedQuestions } from '@/lib/supabase/queries';
-import { publishAll } from '@/lib/supabase/admin-actions';
 import { ReviewCard } from './ReviewCard';
 import type { Locale } from '@/types/db';
 
@@ -44,15 +41,6 @@ export default async function AdminReviewPage({
       <PageHeader title={t('title')} subtitle={subtitle} />
 
       <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-3xl">
-        {questions.length > 0 && (
-          <form action={publishAll}>
-            <Button type="submit" variant="outline" className="gap-2">
-              <CheckCircle2 className="h-4 w-4" />
-              {t('publishAll', { count: questions.length })}
-            </Button>
-          </form>
-        )}
-
         {questions.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t('noQuestions')}</p>
         ) : (

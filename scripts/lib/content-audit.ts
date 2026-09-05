@@ -1,6 +1,8 @@
 import { referencesMissingVisual } from './checks';
 import type { GeneratedQuestion, MatchingBody, MultiBody, QuestionBody, SingleBody } from './schema';
 
+export type AuditedQuestion = Pick<GeneratedQuestion, 'type' | 'body' | 'explanation'>;
+
 export type ContentAuditCode =
   | 'invalid_correct_answer'
   | 'contradictory_explanation'
@@ -47,7 +49,7 @@ const CONTRADICTORY_EXPLANATION_PATTERNS = [
   /ответ\s+должен\s+быть.*(?:нет|отсутств)/i,
 ];
 
-function normalizedStem(question: GeneratedQuestion): string {
+function normalizedStem(question: AuditedQuestion): string {
   return (question.body as { stem: string }).stem.replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
@@ -117,7 +119,7 @@ function auditAnswer(body: QuestionBody, questionIndex: number): ContentAuditFin
   return auditMatchingAnswer(body, questionIndex);
 }
 
-function explanationIsContradictory(question: GeneratedQuestion): boolean {
+function explanationIsContradictory(question: AuditedQuestion): boolean {
   const explanation = question.explanation.blocks.map((block) => block.value).join(' ');
   return CONTRADICTORY_EXPLANATION_PATTERNS.some((pattern) => pattern.test(explanation));
 }
@@ -127,7 +129,7 @@ function explanationIsContradictory(question: GeneratedQuestion): boolean {
  * Результат не подтверждает математическую верность: finding с severity review
  * означает обязательную проверку редактором, blocker — запрет публикации.
  */
-export function auditQuestions(questions: GeneratedQuestion[]): ContentAuditResult {
+export function auditQuestions(questions: AuditedQuestion[]): ContentAuditResult {
   const findings: ContentAuditFinding[] = [];
   const firstByStem = new Map<string, number>();
 
@@ -167,6 +169,17 @@ export function auditQuestions(questions: GeneratedQuestion[]): ContentAuditResu
   }
 
   return { findings };
+}
+
+/**
+ * Минимальный предохранитель в редакторской публикации. Он не заменяет ручную
+ * приёмку, но не допускает задачу с уже известным структурным дефектом.
+ */
+export function isEligibleForPublication(
+  question: AuditedQuestion,
+): { eligible: true } | { eligible: false; reason: ContentAuditCode } {
+  const finding = auditQuestions([question]).findings.find((item) => item.code !== 'duplicate_stem');
+  return finding ? { eligible: false, reason: finding.code } : { eligible: true };
 }
 
 /** Объединяет результаты по выгрузкам, включая дубли между разными файлами. */

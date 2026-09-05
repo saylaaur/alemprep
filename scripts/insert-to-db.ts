@@ -25,6 +25,7 @@ import {
   type TranslatedQuestion,
 } from './lib/schema';
 import { resolveTopic } from './lib/topic-resolve';
+import { auditQuestions } from './lib/content-audit';
 import type { Locale } from '@/types/db';
 
 function expandPath(p: string): string {
@@ -46,12 +47,15 @@ function parseArgs(): { input: string; subject: string; publish: boolean; langua
   const args = process.argv.slice(2);
   let input = '';
   let subject = 'math';
-  let publish = false;
+  const publish = false;
   let language: Locale = 'ru';
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--input' && args[i + 1]) input = expandPath(args[++i]);
     if (args[i] === '--subject' && args[i + 1]) subject = args[++i];
-    if (args[i] === '--publish') publish = true;
+    if (args[i] === '--publish') {
+      console.error('\n❌  Direct publication is disabled. Insert tasks as drafts and publish each reviewed task in /admin/review.\n');
+      process.exit(1);
+    }
     if (args[i] === '--language' && args[i + 1]) language = args[++i] as Locale;
   }
   if (!input) {
@@ -147,6 +151,13 @@ async function insertRuQuestions(
     `📋  Inserting ${questions.length} questions (default subject: ${subject}, language: ru, is_published: ${publish})\n`,
   );
 
+  const audit = auditQuestions(questions);
+  const blockedByIndex = new Map(
+    audit.findings
+      .filter((finding) => finding.code !== 'duplicate_stem')
+      .map((finding) => [finding.questionIndex, finding]),
+  );
+
   const neededSubjects = new Set<string>([subject]);
   for (const q of questions) {
     if (q.subject) neededSubjects.add(q.subject);
@@ -161,6 +172,12 @@ async function insertRuQuestions(
   let failed = 0;
 
   for (const [i, q] of questions.entries()) {
+    const finding = blockedByIndex.get(i);
+    if (finding) {
+      console.warn(`  ⚠️  ${q.topic_slug}: ${finding.code} — задача не вставлена`);
+      failed++;
+      continue;
+    }
     const resolution = resolveTopic(q, subject, topicMapsBySubject);
     if (resolution.kind === 'unknown_subject') {
       console.warn(`  ⚠️  Предмет "${resolution.subject}" недоступен в БД — задача пропущена`);

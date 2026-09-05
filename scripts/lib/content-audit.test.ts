@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { auditQuestionFiles, auditQuestions } from './content-audit';
+import { auditQuestionFiles, auditQuestions, isEligibleForPublication } from './content-audit';
 import type { GeneratedQuestion } from './schema';
 
 function question(overrides: Partial<GeneratedQuestion> = {}): GeneratedQuestion {
@@ -118,5 +118,24 @@ describe('auditQuestionFiles', () => {
       severity: 'review',
       detail: 'same normalized stem as question 0',
     });
+  });
+});
+
+describe('isEligibleForPublication', () => {
+  it('rejects a question whose explanation admits the answer is unjustified', () => {
+    const doubtful = question({
+      explanation: {
+        blocks: [{ type: 'text', value: 'Получили 5, но такого варианта нет. Принимаем ответ как дан.' }],
+      },
+    });
+
+    expect(isEligibleForPublication(doubtful)).toEqual({
+      eligible: false,
+      reason: 'contradictory_explanation',
+    });
+  });
+
+  it('accepts a complete and internally consistent question', () => {
+    expect(isEligibleForPublication(question())).toEqual({ eligible: true });
   });
 });
