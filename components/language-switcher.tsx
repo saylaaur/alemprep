@@ -1,6 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { Languages } from 'lucide-react';
 import { alternateLocale, withLocalePrefix } from '@/lib/locale';
 import { cn } from '@/lib/utils';
@@ -11,12 +12,13 @@ type Props = { compact?: boolean };
 /** Keeps the current route while changing its /ru or /kk prefix. */
 export function LanguageSwitcher({ compact = false }: Props) {
   const t = useTranslations('language');
+  const router = useRouter();
   const locale = useLocale() as Locale;
   const nextLocale = alternateLocale(locale);
 
   const switchLocale = (targetLocale = nextLocale) => {
     const target = withLocalePrefix(window.location.pathname, targetLocale);
-    window.location.assign(`${target}${window.location.search}${window.location.hash}`);
+    router.push(`${target}${window.location.search}${window.location.hash}`);
   };
 
   if (compact) {

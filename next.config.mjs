@@ -31,10 +31,6 @@ if (process.env.NODE_ENV === 'production') {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  eslint: {
-    // lint runs separately via `npm run lint`; skip the duplicate build-time pass
-    ignoreDuringBuilds: true,
-  },
   async headers() {
     return [
       {

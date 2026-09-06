@@ -13,10 +13,10 @@ AlemPrep — бесплатная веб-платформа для подгот�
 
 ## Стек
 
-- **Next.js 15** (App Router) + **React 19** + **TypeScript** (strict)
+- **Next.js 16** (App Router) + **React 19** + **TypeScript** (strict)
 - **Tailwind CSS 3.4** + компоненты в стиле shadcn + CSS-переменные для темы
 - **Supabase** (Postgres, Auth, RLS, SSR через `@supabase/ssr`) — проект `euypaocjzcqlapfilrak`, регион Frankfurt
-- **next-intl 3.26** (`localePrefix: 'always'` → URL вида `/ru/...`, `/kk/...`)
+- **next-intl 4.14** (`localePrefix: 'always'` → URL вида `/ru/...`, `/kk/...`)
 - **next-themes** (light/dark), шрифт **Inter** (next/font, кириллица)
 - **KaTeX** через CDN (auto-render) — рендер формул в `$...$`
 - **lucide-react** — иконки
@@ -51,7 +51,7 @@ types/db.ts         — типы по схеме БД (см. «Грабли»)
 i18n/               — routing.ts, request.ts
 messages/           — ru.json, kk.json (ключи держим в ПАРИТЕТЕ)
 supabase/migrations/— 0001 schema, 0002 seed subjects/topics, 0003 seed logarithms; run_all.sql — всё вместе
-middleware.ts       — next-intl + Supabase auth-guard
+proxy.ts             — next-intl + Supabase auth-guard
 ```
 
 ## База данных (7 таблиц)

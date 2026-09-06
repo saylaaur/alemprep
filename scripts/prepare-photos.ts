@@ -14,7 +14,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import sharp from 'sharp';
+import sharp, { type Sharp } from 'sharp';
 import heicConvert from 'heic-convert';
 import { computeColumnCrops, columnOutputNames, singleOutputName, isHeicFile, isSupportedPhoto } from './lib/photo-prep';
 
@@ -51,7 +51,7 @@ async function decodeToOrientedJpeg(filePath: string): Promise<Buffer> {
   return sharp(input).rotate().jpeg({ quality: 100 }).toBuffer();
 }
 
-async function writeDownscaled(source: sharp.Sharp, outPath: string): Promise<void> {
+async function writeDownscaled(source: Sharp, outPath: string): Promise<void> {
   await source
     .resize({ width: MAX_DIMENSION, height: MAX_DIMENSION, fit: 'inside', withoutEnlargement: true })
     .jpeg({ quality: JPEG_QUALITY })

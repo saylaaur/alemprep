@@ -1,4 +1,4 @@
-import { routing } from '@/i18n/routing';
+import { defaultLocale, locales } from '@/i18n/locales';
 
 export type ResolvedAuthRedirect = { next: string; locale: string };
 
@@ -8,15 +8,15 @@ export type ResolvedAuthRedirect = { next: string; locale: string };
  * локалью в первом сегменте; иначе — дашборд дефолтной локали из routing.
  */
 export function resolveAuthRedirect(nextParam: string | null): ResolvedAuthRedirect {
-  const fallback = `/${routing.defaultLocale}/dashboard`;
+  const fallback = `/${defaultLocale}/dashboard`;
 
   const isSafePath =
     !!nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//');
-  if (!isSafePath) return { next: fallback, locale: routing.defaultLocale };
+  if (!isSafePath) return { next: fallback, locale: defaultLocale };
 
   const rawLocale = nextParam.split('/')[1];
-  if (!(routing.locales as readonly string[]).includes(rawLocale)) {
-    return { next: fallback, locale: routing.defaultLocale };
+  if (!(locales as readonly string[]).includes(rawLocale)) {
+    return { next: fallback, locale: defaultLocale };
   }
 
   return { next: nextParam, locale: rawLocale };

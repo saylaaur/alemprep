@@ -5,7 +5,7 @@ import { updateSession } from './lib/supabase/middleware';
 
 const intlMiddleware = createIntlMiddleware(routing);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Сначала next-intl делает редирект на /ru или /kk если префикса нет
   const intlResponse = intlMiddleware(request);
   if (intlResponse.headers.get('location')) {
