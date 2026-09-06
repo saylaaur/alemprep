@@ -114,6 +114,7 @@ export async function recordAttempt(input: RecordInput) {
 export async function createExamSession(input: {
   subjectId: string;
   totalQuestions: number;
+  questionIds: string[];
 }): Promise<{ sessionId: string } | { error: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -126,6 +127,7 @@ export async function createExamSession(input: {
       subject_id: input.subjectId,
       mode: 'mock_exam' as const,
       total_questions: input.totalQuestions,
+      question_ids: input.questionIds,
       correct_count: 0,
       score: 0,
     })
@@ -159,6 +161,7 @@ export async function startPairExam(input: {
     const res = await createExamSession({
       subjectId: block.subjectId,
       totalQuestions: block.questions.length,
+      questionIds: block.questions.map((question) => question.id),
     });
     if ('error' in res) return { error: res.error };
     blocks.push({ ...block, sessionId: res.sessionId });
@@ -207,7 +210,7 @@ export async function finishExamSession(input: {
   // ретрай после флап-ответа). Ownership проверяем тем же user_id.
   const { data: existingSession } = await supabase
     .from('sessions')
-    .select('correct_count, score, finished_at, total_questions')
+    .select('correct_count, score, finished_at, total_questions, question_ids')
     .eq('id', input.sessionId)
     .eq('user_id', user.id)
     .maybeSingle();
@@ -217,6 +220,7 @@ export async function finishExamSession(input: {
     score: number | null;
     finished_at: string | null;
     total_questions: number | null;
+    question_ids: string[] | null;
   };
   if (prior.finished_at) {
     return {
@@ -229,9 +233,11 @@ export async function finishExamSession(input: {
   // Баллы ЕНТ (с частичным зачётом multi/matching) считаем только по данным
   // из БД — ответы приходят с клиента, правильность и баллы ему не доверяем.
   const questionIds = input.results.map((r) => r.questionId);
+  const allowedQuestionIds = prior.question_ids;
   if (
     new Set(questionIds).size !== questionIds.length ||
-    questionIds.length > (prior.total_questions ?? 0)
+    questionIds.length > (prior.total_questions ?? 0) ||
+    (allowedQuestionIds != null && questionIds.some((questionId) => !allowedQuestionIds.includes(questionId)))
   ) {
     return { error: 'invalid exam results' };
   }

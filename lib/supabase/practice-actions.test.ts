@@ -26,7 +26,7 @@ import { finishExamSession, recordAttempt, verifyExamSessions } from './practice
 function seed(): Store {
   return {
     sessions: [
-      { id: 'S1', user_id: 'U1', total_questions: 2, correct_count: null, score: null, finished_at: null },
+      { id: 'S1', user_id: 'U1', total_questions: 2, question_ids: ['Q1', 'Q2'], correct_count: null, score: null, finished_at: null },
     ],
     questions: [
       { id: 'Q1', type: 'single', body: { correct: 'A' }, topic_id: 'T1' },
@@ -204,6 +204,17 @@ describe('finishExamSession — идемпотентность', () => {
     const res = await finishExamSession({
       sessionId: 'S1',
       results: [{ questionId: 'DELETED', givenAnswer: 'A', timeSpentMs: 1000 }],
+    });
+
+    expect(res).toEqual({ error: 'invalid exam results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+    expect(h.store.attempts).toHaveLength(0);
+  });
+
+  it('отклоняет существующий вопрос, который не был выдан в этой сессии', async () => {
+    const res = await finishExamSession({
+      sessionId: 'S1',
+      results: [{ questionId: 'Q3', givenAnswer: 'C', timeSpentMs: 1000 }],
     });
 
     expect(res).toEqual({ error: 'invalid exam results' });
