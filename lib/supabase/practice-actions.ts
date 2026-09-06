@@ -25,6 +25,7 @@ type RecordInput = {
 };
 
 const MAX_ATTEMPT_TIME_MS = 2 * 60 * 60 * 1000;
+const MAX_EXAM_SESSION_IDS = 2;
 
 export async function recordAttempt(input: RecordInput) {
   if (
@@ -196,7 +197,7 @@ type ExamResult = {
 export async function verifyExamSessions(sessionIds: string[]): Promise<{ ok: boolean }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || sessionIds.length === 0) return { ok: false };
+  if (!user || sessionIds.length === 0 || sessionIds.length > MAX_EXAM_SESSION_IDS) return { ok: false };
 
   const { data, error } = await supabase
     .from('sessions')

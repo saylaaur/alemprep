@@ -321,6 +321,17 @@ describe('verifyExamSessions — принадлежность сессий те�
   it('пустой список → не ok', async () => {
     expect(await verifyExamSessions([])).toEqual({ ok: false });
   });
+
+  it('отклоняет слишком длинный список sessionId до запроса к базе', async () => {
+    h.store.sessions.push(
+      { id: 'S2', user_id: 'U1' },
+      { id: 'S3', user_id: 'U1' },
+      { id: 'S4', user_id: 'U1' },
+      { id: 'S5', user_id: 'U1' },
+    );
+
+    expect(await verifyExamSessions(['S1', 'S2', 'S3', 'S4', 'S5'])).toEqual({ ok: false });
+  });
 });
 
 describe('recordAttempt — сохранение прогресса', () => {
