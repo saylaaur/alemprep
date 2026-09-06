@@ -16,7 +16,7 @@ export default async function SubjectsPage({
 
   const [t, subjects] = await Promise.all([
     getTranslations('subjects'),
-    getSubjectsWithCounts(),
+    getSubjectsWithCounts(locale as Locale),
   ]);
 
   return (

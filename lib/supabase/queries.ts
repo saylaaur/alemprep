@@ -117,13 +117,18 @@ export async function getProfile(): Promise<Profile | null> {
   }
 }
 
-export async function getSubjectsWithCounts() {
+export async function getSubjectsWithCounts(locale: Locale = 'ru') {
   const supabase = await createClient();
   // RPC или ручной join? Делаем 2 запроса для простоты.
   const [subjectsRes, topicsRes, questionsRes] = await Promise.all([
     supabase.from('subjects').select('*').order('sort_order').then((r) => r, () => ({ data: [] })),
     supabase.from('topics').select('id, subject_id').then((r) => r, () => ({ data: [] })),
-    supabase.from('questions').select('id, topic_id').eq('is_published', true).then((r) => r, () => ({ data: [] })),
+    supabase
+      .from('questions')
+      .select('id, topic_id')
+      .eq('is_published', true)
+      .eq('language', locale)
+      .then((r) => r, () => ({ data: [] })),
   ]);
 
   const subjects = (subjectsRes.data ?? []) as Subject[];
@@ -161,7 +166,7 @@ export async function getSubjectBySlug(slug: string): Promise<Subject | null> {
   return data as Subject | null;
 }
 
-export async function getTopicsForSubject(subjectSlug: string) {
+export async function getTopicsForSubject(subjectSlug: string, locale: Locale = 'ru') {
   const supabase = await createClient();
   const subject = await getSubjectBySlug(subjectSlug);
   if (!subject) return [];
@@ -172,7 +177,11 @@ export async function getTopicsForSubject(subjectSlug: string) {
       .select('*')
       .eq('subject_id', subject.id)
       .order('sort_order'),
-    supabase.from('questions').select('id, topic_id').eq('is_published', true),
+    supabase
+      .from('questions')
+      .select('id, topic_id')
+      .eq('is_published', true)
+      .eq('language', locale),
   ]);
 
   const topics = (topicsRes.data ?? []) as Topic[];

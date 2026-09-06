@@ -35,7 +35,7 @@ export default async function SubjectTopicsPage({
 
   const [t, topics] = await Promise.all([
     getTranslations('subjects'),
-    getTopicsForSubject(subjectSlug),
+    getTopicsForSubject(subjectSlug, locale as Locale),
   ]);
 
   const sections = groupTopicsBySection(topics);

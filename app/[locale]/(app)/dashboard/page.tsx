@@ -45,7 +45,7 @@ export default async function DashboardPage({
     getTranslations('subjects'),
     getTranslations('achievements'),
     userId ? getGamification(userId) : Promise.resolve(null),
-    getSubjectsWithCounts(),
+    getSubjectsWithCounts(locale as Locale),
     userId && profile?.second_subject ? getWeeklyTestSummary(userId) : Promise.resolve(null),
   ]);
 
