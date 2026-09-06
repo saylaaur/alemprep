@@ -207,7 +207,7 @@ export async function finishExamSession(input: {
   // ретрай после флап-ответа). Ownership проверяем тем же user_id.
   const { data: existingSession } = await supabase
     .from('sessions')
-    .select('correct_count, score, finished_at')
+    .select('correct_count, score, finished_at, total_questions')
     .eq('id', input.sessionId)
     .eq('user_id', user.id)
     .maybeSingle();
@@ -216,6 +216,7 @@ export async function finishExamSession(input: {
     correct_count: number | null;
     score: number | null;
     finished_at: string | null;
+    total_questions: number | null;
   };
   if (prior.finished_at) {
     return {
@@ -228,6 +229,12 @@ export async function finishExamSession(input: {
   // Баллы ЕНТ (с частичным зачётом multi/matching) считаем только по данным
   // из БД — ответы приходят с клиента, правильность и баллы ему не доверяем.
   const questionIds = input.results.map((r) => r.questionId);
+  if (
+    new Set(questionIds).size !== questionIds.length ||
+    questionIds.length > (prior.total_questions ?? 0)
+  ) {
+    return { error: 'invalid exam results' };
+  }
   const { data: qRows } = questionIds.length > 0
     ? await supabase.from('questions').select('id, type, body').in('id', questionIds)
     : { data: [] };

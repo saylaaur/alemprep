@@ -26,11 +26,12 @@ import { finishExamSession, recordAttempt, verifyExamSessions } from './practice
 function seed(): Store {
   return {
     sessions: [
-      { id: 'S1', user_id: 'U1', correct_count: null, score: null, finished_at: null },
+      { id: 'S1', user_id: 'U1', total_questions: 2, correct_count: null, score: null, finished_at: null },
     ],
     questions: [
       { id: 'Q1', type: 'single', body: { correct: 'A' }, topic_id: 'T1' },
       { id: 'Q2', type: 'single', body: { correct: 'B' }, topic_id: 'T1' },
+      { id: 'Q3', type: 'single', body: { correct: 'C' }, topic_id: 'T1' },
     ],
     profiles: [{
       id: 'U1',
@@ -166,6 +167,36 @@ describe('finishExamSession — идемпотентность', () => {
   it('несуществующая/чужая сессия — ошибка, без записи попыток', async () => {
     const res = await finishExamSession({ ...input, sessionId: 'NOPE' });
     expect(res).toEqual({ error: 'session not found' });
+    expect(h.store.attempts).toHaveLength(0);
+  });
+
+  it('отклоняет повтор одного questionId, не записывая результат и XP', async () => {
+    const res = await finishExamSession({
+      sessionId: 'S1',
+      results: [
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+      ],
+    });
+
+    expect(res).toEqual({ error: 'invalid exam results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+    expect(h.store.attempts).toHaveLength(0);
+    expect(h.store.profiles[0].xp).toBe(0);
+  });
+
+  it('отклоняет число ответов больше, чем размер созданной сессии', async () => {
+    const res = await finishExamSession({
+      sessionId: 'S1',
+      results: [
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+        { questionId: 'Q2', givenAnswer: 'B', timeSpentMs: 1000 },
+        { questionId: 'Q3', givenAnswer: 'C', timeSpentMs: 1000 },
+      ],
+    });
+
+    expect(res).toEqual({ error: 'invalid exam results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
     expect(h.store.attempts).toHaveLength(0);
   });
 
