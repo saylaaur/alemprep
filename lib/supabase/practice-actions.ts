@@ -241,6 +241,9 @@ export async function finishExamSession(input: {
   const qById = new Map(
     (qRows ?? []).map((q) => [q.id as string, { type: q.type as QuestionType, body: q.body as QuestionBody }])
   );
+  if (qById.size !== questionIds.length) {
+    return { error: 'invalid exam results' };
+  }
 
   const scored = input.results.map((r) => {
     const q = qById.get(r.questionId);

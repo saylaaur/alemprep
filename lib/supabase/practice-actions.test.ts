@@ -200,6 +200,17 @@ describe('finishExamSession — идемпотентность', () => {
     expect(h.store.attempts).toHaveLength(0);
   });
 
+  it('отклоняет ID вопроса, которого сервер не нашёл', async () => {
+    const res = await finishExamSession({
+      sessionId: 'S1',
+      results: [{ questionId: 'DELETED', givenAnswer: 'A', timeSpentMs: 1000 }],
+    });
+
+    expect(res).toEqual({ error: 'invalid exam results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+    expect(h.store.attempts).toHaveLength(0);
+  });
+
   it('второй блок пробника в тот же день не двигает стрик повторно', async () => {
     // Вторая сессия того же пробника (второй предмет пары).
     h.store.sessions.push({
