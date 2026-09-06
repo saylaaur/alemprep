@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from './server';
+import { createAdminClient, createClient } from './server';
 import { revalidatePath } from 'next/cache';
 import {
   EXAM_SECOND_SUBJECTS,
@@ -90,7 +90,7 @@ export async function recordAttempt(input: RecordInput) {
       xpAwarded = XP_PER_CORRECT;
     }
     if (Object.keys(update).length > 0) {
-      const { error: profileError } = await supabase.from('profiles').update(update).eq('id', user.id);
+      const { error: profileError } = await createAdminClient().from('profiles').update(update).eq('id', user.id);
       if (profileError) {
         if (attemptId) {
           await supabase.from('attempts').delete().eq('id', attemptId).eq('user_id', user.id);
@@ -355,7 +355,7 @@ export async function finishExamSession(input: {
       }
     }
   }
-  const { error: profileError } = await supabase
+  const { error: profileError } = await createAdminClient()
     .from('profiles')
     .update(profileUpdate)
     .eq('id', user.id);

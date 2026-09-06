@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from './server';
+import { createAdminClient, createClient } from './server';
 import { revalidatePath } from 'next/cache';
 import { QUESTION_POINTS, scoreAnswer } from '@/lib/exam';
 import { advanceStreak, localDateStr } from '@/lib/streak';
@@ -243,7 +243,7 @@ export async function finishWeeklyTest(input: {
       }
     }
   }
-  const { error: profileError } = await supabase
+  const { error: profileError } = await createAdminClient()
     .from('profiles')
     .update(profileUpdate)
     .eq('id', user.id);

@@ -10,6 +10,7 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('./queries', () => ({ getPairExamBlocks: vi.fn() }));
 vi.mock('./server', () => ({
   createClient: async () => makeClient(h),
+  createAdminClient: () => makeClient(h),
 }));
 
 // Импортируем ПОСЛЕ регистрации моков.
