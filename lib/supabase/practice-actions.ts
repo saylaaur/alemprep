@@ -247,6 +247,7 @@ export async function finishExamSession(input: {
   const allowedQuestionIds = prior.question_ids;
   if (
     new Set(questionIds).size !== questionIds.length ||
+    input.results.some((result) => !Number.isInteger(result.timeSpentMs) || result.timeSpentMs < 0 || result.timeSpentMs > MAX_ATTEMPT_TIME_MS) ||
     questionIds.length > (prior.total_questions ?? 0) ||
     (allowedQuestionIds != null && questionIds.some((questionId) => !allowedQuestionIds.includes(questionId)))
   ) {

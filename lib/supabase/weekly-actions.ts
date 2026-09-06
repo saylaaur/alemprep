@@ -101,6 +101,8 @@ type WeeklyResult = {
   timeSpentMs: number;
 };
 
+const MAX_ATTEMPT_TIME_MS = 2 * 60 * 60 * 1000;
+
 /**
  * Клон finishExamSession: ownership, идемпотентность (условный UPDATE
  * finished_at IS NULL + fallback на гонку), баллы только по данным из БД,
@@ -141,6 +143,7 @@ export async function finishWeeklyTest(input: {
   const allowedQuestionIds = prior.question_ids;
   if (
     new Set(questionIds).size !== questionIds.length ||
+    input.results.some((result) => !Number.isInteger(result.timeSpentMs) || result.timeSpentMs < 0 || result.timeSpentMs > MAX_ATTEMPT_TIME_MS) ||
     (allowedQuestionIds != null && questionIds.some((questionId) => !allowedQuestionIds.includes(questionId)))
   ) {
     return { error: 'invalid weekly results' };

@@ -115,6 +115,14 @@ describe('finishWeeklyTest', () => {
     expect(h.store.sessions[0].finished_at).toBeNull();
   });
 
+  it('отклоняет пакет с некорректным временем ответа', async () => {
+    const res = await finishWeeklyTest({
+      sessionId: 'S1', results: [{ questionId: 'Q1', givenAnswer: 'A', timeSpentMs: -1 }],
+    });
+    expect(res).toEqual({ error: 'invalid weekly results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+  });
+
   it('сессия не в режиме weekly — ошибка', async () => {
     h.store.sessions.push({
       id: 'S-diag', user_id: 'U1', mode: 'diagnostic', correct_count: null, score: null,

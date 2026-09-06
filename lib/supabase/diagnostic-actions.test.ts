@@ -90,6 +90,14 @@ describe('finishDiagnostic', () => {
     expect(h.store.sessions[0].finished_at).toBeNull();
   });
 
+  it('отклоняет пакет с некорректным временем ответа', async () => {
+    const res = await finishDiagnostic({
+      sessionId: 'S1', results: [{ questionId: 'Q1', givenAnswer: 'A', timeSpentMs: -1 }],
+    });
+    expect(res).toEqual({ error: 'invalid diagnostic results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+  });
+
   it('сессия не в режиме diagnostic — ошибка', async () => {
     h.store.sessions.push({
       id: 'S-exam', user_id: 'U1', mode: 'mock_exam', correct_count: null, score: null, finished_at: null,

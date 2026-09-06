@@ -223,6 +223,15 @@ describe('finishExamSession — идемпотентность', () => {
     expect(h.store.attempts).toHaveLength(0);
   });
 
+  it('отклоняет пакет с некорректным временем ответа', async () => {
+    const res = await finishExamSession({
+      sessionId: 'S1',
+      results: [{ questionId: 'Q1', givenAnswer: 'A', timeSpentMs: -1 }],
+    });
+    expect(res).toEqual({ error: 'invalid exam results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+  });
+
   it('второй блок пробника в тот же день не двигает стрик повторно', async () => {
     // Вторая сессия того же пробника (второй предмет пары).
     h.store.sessions.push({
