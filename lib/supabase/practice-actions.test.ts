@@ -376,6 +376,17 @@ describe('recordAttempt — сохранение прогресса', () => {
     });
   });
 
+  it('отклоняет некорректное время ответа до записи попытки', async () => {
+    const res = await recordAttempt({
+      questionId: 'Q1',
+      givenAnswer: 'A',
+      timeSpentMs: -1,
+    });
+
+    expect(res).toEqual({ ok: false, error: 'invalid-input' });
+    expect(h.store.attempts).toHaveLength(0);
+  });
+
   it('пропущен ровно один день, есть заморозка — стрик растёт, заморозка списывается', async () => {
     h.store.profiles[0].last_active_date = '2026-07-02';
     h.store.profiles[0].streak_freezes = 1;

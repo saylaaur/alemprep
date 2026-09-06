@@ -24,7 +24,18 @@ type RecordInput = {
   timeSpentMs: number;
 };
 
+const MAX_ATTEMPT_TIME_MS = 2 * 60 * 60 * 1000;
+
 export async function recordAttempt(input: RecordInput) {
+  if (
+    typeof input.questionId !== 'string' ||
+    input.questionId.length === 0 ||
+    !Number.isInteger(input.timeSpentMs) ||
+    input.timeSpentMs < 0 ||
+    input.timeSpentMs > MAX_ATTEMPT_TIME_MS
+  ) {
+    return { ok: false as const, error: 'invalid-input' };
+  }
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: 'unauthenticated' };
