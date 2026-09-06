@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { signOut } from '@/lib/supabase/auth-actions';
 import { clearAllSavedExams } from '@/lib/exam-storage';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { LanguageSwitcher } from '@/components/language-switcher';
 import type { Profile } from '@/types/db';
 import { navItems } from './nav-items';
 import { GraduationCap, LogOut, Menu, X, Flame } from 'lucide-react';
@@ -110,14 +111,15 @@ export function MobileNav({
           </div>
           <span className="text-[15px] font-semibold tracking-tight">{tBrand('name')}</span>
         </div>
-        {streak > 0 ? (
-          <div className="flex h-11 items-center gap-1.5 rounded-full bg-streak/12 px-3">
-            <Flame className="h-4 w-4 fill-streak text-streak" />
-            <span className="font-mono text-sm font-bold tabular-nums text-streak">{streak}</span>
-          </div>
-        ) : (
-          <div className="h-11 w-11" aria-hidden />
-        )}
+        <div className="flex items-center gap-1">
+          <LanguageSwitcher compact />
+          {streak > 0 ? (
+            <div className="flex h-9 items-center gap-1.5 rounded-full bg-streak/12 px-2.5">
+              <Flame className="h-4 w-4 fill-streak text-streak" />
+              <span className="font-mono text-sm font-bold tabular-nums text-streak">{streak}</span>
+            </div>
+          ) : null}
+        </div>
       </header>
 
       {/* Overlay */}
@@ -210,6 +212,7 @@ export function MobileNav({
           </div>
 
           <ThemeToggle />
+          <LanguageSwitcher />
 
           {/* Прогресс пробника в localStorage — чистим при выходе, чтобы он
               не достался следующему аккаунту на этом устройстве. */}

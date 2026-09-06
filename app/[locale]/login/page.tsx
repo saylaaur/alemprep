@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { signInWithGoogle } from '@/lib/supabase/auth-actions';
 import { Button } from '@/components/ui/button';
+import { LanguageSwitcher } from '@/components/language-switcher';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { GraduationCap, ArrowLeft } from 'lucide-react';
 
@@ -36,6 +37,10 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
         <ArrowLeft className="h-4 w-4" />
         {tBrand('name')}
       </Link>
+
+      <div className="absolute right-6 top-5">
+        <LanguageSwitcher compact />
+      </div>
 
       <Card className="w-full max-w-sm animate-scale-in shadow-lg">
         <CardHeader className="items-center text-center">

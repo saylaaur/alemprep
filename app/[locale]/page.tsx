@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Button } from '@/components/ui/button';
+import { LanguageSwitcher } from '@/components/language-switcher';
 import {
   GraduationCap,
   ArrowRight,
@@ -74,9 +75,12 @@ export default async function LandingPage({
             {tBrand('name')}
           </span>
         </div>
-        <Button asChild variant="ghost" size="sm">
-          <Link href="/login">{t('ctaSecondary')}</Link>
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <LanguageSwitcher compact />
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/login">{t('ctaSecondary')}</Link>
+          </Button>
+        </div>
       </header>
 
       {/* Hero */}

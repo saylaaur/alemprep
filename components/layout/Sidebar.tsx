@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { signOut } from '@/lib/supabase/auth-actions';
 import { clearAllSavedExams } from '@/lib/exam-storage';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { LanguageSwitcher } from '@/components/language-switcher';
 import type { Profile } from '@/types/db';
 import { navItems } from './nav-items';
 import { GraduationCap, LogOut } from 'lucide-react';
@@ -91,6 +92,7 @@ export function Sidebar({
         </div>
 
         <ThemeToggle />
+        <LanguageSwitcher />
 
         {/* Прогресс пробника в localStorage — чистим при выходе, чтобы он
             не достался следующему аккаунту на этом устройстве. */}
