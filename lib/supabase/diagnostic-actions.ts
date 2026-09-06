@@ -96,6 +96,9 @@ export async function finishDiagnostic(input: {
   // Баллы считаем только по данным из БД — ответы приходят с клиента, правильность
   // и баллы ему не доверяем (тот же принцип, что в finishExamSession).
   const questionIds = input.results.map((r) => r.questionId);
+  if (new Set(questionIds).size !== questionIds.length) {
+    return { error: 'invalid diagnostic results' };
+  }
   const { data: qRows } = questionIds.length > 0
     ? await supabase.from('questions').select('id, type, body').in('id', questionIds)
     : { data: [] };

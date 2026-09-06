@@ -91,6 +91,20 @@ describe('finishWeeklyTest', () => {
     expect(h.store.attempts).toHaveLength(0);
   });
 
+  it('отклоняет повтор одного questionId до сохранения результата', async () => {
+    const res = await finishWeeklyTest({
+      sessionId: 'S1',
+      results: [
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+      ],
+    });
+
+    expect(res).toEqual({ error: 'invalid weekly results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+    expect(h.store.attempts).toHaveLength(0);
+  });
+
   it('сессия не в режиме weekly — ошибка', async () => {
     h.store.sessions.push({
       id: 'S-diag', user_id: 'U1', mode: 'diagnostic', correct_count: null, score: null,
