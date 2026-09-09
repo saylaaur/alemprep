@@ -20,7 +20,7 @@
 **Consumes:** main `9342568`, safety `68a7c23`, общий base `a97a62e` — исходные наблюдения, SHA заново проверить.
 **Produces:** baseline SHA + schema evidence + стандартный build; список несовместимых rollback SHA.
 
-- [ ] Снять read-only состояние, без stage всего дерева:
+- [x] Снять read-only состояние, без stage всего дерева:
 
 ```bash
 git status --short
@@ -31,8 +31,8 @@ git diff --check main...codex/production-safety
 ```
 
 - [ ] Выполнить `docs/pilot/check-release.sql` read-only в нужном проекте; записать проект/время/effective grants, не строки учеников. Получить через Vercel control plane действующие production alias→deployment→SHA и env key names/presence. GitHub deployments и HTTP200 — вспомогательные доказательства.
-- [ ] На изолированной ветке `codex/pilot-foundation` объединить текущие main и safety обычным merge после просмотра diff. Не force-push/rebase чужую опубликованную историю; не обещать fast-forward. Сохранить untracked pitch assets вне staging. Проверить 0022/0023 по фактической схеме, не применять повторно «на всякий случай».
-- [ ] Запустить `npm ci --legacy-peer-deps` на Node22, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`. При Turbopack EPERM локально получить стандартный build в допустимом CI; не менять build-команду молча на webpack. Если причина Google fonts — локальные лицензированные font assets или исправление сети с отдельной проверкой, не удаление типизации.
+- [x] На изолированной ветке `codex/release-foundation` объединить текущие main и safety обычным merge после просмотра diff. Candidate `b9dad45`; не force-push/rebase чужую опубликованную историю; untracked pitch assets остались вне staging. Фактическая schema 0022/0023 была проверена ранее read-only, миграции в этом task не применялись.
+- [ ] Запустить `npm ci --legacy-peer-deps` на Node22, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`. Локально candidate прошёл typecheck/lint/485 tests и diagnostic webpack build; standard Turbopack build заблокирован execution environment после подтверждённой доступности Google Fonts. Получить стандартный build в CI; не менять build-команду молча на webpack. Исходники шрифтов/типизации не менялись.
 - [ ] Подготовить reviewed diff для конкретного remote/PR. Existing Verify запускается на **PR и push main**, а не на произвольный branch push. До публикации проверить конкретный payload на секреты/закрытые материалы. Предыдущий push был отклонён automatic approval review; не повторять его косвенно.
 - [ ] Записать результаты и commit только E01. Если production всё ещё несовместим с 0023, подготовить минимальный совместимый выпуск по runbook раньше функциональных изменений. Отсутствие доступа к alias/CI фиксировать `blocked evidence`, а локальную подготовку продолжать; весь E01 пока не done.
 

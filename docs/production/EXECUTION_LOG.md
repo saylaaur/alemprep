@@ -12,3 +12,13 @@
 ## Формат следующей записи
 
 Не копировать запись как выполненную без запуска. Для каждого task указать: ID, дату, base/head SHA, изменения, команды и exit/results, локальная/CI/DB/browser среда, migration names и applied/not applied, реально выполненные external actions, review verdict, blockers и следующий ready ID. Для документов указывать проверку ссылок/контрактов вместо вымышленных runtime тестов.
+
+## 09.09.2026 — E01 в работе: baseline и security candidate
+
+- Base: `a490cfe`; isolated worktree `/private/tmp/alemprep-release-foundation`, branch `codex/release-foundation`. Untracked presentation/material files из main не переносились и не stage.
+- После `npm ci --legacy-peer-deps` baseline: `npm test` — 35 files, 470 tests, exit 0.
+- Security history `68a7c23` объединена обычным merge в candidate `b9dad4589154b1506a4aa7199eed4bf717d6894a`, parents `a490cfe` и `68a7c23`. Merge принёс 0022 session manifest и 0023 revoke computed-profile writes; миграции **не применялись** ни к staging, ни к production.
+- Candidate checks: `npm run typecheck` exit 0; `npm run lint` exit 0; `npm test` — 36 files, 485 tests, exit 0; `npm run build -- --webpack` exit 0, 25 pages.
+- Standard `npm run build` не принят: в sandbox DNS не разрешает `fonts.googleapis.com`; вне sandbox тот же URL возвращает HTTP 200, после чего Turbopack останавливается на создании дочернего процесса с `binding to a port: Operation not permitted`. Это ограничение данного execution environment; исходники не менялись. Нужен зелёный стандартный build на CI/Vercel для candidate SHA.
+- Read-only GitHub 09.09: latest production deployment and latest green Verify относятся к `a97a62e54baa0b00d7231169b9ec1e851b18756b`. Candidate не pushed, PR/CI/preview не создавались. Vercel alias→SHA, production env key presence, actual schema/release smoke остаются не подтверждены.
+- Next: подготовить ограниченный review diff/PR только после отдельного разрешения на external push, затем получить CI evidence; параллельно E02 может начать harness only после согласования точного test DB target.

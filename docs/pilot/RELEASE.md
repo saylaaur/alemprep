@@ -37,6 +37,14 @@
 
 Ошибка Turbopack возникла при обработке `app/globals.css`/PostCSS, на запуске процесса с локальным портом. Исходники ради обхода не менялись. Нужен обычный build в CI/окружении, где разрешён этот механизм. Успех Webpack не означает, что стандартная команда уже проверена.
 
+## E01 candidate после объединения
+
+09.09 в изолированном worktree создан локальный merge candidate `b9dad4589154b1506a4aa7199eed4bf717d6894a`: parents `a490cfe` (текущий локальный main с документацией) и `68a7c23` (security). Конфликтов не было; `git diff --check main..b9dad45` чист. `npm run typecheck`, `npm run lint` и `npm test` прошли на candidate: 36 файлов, 485 тестов. `npm run build -- --webpack` прошёл и сгенерировал 25 страниц.
+
+Стандартный `npm run build` на candidate не принят локально: в sandbox не разрешается DNS Google Fonts; с доступной сетью шрифты загружаются, но Turbopack останавливается на ограничении окружения `binding to a port: Operation not permitted`. Это не заменяется webpack-success. Candidate не отправлялся, CI/preview не создавались, migration 0022/0023 не применялись.
+
+Read-only GitHub API 09.09 подтверждает: последний production deployment и последний зелёный Verify относятся к `a97a62e54baa0b00d7231169b9ec1e851b18756b`, а не candidate. Vercel alias→SHA и production env key presence по-прежнему ждут проверки владельцем control plane.
+
 ## Совместимость и оставшиеся риски
 
 1. **0023 и старый main.** Effective grants подтверждают: authenticated не может обновлять XP/стрик. Старый main обновляет эти поля через пользовательский Supabase-клиент, поэтому такой UPDATE отклонится, а сохранение вернёт ошибку. Ветка переносит записи на server-side service-role клиент. Не возвращать клиенту права XP для устранения несовместимости.
