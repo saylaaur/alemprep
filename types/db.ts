@@ -166,6 +166,7 @@ export type Session = {
   subject_id: string | null;
   mode: SessionMode;
   total_questions: number | null;
+  question_ids: string[] | null;
   correct_count: number;
   score: number;
   started_at: string;

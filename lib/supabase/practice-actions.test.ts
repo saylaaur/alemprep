@@ -18,6 +18,7 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('./queries', () => ({ getPairExamBlocks: vi.fn() }));
 vi.mock('./server', () => ({
   createClient: async () => makeClient(h),
+  createAdminClient: () => makeClient(h),
 }));
 
 // Импортируем ПОСЛЕ регистрации моков.
@@ -26,11 +27,12 @@ import { finishExamSession, recordAttempt, verifyExamSessions } from './practice
 function seed(): Store {
   return {
     sessions: [
-      { id: 'S1', user_id: 'U1', correct_count: null, score: null, finished_at: null },
+      { id: 'S1', user_id: 'U1', total_questions: 2, question_ids: ['Q1', 'Q2'], correct_count: null, score: null, finished_at: null },
     ],
     questions: [
       { id: 'Q1', type: 'single', body: { correct: 'A' }, topic_id: 'T1' },
       { id: 'Q2', type: 'single', body: { correct: 'B' }, topic_id: 'T1' },
+      { id: 'Q3', type: 'single', body: { correct: 'C' }, topic_id: 'T1' },
     ],
     profiles: [{
       id: 'U1',
@@ -169,6 +171,67 @@ describe('finishExamSession — идемпотентность', () => {
     expect(h.store.attempts).toHaveLength(0);
   });
 
+  it('отклоняет повтор одного questionId, не записывая результат и XP', async () => {
+    const res = await finishExamSession({
+      sessionId: 'S1',
+      results: [
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+      ],
+    });
+
+    expect(res).toEqual({ error: 'invalid exam results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+    expect(h.store.attempts).toHaveLength(0);
+    expect(h.store.profiles[0].xp).toBe(0);
+  });
+
+  it('отклоняет число ответов больше, чем размер созданной сессии', async () => {
+    const res = await finishExamSession({
+      sessionId: 'S1',
+      results: [
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+        { questionId: 'Q2', givenAnswer: 'B', timeSpentMs: 1000 },
+        { questionId: 'Q3', givenAnswer: 'C', timeSpentMs: 1000 },
+      ],
+    });
+
+    expect(res).toEqual({ error: 'invalid exam results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+    expect(h.store.attempts).toHaveLength(0);
+  });
+
+  it('отклоняет ID вопроса, которого сервер не нашёл', async () => {
+    const res = await finishExamSession({
+      sessionId: 'S1',
+      results: [{ questionId: 'DELETED', givenAnswer: 'A', timeSpentMs: 1000 }],
+    });
+
+    expect(res).toEqual({ error: 'invalid exam results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+    expect(h.store.attempts).toHaveLength(0);
+  });
+
+  it('отклоняет существующий вопрос, который не был выдан в этой сессии', async () => {
+    const res = await finishExamSession({
+      sessionId: 'S1',
+      results: [{ questionId: 'Q3', givenAnswer: 'C', timeSpentMs: 1000 }],
+    });
+
+    expect(res).toEqual({ error: 'invalid exam results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+    expect(h.store.attempts).toHaveLength(0);
+  });
+
+  it('отклоняет пакет с некорректным временем ответа', async () => {
+    const res = await finishExamSession({
+      sessionId: 'S1',
+      results: [{ questionId: 'Q1', givenAnswer: 'A', timeSpentMs: -1 }],
+    });
+    expect(res).toEqual({ error: 'invalid exam results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+  });
+
   it('второй блок пробника в тот же день не двигает стрик повторно', async () => {
     // Вторая сессия того же пробника (второй предмет пары).
     h.store.sessions.push({
@@ -258,6 +321,17 @@ describe('verifyExamSessions — принадлежность сессий те�
   it('пустой список → не ok', async () => {
     expect(await verifyExamSessions([])).toEqual({ ok: false });
   });
+
+  it('отклоняет слишком длинный список sessionId до запроса к базе', async () => {
+    h.store.sessions.push(
+      { id: 'S2', user_id: 'U1' },
+      { id: 'S3', user_id: 'U1' },
+      { id: 'S4', user_id: 'U1' },
+      { id: 'S5', user_id: 'U1' },
+    );
+
+    expect(await verifyExamSessions(['S1', 'S2', 'S3', 'S4', 'S5'])).toEqual({ ok: false });
+  });
 });
 
 describe('recordAttempt — сохранение прогресса', () => {
@@ -320,6 +394,17 @@ describe('recordAttempt — сохранение прогресса', () => {
       question_id: 'Q2',
       is_correct: false,
     });
+  });
+
+  it('отклоняет некорректное время ответа до записи попытки', async () => {
+    const res = await recordAttempt({
+      questionId: 'Q1',
+      givenAnswer: 'A',
+      timeSpentMs: -1,
+    });
+
+    expect(res).toEqual({ ok: false, error: 'invalid-input' });
+    expect(h.store.attempts).toHaveLength(0);
   });
 
   it('пропущен ровно один день, есть заморозка — стрик растёт, заморозка списывается', async () => {

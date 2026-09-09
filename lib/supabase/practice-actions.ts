@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from './server';
+import { createAdminClient, createClient } from './server';
 import { revalidatePath } from 'next/cache';
 import {
   EXAM_SECOND_SUBJECTS,
@@ -24,7 +24,19 @@ type RecordInput = {
   timeSpentMs: number;
 };
 
+const MAX_ATTEMPT_TIME_MS = 2 * 60 * 60 * 1000;
+const MAX_EXAM_SESSION_IDS = 2;
+
 export async function recordAttempt(input: RecordInput) {
+  if (
+    typeof input.questionId !== 'string' ||
+    input.questionId.length === 0 ||
+    !Number.isInteger(input.timeSpentMs) ||
+    input.timeSpentMs < 0 ||
+    input.timeSpentMs > MAX_ATTEMPT_TIME_MS
+  ) {
+    return { ok: false as const, error: 'invalid-input' };
+  }
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: 'unauthenticated' };
@@ -90,7 +102,7 @@ export async function recordAttempt(input: RecordInput) {
       xpAwarded = XP_PER_CORRECT;
     }
     if (Object.keys(update).length > 0) {
-      const { error: profileError } = await supabase.from('profiles').update(update).eq('id', user.id);
+      const { error: profileError } = await createAdminClient().from('profiles').update(update).eq('id', user.id);
       if (profileError) {
         if (attemptId) {
           await supabase.from('attempts').delete().eq('id', attemptId).eq('user_id', user.id);
@@ -114,6 +126,7 @@ export async function recordAttempt(input: RecordInput) {
 export async function createExamSession(input: {
   subjectId: string;
   totalQuestions: number;
+  questionIds: string[];
 }): Promise<{ sessionId: string } | { error: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -126,6 +139,7 @@ export async function createExamSession(input: {
       subject_id: input.subjectId,
       mode: 'mock_exam' as const,
       total_questions: input.totalQuestions,
+      question_ids: input.questionIds,
       correct_count: 0,
       score: 0,
     })
@@ -159,6 +173,7 @@ export async function startPairExam(input: {
     const res = await createExamSession({
       subjectId: block.subjectId,
       totalQuestions: block.questions.length,
+      questionIds: block.questions.map((question) => question.id),
     });
     if ('error' in res) return { error: res.error };
     blocks.push({ ...block, sessionId: res.sessionId });
@@ -182,7 +197,7 @@ type ExamResult = {
 export async function verifyExamSessions(sessionIds: string[]): Promise<{ ok: boolean }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || sessionIds.length === 0) return { ok: false };
+  if (!user || sessionIds.length === 0 || sessionIds.length > MAX_EXAM_SESSION_IDS) return { ok: false };
 
   const { data, error } = await supabase
     .from('sessions')
@@ -207,7 +222,7 @@ export async function finishExamSession(input: {
   // ретрай после флап-ответа). Ownership проверяем тем же user_id.
   const { data: existingSession } = await supabase
     .from('sessions')
-    .select('correct_count, score, finished_at')
+    .select('correct_count, score, finished_at, total_questions, question_ids')
     .eq('id', input.sessionId)
     .eq('user_id', user.id)
     .maybeSingle();
@@ -216,6 +231,8 @@ export async function finishExamSession(input: {
     correct_count: number | null;
     score: number | null;
     finished_at: string | null;
+    total_questions: number | null;
+    question_ids: string[] | null;
   };
   if (prior.finished_at) {
     return {
@@ -228,12 +245,24 @@ export async function finishExamSession(input: {
   // Баллы ЕНТ (с частичным зачётом multi/matching) считаем только по данным
   // из БД — ответы приходят с клиента, правильность и баллы ему не доверяем.
   const questionIds = input.results.map((r) => r.questionId);
+  const allowedQuestionIds = prior.question_ids;
+  if (
+    new Set(questionIds).size !== questionIds.length ||
+    input.results.some((result) => !Number.isInteger(result.timeSpentMs) || result.timeSpentMs < 0 || result.timeSpentMs > MAX_ATTEMPT_TIME_MS) ||
+    questionIds.length > (prior.total_questions ?? 0) ||
+    (allowedQuestionIds != null && questionIds.some((questionId) => !allowedQuestionIds.includes(questionId)))
+  ) {
+    return { error: 'invalid exam results' };
+  }
   const { data: qRows } = questionIds.length > 0
     ? await supabase.from('questions').select('id, type, body').in('id', questionIds)
     : { data: [] };
   const qById = new Map(
     (qRows ?? []).map((q) => [q.id as string, { type: q.type as QuestionType, body: q.body as QuestionBody }])
   );
+  if (qById.size !== questionIds.length) {
+    return { error: 'invalid exam results' };
+  }
 
   const scored = input.results.map((r) => {
     const q = qById.get(r.questionId);
@@ -339,7 +368,7 @@ export async function finishExamSession(input: {
       }
     }
   }
-  const { error: profileError } = await supabase
+  const { error: profileError } = await createAdminClient()
     .from('profiles')
     .update(profileUpdate)
     .eq('id', user.id);

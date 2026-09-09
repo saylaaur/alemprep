@@ -10,6 +10,7 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('./queries', () => ({ getPairExamBlocks: vi.fn() }));
 vi.mock('./server', () => ({
   createClient: async () => makeClient(h),
+  createAdminClient: () => makeClient(h),
 }));
 
 // Импортируем ПОСЛЕ регистрации моков.
@@ -30,13 +31,14 @@ function seed(): Store {
     }],
     sessions: [
       {
-        id: 'S1', user_id: 'U1', mode: 'weekly', correct_count: null, score: null,
+        id: 'S1', user_id: 'U1', mode: 'weekly', question_ids: ['Q1', 'Q2'], correct_count: null, score: null,
         finished_at: null, started_at: '2026-07-04T10:00:00.000Z',
       },
     ],
     questions: [
       { id: 'Q1', type: 'single', body: { correct: 'A' }, topic_id: 'T1' },
       { id: 'Q2', type: 'single', body: { correct: 'B' }, topic_id: 'T1' },
+      { id: 'Q3', type: 'single', body: { correct: 'C' }, topic_id: 'T1' },
     ],
     attempts: [],
   };
@@ -89,6 +91,36 @@ describe('finishWeeklyTest', () => {
     const res = await finishWeeklyTest({ ...input, sessionId: 'NOPE' });
     expect(res).toEqual({ error: 'session not found' });
     expect(h.store.attempts).toHaveLength(0);
+  });
+
+  it('отклоняет повтор одного questionId до сохранения результата', async () => {
+    const res = await finishWeeklyTest({
+      sessionId: 'S1',
+      results: [
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+      ],
+    });
+
+    expect(res).toEqual({ error: 'invalid weekly results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+    expect(h.store.attempts).toHaveLength(0);
+  });
+
+  it('отклоняет существующий вопрос вне списка сессии', async () => {
+    const res = await finishWeeklyTest({
+      sessionId: 'S1', results: [{ questionId: 'Q3', givenAnswer: 'C', timeSpentMs: 1000 }],
+    });
+    expect(res).toEqual({ error: 'invalid weekly results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+  });
+
+  it('отклоняет пакет с некорректным временем ответа', async () => {
+    const res = await finishWeeklyTest({
+      sessionId: 'S1', results: [{ questionId: 'Q1', givenAnswer: 'A', timeSpentMs: -1 }],
+    });
+    expect(res).toEqual({ error: 'invalid weekly results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
   });
 
   it('сессия не в режиме weekly — ошибка', async () => {
@@ -220,6 +252,7 @@ describe('startWeeklyTest', () => {
       mode: 'weekly',
       subject_id: null,
       total_questions: 2,
+      question_ids: ['Q1', 'Q2'],
     });
   });
 
