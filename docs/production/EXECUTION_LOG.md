@@ -22,3 +22,10 @@
 - Standard `npm run build` не принят: в sandbox DNS не разрешает `fonts.googleapis.com`; вне sandbox тот же URL возвращает HTTP 200, после чего Turbopack останавливается на создании дочернего процесса с `binding to a port: Operation not permitted`. Это ограничение данного execution environment; исходники не менялись. Нужен зелёный стандартный build на CI/Vercel для candidate SHA.
 - Read-only GitHub 09.09: latest production deployment and latest green Verify относятся к `a97a62e54baa0b00d7231169b9ec1e851b18756b`. Candidate не pushed, PR/CI/preview не создавались. Vercel alias→SHA, production env key presence, actual schema/release smoke остаются не подтверждены.
 - Next: подготовить ограниченный review diff/PR только после отдельного разрешения на external push, затем получить CI evidence; параллельно E02 может начать harness only после согласования точного test DB target.
+
+### Обновление: PR/CI evidence
+
+- По явному разрешению branch отправлен и создан draft [PR #1](https://github.com/saylaaur/alemprep/pull/1) из `codex/release-foundation` в `main`. PR не merged; `main`, production alias и Supabase не менялись.
+- Candidate `d3e4e300e42f1112d612feedc3fc37872abcc8d1` прошёл GitHub Verify [run 34374295579](https://github.com/saylaaur/alemprep/actions/runs/34374295579): clean install, typecheck, lint, 485 tests и **standard** `npm run build` завершились success. CI делает локальный Turbopack failure environmental evidence, не source failure.
+- Vercel Preview deployment `6353576427` success: `https://alemprep-pkfhxfz0n-saylaaurs-projects.vercel.app`. Anonymous smoke к `/ru`, `/kk`, `/ru/dashboard`, `/kk/dashboard` останавливается Vercel SSO HTTP302 до приложения; SSO не обходили. Для application browser smoke нужны допущенный Vercel user или отдельный test environment.
+- E01 всё ещё в работе: production alias→SHA/env key presence, actual effective schema после последнего запуска и полный synthetic user smoke не подтверждены. Следующий безопасный технический блок — E02 local/staging test harness после выбора/подтверждения test DB target.

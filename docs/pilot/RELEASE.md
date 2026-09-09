@@ -45,6 +45,8 @@
 
 Read-only GitHub API 09.09 подтверждает: последний production deployment и последний зелёный Verify относятся к `a97a62e54baa0b00d7231169b9ec1e851b18756b`, а не candidate. Vercel alias→SHA и production env key presence по-прежнему ждут проверки владельцем control plane.
 
+Draft [PR #1](https://github.com/saylaaur/alemprep/pull/1) для candidate запустил Verify `34374295579`: на SHA `d3e4e300e42f1112d612feedc3fc37872abcc8d1` прошли clean install, typecheck, lint, 485 tests и стандартный `npm run build`. Vercel Preview deployment `6353576427` завершился success, но защищён SSO: анонимные HTTP-запросы к public/protected routes получают 302 прежде приложения. Это подтверждает build/deployment candidate, не полноценный browser smoke.
+
 ## Совместимость и оставшиеся риски
 
 1. **0023 и старый main.** Effective grants подтверждают: authenticated не может обновлять XP/стрик. Старый main обновляет эти поля через пользовательский Supabase-клиент, поэтому такой UPDATE отклонится, а сохранение вернёт ошибку. Ветка переносит записи на server-side service-role клиент. Не возвращать клиенту права XP для устранения несовместимости.
