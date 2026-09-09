@@ -42,6 +42,7 @@ export async function startDiagnostic(input: { locale: Locale }): Promise<
       subject_id: null,
       mode: 'diagnostic' as const,
       total_questions: totalQuestions,
+      question_ids: data.blocks.flatMap((block) => block.questions.map((question) => question.id)),
       correct_count: 0,
       score: 0,
     })
@@ -62,6 +63,8 @@ type DiagnosticResult = {
   timeSpentMs: number;
 };
 
+const MAX_ATTEMPT_TIME_MS = 2 * 60 * 60 * 1000;
+
 /**
  * Клон finishExamSession МИНУС XP/стрик/достижения — диагностика замеряет,
  * а не тренирует. Та же идемпотентность (условный UPDATE finished_at IS NULL
@@ -77,7 +80,7 @@ export async function finishDiagnostic(input: {
 
   const { data: existingSession } = await supabase
     .from('sessions')
-    .select('correct_count, score, finished_at, mode')
+    .select('correct_count, score, finished_at, mode, question_ids')
     .eq('id', input.sessionId)
     .eq('user_id', user.id)
     .maybeSingle();
@@ -87,6 +90,7 @@ export async function finishDiagnostic(input: {
     score: number | null;
     finished_at: string | null;
     mode: string;
+    question_ids: string[] | null;
   };
   if (prior.mode !== 'diagnostic') return { error: 'wrong session mode' };
   if (prior.finished_at) {
@@ -96,6 +100,14 @@ export async function finishDiagnostic(input: {
   // Баллы считаем только по данным из БД — ответы приходят с клиента, правильность
   // и баллы ему не доверяем (тот же принцип, что в finishExamSession).
   const questionIds = input.results.map((r) => r.questionId);
+  const allowedQuestionIds = prior.question_ids;
+  if (
+    new Set(questionIds).size !== questionIds.length ||
+    input.results.some((result) => !Number.isInteger(result.timeSpentMs) || result.timeSpentMs < 0 || result.timeSpentMs > MAX_ATTEMPT_TIME_MS) ||
+    (allowedQuestionIds != null && questionIds.some((questionId) => !allowedQuestionIds.includes(questionId)))
+  ) {
+    return { error: 'invalid diagnostic results' };
+  }
   const { data: qRows } = questionIds.length > 0
     ? await supabase.from('questions').select('id, type, body').in('id', questionIds)
     : { data: [] };

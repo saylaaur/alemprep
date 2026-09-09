@@ -19,11 +19,12 @@ function seed(): Store {
   return {
     profiles: [{ id: 'U1', second_subject: 'physics' }],
     sessions: [
-      { id: 'S1', user_id: 'U1', mode: 'diagnostic', correct_count: null, score: null, finished_at: null },
+      { id: 'S1', user_id: 'U1', mode: 'diagnostic', question_ids: ['Q1', 'Q2'], correct_count: null, score: null, finished_at: null },
     ],
     questions: [
       { id: 'Q1', type: 'single', body: { correct: 'A' }, topic_id: 'T1' },
       { id: 'Q2', type: 'single', body: { correct: 'B' }, topic_id: 'T1' },
+      { id: 'Q3', type: 'single', body: { correct: 'C' }, topic_id: 'T1' },
     ],
     attempts: [],
   };
@@ -65,6 +66,36 @@ describe('finishDiagnostic', () => {
     const res = await finishDiagnostic({ ...input, sessionId: 'NOPE' });
     expect(res).toEqual({ error: 'session not found' });
     expect(h.store.attempts).toHaveLength(0);
+  });
+
+  it('отклоняет повтор одного questionId до сохранения результата', async () => {
+    const res = await finishDiagnostic({
+      sessionId: 'S1',
+      results: [
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+        { questionId: 'Q1', givenAnswer: 'A', timeSpentMs: 1000 },
+      ],
+    });
+
+    expect(res).toEqual({ error: 'invalid diagnostic results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+    expect(h.store.attempts).toHaveLength(0);
+  });
+
+  it('отклоняет существующий вопрос вне списка сессии', async () => {
+    const res = await finishDiagnostic({
+      sessionId: 'S1', results: [{ questionId: 'Q3', givenAnswer: 'C', timeSpentMs: 1000 }],
+    });
+    expect(res).toEqual({ error: 'invalid diagnostic results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
+  });
+
+  it('отклоняет пакет с некорректным временем ответа', async () => {
+    const res = await finishDiagnostic({
+      sessionId: 'S1', results: [{ questionId: 'Q1', givenAnswer: 'A', timeSpentMs: -1 }],
+    });
+    expect(res).toEqual({ error: 'invalid diagnostic results' });
+    expect(h.store.sessions[0].finished_at).toBeNull();
   });
 
   it('сессия не в режиме diagnostic — ошибка', async () => {
@@ -147,6 +178,7 @@ describe('startDiagnostic', () => {
       mode: 'diagnostic',
       subject_id: null,
       total_questions: 2,
+      question_ids: ['Q1', 'Q2'],
     });
   });
 });

@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from './server';
+import { createAdminClient, createClient } from './server';
 import { revalidatePath } from 'next/cache';
 import { QUESTION_POINTS, scoreAnswer } from '@/lib/exam';
 import { advanceStreak, localDateStr } from '@/lib/streak';
@@ -80,6 +80,7 @@ export async function startWeeklyTest(input: { locale: Locale }): Promise<
       subject_id: null,
       mode: 'weekly' as const,
       total_questions: totalQuestions,
+      question_ids: data.blocks.flatMap((block) => block.questions.map((question) => question.id)),
       correct_count: 0,
       score: 0,
     })
@@ -100,6 +101,8 @@ type WeeklyResult = {
   timeSpentMs: number;
 };
 
+const MAX_ATTEMPT_TIME_MS = 2 * 60 * 60 * 1000;
+
 /**
  * Клон finishExamSession: ownership, идемпотентность (условный UPDATE
  * finished_at IS NULL + fallback на гонку), баллы только по данным из БД,
@@ -117,7 +120,7 @@ export async function finishWeeklyTest(input: {
 
   const { data: existingSession } = await supabase
     .from('sessions')
-    .select('correct_count, score, finished_at, mode')
+    .select('correct_count, score, finished_at, mode, question_ids')
     .eq('id', input.sessionId)
     .eq('user_id', user.id)
     .maybeSingle();
@@ -127,6 +130,7 @@ export async function finishWeeklyTest(input: {
     score: number | null;
     finished_at: string | null;
     mode: string;
+    question_ids: string[] | null;
   };
   if (prior.mode !== 'weekly') return { error: 'wrong session mode' };
   if (prior.finished_at) {
@@ -136,6 +140,14 @@ export async function finishWeeklyTest(input: {
   // Баллы считаем только по данным из БД — ответы приходят с клиента, правильность
   // и баллы ему не доверяем (тот же принцип, что в finishExamSession/finishDiagnostic).
   const questionIds = input.results.map((r) => r.questionId);
+  const allowedQuestionIds = prior.question_ids;
+  if (
+    new Set(questionIds).size !== questionIds.length ||
+    input.results.some((result) => !Number.isInteger(result.timeSpentMs) || result.timeSpentMs < 0 || result.timeSpentMs > MAX_ATTEMPT_TIME_MS) ||
+    (allowedQuestionIds != null && questionIds.some((questionId) => !allowedQuestionIds.includes(questionId)))
+  ) {
+    return { error: 'invalid weekly results' };
+  }
   const { data: qRows } = questionIds.length > 0
     ? await supabase.from('questions').select('id, type, body').in('id', questionIds)
     : { data: [] };
@@ -234,7 +246,7 @@ export async function finishWeeklyTest(input: {
       }
     }
   }
-  const { error: profileError } = await supabase
+  const { error: profileError } = await createAdminClient()
     .from('profiles')
     .update(profileUpdate)
     .eq('id', user.id);
