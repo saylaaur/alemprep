@@ -29,3 +29,17 @@
 - Candidate `d3e4e300e42f1112d612feedc3fc37872abcc8d1` прошёл GitHub Verify [run 34374295579](https://github.com/saylaaur/alemprep/actions/runs/34374295579): clean install, typecheck, lint, 485 tests и **standard** `npm run build` завершились success. CI делает локальный Turbopack failure environmental evidence, не source failure.
 - Vercel Preview deployment `6353576427` success: `https://alemprep-pkfhxfz0n-saylaaurs-projects.vercel.app`. Anonymous smoke к `/ru`, `/kk`, `/ru/dashboard`, `/kk/dashboard` останавливается Vercel SSO HTTP302 до приложения; SSO не обходили. Для application browser smoke нужны допущенный Vercel user или отдельный test environment.
 - E01 всё ещё в работе: production alias→SHA/env key presence, actual effective schema после последнего запуска и полный synthetic user smoke не подтверждены. Следующий безопасный технический блок — E02 local/staging test harness после выбора/подтверждения test DB target.
+
+### Обновление: merge и production
+
+- По разрешению владельца PR #1 снят с draft и merged 09.09.2026 в 16:13 UTC, main `dfd0c5bff028c9800325908c2af5d2e804faa251`. GitHub Verify run `34374689430` для candidate `93f9c8a` success; Vercel Production deployment `6354222580` для merge SHA success.
+- Гостевой production smoke: `/ru` HTTP200; `/kk/dashboard` HTTP307 → `/kk/login`. Это не authenticated synthetic smoke. Владелец подтвердил применение 0022/0023; в браузере ранее виден success 0023. Полная техническая приёмка E01/E02 ещё требуется.
+- Владелец разрешил самостоятельно коммитить и мержить готовые изменения после проверок с итоговым summary.
+
+## 09.09.2026 — P0 казахский контент: изменение плана
+
+- Владелец уточнил приоритет казахского для двух сельских школ и запросил экономный перевод существующих заданий. Обновлены TASKS, основной порядок, архитектура, content plan и prompt исполнителя: **следующий C00a**, затем C00b; технические ворота E01/E02 сохраняются, C00c требует E02 и человеческой приёмки.
+- Read-only команда `./node_modules/.bin/tsx --tsconfig tsconfig.scripts.json scripts/audit-production-inventory.ts --output /private/tmp/alemprep-kk-inventory-20260909.md` exit0, 16:27 UTC: 4 705 всего, 4 646 published RU, 0 published KK, 59 drafts суммарно. Читались только метаданные вопросов и taxonomy. Публичный отчёт содержит агрегаты, не тексты и не персональные данные.
+- В коде уже есть RU→KK перевод с source_question_id через Haiku + Sonnet; предложен отдельный Google NMT путь с offline хранением, dry-run, бюджетом, защитой структуры, проверкой контекстов и human review. Google pricing/language support проверены по официальным страницам, ссылки и условные расчёты в плане 03.
+- В этом проходе менялись только документы. Перевод API не вызывался, контент/БД не менялись, новые миграции не создавались. Нулевой опубликованный KK-банк пока не исправлен. Приёмка этого изменения — diff/связность документов; runtime тесты относятся к будущим C00a–C00c.
+- Проверки перед коммитом: `git diff --check` exit0; локальные ссылки шести изменённых документов существуют; `npm run typecheck` exit0; `npm run lint` exit0, только три прежних предупреждения в untracked `.codex-pitch-build/polish-deck.mjs`. Эти файлы не включались в изменения.
