@@ -14,6 +14,7 @@
     "test": "vitest run",
     "audit:content": "tsx --tsconfig tsconfig.scripts.json scripts/audit-content.ts",
     "audit:production": "tsx --tsconfig tsconfig.scripts.json scripts/audit-production-inventory.ts",
+    "audit:kk": "tsx --tsconfig tsconfig.scripts.json scripts/audit-kazakh-coverage.ts",
     "preflight:production": "tsx --tsconfig tsconfig.scripts.json scripts/preflight-production.ts",
     "repair:quarantine": "tsx --tsconfig tsconfig.scripts.json scripts/repair-quarantined-questions.ts",
     "gen:glossary": "tsx --tsconfig tsconfig.scripts.json scripts/build-glossary.ts",

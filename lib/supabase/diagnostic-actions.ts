@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from './server';
+import { hasCompleteAssessment } from '@/lib/content-availability';
 import { revalidatePath } from 'next/cache';
 import { DIAGNOSTIC_BLUEPRINT, QUESTION_POINTS, scoreAnswer } from '@/lib/exam';
 import { getPairExamBlocks, type ExamBlock, type ExamContext } from './queries';
@@ -31,8 +32,14 @@ export async function startDiagnostic(input: { locale: Locale }): Promise<
   const second = (profileRow as { second_subject: SecondSubject | null } | null)?.second_subject;
   if (!second) return { error: 'no_second_subject' };
 
-  const data = await getPairExamBlocks(second, input.locale, DIAGNOSTIC_BLUEPRINT);
+  let data;
+  try {
+    data = await getPairExamBlocks(second, input.locale, DIAGNOSTIC_BLUEPRINT);
+  } catch {
+    return { error: 'content-unavailable' };
+  }
   if (!data) return { error: 'subjects not found' };
+  if (!hasCompleteAssessment(data.blocks)) return { error: 'insufficient-content' };
 
   const totalQuestions = data.blocks.reduce((sum, b) => sum + b.questions.length, 0);
   const { data: session, error } = await supabase

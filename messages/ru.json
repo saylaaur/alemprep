@@ -334,7 +334,7 @@
     "partCount": "{count} × {points} б.",
     "pointsChip": "{points} б.",
     "pointsOf": "{earned}/{max} б.",
-    "shortfallWarningSubject": "{subject}: в этом блоке {available} заданий типа «{type}» вместо {required} — банк задач пополняется",
+    "shortfallWarningSubject": "{subject}: доступно {available} из {required} заданий типа «{type}»",
     "scorePoints": "{score} из {max} баллов",
     "timeSpent": "время",
     "byType": "По типам заданий",
@@ -367,7 +367,7 @@
     "matchingPlaceholder": "Выбери…",
     "matchingSelectFor": "Ответ для пункта {item}",
     "goToQuestion": "Вопрос {number}",
-    "noQuestionsDesc": "Реши несколько задач по темам — они появятся в пробнике",
+    "noQuestionsDesc": "На выбранном языке пока не хватает заданий всех необходимых типов по обоим предметам. Вы можете заниматься в доступных темах.",
     "answeredShort": "отвечено",
     "navigatorTitle": "Навигатор",
     "legendUnanswered": "Не отвечено",
@@ -430,5 +430,15 @@
     "source": "Источник",
     "noQuestions": "Все задачи проверены — очередь пуста.",
     "forbidden": "Доступ запрещён"
+  },
+  "contentAvailability": {
+    "topicTitle": "На этом языке пока нет заданий",
+    "topicDescription": "В этом разделе пока нет опубликованных заданий на выбранном языке. Можно вернуться к предметам и выбрать другую тему.",
+    "assessmentTitle": "Для теста пока недостаточно заданий",
+    "assessmentDescription": "На выбранном языке пока не хватает заданий всех необходимых типов по обоим предметам. Вы можете заниматься в доступных темах.",
+    "availableTopics": "Доступные темы на этом языке",
+    "questionCount": "Заданий: {count}",
+    "backToSubjects": "К предметам",
+    "unavailableLabel": "Пока недоступно на этом языке"
   }
 }

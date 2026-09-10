@@ -1,6 +1,7 @@
 'use server';
 
 import { createAdminClient, createClient } from './server';
+import { hasCompleteAssessment } from '@/lib/content-availability';
 import { revalidatePath } from 'next/cache';
 import { QUESTION_POINTS, scoreAnswer } from '@/lib/exam';
 import { advanceStreak, localDateStr } from '@/lib/streak';
@@ -67,10 +68,16 @@ export async function startWeeklyTest(input: { locale: Locale }): Promise<
     ((attemptRows ?? []) as { question_id: string }[]).map((r) => r.question_id)
   );
 
-  const data = await getPairExamBlocks(second, input.locale, WEEKLY_BLUEPRINT, (pool, bp) =>
-    pickFreshBalancedByTopic(pool, exclude, bp)
-  );
+  let data;
+  try {
+    data = await getPairExamBlocks(second, input.locale, WEEKLY_BLUEPRINT, (pool, bp) =>
+      pickFreshBalancedByTopic(pool, exclude, bp)
+    );
+  } catch {
+    return { error: 'content-unavailable' };
+  }
   if (!data) return { error: 'subjects not found' };
+  if (!hasCompleteAssessment(data.blocks)) return { error: 'insufficient-content' };
 
   const totalQuestions = data.blocks.reduce((sum, b) => sum + b.questions.length, 0);
   const { data: session, error } = await supabase

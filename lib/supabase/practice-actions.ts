@@ -16,6 +16,7 @@ import {
   type AchievementSnapshot,
 } from '@/lib/gamification';
 import { getPairExamBlocks, type ExamBlock, type ExamContext } from './queries';
+import { hasCompleteAssessment } from '@/lib/content-availability';
 import type { QuestionType, QuestionBody, Locale } from '@/types/db';
 
 type RecordInput = {
@@ -165,8 +166,14 @@ export async function startPairExam(input: {
 > {
   if (!EXAM_SECOND_SUBJECTS.includes(input.second)) return { error: 'invalid subject' };
 
-  const data = await getPairExamBlocks(input.second, input.locale);
+  let data;
+  try {
+    data = await getPairExamBlocks(input.second, input.locale);
+  } catch {
+    return { error: 'content-unavailable' };
+  }
   if (!data) return { error: 'subjects not found' };
+  if (!hasCompleteAssessment(data.blocks)) return { error: 'insufficient-content' };
 
   const blocks: PairExamBlock[] = [];
   for (const block of data.blocks) {
