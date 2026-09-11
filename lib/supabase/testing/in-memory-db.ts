@@ -20,6 +20,7 @@ function builder(state: InMemoryState, table: string) {
   const iss: Array<[string, unknown]> = [];
   let orderBy: { column: string; ascending: boolean } | null = null;
   let limitTo: number | null = null;
+  let page: [number, number] | null = null;
   const rows = (): Row[] => (state.store[table] ??= []);
 
   const match = (r: Row) =>
@@ -69,6 +70,8 @@ function builder(state: InMemoryState, table: string) {
       });
     }
     if (limitTo != null) result = result.slice(0, limitTo);
+    // PostgREST caps unpaginated reads; fixtures must expose truncation bugs.
+    if (op === 'select') result = page ? result.slice(page[0], page[1] + 1) : result.slice(0, 1000);
     return { data: result, error: null };
   };
 
@@ -84,6 +87,7 @@ function builder(state: InMemoryState, table: string) {
       (orderBy = { column, ascending: opts?.ascending ?? true }), api
     ),
     limit: (n: number) => ((limitTo = n), api),
+    range: (from: number, to: number) => ((page = [from, to]), api),
     maybeSingle: () => {
       const { data, error } = run();
       return Promise.resolve({ data: data[0] ?? null, error });

@@ -47,7 +47,7 @@ export function WeeklyTestView({ second, locale, summary }: Props) {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerState>>({});
   const [starting, setStarting] = useState(false);
-  const [startError, setStartError] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -93,29 +93,34 @@ export function WeeklyTestView({ second, locale, summary }: Props) {
   const start = useCallback(async () => {
     if (starting) return;
     setStarting(true);
-    setStartError(false);
-    const res = await startWeeklyTest({ locale: locale as Locale });
-    setStarting(false);
-    if ('error' in res) {
-      // Защита от гонки: если по факту тест уже пройден на этой неделе
-      // (сводка на странице устарела), переключаемся на состояние "уже пройден"
-      // вместо непонятной ошибки.
-      if (res.error === 'already-done-this-week') {
-        setAlreadyDone(true);
+    setStartError(null);
+    try {
+      const res = await startWeeklyTest({ locale: locale as Locale });
+      if ('error' in res) {
+        // Защита от гонки: если по факту тест уже пройден на этой неделе
+        // (сводка на странице устарела), переключаемся на состояние "уже пройден"
+        // вместо непонятной ошибки.
+        if (res.error === 'already-done-this-week') {
+          setAlreadyDone(true);
+          return;
+        }
+        setStartError('error' in res ? res.error : 'startError');
         return;
       }
-      setStartError(true);
-      return;
+      if (res.blocks.every((b) => b.questions.length === 0)) {
+        setStartError('startError');
+        return;
+      }
+      setBlocks(res.blocks);
+      setContexts(new Map(res.contexts));
+      setSessionId(res.sessionId);
+      startTimeRef.current = Date.now();
+      setPhase('test');
+    } catch {
+      setStartError('startError');
+    } finally {
+      setStarting(false);
     }
-    if (res.blocks.every((b) => b.questions.length === 0)) {
-      setStartError(true);
-      return;
-    }
-    setBlocks(res.blocks);
-    setContexts(new Map(res.contexts));
-    setSessionId(res.sessionId);
-    startTimeRef.current = Date.now();
-    setPhase('test');
   }, [starting, locale]);
 
   const handleSubmit = useCallback(async () => {
@@ -222,7 +227,7 @@ export function WeeklyTestView({ second, locale, summary }: Props) {
         {startError && (
           <div className="mx-auto mt-4 flex max-w-sm items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-left text-sm text-destructive" role="alert">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{t('startError')}</span>
+            <span>{startError === 'insufficient-content' ? tExam('noQuestionsDesc') : t('startError')}</span>
           </div>
         )}
       </div>

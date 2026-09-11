@@ -45,7 +45,7 @@ export function DiagnosticView({ second, locale }: Props) {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerState>>({});
   const [starting, setStarting] = useState(false);
-  const [startError, setStartError] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -82,18 +82,23 @@ export function DiagnosticView({ second, locale }: Props) {
   const start = useCallback(async () => {
     if (starting) return;
     setStarting(true);
-    setStartError(false);
-    const res = await startDiagnostic({ locale: locale as Locale });
-    setStarting(false);
-    if ('error' in res || res.blocks.every((b) => b.questions.length === 0)) {
-      setStartError(true);
-      return;
+    setStartError(null);
+    try {
+      const res = await startDiagnostic({ locale: locale as Locale });
+      if ('error' in res || res.blocks.every((b) => b.questions.length === 0)) {
+        setStartError('error' in res ? res.error : 'startError');
+        return;
+      }
+      setBlocks(res.blocks);
+      setContexts(new Map(res.contexts));
+      setSessionId(res.sessionId);
+      startTimeRef.current = Date.now();
+      setPhase('test');
+    } catch {
+      setStartError('startError');
+    } finally {
+      setStarting(false);
     }
-    setBlocks(res.blocks);
-    setContexts(new Map(res.contexts));
-    setSessionId(res.sessionId);
-    startTimeRef.current = Date.now();
-    setPhase('test');
   }, [starting, locale]);
 
   const handleSubmit = useCallback(async () => {
@@ -178,7 +183,7 @@ export function DiagnosticView({ second, locale }: Props) {
         {startError && (
           <div className="mx-auto mt-4 flex max-w-sm items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-left text-sm text-destructive" role="alert">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{t('startError')}</span>
+            <span>{startError === 'insufficient-content' ? tExam('noQuestionsDesc') : t('startError')}</span>
           </div>
         )}
       </div>

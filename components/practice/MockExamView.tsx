@@ -80,7 +80,7 @@ export function MockExamView({ availability, locale, userId }: Props) {
   const [flags, setFlags] = useState<Record<string, QuestionFlag>>({});
   const [timeLeft, setTimeLeft] = useState(EXAM_PAIR_DURATION_S);
   const [starting, setStarting] = useState(false);
-  const [startError, setStartError] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -202,25 +202,25 @@ export function MockExamView({ availability, locale, userId }: Props) {
   }, [phase, second, blocks, contexts, answers, flags, idx, userId]);
 
   const startExam = useCallback(async () => {
-    // Попытки сохраняются только при живых сессиях в БД — без них пробник
-    // не стартуем: до 3 попыток, дальше видимая ошибка.
+    // Повтор запуска — только по действию пользователя: создание сессий пока не атомарно.
     if (starting) return;
     setStarting(true);
-    setStartError(false);
-    let res = await startPairExam({ second, locale: locale as Locale });
-    for (let attempt = 0; 'error' in res && attempt < 2; attempt++) {
-      await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
-      res = await startPairExam({ second, locale: locale as Locale });
+    setStartError(null);
+    try {
+      const res = await startPairExam({ second, locale: locale as Locale });
+      if ('error' in res || res.blocks.every((b) => b.questions.length === 0)) {
+        setStartError('error' in res ? res.error : 'startError');
+        return;
+      }
+      setBlocks(res.blocks);
+      setContexts(new Map(res.contexts));
+      startTimeRef.current = Date.now();
+      setPhase('exam');
+    } catch {
+      setStartError('startError');
+    } finally {
+      setStarting(false);
     }
-    setStarting(false);
-    if ('error' in res || res.blocks.every((b) => b.questions.length === 0)) {
-      setStartError(true);
-      return;
-    }
-    setBlocks(res.blocks);
-    setContexts(new Map(res.contexts));
-    startTimeRef.current = Date.now();
-    setPhase('exam');
   }, [starting, second, locale]);
 
   const handleSubmit = useCallback(async (auto = false) => {
@@ -329,11 +329,6 @@ export function MockExamView({ availability, locale, userId }: Props) {
           : [];
       })
     );
-    const pairAvailableTotal = pairSlugs.reduce(
-      (sum, slug) =>
-        sum + Object.values(availability[slug] ?? {}).reduce((s, n) => s + (n ?? 0), 0),
-      0
-    );
 
     return (
       <div className="mx-auto max-w-lg px-6 py-16 text-center">
@@ -391,7 +386,7 @@ export function MockExamView({ availability, locale, userId }: Props) {
           </div>
         </div>
 
-        {/* Нехватка задач в банке выбранной пары — приглушённая информация, не алерт */}
+        {/* Показываем, каких типов не хватает для полного блока на выбранном языке. */}
         {pairShortfalls.length > 0 && (
           <div className="mt-3 space-y-1">
             {pairShortfalls.map((s) => (
@@ -413,7 +408,7 @@ export function MockExamView({ availability, locale, userId }: Props) {
           <div><div className="font-mono text-2xl font-bold tabular-nums">{EXAM_PAIR_MAX_SCORE}</div><div className="mt-1 text-xs text-muted-foreground">{t('maxPointsLabel')}</div></div>
         </div>
 
-        {pairAvailableTotal === 0 ? (
+        {pairShortfalls.length > 0 ? (
           <p className="mt-6 text-muted-foreground">{t('noQuestionsDesc')}</p>
         ) : (
           <Button size="lg" className="mt-8 shadow-primary" disabled={starting} onClick={() => void startExam()}>
@@ -423,7 +418,7 @@ export function MockExamView({ availability, locale, userId }: Props) {
         {startError && (
           <div className="mx-auto mt-4 flex max-w-sm items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-left text-sm text-destructive" role="alert">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{t('startError')}</span>
+            <span>{startError === 'insufficient-content' ? t('noQuestionsDesc') : t('startError')}</span>
           </div>
         )}
       </div>

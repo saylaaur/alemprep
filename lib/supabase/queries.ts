@@ -1,4 +1,5 @@
 import { createClient } from './server';
+import { readAllPages } from './pagination';
 import {
   EXAM_BLUEPRINT,
   EXAM_FIRST_SUBJECT,
@@ -119,21 +120,20 @@ export async function getProfile(): Promise<Profile | null> {
 
 export async function getSubjectsWithCounts(locale: Locale = 'ru') {
   const supabase = await createClient();
-  // RPC или ручной join? Делаем 2 запроса для простоты.
-  const [subjectsRes, topicsRes, questionsRes] = await Promise.all([
-    supabase.from('subjects').select('*').order('sort_order').then((r) => r, () => ({ data: [] })),
-    supabase.from('topics').select('id, subject_id').then((r) => r, () => ({ data: [] })),
-    supabase
+  const [subjectsRes, topicsRes, questions] = await Promise.all([
+    supabase.from('subjects').select('*').order('sort_order'),
+    supabase.from('topics').select('id, subject_id'),
+    readAllPages((from, to) => supabase
       .from('questions')
       .select('id, topic_id')
       .eq('is_published', true)
       .eq('language', locale)
-      .then((r) => r, () => ({ data: [] })),
+      .order('id').range(from, to), 'question counts'),
   ]);
+  if (subjectsRes.error || topicsRes.error) throw new Error('Could not load subjects');
 
   const subjects = (subjectsRes.data ?? []) as Subject[];
   const topics = (topicsRes.data ?? []) as { id: string; subject_id: string }[];
-  const questions = (questionsRes.data ?? []) as { id: string; topic_id: string }[];
 
   const topicsBySubject = new Map<string, number>();
   const topicToSubject = new Map<string, string>();
@@ -158,11 +158,12 @@ export async function getSubjectsWithCounts(locale: Locale = 'ru') {
 
 export async function getSubjectBySlug(slug: string): Promise<Subject | null> {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('subjects')
     .select('*')
     .eq('slug', slug)
     .maybeSingle();
+  if (error) throw new Error('Could not load subject');
   return data as Subject | null;
 }
 
@@ -171,21 +172,22 @@ export async function getTopicsForSubject(subjectSlug: string, locale: Locale = 
   const subject = await getSubjectBySlug(subjectSlug);
   if (!subject) return [];
 
-  const [topicsRes, questionsRes] = await Promise.all([
+  const [topicsRes, questions] = await Promise.all([
     supabase
       .from('topics')
       .select('*')
       .eq('subject_id', subject.id)
       .order('sort_order'),
-    supabase
+    readAllPages((from, to) => supabase
       .from('questions')
       .select('id, topic_id')
       .eq('is_published', true)
-      .eq('language', locale),
+      .eq('language', locale)
+      .order('id').range(from, to), 'topic counts'),
   ]);
+  if (topicsRes.error) throw new Error('Could not load topics');
 
   const topics = (topicsRes.data ?? []) as Topic[];
-  const questions = (questionsRes.data ?? []) as { id: string; topic_id: string }[];
 
   const counts = new Map<string, number>();
   for (const q of questions) {
@@ -569,15 +571,17 @@ export type ExamAvailability = Record<string, Partial<Record<QuestionType, numbe
 /** Сколько опубликованных задач каждого типа есть у каждого предмета (для предупреждений на интро). */
 export async function getExamAvailability(locale: Locale = 'ru'): Promise<ExamAvailability> {
   const supabase = await createClient();
-  const [subjectsRes, topicsRes, questionsRes] = await Promise.all([
+  const [subjectsRes, topicsRes, questions] = await Promise.all([
     supabase.from('subjects').select('id, slug'),
     supabase.from('topics').select('id, subject_id'),
-    supabase
+    readAllPages((from, to) => supabase
       .from('questions')
       .select('type, topic_id')
       .eq('language', locale)
-      .eq('is_published', true),
+      .eq('is_published', true)
+      .order('id').range(from, to), 'exam availability'),
   ]);
+  if (subjectsRes.error || topicsRes.error) throw new Error('Could not load exam subjects');
 
   const subjectSlugById = new Map(
     ((subjectsRes.data ?? []) as { id: string; slug: string }[]).map((s) => [s.id, s.slug])
@@ -590,7 +594,7 @@ export async function getExamAvailability(locale: Locale = 'ru'): Promise<ExamAv
   );
 
   const availability: ExamAvailability = {};
-  for (const q of (questionsRes.data ?? []) as { type: QuestionType; topic_id: string }[]) {
+  for (const q of questions as { type: QuestionType; topic_id: string }[]) {
     const subjectId = topicToSubject.get(q.topic_id);
     const slug = subjectId ? subjectSlugById.get(subjectId) : undefined;
     if (!slug) continue;
@@ -631,10 +635,11 @@ export async function getPairExamBlocks(
   const supabase = await createClient();
   const slugs = [EXAM_FIRST_SUBJECT, second];
 
-  const { data: subjects } = await supabase
+  const { data: subjects, error: subjectsError } = await supabase
     .from('subjects')
     .select('id, slug, name_ru, name_kk')
     .in('slug', slugs);
+  if (subjectsError) throw new Error('Could not load exam subjects');
 
   const subjectRows = (subjects ?? []) as {
     id: string;
@@ -644,19 +649,21 @@ export async function getPairExamBlocks(
   }[];
   if (subjectRows.length !== slugs.length) return null;
 
-  const { data: topics } = await supabase
+  const { data: topics, error: topicsError } = await supabase
     .from('topics')
     .select('id, name_ru, name_kk, subject_id')
     .in('subject_id', subjectRows.map((s) => s.id));
+  if (topicsError) throw new Error('Could not load exam topics');
 
   const topicRows = (topics ?? []) as (MockExamTopic & { subject_id: string })[];
 
-  const { data: questions } = await supabase
+  const questions = topicRows.length === 0 ? [] : await readAllPages((from, to) => supabase
     .from('questions')
     .select('*')
     .in('topic_id', topicRows.map((t) => t.id))
     .eq('language', locale)
-    .eq('is_published', true);
+    .eq('is_published', true)
+    .order('id').range(from, to), 'exam questions');
 
   const pool = (questions ?? []) as Question[];
   const topicSubject = new Map(topicRows.map((t) => [t.id, t.subject_id]));
@@ -689,10 +696,12 @@ export async function getPairExamBlocks(
   );
   const contextsMap = new Map<string, ExamContext>();
   if (contextIds.length > 0) {
-    const { data: contexts } = await supabase
+    const { data: contexts, error } = await supabase
       .from('contexts')
       .select('id, title, content')
-      .in('id', contextIds);
+      .in('id', contextIds)
+      .eq('language', locale);
+    if (error || contexts?.length !== contextIds.length) throw new Error('Could not load exam contexts');
     (contexts ?? []).forEach((c) =>
       contextsMap.set(c.id, {
         id: c.id,
@@ -707,22 +716,23 @@ export async function getPairExamBlocks(
 
 export async function getQuestionsForTopic(topicSlug: string, locale: Locale = 'ru') {
   const supabase = await createClient();
-  const { data: topic } = await supabase
+  const { data: topic, error: topicError } = await supabase
     .from('topics')
-    .select('id, name_ru, name_kk, slug')
+    .select('id, name_ru, name_kk, slug, subject_id')
     .eq('slug', topicSlug)
     .maybeSingle();
+  if (topicError) throw new Error('Could not load topic');
   if (!topic) return { topic: null, questions: [] as Question[], contexts: new Map<string, { id: string; title: string | null; content: ContextContent }>() };
 
-  const { data: questions } = await supabase
+  const questions = await readAllPages((from, to) => supabase
     .from('questions')
     .select('*')
     .eq('topic_id', topic.id)
     .eq('language', locale)
     .eq('is_published', true)
-    .order('sort_order');
+    .order('id').range(from, to), 'practice questions');
 
-  const list = (questions ?? []) as Question[];
+  const list = (questions as Question[]).sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id));
 
   const contextIds = Array.from(
     new Set(list.map((q) => q.context_id).filter((x): x is string => Boolean(x)))
@@ -730,10 +740,12 @@ export async function getQuestionsForTopic(topicSlug: string, locale: Locale = '
 
   const contextsMap = new Map<string, { id: string; title: string | null; content: ContextContent }>();
   if (contextIds.length > 0) {
-    const { data: contexts } = await supabase
+    const { data: contexts, error } = await supabase
       .from('contexts')
       .select('id, title, content')
-      .in('id', contextIds);
+      .in('id', contextIds)
+      .eq('language', locale);
+    if (error || contexts?.length !== contextIds.length) throw new Error('Could not load practice contexts');
     (contexts ?? []).forEach((c) =>
       contextsMap.set(c.id, { id: c.id, title: c.title as string | null, content: c.content as ContextContent })
     );

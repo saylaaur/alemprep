@@ -29,6 +29,13 @@ Read-only `scripts/audit-production-inventory.ts` 09.09.2026 16:27 UTC: 4 705 в
 
 ## C00a — P0: покрытие по темам и честная доступность
 
+**Статус 10.09.2026:** техническая часть реализована; см. [отчёт](../../qa/kazakh-coverage.md) и [журнал](../../production/EXECUTION_LOG.md). Следующий кодовый блок C00b. Изменений контента/БД и платных вызовов не было. Пункты ниже остаются исходными критериями; человеческая приёмка и программа первого урока не объявлены выполненными.
+
+Получена детерминированная приватная выборка 30 RU math с source hashes: `/private/tmp/alemprep-kk-source-sample-20260910.json`. В ней есть radicals, три формата, контекст, формулы, текстовые варианты и отрицание; структурированной таблицы в доступном опубликованном math-банке не найдено. Табличные поля проверяются synthetic regression fixture; C00b обязан сохранить этот кейс в end-to-end проверке перевода. Классы/темы и реальный набор первых уроков подтверждаются школой отдельно. Для повторного получения manifest запустить `npm run audit:kk`.
+
+- [ ] Внешняя приёмка нового KK UI носителем языка перед первым школьным уроком.
+- [ ] Методист утверждает программу 30–50 пар для первого сопровождаемого этапа; текущие 30 — техническая проба перевода, не учебная программа.
+
 **Files:** modify `scripts/audit-production-inventory.ts`, `scripts/lib/production-inventory.ts` и его tests, `lib/supabase/queries.ts`, `components/practice/PracticeView.tsx`, `app/[locale]/(app)/subjects/[subject]/page.tsx`, `messages/{ru,kk}.json`; create `docs/qa/kk-coverage.md` (агрегаты), `scripts/lib/translation-budget.ts` и `.test.ts`.
 **Consumes:** существующие questions/contexts/topics, без записи в production и без платных API.
 **Produces:** покрытие по subject+topic+language (published/draft/missing/stale pair); смета и список первой партии с хешами исходников, доступные пользователю действия при отсутствии контента.

@@ -334,7 +334,7 @@
     "partCount": "{count} × {points} б.",
     "pointsChip": "{points} б.",
     "pointsOf": "{earned}/{max} б.",
-    "shortfallWarningSubject": "{subject}: бұл блокта «{type}» түріндегі {required} тапсырманың орнына {available} бар — тапсырмалар банкі толықтырылуда",
+    "shortfallWarningSubject": "{subject}: «{type}» түріндегі қажетті {required} тапсырманың {available} тапсырмасы қолжетімді",
     "scorePoints": "{max} балдан {score} балл",
     "timeSpent": "уақыт",
     "byType": "Тапсырма түрлері бойынша",
@@ -367,7 +367,7 @@
     "matchingPlaceholder": "Таңда…",
     "matchingSelectFor": "{item} тармағының жауабы",
     "goToQuestion": "{number}-сұрақ",
-    "noQuestionsDesc": "Тақырыптар бойынша бірнеше есеп шеш — олар сынақта пайда болады",
+    "noQuestionsDesc": "Таңдалған тілде екі пән бойынша қажетті тапсырма түрлері әзірге жеткіліксіз. Қолжетімді тақырыптар бойынша дайындала аласыз.",
     "answeredShort": "жауапталды",
     "navigatorTitle": "Навигатор",
     "legendUnanswered": "Жауапталмаған",
@@ -430,5 +430,15 @@
     "source": "Дереккөз",
     "noQuestions": "Барлық тапсырмалар тексерілді — кезек бос.",
     "forbidden": "Кіруге рұқсат жоқ"
+  },
+  "contentAvailability": {
+    "topicTitle": "Бұл тілде әзірге тапсырмалар жоқ",
+    "topicDescription": "Бұл бөлімде таңдалған тілде жарияланған тапсырмалар әзірге жоқ. Пәндерге оралып, басқа тақырыпты таңдауға болады.",
+    "assessmentTitle": "Тест үшін тапсырмалар әзірге жеткіліксіз",
+    "assessmentDescription": "Таңдалған тілде екі пән бойынша қажетті тапсырма түрлері әзірге жеткіліксіз. Қолжетімді тақырыптар бойынша дайындала аласыз.",
+    "availableTopics": "Осы тілдегі қолжетімді тақырыптар",
+    "questionCount": "Тапсырмалар саны: {count}",
+    "backToSubjects": "Пәндерге оралу",
+    "unavailableLabel": "Бұл тілде әзірге қолжетімсіз"
   }
 }

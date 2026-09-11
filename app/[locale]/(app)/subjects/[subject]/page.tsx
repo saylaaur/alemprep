@@ -39,6 +39,7 @@ export default async function SubjectTopicsPage({
   ]);
 
   const sections = groupTopicsBySection(topics);
+  const availabilityText = await getTranslations('contentAvailability');
 
   return (
     <>
@@ -48,35 +49,36 @@ export default async function SubjectTopicsPage({
       />
 
       <div className="space-y-8 p-4 sm:p-6 lg:p-8">
+        {topics.every((topic) => topic.question_count === 0) && (
+          <p className="rounded-xl border bg-card p-5 text-sm text-muted-foreground">{availabilityText('topicDescription')}</p>
+        )}
         {sections.map((section) => (
           <section key={section.sectionNo ?? 'other'}>
             <h2 className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               {sectionTitle(section, locale as Locale, t('otherTopics'))}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {section.topics.map((topic) => (
-                <Link
-                  key={topic.id}
-                  href={{ pathname: '/practice/topic/[topic]', params: { topic: topic.slug } }}
-                >
-                  <Card className="h-full transition-colors hover:border-primary/40">
+              {section.topics.map((topic) => {
+                const available = topic.question_count > 0;
+                const card = (
+                  <Card className={available ? 'h-full transition-colors hover:border-primary/40' : 'h-full bg-card/50'}>
                     <CardHeader>
-                      <CardTitle className="text-base">
-                        {topicName(topic, locale as Locale)}
-                      </CardTitle>
-                      <CardDescription>
-                        {t('questionsCount', { count: topic.question_count })}
-                      </CardDescription>
+                      <CardTitle className="text-base">{topicName(topic, locale as Locale)}</CardTitle>
+                      <CardDescription>{t('questionsCount', { count: topic.question_count })}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-                        {t('startTopic')}
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </div>
+                      {available ? (
+                        <div className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                          {t('startTopic')}<ArrowRight className="h-3.5 w-3.5" />
+                        </div>
+                      ) : <p className="text-sm text-muted-foreground">{availabilityText('unavailableLabel')}</p>}
                     </CardContent>
                   </Card>
-                </Link>
-              ))}
+                );
+                return available ? (
+                  <Link key={topic.id} href={{ pathname: '/practice/topic/[topic]', params: { topic: topic.slug } }}>{card}</Link>
+                ) : <div key={topic.id} aria-disabled="true">{card}</div>;
+              })}
             </div>
           </section>
         ))}
