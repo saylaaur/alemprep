@@ -49,6 +49,8 @@ Read-only `scripts/audit-production-inventory.ts` 09.09.2026 16:27 UTC: 4 705 в
 
 ## C00b — P0: структурный перевод и пробная партия
 
+**Статус 11.09.2026:** код, provider fixtures и read-only dry-run готовы; [operator runbook](../../production/GOOGLE_TRANSLATION_RUNBOOK.md), [журнал](../../production/EXECUTION_LOG.md). Реальный Google API не вызывался, нет KK drafts в БД и нет human review. Повторный dry-run реальной 30-sample после полного обхода полей и glossary rule оставил 11 сущностей на manual review и подготовил 20; это не разрешение запускать `--execute` без отдельного budget decision.
+
 **Files:** create `scripts/lib/translation-segments.ts`, `scripts/lib/google-translation.ts`, `scripts/lib/translation-checkpoint.ts` и соответствующие `.test.ts`, `scripts/translate-google.ts`; modify `scripts/lib/checks.ts`/`.test.ts`, `package.json`. Переиспользовать schema и импорт существующего пайплайна; Google-only путь не вызывает Anthropic SDK.
 **Consumes:** C00a source manifest, утверждённый словарь терминов и бюджет API.
 **Produces:** явный output artifact с machine-draft переводами и source hashes; импорт не выполняется автоматически.

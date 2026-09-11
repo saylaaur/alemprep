@@ -36,7 +36,7 @@
 | ID | Результат задачи | Зависит от | Модель исполнения | План |
 | --- | --- | --- | --- | --- |
 | C00a | P0: покрытие KK по темам, смета, корректные unavailable/error состояния | Текущий release; без ожидания D03 для аудита | Terra medium | [03](../superpowers/plans/2026-09-09-03-content-and-language.md) |
-| C00b | P0: Google NMT offline-перевод, защита структуры, пробная партия | C00a; согласованный API-бюджет для реальных вызовов | Terra medium | [03](../superpowers/plans/2026-09-09-03-content-and-language.md) |
+| C00b | P0: Google NMT offline-перевод, защита структуры, пробная партия | C00a; согласованный API-бюджет для реальных вызовов | Terra medium | [03](../superpowers/plans/2026-09-09-03-content-and-language.md), [operator runbook](GOOGLE_TRANSLATION_RUNBOOK.md) |
 | C00c | P0: вычитка KK и выпуск принятой партии существующей схемы | C00b, E02; человек для math/KK review | Terra high + методист | [03](../superpowers/plans/2026-09-09-03-content-and-language.md) |
 | E01 | Совместимый baseline: ветки, схема, release/CI | — | Terra high | [01](../superpowers/plans/2026-09-09-01-release-foundation.md) |
 | E02 | Изолированный стенд + настоящие DB/browser тесты | E01 | Terra high | [01](../superpowers/plans/2026-09-09-01-release-foundation.md) |
