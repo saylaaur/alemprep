@@ -99,3 +99,14 @@
 - После включения Dependabot Security Updates GitHub обнаружил 11 открытых alerts: 5 high, 4 moderate и 2 low; три historical alerts уже были auto-dismissed и не учитывались как открытые. Каждый patch-level security PR обновлялся на актуальный protected `main`, затем отдельно проходил обязательные `verify`, `gitleaks` и `Vercel` до merge.
 - Merged patch fixes: `js-yaml` 4.1.1→4.3.2, `browserslist` 4.28.2→4.28.9, `vitest`/`@vitest/mocker` 4.1.9→4.1.11, `brace-expansion` 1.1.14→1.1.18, `postcss-selector-parser` 6.1.2→6.1.4 и `esbuild` 0.28.0→0.28.2. Итоговый read-only Dependabot API inventory: **0 open high, 0 moderate, 0 low alerts**.
 - Крупные или продуктовые version PR (включая Vitest 5, KaTeX, SDK и GitHub Actions 7) не были merged этим task: они не требовались для закрытия alert и должны получить отдельную оценку совместимости. Это не разрешение считать все зависимости «актуальными», а доказательство закрытия именно известного security backlog на момент проверки.
+
+## 13.09.2026 — E01: public release evidence refresh
+
+- GitHub deployment metadata: последний Vercel deployment с environment `Production` был successful 12.09 17:28:52 UTC для SHA `9efcb6736ecc0a97d6864f0c9134b25989356f1e`; GitHub Actions runs для этого SHA завершились success. GitHub payload при этом содержит `production_environment: false`, поэтому он сам по себе не доказывает, что public alias указывает на тот же deployment.
+- Anonymous HTTP evidence: `https://alemprep.vercel.app/` возвращает 307 на `/ru`; `https://alemprep.vercel.app/kk` возвращает 200. Точный deployment URL требует Vercel SSO и не предоставляет anonymous evidence mapping alias→SHA. Это подтверждает доступность public entry routes в момент проверки, но не auth flow, не production data, не полный smoke и не alias-to-SHA identity.
+- Следующее обязательное E01 evidence: владелец запускает `docs/pilot/check-release.sql` в Supabase SQL Editor и сохраняет только JSON metadata без строк пользователей; затем Vercel owner сверяет public alias с deployment SHA в control plane. До этих двух действий E01 и G0 остаются открытыми.
+
+## 13.09.2026 — CI: timezone-stable AI quota tests
+
+- PR с документацией выявил mismatch после полуночи в Алматы: четыре `assistant-actions` expectations брали локальный календарный день GitHub runner, а mock и реальная `consume_ai_daily_quota()` используют `timezone('Asia/Almaty', now())::DATE`. Проверка выявила и product preflight: `askAssistant` делал SELECT личной квоты по timezone сервера до вызова атомарного RPC.
+- `askAssistant` и оба `daily-limit` reset timestamp теперь используют один календарь `Asia/Almaty` с SQL RPC. Test expectations используют тот же календарь; отдельная regression-проверка фиксирует границу, где UTC ещё 12 сентября, а Алматы уже 13 сентября. Локально: `TZ=UTC` targeted 26 tests PASS; полный suite 50 files / 557 tests PASS; typecheck/lint PASS. CI обязана подтвердить тот же набор на clean runner.

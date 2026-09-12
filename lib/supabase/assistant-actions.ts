@@ -3,7 +3,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient as createSupabaseAdminClient } from '@supabase/supabase-js';
 import { createClient } from './server';
-import { localDateStr } from '@/lib/streak';
 import {
   AI_DAILY_LIMIT,
   ASSISTANT_MAX_QUESTION_LENGTH,
@@ -54,11 +53,35 @@ export type AskAssistantResult =
 
 type AiTurnRow = { role: 'student' | 'assistant'; mode: AssistantMode | null; text: unknown };
 
-/** Начало следующих суток по локальному времени сервера (тот же базис, что localDateStr). */
-function nextLocalMidnightIso(): string {
-  const next = new Date();
-  next.setHours(24, 0, 0, 0);
-  return next.toISOString();
+const PRODUCT_TIME_ZONE = 'Asia/Almaty';
+
+/** Must stay aligned with `timezone('Asia/Almaty', now())::DATE` in 0021. */
+function productDateStr(date: Date = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: PRODUCT_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? '';
+  return `${value('year')}-${value('month')}-${value('day')}`;
+}
+
+/** First instant after the current product day; server timezone never affects it. */
+function nextProductMidnightIso(now: Date = new Date()): string {
+  const currentDate = productDateStr(now);
+  let lowerBound = now.getTime();
+  let upperBound = lowerBound + 36 * 60 * 60 * 1000;
+
+  while (productDateStr(new Date(upperBound)) === currentDate) {
+    upperBound += 24 * 60 * 60 * 1000;
+  }
+  while (upperBound - lowerBound > 1) {
+    const midpoint = Math.floor((lowerBound + upperBound) / 2);
+    if (productDateStr(new Date(midpoint)) === currentDate) lowerBound = midpoint;
+    else upperBound = midpoint;
+  }
+  return new Date(upperBound).toISOString();
 }
 
 /**
@@ -143,7 +166,7 @@ export async function askAssistant(input: {
     return { ok: false, error: 'question-limit' };
   }
 
-  const today = localDateStr();
+  const today = productDateStr();
   const { data: usageRow, error: usageReadError } = await supabase
     .from('ai_usage')
     .select('count')
@@ -154,7 +177,7 @@ export async function askAssistant(input: {
   const currentCount = (usageRow as { count: number } | null)?.count ?? 0;
 
   if (currentCount >= AI_DAILY_LIMIT) {
-    return { ok: false, error: 'daily-limit', resetsAt: nextLocalMidnightIso() };
+    return { ok: false, error: 'daily-limit', resetsAt: nextProductMidnightIso() };
   }
 
   // Глобальный потолок — ПОСЛЕ персонального лимита и ДО его инкремента:
@@ -183,7 +206,7 @@ export async function askAssistant(input: {
   if (consumedCount == null) {
     // Между предварительным SELECT и атомарным RPC другой параллельный запрос
     // мог занять последний слот.
-    return { ok: false, error: 'daily-limit', resetsAt: nextLocalMidnightIso() };
+    return { ok: false, error: 'daily-limit', resetsAt: nextProductMidnightIso() };
   }
 
   const question = questionRow as { type: QuestionType; body: QuestionBody; explanation: Explanation | null };
