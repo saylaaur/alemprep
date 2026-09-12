@@ -12,7 +12,7 @@
 | --- | --- | --- |
 | Next.js, OAuth, RU/KK оболочка, практика, пробники, диагностика, прогресс, admin review | Реализованы в репозитории; это не означает приёмку каждого сценария пилота | E01/E02: точный release и полный пользовательский smoke |
 | Исправления 10 задач безопасности | PR #1 merged, production deployment `dfd0c5b` success 09.09 | E01: authenticated smoke и оставшиеся environment checks |
-| Проверки release 09.09 | typecheck/lint, 485 unit-тестов и стандартный build прошли в GitHub CI | DB/browser tests ещё нужны |
+| Проверки release 09.09 | typecheck/lint, 485 unit-тестов и стандартный build прошли в GitHub CI; E02 уже имеет fail-closed guard test target | реальные DB/browser tests ещё нужны |
 | Живая БД | Метаданные подтвердили manifest и запрет UPDATE XP/стрика/admin; own sessions/attempt writes ещё широкие | L04: реальные запрещённые REST/RPC операции с synthetic аккаунтами |
 | Блок 0: release/data/operations | Документы подготовлены, часть metadata проверена; блок не закрыт | E01/E02 + независимые внешние решения |
 | Школы, teacher, атомарный аудит, воспроизводимые отчёты | Не реализованы | L, S, R |
