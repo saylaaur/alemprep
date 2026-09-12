@@ -2,6 +2,25 @@
 
 This command produces private machine drafts only. It never inserts rows in Supabase, changes `is_published`, or makes an in-browser translation feature. A Kazakh and subject-matter reviewer must accept the resulting pairs before C00c.
 
+## Быстрый старт для первой пробной партии
+
+**Не переводите деньги разработчику и не отправляйте API key, пароль или access token в чат.** Google Cloud использует привязанный billing account: обычно карта нужна для активации, а списание идёт за фактическое использование. Для первой партии в AlemPrep утверждён технический предел **15 000 символов / $0.31**: текущий read-only dry-run оценивает её в 4 993 символа ($0.09986) при первой попытке и 14 979 ($0.29958) с резервом на три попытки. У Google NMT есть общий для Basic/Advanced ежемесячный кредит до $10 на первые 500 000 символов, поэтому при неиспользованном кредите фактическая стоимость может быть $0; это не гарантия доступности кредита. См. [актуальный тариф](https://cloud.google.com/products/translate/pricing).
+
+1. В [Google Cloud Console](https://console.cloud.google.com/) создайте отдельный проект, например `alemprep-translation`. Сохраните его **Project ID**.
+2. В **Billing** создайте или выберите Cloud Billing account и привяжите его к этому проекту. Не подключайте случайный чужой billing account.
+3. В **APIs & Services → Library** найдите **Cloud Translation API** и нажмите **Enable**.
+4. В **IAM & Admin → Quotas** установите для `Characters sent to general model per project per day` значение **15 000**. Эта квота считается по отправленным символам, включая повторные попытки, и является внешним техническим ограничением партии. [Документация квот](https://docs.cloud.google.com/translate/quotas).
+5. В **Billing → Budgets & alerts** создайте бюджет на $1 (или эквивалент) и письма на 50%, 90% и 100%. Такой бюджет только уведомляет, поэтому он не заменяет квоту и caps команды. [Документация budget alerts](https://docs.cloud.google.com/billing/docs/how-to/budgets).
+6. На рабочем Mac установите Google Cloud CLI, если команды `gcloud` ещё нет, затем войдите в свой аккаунт и выберите проект:
+
+```sh
+brew install --cask google-cloud-sdk
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+```
+
+После этого владелец пишет: **«Google Cloud готов, запускай пробный перевод с лимитом 15k / $0.31»**. Оператор получает краткоживущий token только в локальном shell, запускает ограниченную партию и возвращает приватный отчёт на человеческую проверку. Token не сохраняется в Git, Vercel, `.env.local` или браузере.
+
 ## Before any paid request
 
 1. Review the latest private C00a/C00b dry-run artifact. Resolve every `manualReview` and `staleSourceIds` item; do not quietly send it anyway.
