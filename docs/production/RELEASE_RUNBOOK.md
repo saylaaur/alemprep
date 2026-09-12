@@ -12,7 +12,7 @@ Release record: candidate full SHA, verified CI run, test timestamps, schema/mig
 
 1. `git status --short`, inspect base..head diff, redacted secret/content scan. Stage только task files. Локальные pitch/generated/docs не публикуются автоматически.
 2. Подготовить branch/PR к **проверенному** `saylaaur/alemprep`, записать payload scope. Предыдущий branch push был остановлен автоматической проверкой разрешений, не GitHub. Без конкретного разрешения после этого отказа его не повторять и не обходить другим инструментом.
-3. PR triggers Verify; plain branch push сам по себе не triggers существующий workflow. Preview работает на staging env, не production service key. CI Node22 clean install/typecheck/lint/test/build плюс новые DB/E2E suites.
+3. PR triggers Verify and Security; plain branch push сам по себе не triggers существующий workflow. Preview работает на staging env, не production service key. CI Node22 clean install/typecheck/lint/test/build плюс новые DB/E2E suites. Security runs an explicit full reachable-history scan with redacted output; a match stops release and starts credential rotation, not a public incident report.
 4. Review точного head. Merge создаёт новый SHA при merge/squash — production build и smoke должны относиться к нему; зелёный pre-merge head не заменяет deployment metadata нового SHA.
 
 ## 3. Согласование БД перед миграцией
