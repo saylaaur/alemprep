@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { makeClient, type Store, type FailPoint } from './testing/in-memory-db';
-import { localDateStr } from '@/lib/streak';
 import { AI_DAILY_LIMIT, AI_GLOBAL_DAILY_REQUEST_LIMIT } from '@/lib/assistant';
 
 /**
@@ -40,7 +39,19 @@ vi.mock('@anthropic-ai/sdk', () => ({
 import { askAssistant } from './assistant-actions';
 import { recordAttempt } from './practice-actions';
 
-const today = localDateStr();
+/** Must match `timezone('Asia/Almaty', now())::DATE` in migration 0021. */
+function almatyDateStr(date: Date = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Almaty',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? '';
+  return `${value('year')}-${value('month')}-${value('day')}`;
+}
+
+const today = almatyDateStr();
 /** UTC-дата — тот же базис, что CURRENT_DATE в Postgres и мок в in-memory-db.ts. */
 const todayUtc = new Date().toISOString().slice(0, 10);
 
@@ -96,6 +107,15 @@ beforeEach(() => {
   process.env.ANTHROPIC_API_KEY = 'test-key';
   process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
+});
+
+describe('AI quota calendar', () => {
+  it('uses the product’s Almaty date when UTC is still on the previous day', () => {
+    const utcBeforeMidnightInAlmaty = new Date('2026-09-12T19:30:00.000Z');
+
+    expect(utcBeforeMidnightInAlmaty.toISOString().slice(0, 10)).toBe('2026-09-12');
+    expect(almatyDateStr(utcBeforeMidnightInAlmaty)).toBe('2026-09-13');
+  });
 });
 
 describe('consume_ai_daily_quota RPC contract', () => {
