@@ -3,7 +3,7 @@ import { makeClient, type InMemoryState } from './testing/in-memory-db';
 import type { Question } from '@/types/db';
 
 const state = vi.hoisted(() => ({ store: {}, failOnce: null } as InMemoryState));
-vi.mock('./server', () => ({ createClient: async () => makeClient(state), createAdminClient: () => makeClient(state) }));
+vi.mock('./server', () => ({ createClient: async () => makeClient(state) }));
 vi.mock('./queries', () => ({ getPairExamBlocks: vi.fn() }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 import { getPairExamBlocks } from './queries';

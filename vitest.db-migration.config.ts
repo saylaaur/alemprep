@@ -9,9 +9,9 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['tests/db/**/*.test.ts'],
-    exclude: ['tests/db/learning-migration-path.test.ts'],
-    testTimeout: 30_000,
-    hookTimeout: 30_000,
+    include: ['tests/db/learning-migration-path.test.ts'],
+    testTimeout: 90_000,
+    hookTimeout: 120_000,
+    fileParallelism: false,
   },
 });

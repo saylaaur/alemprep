@@ -1,6 +1,7 @@
 'use server';
 
-import { createAdminClient, createClient } from './server';
+import { createClient } from './server';
+import { createAdminClient } from './admin';
 import { revalidatePath } from 'next/cache';
 import {
   EXAM_SECOND_SUBJECTS,

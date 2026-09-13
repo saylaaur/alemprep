@@ -18,8 +18,8 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('./queries', () => ({ getPairExamBlocks: vi.fn() }));
 vi.mock('./server', () => ({
   createClient: async () => makeClient(h),
-  createAdminClient: () => makeClient(h),
 }));
+vi.mock('./admin', () => ({ createAdminClient: () => makeClient(h) }));
 
 // Импортируем ПОСЛЕ регистрации моков.
 import { finishExamSession, recordAttempt, verifyExamSessions } from './practice-actions';

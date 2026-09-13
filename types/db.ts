@@ -171,6 +171,13 @@ export type Session = {
   score: number;
   started_at: string;
   finished_at: string | null;
+  integrity_version: 0 | 1;
+  operation_id: string | null;
+  status: 'active' | 'submitted' | 'expired' | 'cancelled';
+  expires_at: string | null;
+  scoring_version: string | null;
+  manifest_hash: string | null;
+  receipt: unknown | null;
 };
 
 /** attempts — попытки пользователя */
@@ -183,6 +190,75 @@ export type Attempt = {
   is_correct: boolean;
   time_spent_ms: number | null;
   attempted_at: string;
+  session_item_id: string | null;
+  integrity_version: 0 | 1;
+  points: number | null;
+  max_points: number | null;
+};
+
+/** question_versions — immutable server-side content revision. */
+export type QuestionVersionRow = {
+  id: string;
+  question_id: string;
+  family_id: string;
+  revision: number;
+  locale: Locale;
+  type: QuestionType;
+  public_body: unknown;
+  grading_body: QuestionBody;
+  explanation: Explanation | null;
+  context_snapshot: ContextContent | null;
+  content_hash: string;
+  created_at: string;
+};
+
+export type QuestionPublication = {
+  question_version_id: string;
+  status: 'draft' | 'approved' | 'quarantined';
+  math_review_ref: string | null;
+  language_review_ref: string | null;
+  source_rights_ref: string | null;
+  updated_at: string;
+};
+
+export type SessionItem = {
+  id: string;
+  session_id: string;
+  question_version_id: string;
+  position: number;
+  created_at: string;
+};
+
+export type OperationReceipt = {
+  actor_id: string;
+  operation_id: string;
+  kind: 'learning.start' | 'learning.submit';
+  payload_hash: string;
+  result: unknown;
+  created_at: string;
+};
+
+export type RewardLedgerEntry = {
+  id: string;
+  user_id: string;
+  session_id: string;
+  reward_key: string;
+  amount: number;
+  day: string;
+  created_at: string;
+};
+
+export type AuditEvent = {
+  id: string;
+  actor_id: string | null;
+  actor_kind: 'user' | 'operator' | 'system';
+  event_type: string;
+  entity_type: string;
+  entity_id: string | null;
+  school_id: string | null;
+  operation_id: string | null;
+  occurred_at: string;
+  metadata: unknown;
 };
 
 /** ai_usage — дневной счётчик запросов к ИИ-ассистенту (Слой 2), PK (user_id, usage_date) */
