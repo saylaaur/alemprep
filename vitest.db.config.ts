@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config';
 import path from 'node:path';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   resolve: {
@@ -8,6 +8,8 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['lib/**/*.test.ts', 'scripts/**/*.test.ts', 'tests/db/test-target.test.ts'],
+    include: ['tests/db/**/*.test.ts'],
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 });

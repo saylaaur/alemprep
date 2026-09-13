@@ -12,7 +12,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-key
@@ -30,3 +30,13 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+      - name: Start isolated Supabase test stack
+        run: >-
+          npx supabase start
+          --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - run: npm run test:db
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Stop isolated Supabase test stack
+        if: always()
+        run: npx supabase stop
