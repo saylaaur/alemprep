@@ -35,6 +35,7 @@ jobs:
           npx supabase start
           --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
       - run: npm run test:db
+      - run: npm run test:db:migration
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - name: Stop isolated Supabase test stack

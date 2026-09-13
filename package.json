@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
     "test": "vitest run",
     "test:db": "APP_ENV=local NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 vitest run --config vitest.db.config.ts",
+    "test:db:migration": "APP_ENV=local NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 vitest run --config vitest.db-migration.config.ts",
     "test:e2e": "APP_ENV=local NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 playwright test",
     "audit:content": "tsx --tsconfig tsconfig.scripts.json scripts/audit-content.ts",
     "audit:production": "tsx --tsconfig tsconfig.scripts.json scripts/audit-production-inventory.ts",
@@ -48,6 +49,7 @@
     "next-themes": "^0.4.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^4.4.3"

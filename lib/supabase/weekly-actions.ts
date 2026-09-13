@@ -1,6 +1,7 @@
 'use server';
 
-import { createAdminClient, createClient } from './server';
+import { createClient } from './server';
+import { createAdminClient } from './admin';
 import { hasCompleteAssessment } from '@/lib/content-availability';
 import { revalidatePath } from 'next/cache';
 import { QUESTION_POINTS, scoreAnswer } from '@/lib/exam';

@@ -31,6 +31,7 @@ export type DbHarness = {
   actor(label: string): Promise<TestActor>;
   rest(actor: TestActor | null, path: string, init?: RequestInit): Promise<DbResponse>;
   rpc(actor: TestActor | 'service', name: string, args: Record<string, unknown>): Promise<DbResponse>;
+  execute(sql: string, params?: unknown[]): Promise<void>;
   scalar<T extends string | number | boolean | null>(sql: string, params?: unknown[]): Promise<T>;
   close(): Promise<void>;
 };
@@ -159,6 +160,10 @@ export async function createDbHarness(): Promise<DbHarness> {
       if (!row) return null as T;
       const [value] = Object.values(row);
       return value ?? (null as T);
+    },
+
+    async execute(sql: string, params: unknown[] = []) {
+      await pool.query(sql, params);
     },
 
     async close() {
