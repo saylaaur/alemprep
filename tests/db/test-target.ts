@@ -3,7 +3,6 @@ export const PRODUCTION_SUPABASE_PROJECT_REF = 'euypaocjzcqlapfilrak';
 
 export type DbTestTargetEnv = {
   APP_ENV?: string;
-  ALEMPREP_TEST_STAGING_REF?: string;
   NEXT_PUBLIC_SUPABASE_URL?: string;
 };
 
@@ -23,14 +22,10 @@ function isLoopback(hostname: string): boolean {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
 }
 
-function isProjectRef(value: string): boolean {
-  return /^[a-z0-9]{3,64}$/.test(value);
-}
-
 /**
  * Fails closed before a DB harness constructs a client or performs a request.
- * Local is the default. A hosted staging project needs both an explicit
- * environment and an exact project-ref allowlist.
+ * This harness supports only a local loopback database. A hosted staging
+ * harness needs separate credentials, retention controls, and review.
  */
 export function assertSafeDbTestTarget(env: DbTestTargetEnv): URL {
   const url = readUrl(env.NEXT_PUBLIC_SUPABASE_URL);
@@ -42,26 +37,26 @@ export function assertSafeDbTestTarget(env: DbTestTargetEnv): URL {
     throw new Error('production Supabase project is never a test target');
   }
 
-  if (env.APP_ENV === 'local') {
-    if (url.protocol !== 'http:' || !isLoopback(url.hostname)) {
-      throw new Error('local DB tests require a loopback Supabase URL over http');
-    }
-    return url;
+  if (env.APP_ENV !== 'local') {
+    throw new Error('DB tests require APP_ENV=local');
   }
 
-  if (env.APP_ENV === 'staging') {
-    const allowlistedRef = env.ALEMPREP_TEST_STAGING_REF?.trim();
-    if (!allowlistedRef || !isProjectRef(allowlistedRef)) {
-      throw new Error('staging DB tests require a valid ALEMPREP_TEST_STAGING_REF');
-    }
-    if (allowlistedRef === PRODUCTION_SUPABASE_PROJECT_REF) {
-      throw new Error('production Supabase project is never a test target');
-    }
-    if (url.protocol !== 'https:' || projectRef !== allowlistedRef) {
-      throw new Error('staging DB tests require the exact allowlisted Supabase project');
-    }
-    return url;
+  if (url.protocol !== 'http:' || !isLoopback(url.hostname)) {
+    throw new Error('local DB tests require a loopback Supabase URL over http');
   }
+  return url;
+}
 
-  throw new Error('DB tests require APP_ENV=local or APP_ENV=staging');
+/** Local SQL is allowed only over the same loopback boundary as REST tests. */
+export function assertSafeDbConnectionString(value: string): URL {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error('local SQL helpers require a valid PostgreSQL URL');
+  }
+  if ((url.protocol !== 'postgres:' && url.protocol !== 'postgresql:') || !isLoopback(url.hostname)) {
+    throw new Error('local SQL helpers require a loopback PostgreSQL URL');
+  }
+  return url;
 }
