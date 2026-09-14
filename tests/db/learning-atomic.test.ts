@@ -6,6 +6,7 @@ type SeededLearning = {
   questionId: string;
   versionId: string;
   topicId: string;
+  subjectId: string;
   manifestHash: string;
 };
 
@@ -50,6 +51,7 @@ async function seedApprovedVersion(db: DbHarness): Promise<SeededLearning> {
     questionId,
     versionId,
     topicId,
+    subjectId,
     manifestHash: `sha256:${createHash('sha256').update(`${versionId}:sha256:${suffix}`).digest('hex')}`,
   };
 }
@@ -59,7 +61,8 @@ function startPlan(seeded: SeededLearning) {
     sessions: [{
       mode: 'practice',
       topicId: seeded.topicId,
-      subjectId: null,
+      subjectId: seeded.subjectId,
+      locale: 'kk',
       expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
       scoringVersion: 'ent-v1',
       manifestHash: seeded.manifestHash,
@@ -114,6 +117,22 @@ describe('L02 atomic learning RPC', () => {
        WHERE actor_id = $1 AND operation_id = $2 AND kind = 'learning.start'`,
       [actor.id, operationId]
     )).toBe(1);
+    expect(await db.scalar<number>(
+      `SELECT count(*)::int FROM public.audit_events
+       WHERE entity_id = $1 AND event_type = 'learning.started'`, [sessionId]
+    )).toBe(1);
+    const changedPayload = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: operationId,
+      payload_hash: 'start:changed-payload',
+      plan: startPlan(seeded),
+    });
+    expect(changedPayload.status, JSON.stringify(changedPayload.data)).toBe(200);
+    expect(changedPayload.data).toMatchObject({ error: 'operation-conflict' });
+    expect(await db.scalar<number>(
+      `SELECT count(*)::int FROM public.audit_events
+       WHERE entity_id = $1 AND event_type = 'learning.started'`, [sessionId]
+    )).toBe(1);
   });
 
   it('accepts concurrent retries once and creates one trusted learning fact', async () => {
@@ -162,9 +181,245 @@ describe('L02 atomic learning RPC', () => {
       `SELECT count(*)::int FROM public.operation_receipts
        WHERE actor_id = $1 AND kind = 'learning.submit'`, [actor.id]
     )).toBe(1);
+    await db.execute(`UPDATE public.sessions SET expires_at = now() - interval '1 second' WHERE id = $1`, [session.id]);
+    const postExpiryReplay = await db.rpc('service', 'commit_learning_v1', commitArgs);
+    expect(postExpiryReplay.status, JSON.stringify(postExpiryReplay.data)).toBe(200);
+    expect(postExpiryReplay.data).toEqual(replies[0]!.data);
+    const secondOperation = await db.rpc('service', 'commit_learning_v1', {
+      ...commitArgs,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:concurrency:second-operation',
+    });
+    expect(secondOperation.status, JSON.stringify(secondOperation.data)).toBe(200);
+    expect(secondOperation.data).toMatchObject({ error: 'already-submitted' });
+    expect(await db.scalar<number>(
+      'SELECT count(*)::int FROM public.attempts WHERE session_id = $1 AND integrity_version = 1', [session.id]
+    )).toBe(1);
   });
 
-  it('does not expose trusted learning RPC to an authenticated browser role', async () => {
+  it('creates both mock_exam blocks with one receipt when their expiry is shared', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('learning-atomic-mock-pair');
+    actorIds.push(actor.id);
+    const first = await seedApprovedVersion(db);
+    const second = await seedApprovedVersion(db);
+    const firstSession = { ...startPlan(first).sessions[0]!, mode: 'mock_exam' };
+    const secondSession = {
+      ...startPlan(second).sessions[0]!,
+      mode: 'mock_exam',
+      expiresAt: firstSession.expiresAt,
+    };
+
+    const started = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:mock-pair',
+      plan: { sessions: [firstSession, secondSession] },
+    });
+
+    expect(started.status, JSON.stringify(started.data)).toBe(200);
+    expect(started.data).toMatchObject({
+      sessions: [
+        { mode: 'mock_exam', itemIds: [expect.any(String)] },
+        { mode: 'mock_exam', itemIds: [expect.any(String)] },
+      ],
+    });
+    expect(await db.scalar<number>(
+      `SELECT count(*)::int FROM public.operation_receipts
+       WHERE actor_id = $1 AND kind = 'learning.start'`, [actor.id]
+    )).toBe(1);
+  });
+
+  it('accepts one issued session when the same learner also has another active session', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('learning-atomic-multiple-sessions');
+    actorIds.push(actor.id);
+    const first = await seedApprovedVersion(db);
+    const second = await seedApprovedVersion(db);
+
+    const firstStarted = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:multiple-sessions:first',
+      plan: startPlan(first),
+    });
+    const secondStarted = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:multiple-sessions:second',
+      plan: startPlan(second),
+    });
+    expect(firstStarted.status, JSON.stringify(firstStarted.data)).toBe(200);
+    expect(secondStarted.status, JSON.stringify(secondStarted.data)).toBe(200);
+    const firstSession = (firstStarted.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+
+    const committed = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:multiple-sessions:first',
+      session_id: firstSession.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{
+        itemId: firstSession.itemIds[0], questionVersionId: first.versionId,
+        answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1000,
+      }],
+    });
+
+    expect(committed.status, JSON.stringify(committed.data)).toBe(200);
+    expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [firstSession.id]))
+      .toBe('submitted');
+    const secondSession = (secondStarted.data as { sessions: { id: string }[] }).sessions[0]!;
+    expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [secondSession.id]))
+      .toBe('active');
+  });
+
+  it('rejects a submitted item that omits its duration before creating facts', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('learning-atomic-missing-duration');
+    actorIds.push(actor.id);
+    const seeded = await seedApprovedVersion(db);
+    const started = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:missing-duration',
+      plan: startPlan(seeded),
+    });
+    expect(started.status, JSON.stringify(started.data)).toBe(200);
+    const session = (started.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+
+    const nullItems = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:null-items',
+      session_id: session.id,
+      scoring_version: 'ent-v1',
+      graded_items: null,
+    });
+    expect(nullItems.status).toBeGreaterThanOrEqual(400);
+    expect(nullItems.data).toMatchObject({ message: 'invalid-input' });
+
+    const rejected = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:missing-duration',
+      session_id: session.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{
+        itemId: session.itemIds[0], questionVersionId: seeded.versionId,
+        answer: 'A', points: 1, maxPoints: 1,
+      }],
+    });
+
+    expect(rejected.status).toBeGreaterThanOrEqual(400);
+    expect(rejected.data).toMatchObject({ message: 'invalid-input' });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id]))
+      .toBe(0);
+    expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [session.id]))
+      .toBe('active');
+  });
+
+  it('rejects a submitted item with an unexpected field before creating facts', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('learning-atomic-extra-field');
+    actorIds.push(actor.id);
+    const seeded = await seedApprovedVersion(db);
+    const started = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:extra-field',
+      plan: startPlan(seeded),
+    });
+    expect(started.status, JSON.stringify(started.data)).toBe(200);
+    const session = (started.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+
+    const rejected = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:extra-field',
+      session_id: session.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{
+        itemId: session.itemIds[0], questionVersionId: seeded.versionId,
+        answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1000, isCorrect: true,
+      }],
+    });
+
+    expect(rejected.status).toBeGreaterThanOrEqual(400);
+    expect(rejected.data).toMatchObject({ message: 'invalid-input' });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id]))
+      .toBe(0);
+  });
+
+  it('rejects a submit when the stored manifest no longer matches the issued versions', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('learning-atomic-tampered-manifest');
+    actorIds.push(actor.id);
+    const seeded = await seedApprovedVersion(db);
+    const started = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:tampered-manifest',
+      plan: startPlan(seeded),
+    });
+    expect(started.status, JSON.stringify(started.data)).toBe(200);
+    const session = (started.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+    await db.execute(`UPDATE public.sessions SET manifest_hash = 'sha256:tampered' WHERE id = $1`, [session.id]);
+
+    const rejected = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:tampered-manifest',
+      session_id: session.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{
+        itemId: session.itemIds[0], questionVersionId: seeded.versionId,
+        answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1000,
+      }],
+    });
+
+    expect(rejected.status).toBeGreaterThanOrEqual(400);
+    expect(rejected.data).toMatchObject({ message: 'invalid-input' });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id]))
+      .toBe(0);
+  });
+
+  it('rejects a submit after an issued version is quarantined', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('learning-atomic-quarantined-version');
+    actorIds.push(actor.id);
+    const seeded = await seedApprovedVersion(db);
+    const started = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:quarantined-version',
+      plan: startPlan(seeded),
+    });
+    expect(started.status, JSON.stringify(started.data)).toBe(200);
+    const session = (started.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+    await db.execute(
+      `UPDATE public.question_publications SET status = 'quarantined' WHERE question_version_id = $1`,
+      [seeded.versionId]
+    );
+
+    const rejected = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:quarantined-version',
+      session_id: session.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{
+        itemId: session.itemIds[0], questionVersionId: seeded.versionId,
+        answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1000,
+      }],
+    });
+
+    expect(rejected.status).toBeGreaterThanOrEqual(400);
+    expect(rejected.data).toMatchObject({ message: 'content-unavailable' });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id]))
+      .toBe(0);
+  });
+
+  it('does not expose trusted learning RPC to anonymous or authenticated browser roles', async () => {
     db = await createDbHarness();
     const actor = await db.actor('learning-atomic-browser-role');
     actorIds.push(actor.id);
@@ -187,7 +442,144 @@ describe('L02 atomic learning RPC', () => {
       graded_items: [],
     });
     expect(submit.status).toBeGreaterThanOrEqual(400);
+    const anonymousStart = await db.rpc('anon', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'anonymous:must-not-call',
+      plan: startPlan(seeded),
+    });
+    const anonymousSubmit = await db.rpc('anon', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'anonymous:must-not-submit',
+      session_id: '11111111-1111-4111-8111-111111111111',
+      scoring_version: 'ent-v1',
+      graded_items: [],
+    });
+    expect(anonymousStart.status).toBeGreaterThanOrEqual(400);
+    expect(anonymousSubmit.status).toBeGreaterThanOrEqual(400);
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id])).toBe(0);
+  });
+
+  it('rejects a start plan with JSON null, a missing locale, or a mismatched content locale', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('learning-atomic-start-locale');
+    actorIds.push(actor.id);
+    const seeded = await seedApprovedVersion(db);
+
+    const nullPlan = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:null-plan',
+      plan: null,
+    });
+    const missingLocalePlan = startPlan(seeded);
+    delete (missingLocalePlan.sessions[0] as Record<string, unknown>).locale;
+    const missingLocale = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:missing-locale',
+      plan: missingLocalePlan,
+    });
+    const wrongLocalePlan = startPlan(seeded);
+    wrongLocalePlan.sessions[0]!.locale = 'ru';
+    const wrongLocale = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:wrong-locale',
+      plan: wrongLocalePlan,
+    });
+
+    for (const rejected of [nullPlan, missingLocale]) {
+      expect(rejected.status).toBeGreaterThanOrEqual(400);
+      expect(rejected.data).toMatchObject({ message: 'invalid-input' });
+    }
+    expect(wrongLocale.status).toBeGreaterThanOrEqual(400);
+    expect(wrongLocale.data).toMatchObject({ message: 'content-unavailable' });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id]))
+      .toBe(0);
+  });
+
+  it('rejects an issued version outside the plan topic or subject', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('learning-atomic-catalog-membership');
+    actorIds.push(actor.id);
+    const seeded = await seedApprovedVersion(db);
+    const unrelated = await seedApprovedVersion(db);
+    const plan = startPlan(seeded);
+    plan.sessions[0]!.topicId = unrelated.topicId;
+    plan.sessions[0]!.subjectId = unrelated.subjectId;
+
+    const rejected = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:catalog-membership',
+      plan,
+    });
+
+    expect(rejected.status).toBeGreaterThanOrEqual(400);
+    expect(rejected.data).toMatchObject({ message: 'content-unavailable' });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id]))
+      .toBe(0);
+  });
+
+  it('rejects an invalid session-mode shape before issuing any session', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('learning-atomic-mode-shape');
+    actorIds.push(actor.id);
+    const first = await seedApprovedVersion(db);
+    const second = await seedApprovedVersion(db);
+    const plan = {
+      sessions: [
+        { ...startPlan(first).sessions[0], mode: 'mock_exam' },
+        { ...startPlan(second).sessions[0], mode: 'practice' },
+      ],
+    };
+
+    const rejected = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:mixed-modes',
+      plan,
+    });
+
+    expect(rejected.status).toBeGreaterThanOrEqual(400);
+    expect(rejected.data).toMatchObject({ message: 'invalid-input' });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id]))
+      .toBe(0);
+  });
+
+  it('rejects a submit when the stored question denominator no longer matches issued items', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('learning-atomic-tampered-total');
+    actorIds.push(actor.id);
+    const seeded = await seedApprovedVersion(db);
+    const started = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:tampered-denominator',
+      plan: startPlan(seeded),
+    });
+    expect(started.status, JSON.stringify(started.data)).toBe(200);
+    const session = (started.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+    await db.execute('UPDATE public.sessions SET question_ids = NULL WHERE id = $1', [session.id]);
+
+    const rejected = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:tampered-denominator',
+      session_id: session.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{
+        itemId: session.itemIds[0], questionVersionId: seeded.versionId,
+        answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1000,
+      }],
+    });
+
+    expect(rejected.status).toBeGreaterThanOrEqual(400);
+    expect(rejected.data).toMatchObject({ message: 'invalid-input' });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id]))
+      .toBe(0);
   });
 
   it('refuses a plan whose manifest does not describe its issued versions', async () => {
@@ -209,6 +601,27 @@ describe('L02 atomic learning RPC', () => {
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id])).toBe(0);
   });
 
+  it('rejects a start plan that omits its mode before creating sessions', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('learning-atomic-missing-mode');
+    actorIds.push(actor.id);
+    const seeded = await seedApprovedVersion(db);
+    const plan = startPlan(seeded);
+    delete (plan.sessions[0] as Record<string, unknown>).mode;
+
+    const rejected = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:missing-mode',
+      plan,
+    });
+
+    expect(rejected.status).toBeGreaterThanOrEqual(400);
+    expect(rejected.data).toMatchObject({ message: 'invalid-input' });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id]))
+      .toBe(0);
+  });
+
   it('rolls back attempts, rewards and receipts when audit insertion fails', async () => {
     db = await createDbHarness();
     const actor = await db.actor('learning-atomic-rollback');
@@ -222,11 +635,15 @@ describe('L02 atomic learning RPC', () => {
     });
     expect(started.status, JSON.stringify(started.data)).toBe(200);
     const session = (started.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+    const failingOperationId = crypto.randomUUID();
     await db.execute(`
       CREATE OR REPLACE FUNCTION public.l02_test_abort_audit_event()
       RETURNS trigger LANGUAGE plpgsql AS $$
       BEGIN
-        RAISE EXCEPTION 'test audit failure';
+        IF NEW.operation_id = '${failingOperationId}'::uuid THEN
+          RAISE EXCEPTION 'test audit failure';
+        END IF;
+        RETURN NEW;
       END;
       $$;
       CREATE TRIGGER l02_test_abort_audit_event
@@ -235,9 +652,16 @@ describe('L02 atomic learning RPC', () => {
     `);
 
     try {
-      const failed = await db.rpc('service', 'commit_learning_v1', {
+      const unaffectedStart = await db.rpc('service', 'start_learning_v1', {
         actor_id: actor.id,
         operation_id: crypto.randomUUID(),
+        payload_hash: 'start:rollback-unaffected',
+        plan: startPlan(seeded),
+      });
+      expect(unaffectedStart.status, JSON.stringify(unaffectedStart.data)).toBe(200);
+      const failed = await db.rpc('service', 'commit_learning_v1', {
+        actor_id: actor.id,
+        operation_id: failingOperationId,
         payload_hash: 'submit:rollback',
         session_id: session.id,
         scoring_version: 'ent-v1',
