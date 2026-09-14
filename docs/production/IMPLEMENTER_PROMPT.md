@@ -1,15 +1,21 @@
-# Промпт исполнителя — Terra medium/high
+# Промпт исполнителя — Terra High
 
-Скопировать блок ниже в задачу этого репозитория. Следующий task ID после технического C00a от 10.09 — **C00b**. Модель пользователь выбирает в интерфейсе; этот текст сам не переключает модель.
+Скопировать блок ниже в задачу этого репозитория. Следующая ready карточка после сверки main от 14.09 — **L02a**. Astra планирует и принимает gates, Terra High реализует один контракт. Модель пользователь выбирает в интерфейсе; этот текст сам не переключает модель.
 
 ```text
 Ты реализуешь AlemPrep по принятой архитектуре школьного production.
 Рабочая папка: /Users/macbook/Desktop/alemprep.
-Задача этого прохода: C00b. Для следующих проходов замени только ID.
+Задача этого прохода: L02a. Для следующих проходов замени только ID.
 
 Прочитай AGENTS.md, верх TASKS.md, docs/production/README.md,
-docs/production/EXECUTION_LOG.md и соответствующий task plan.
-Прочитай указанные в task разделы architecture spec и реальные исходники.
+последние relevant entries docs/production/EXECUTION_LOG.md и секцию task plan.
+Сначала прочитай docs/superpowers/plans/2026-09-14-execution-rebaseline.md,
+раздел статусов и карточку выбранного ID. Прочитай указанные в task
+разделы architecture spec и реальные исходники. Не читать все планы целиком.
+L02 merged не равен accepted; не перескакивай с partial RPC сразу в L03.
+Без бюджета можно выполнять L/S/R/U/O на synthetic RU/KK данных.
+Новые corrective SQL: 0026 L02a, 0027 L02b; revoke теперь 0028.
+Не редактируй 0024/0025. Hosted их применение пока не подтверждено.
 ROADMAP.md задаёт стратегию до 01.06.2027; не реализуй весь roadmap за проход.
 Если задача относится к первому сопровождаемому пилоту, прочитай
 docs/pilot/SUPERVISED_PILOT.md. SP-ready не закрывает полный P01/P02.
@@ -49,7 +55,9 @@ RU/KK ключи добавляй вместе; человеческий review 
 Код проверь npm run typecheck, npm run lint, затронутыми unit/DB/E2E tests;
 npm run build обязателен для routes/config/build changes и завершения блока.
 Если окружение блокирует команду, напиши точную причину и что ещё проверено.
-Не заявляй PASS по старому коммиту. Production-тесты только разрешённые,
+Не заявляй PASS по старому коммиту. Сохраняй session_id живой команды
+и дождись exit code. Один local stack: reset/migration/DB/E2E только
+последовательно; concurrent RPC проверяй внутри отдельного теста. Production-тесты только разрешённые,
 синтетические; не экспериментируй на существующих данных учеников.
 
 Один task — один понятный commit с только относящимися файлами.
@@ -58,6 +66,10 @@ schema migrations и applied/not applied, tests environment, risks, next ready I
 Если commit невозможно создать из-за permissions, сохрани diff и честно укажи.
 Нельзя отмечать done при красном typecheck/lint или незакрытом acceptance.
 
+Обычные commits/push/merge уже разрешены владельцем; не спрашивай повторно.
+До merge проверь exact-head CI/review и совместимость deployed schema: main
+может автоматически деплоиться. L03 без готового DB cutover не включать
+публично; порядок flag/maintenance/revoke описан в сверке 14.09.
 Не выполняй внешние изменения, которые ещё не разрешены пользователем:
 смена GitHub visibility, покупка, production migration/deploy, отправка школе.
 Готовь concrete diff/runbook к review. Если authorization уже явно есть,
@@ -68,7 +80,7 @@ schema migrations и applied/not applied, tests environment, risks, next ready I
 2) проверено на каком SHA/окружении;
 3) applied/not applied для БД/production;
 4) ограничения и следующий ID.
-На gate L04/S04/R03/O04/P01 подготовь review packet для Astra и останови
+На gate L02a/L02b/L02d/L04/S04/R03/O04/P01 подготовь review packet для Astra и останови
 переход к зависимым tasks до review. Не выдавай сам себе независимое ревью.
 ```
 
@@ -85,4 +97,4 @@ schema migrations и applied/not applied, tests environment, risks, next ready I
 
 Минимальный контекст: task ID, base/head SHA, plan path, изменённые interfaces, migration status, результаты нужных tests, нерешённый failing case. Полную историю обсуждения и все девять планов каждый раз пересылать не нужно.
 
-Terra medium используется для UI/DTO/i18n и ограниченных утилит; high для SQL/доступов/гонок. Это распределение задач команды, не автоматическая гарантия. После двух неудачных исправлений одного воспроизводимого security/concurrency дефекта — packet Astra: test, observed vs expected, минимальный diff. Не тратить проходы на бесконечное повышение verbosity.
+Terra High — выбранный исполнитель этого цикла. Astra gates перечислены выше. После двух неудачных исправлений одного воспроизводимого security/concurrency дефекта передать Astra test, observed/expected и минимальный diff. Не считать прерванное/ограниченное лимитом review одобрением.
