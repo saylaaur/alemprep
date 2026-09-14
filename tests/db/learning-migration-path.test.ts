@@ -6,7 +6,8 @@ import { createDbHarness, type DbHarness, type TestActor } from './helpers';
 import { assertSafeDbTestTarget } from './test-target';
 
 const execFileAsync = promisify(execFile);
-const migrationPath = `${process.cwd()}/supabase/migrations/0024_learning_integrity_schema.sql`;
+const l01MigrationPath = `${process.cwd()}/supabase/migrations/0024_learning_integrity_schema.sql`;
+const l02MigrationPath = `${process.cwd()}/supabase/migrations/0025_learning_integrity_rpc.sql`;
 const supabaseCli = `${process.cwd()}/node_modules/.bin/supabase`;
 
 function testTargetEnv() {
@@ -25,7 +26,12 @@ async function resetTo(version?: string): Promise<void> {
 }
 
 async function applyL01(db: DbHarness): Promise<void> {
-  const sql = await readFile(migrationPath, 'utf8');
+  const sql = await readFile(l01MigrationPath, 'utf8');
+  await db.execute(sql);
+}
+
+async function applyL02(db: DbHarness): Promise<void> {
+  const sql = await readFile(l02MigrationPath, 'utf8');
   await db.execute(sql);
 }
 
@@ -111,6 +117,30 @@ describe('0024 learning integrity migration path', () => {
         .toBe(legacy.attemptId);
       await expect(db.scalar('DELETE FROM public.questions WHERE id = $1', [legacy.questionId]))
         .rejects.toThrow();
+    } finally {
+      await db.close();
+    }
+  }, 90_000);
+
+  it('adds service-only RPC after the L01 schema without rewriting legacy history', async () => {
+    await resetTo('0024');
+    const db = await createDbHarness();
+    try {
+      const actor = await db.actor('migration-l02');
+      const legacy = await seedLegacyHistory(db, actor);
+      await applyL02(db);
+
+      expect(await db.scalar<string>(
+        `SELECT to_regprocedure('public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)')::text`
+      )).toBe('commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)');
+      expect(await db.scalar<number>('SELECT integrity_version FROM public.sessions WHERE id = $1', [legacy.submittedSessionId]))
+        .toBe(0);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('authenticated', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('service_role', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(true);
     } finally {
       await db.close();
     }
