@@ -1,6 +1,6 @@
 # Выпуск, откат и запуск пилота
 
-Применять после P01 и конкретного разрешения внешнего действия. Документирование и локальная проверка не меняют production сами по себе. 0024/0025 уже существуют; остальные номера — резерв из сверки 14.09, не созданные SQL. См. docs/superpowers/plans/2026-09-14-execution-rebaseline.md: 0026/0027 corrections, 0028 revoke, затем до 0036. До публичного включения L03 требуются совместимый candidate и закрытие legacy writes; main может деплоиться автоматически.
+Применять после P01 и конкретного разрешения внешнего действия. Документирование и локальная проверка не меняют production сами по себе. 0024/0025 уже существуют; 0026 применена по сообщению владельца, а 0027 — локальный candidate до повторного review. Остальные номера — резерв из сверки 14.09. См. docs/superpowers/plans/2026-09-14-execution-rebaseline.md: 0026/0027 corrections, 0028 rewards, 0029 revoke, затем до 0037. До публичного включения L03 требуются совместимый candidate и закрытие legacy writes; main может деплоиться автоматически.
 
 ## 1. Что собрать перед кнопкой выпуска
 
@@ -19,7 +19,7 @@ Release record: candidate full SHA, verified CI run, test timestamps, schema/mig
 
 1. Read-only inventory: tables/columns/functions/grants/RLS/constraints/indexes. Старый hosted проект без migration ledger нельзя reset или пометить всеми версиями без сверки.
 2. Сопоставить каждую реально применённую миграцию с definitions/checksum; расхождение оформить corrective новой миграцией. Baseline ledger заводить только по проверенным объектам и процедуре выбранного CLI, сохранив audit; не переигрывать seeds над production.
-3. Проверить sequence 0024→0036 на fresh DB и populated synthetic baseline. Уникальные constraints/backfill отрабатывают legacy NULLs. Большие backfill — batch с измеренным временем/locks, не безлимитный transaction в час урока.
+3. Проверить sequence 0024→0037 на fresh DB и populated synthetic baseline. Уникальные constraints/backfill отрабатывают legacy NULLs. Большие backfill — batch с измеренным временем/locks, не безлимитный transaction в час урока.
 4. Schema expansion совместима со старым app, contract revokes — отдельное окно. Новые grants нельзя включать позже UI «когда-нибудь»; новый table сразу RLS/default deny.
 
 ## 4. Первая починка совместимости и основной cutover

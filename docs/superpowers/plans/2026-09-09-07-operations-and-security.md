@@ -15,8 +15,8 @@
 
 ## O01 — Feature flags, входные лимиты и бюджеты
 
-**Files:** create `supabase/migrations/0033_pilot_operation_limits.sql`, `lib/operations/{flags,limits}.ts`, `tests/db/operation-limits.test.ts`, `lib/operations/flags.test.ts`; modify `lib/supabase/assistant-actions.ts`, learning/pilot services, `lib/server/config.ts`, `types/db.ts`, `next.config.mjs`.
-**Consumes:** E02, L03, S02. Полную задачу выполнить до R01/R02; они подключают уже готовый export limit/flag. Маленький global AI-off config commit разрешён раньше, без преждевременной 0033 на отсутствующих таблицах.
+**Files:** create `supabase/migrations/0034_pilot_operation_limits.sql`, `lib/operations/{flags,limits}.ts`, `tests/db/operation-limits.test.ts`, `lib/operations/flags.test.ts`; modify `lib/supabase/assistant-actions.ts`, learning/pilot services, `lib/server/config.ts`, `types/db.ts`, `next.config.mjs`.
+**Consumes:** E02, L03, S02. Полную задачу выполнить до R01/R02; они подключают уже готовый export limit/flag. Маленький global AI-off config commit разрешён раньше, без преждевременной 0034 на отсутствующих таблицах.
 **Produces:** `getFeatureAccess(actorId:string):Promise<{learningWrites:boolean;teacherExports:boolean;ai:boolean;desmos:boolean}>`; `consumeLimit({actorId,schoolId,action,operationId}):Promise<{allowed:boolean;retryAfterMs:number}>`. Actor/school создаются доверенным сервисом, не payload.
 
 - [ ] Flags default false для AI/Desmos; AI direct action в school scope отклонён до quota/provider call. Test env API key set + AI false → mock provider вызван0. LearningWrites при config-store outage fail closed для новых writes, но retry already committed receipt доступен. Content read и pending сохраняются.
@@ -41,7 +41,7 @@
 
 ## O03 — Нагрузка, планы запросов и ёмкость
 
-**Files:** create `scripts/load/{pilot,scenarios,verify-results}.ts`, `docs/pilot/CAPACITY.md`; индексы только новой `supabase/migrations/0036_measured_query_indexes.sql` при измеренной необходимости; query modules по профилю.
+**Files:** create `scripts/load/{pilot,scenarios,verify-results}.ts`, `docs/pilot/CAPACITY.md`; индексы только новой `supabase/migrations/0037_measured_query_indexes.sql` при измеренной необходимости; query modules по профилю.
 **Consumes:** L04/S04/R02/U01/O02; production-equivalent synthetic staging.
 **Produces:** evidence N60/2N120, request/DB/cost budget, ограничение пилота реальным принятым N.
 

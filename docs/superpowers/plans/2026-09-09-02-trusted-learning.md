@@ -7,7 +7,7 @@
 **Tech Stack:** TypeScript/Zod, PostgreSQL, Supabase RPC, Vitest + настоящие REST/DB тесты.
 **Spec:** [архитектура](../specs/2026-09-09-production-pilot-architecture.md), разделы 5–8.
 
-**Сверка 14.09:** L01 в main; L02 merged частично и не принят. Следующий task L02a, затем L02b–d и L03a–d по [исполняемым карточкам](2026-09-14-execution-rebaseline.md). Указание create 0024/0025 ниже историческое: файлы уже существуют и не изменяются. Исправления — новые 0026/0027; L04 revoke — 0028. Чекбоксы исходного плана задают контракт; реальные статусы — в сверке и журнале.
+**Сверка 14.09, дополнение 15.09:** L01 в main; L02 merged частично и не принят. Следующий task L02a-R, затем L02b–d и L03a–d по [исполняемым карточкам](2026-09-14-execution-rebaseline.md). Указание create 0024/0025 ниже историческое: файлы уже существуют и не изменяются. Исправления — новые 0026/0027; L02b rewards — 0028; L04 revoke — 0029. Чекбоксы исходного плана задают контракт; реальные статусы — в сверке и журнале.
 
 ## Global Constraints
 
@@ -97,7 +97,7 @@ GRANT EXECUTE ON FUNCTION public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,te
 
 ## L04 — Закрыть прямые записи и принять cutover
 
-**Files:** create `supabase/migrations/0028_learning_write_cutover.sql`, `tests/db/direct-write-denial.test.ts`, `tests/e2e/answer-secrecy.spec.ts`; update `types/db.ts`, `docs/production/EXECUTION_LOG.md`.
+**Files:** create `supabase/migrations/0029_learning_write_cutover.sql`, `tests/db/direct-write-denial.test.ts`, `tests/e2e/answer-secrecy.spec.ts`; update `types/db.ts`, `docs/production/EXECUTION_LOG.md`.
 **Consumes:** L03 работающий со server-only writes.
 **Produces:** доказанный отказ прямого присвоения баллов/ролей/manifest, совместимый release для новых grants.
 
@@ -105,5 +105,5 @@ GRANT EXECUTE ON FUNCTION public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,te
 - [ ] Отозвать INSERT/UPDATE/DELETE таблиц sessions/attempts/user_achievements/ai_turns у anon/authenticated; удалить старые ALL mutation policies. Сохранить нужные SELECT и точные profile settings column grants + DB CHECK для locale/goal/date/target границ, согласованных с `lib/settings.ts`. Сначала revoke table UPDATE profiles, потом grant разрешённых колонок — additive grants нельзя исправить только column REVOKE.
 - [ ] Закрыть SELECT старых questions.body/explanation и contexts, если через них можно получить exam key; все нужные обычные чтения переводятся L03 на safe DTO. Публикация teacher не даёт доступа к grading bank. Catalog metadata можно оставить по минимальному SELECT.
 - [ ] anon/authenticated direct RPC attempts → forbidden; serviceRPC с чужим actor/session → rejected ownership. Проверить views, вложенные REST joins, старые functions, grants PUBLIC, security-definer helpers, новые функции EXECUTE default. Обновить manifest отказов в тестах.
-- [ ] Cutover rehearsal: baseline → expand → L03 → write pause → 0028 → v1 → smoke. Старый application SHA не rollback target. Production запуск только по P02, если не нужен отдельно согласованный emergency baseline fix.
+- [ ] Cutover rehearsal: baseline → expand → L03 → write pause → 0029 → v1 → smoke. Старый application SHA не rollback target. Production запуск только по P02, если не нужен отдельно согласованный emergency baseline fix.
 - [ ] Astra получает SQL + action/DTO diff + настоящие test outputs. Без незакрытых P0/P1, включая alternate API. Commit L04, запись миграции applied/not applied в журнале.

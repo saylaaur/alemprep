@@ -16,6 +16,13 @@
 - Свежий `npm run test:db` exit0: 4 files / 33 tests, 27.66s. Этот PASS покрывает существующие тесты, не устраняет findings дополнительных проб. Migration-path/build/browser в review заново не запускались.
 - Владелец сообщил о применении миграции после передачи 0026: operator confirmation записано, remote checksum/grants не подтверждены. 0026 больше не редактировать; исправления — только новая migration. Application code и SQL этим review не изменены. Entry points обновлены на L02a-R, расширение прав/деплой/платные запросы отсутствуют.
 
+## 15.09.2026 — L02a-R implementation candidate, pending Astra gate
+
+- Base `a502299708ef07aa534d50bb26089eef75a03a22`; в изолированной ветке создана forward-only `0027_learning_rpc_validation.sql`. Она заменяет только тела двух service-only RPC: пустые topic/subject IDs становятся `invalid-input`; active submit требует `ent-v1` с обеих сторон, positions `0..N-1` и count 1..80; уже submitted session после ownership/integrity и same-operation replay возвращает `already-submitted` до revalidation publication. Receipt/manifest v1/signatures/grants сохранены; reward/streak policy не менялась.
+- Сначала новые `tests/db/learning-rpc-validation.test.ts` воспроизвели R1–R4 на 0026: 4/4 expected failures. После local-only `supabase migration up --local` для 0027: 7/7 validation tests passed. Дополнены replay start после quarantine, две different concurrent submit operations и malformed value matrix с проверкой отсутствия attempts/rewards/receipts.
+- Migration-path test теперь создаёт populated 0026 state, применяет SQL 0026→0027 и проверяет submitted receipt, active session, replay и service-only grants. `npm run typecheck` exit 0; `npm run lint` exit 0; `npm run test:db` exit 0, 5 files / 40 tests; `npm run test:db:migration` exit 0, 1 file / 4 tests. Local Docker после suite восстановлен на latest schema. Vite сообщает прежнее предупреждение configLoader native; ошибок/новых warnings lint нет.
+- Hosted Supabase, Vercel, GitHub/CI и платные API не менялись. 0027 не применять hosted до exact-SHA review и отдельного rollout evidence. Verdict этой записи — candidate, не ACCEPT; L02b остаётся закрытым.
+
 ## Формат следующей записи
 
 Не копировать запись как выполненную без запуска. Для каждого task указать: ID, дату, base/head SHA, изменения, команды и exit/results, локальная/CI/DB/browser среда, migration names и applied/not applied, реально выполненные external actions, review verdict, blockers и следующий ready ID. Для документов указывать проверку ссылок/контрактов вместо вымышленных runtime тестов.

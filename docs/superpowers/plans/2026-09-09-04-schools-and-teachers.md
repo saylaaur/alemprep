@@ -15,7 +15,7 @@
 
 ## S01 — Школы, роли, приглашения
 
-**Files:** create `supabase/migrations/0031_schools_and_access.sql`, `lib/pilot/{contracts,access,repository}.ts`, `lib/supabase/pilot-actions.ts`, `scripts/pilot/provision-school.ts`, `tests/db/school-access.test.ts`, `tests/fixtures/schools.ts`; modify `types/db.ts`.
+**Files:** create `supabase/migrations/0032_schools_and_access.sql`, `lib/pilot/{contracts,access,repository}.ts`, `lib/supabase/pilot-actions.ts`, `scripts/pilot/provision-school.ts`, `tests/db/school-access.test.ts`, `tests/fixtures/schools.ts`; modify `types/db.ts`.
 **Consumes:** L04 закрытые client writes, E02 DbHarness.
 **Produces:** schools/memberships/groups/group_teachers/invites из spec; серверные functions:
 
@@ -39,7 +39,7 @@ revokeGroupInvite(input: {operationId:string; inviteId:string}): Promise<Result<
 
 ## S02 — Назначение и серверное участие
 
-**Files:** create `supabase/migrations/0032_school_assignments.sql`, `lib/pilot/assignments.ts`, `tests/db/assignments.test.ts`; modify `lib/learning/{service,repository}.ts`, `lib/supabase/pilot-actions.ts`, `types/db.ts`.
+**Files:** create `supabase/migrations/0033_school_assignments.sql`, `lib/pilot/assignments.ts`, `tests/db/assignments.test.ts`; modify `lib/learning/{service,repository}.ts`, `lib/supabase/pilot-actions.ts`, `types/db.ts`.
 **Consumes:** S01 scope, C01 approved programs, L02 RPC.
 **Produces:** assignments/assignment_participants; sessions.assignment_id + school_membership_id; `publishAssignment`, `cancelAssignment`, `addAssignmentParticipant`.
 
@@ -56,7 +56,7 @@ addAssignmentParticipant(input: {operationId:string; assignmentId:string; member
 
 - [ ] DB tests teacherA assign groupB rejected; wrong language/unapproved program rejected; opens>due/closes or >90day period invalid; duplicates same operation return same assignment; participant count from eligible membership snapshot, не браузерного массива userIds.
 - [ ] Publish RPC одной транзакцией фиксирует assignment, participants, audit `assignment.published` и receipt. Ограничить имя group120симв, датыISOвалидные, purpose enum, teacher scope и school.active под lock. Новых учеников не добавлять задним числом автоматически — explicit add с audit и eligible_from; ушедшие withdrawn_at сохраняют исторический denominator по metrics policy.
-- [ ] В start_learning/commit_learning добавить проверку assignment group/school, opens/closes и участника. Не менять опубликованную исходную миграцию 0025: replace functions в **новой 0032**. Student не передаёт school_id. Sessions привязаны к конкретному membership на start; смена locale не меняет закреплённые questions.
+- [ ] В start_learning/commit_learning добавить проверку assignment group/school, opens/closes и участника. Не менять опубликованную исходную миграцию 0025: replace functions в **новой 0033**. Student не передаёт school_id. Sessions привязаны к конкретному membership на start; смена locale не меняет закреплённые questions.
 - [ ] Baseline/endline: один активный/принятый session на (assignment,user), уникальность enforced SQL; retry start не создаёт дубль. Practice повторяемая, rewards ограничены L02. Late submit между dueAt и closesAt сохраняется с late признаком из server time; после closes reject. Deadline не зависит от browserclock.
 - [ ] Endline требует comparisonBaselineId уже опубликованного baseline той же group/program; baseline/purpose practice запрещают поле. Ссылка фиксируется при publish и не меняется после сдач. Это точная пара отчёта R01, не поиск «последней диагностики пользователя» по всей истории.
 - [ ] Tests concurrent cancel/submit, membership revoke/submit: действие имеет определённый порядок под scope lock, после завершённого revoke новый submit не проходит. Finished record не стирается; поведение cancelled active session понятное UI error.

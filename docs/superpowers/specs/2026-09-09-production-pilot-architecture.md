@@ -94,7 +94,7 @@ FK `attempts.question_id` сейчас каскадный: заменить но
 
 Индексы: attempts(user_id,attempted_at DESC), attempts(session_id), sessions(user_id,started_at DESC), sessions(assignment_id,user_id), session_items(session_id,position), audit_events(school_id,occurred_at DESC,id), audit_events(entity_type,entity_id,occurred_at), operation_receipts(created_at), reward_ledger(user_id,day). Подтверждать EXPLAIN на ожидаемом объёме; не создавать дубликаты существующих индексов.
 
-Миграции зарезервированы после интеграции 0022/0023: `0024_learning_integrity_schema.sql`, `0025_learning_integrity_rpc.sql`, `0026_learning_rpc_correctness.sql`, `0027_learning_rewards.sql`, `0028_learning_write_cutover.sql`. До их создания проверить отсутствие совпадающих номеров. Старые миграции не переименовывать, ledger не подделывать.
+Миграции зарезервированы после интеграции 0022/0023: `0024_learning_integrity_schema.sql`, `0025_learning_integrity_rpc.sql`, `0026_learning_rpc_correctness.sql`, `0027_learning_rpc_validation.sql`, `0028_learning_rewards.sql`, `0029_learning_write_cutover.sql`. До их создания проверить отсутствие совпадающих номеров. Старые миграции не переименовывать, ledger не подделывать.
 
 ### 5.2 Школы и назначения
 
@@ -187,12 +187,12 @@ Canonical hash включает kind, sessionId, отсортированные 
 
 ## 8. Переход без опасного окна
 
-Общий порядок новых миграций: 0024 L01 schema → 0025 L02 partial RPC → 0026 L02a correctness → 0027 L02b rewards → 0028 L04 revoke → 0029 C01 programs → 0030 C02 reports → 0031 S01 scopes → 0032 S02 assignments → 0033 O01 limits/flags → 0034 R01 reports/jobs → 0035 R03 privacy → 0036 O03 индексы при необходимости. Task IDs не равны номерам миграций. Если выбран более ранний AI-off task, он делает только config/code без преждевременной SQL миграции.
+Общий порядок новых миграций: 0024 L01 schema → 0025 L02 partial RPC → 0026 L02a correctness → 0027 L02a-R validation → 0028 L02b rewards → 0029 L04 revoke → 0030 C01 programs → 0031 C02 reports → 0032 S01 scopes → 0033 S02 assignments → 0034 O01 limits/flags → 0035 R01 reports/jobs → 0036 R03 privacy → 0037 O03 индексы при необходимости. Task IDs не равны номерам миграций. Если выбран более ранний AI-off task, он делает только config/code без преждевременной SQL миграции.
 
 1. Примирить ветки и фактическую схему, получить рабочий совместимый baseline. Production не должен оставаться на старом коде, который пытается писать XP с уже отозванными правами.
 2. Expand: добавить v1 schema/RPC без закрытия старых writes; v1 включён только на synthetic staging. Existing attempts/sessions остаются integrity_version=0.
 3. Перевести все practice/exam/diagnostic/weekly/AI/achievement mutations на разрешённые серверные пути. Прямой экспорт createExamSession с клиентским manifest убрать. Старые активные сессии завершать как cancelled при cutover, предложить начать заново; не начислять задним числом.
-4. Короткое объявленное окно обслуживания записей: старое приложение остановлено для writes; применить 0028, которая закрывает клиентские writes и широкие ALL policies; выпустить совместимый code SHA. Все действия отрабатываются на стенде заранее.
+4. Короткое объявленное окно обслуживания записей: старое приложение остановлено для writes; применить 0029, которая закрывает клиентские writes и широкие ALL policies; выпустить совместимый code SHA. Все действия отрабатываются на стенде заранее.
 5. Проверить реальные browser + direct REST сценарии. Откат возможен только на сборку, работающую с новыми grants. Откатывать безопасность выдачей UPDATE xp нельзя.
 6. Переключить чтение school reports только на integrity_version=1. Не переписывать legacy данные как trusted; не стирать пользовательский прогресс ради нового дизайна.
 

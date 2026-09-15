@@ -28,7 +28,7 @@
 5. Правила метрик привязаны к конкретному assignment; endline хранит comparison_baseline_id. Устранено смешение количества сдач и количества учеников.
 6. Согласованы locale/purpose позиции программы, camelCase public DTO, server TTL и одноразовый receipt.
 7. Тест секретности не запрещает публичный option ID: проверяет отсутствие correct/explanation fields, а не само значение одного из вариантов.
-8. Лимиты/флаги поставлены перед отчётами: 0031 operations, 0032 reports, 0033 privacy. Цикла «report требует limits, limits требует готовый report» нет.
+8. Лимиты/флаги поставлены перед отчётами: 0034 operations, 0035 reports, 0036 privacy. Цикла «report требует limits, limits требует готовый report» нет.
 9. Отдельно описаны SQL/Auth deletion steps: внешнюю Auth API операцию нельзя объявлять частью одной PostgreSQL-транзакции.
 10. Migrations и code steps не объявлены уже применёнными; H2 hosting/альтернативный Auth остаются явной внешней развилкой с критериями, не выдуманными provision-командами неизвестного провайдера.
 

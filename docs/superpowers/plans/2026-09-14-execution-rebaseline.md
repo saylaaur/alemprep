@@ -54,7 +54,7 @@
 
 Main может автоматически деплоиться через Vercel. До merge кода, требующего новой схемы, Terra указывает совместимость с deployed schema. Для L03-кандидатов добавить серверный `LEARNING_V1_ENABLED`: отсутствует/false — прежний совместимый путь, true — только новый путь, **никакого fallback при ошибке нового сервиса**. На synthetic стенде true; это временный механизм выкладки, не школьный access control.
 
-Не объявлять режим false безопасным для пилота. До L04 оставить v1 выключенным на публичном окружении: старые прямые writes могут нарушать его инварианты. Перед cutover — rehearsal полного candidate, блокировка старых записей на уровне БД, 0028 revoke, совместимый SHA с v1, smoke. После cutover false означает maintenance/отказ, а не возврат legacy writes. Переключатель глобальной аварийной остановки и школьные режимы оформляет O01. Ранние docs/expand commits можно интегрировать по действующему разрешению пользователя; не мержить несовместимый промежуточный L03-код с расчётом «потом применим SQL».
+Не объявлять режим false безопасным для пилота. До L04 оставить v1 выключенным на публичном окружении: старые прямые writes могут нарушать его инварианты. Перед cutover — rehearsal полного candidate, блокировка старых записей на уровне БД, 0029 revoke, совместимый SHA с v1, smoke. После cutover false означает maintenance/отказ, а не возврат legacy writes. Переключатель глобальной аварийной остановки и школьные режимы оформляет O01. Ранние docs/expand commits можно интегрировать по действующему разрешению пользователя; не мержить несовместимый промежуточный L03-код с расчётом «потом применим SQL».
 
 ## 3. Карточки Terra High: исправление L02
 
@@ -78,7 +78,7 @@ Main может автоматически деплоиться через Verce
 
 ### L02b — Награды и стрик из принятой операции
 
-**Depends:** принятое L02a. **Files:** NEW `supabase/migrations/0027_learning_rewards.sql`, `tests/db/learning-rewards.test.ts`; MODIFY `lib/streak.ts`, `lib/streak.test.ts`, `lib/gamification.ts` и его tests, `types/db.ts`. Создавать только отсутствующие test-файлы. SQL helper predicates должны иметь tests parity с существующими achievement thresholds, без копирования непроверенных browser counters.
+**Depends:** принятое L02a-R. **Files:** NEW `supabase/migrations/0028_learning_rewards.sql`, `tests/db/learning-rewards.test.ts`; MODIFY `lib/streak.ts`, `lib/streak.test.ts`, `lib/gamification.ts` и его tests, `types/db.ts`. Создавать только отсутствующие test-файлы. SQL helper predicates должны иметь tests parity с существующими achievement thresholds, без копирования непроверенных browser counters.
 
 **Уточнение policy v1:** practice/mock_exam/weekly: 10 XP за первую полностью правильную family за день, максимум 200 от ответов; exam bonus 50 за завершённый блок, максимум два/день. Сохранить weekly bonus 30, но только один раз за ISO-неделю Asia/Almaty; уникальность weekly reward — по user+week независимо от дня выдачи (нужен отдельный partial unique index на weekly reward_key). Diagnostic — 0 XP и не продлевает streak. Зафиксировать это уточнение spec §7 и UI-копирайта при L03; не менять прежние баллы задним числом.
 
@@ -152,7 +152,7 @@ Main может автоматически деплоиться через Verce
 
 ### L04 — Закрытие прямого доступа и rehearsal
 
-**Depends:** принятое L03d. **Files/contract:** задача L04 в плане 02; новая миграция **0028_learning_write_cutover.sql**. Там полный REST/RPC/grants matrix, включая собственные attempts/sessions, profile, achievements, ai_turns, чтение questions.body/explanation/contexts, views и функции.
+**Depends:** принятое L03d. **Files/contract:** задача L04 в плане 02; новая миграция **0029_learning_write_cutover.sql**. Там полный REST/RPC/grants matrix, включая собственные attempts/sessions, profile, achievements, ai_turns, чтение questions.body/explanation/contexts, views и функции.
 
 - [ ] Тесты должны запрещать подделку **собственных** результатов, не только чужие записи. В каждом случае сверять состояние БД.
 - [ ] Выполнить upgrade rehearsal с populated legacy → expand/corrections → compatible app → write pause/revoke → smoke; rollback к совместимому SHA, без возврата опасных grants. Действительно проверить остановку старого клиента прямым REST, а не только banner UI.
@@ -197,16 +197,17 @@ Main может автоматически деплоиться через Verce
 | 0024 | L01 — learning_integrity_schema (существует, не менять) |
 | 0025 | L02 partial — learning_integrity_rpc (существует, не менять) |
 | 0026 | L02a — learning_rpc_correctness |
-| 0027 | L02b — learning_rewards |
-| 0028 | L04 — learning_write_cutover |
-| 0029 | C01 — pilot_programs |
-| 0030 | C02 — content_reports |
-| 0031 | S01 — schools_and_access |
-| 0032 | S02 — school_assignments |
-| 0033 | O01 — pilot_operation_limits |
-| 0034 | R01 — pilot_reports |
-| 0035 | R03 — privacy_lifecycle |
-| 0036 | O03 — measured_query_indexes, только если измерения требуют |
+| 0027 | L02a-R — learning_rpc_validation |
+| 0028 | L02b — learning_rewards |
+| 0029 | L04 — learning_write_cutover |
+| 0030 | C01 — pilot_programs |
+| 0031 | C02 — content_reports |
+| 0032 | S01 — schools_and_access |
+| 0033 | S02 — school_assignments |
+| 0034 | O01 — pilot_operation_limits |
+| 0035 | R01 — pilot_reports |
+| 0036 | R03 — privacy_lifecycle |
+| 0037 | O03 — measured_query_indexes, только если измерения требуют |
 
 Перед созданием проверить все ветки/ledger на занятый номер. Если номер уже существует, остановить только schema change и передать Astra конфликт; не переименовывать применённый SQL. C01/S/O synthetic код можно готовить без paid content, но не применять миграции вне этой последовательности/зависимостей.
 
@@ -240,7 +241,7 @@ Next ready task and gate required:
 
 До реального урока нужны: дата/классы/предмет/число учеников и пик входов/устройства/Google доступ; ответственный учитель в каждой школе; проверяющий казахский и предмет; согласованный translation budget и credentials только через защищённое локальное окружение; решение по участию/данным/размещению и срокам хранения; ответственный за инциденты/backup. Полный список D01–D07 — `docs/production/DECISIONS.md`.
 
-Перед hosted rollout отдельно подтвердить, какие 0024/0025 уже применены, и сверить actual schema. Не просить применить будущие 0026/0027 до их реализации и review. До SP-ready/P01 технический статус: **подготовка и synthetic репетиции, не готовый школьный production**.
+Перед hosted rollout отдельно подтвердить, какие 0024/0025 уже применены, и сверить actual schema. Не просить применить будущие 0027/0028 до их реализации и review. До SP-ready/P01 технический статус: **подготовка и synthetic репетиции, не готовый школьный production**.
 
 ## 9. Самопроверка плана
 
