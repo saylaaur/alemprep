@@ -9,6 +9,13 @@
 - Первый task для исполнителя: **E01**. Внешние D01–D07 можно собирать параллельно, без подключения детей.
 - Самопроверка: [PLAN_REVIEW.md](PLAN_REVIEW.md). Typecheck exit0; lint exit0 с тремя прежними предупреждениями в untracked pitch script. Проверки связности документов и task dependency graph пройдены; runtime readiness этим не заявляется.
 
+## 15.09.2026 — Astra review L02a: CHANGES REQUIRED
+
+- Reviewed code `a502299708ef07aa534d50bb26089eef75a03a22`, base `0e638fa544f487f8ebae68199d1c0a746f76ff28`. [Отчёт и карточка L02a-R](reviews/2026-09-15-l02a.md) перечисляют 4 воспроизведённых P2 defects и недостающее обязательное DB evidence. Это не ACCEPT; зависимый L02b не открыт.
+- Local PostgreSQL function bodies сверены с 0026. Synthetic transaction/savepoint probes подтвердили: unsupported scoring и position gap принимаются с attempt/XP; пустые topic/subject UUID разрешают выдачу без scope; новый submit после quarantine принятой session получает неверный error. Все probe fixtures откатились ROLLBACK; hosted данные не читались и не менялись.
+- Свежий `npm run test:db` exit0: 4 files / 33 tests, 27.66s. Этот PASS покрывает существующие тесты, не устраняет findings дополнительных проб. Migration-path/build/browser в review заново не запускались.
+- Владелец сообщил о применении миграции после передачи 0026: operator confirmation записано, remote checksum/grants не подтверждены. 0026 больше не редактировать; исправления — только новая migration. Application code и SQL этим review не изменены. Entry points обновлены на L02a-R, расширение прав/деплой/платные запросы отсутствуют.
+
 ## Формат следующей записи
 
 Не копировать запись как выполненную без запуска. Для каждого task указать: ID, дату, base/head SHA, изменения, команды и exit/results, локальная/CI/DB/browser среда, migration names и applied/not applied, реально выполненные external actions, review verdict, blockers и следующий ready ID. Для документов указывать проверку ссылок/контрактов вместо вымышленных runtime тестов.
