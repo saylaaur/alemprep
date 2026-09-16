@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
 import { createClient } from '@supabase/supabase-js';
-import { Pool } from 'pg';
+import { Pool, type PoolClient } from 'pg';
 import { assertSafeDbConnectionString, assertSafeDbTestTarget } from './test-target';
 
 const execFileAsync = promisify(execFile);
@@ -27,12 +27,18 @@ export type DbResponse = {
   data: unknown;
 };
 
+export type DbConnection = {
+  execute(sql: string, params?: unknown[]): Promise<void>;
+  release(): void;
+};
+
 export type DbHarness = {
   actor(label: string): Promise<TestActor>;
   rest(actor: TestActor | null, path: string, init?: RequestInit): Promise<DbResponse>;
   rpc(actor: TestActor | 'service' | 'anon', name: string, args: Record<string, unknown>): Promise<DbResponse>;
   execute(sql: string, params?: unknown[]): Promise<void>;
   scalar<T extends string | number | boolean | null>(sql: string, params?: unknown[]): Promise<T>;
+  connection(): Promise<DbConnection>;
   close(): Promise<void>;
 };
 
@@ -168,6 +174,18 @@ export async function createDbHarness(): Promise<DbHarness> {
 
     async execute(sql: string, params: unknown[] = []) {
       await pool.query(sql, params);
+    },
+
+    async connection() {
+      const client: PoolClient = await pool.connect();
+      return {
+        async execute(sql: string, params: unknown[] = []) {
+          await client.query(sql, params);
+        },
+        release() {
+          client.release();
+        },
+      };
     },
 
     async close() {

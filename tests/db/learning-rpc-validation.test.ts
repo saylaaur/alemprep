@@ -164,21 +164,29 @@ describe('L02a-R learning RPC validation', () => {
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id])).toBe(0);
   });
 
-  it('rejects empty topic and subject identifiers instead of silently removing scope', async () => {
+  it('rejects empty and mismatched topic or subject scope instead of silently removing it', async () => {
     db = await createDbHarness();
     const actor = await db.actor('learning-validation-empty-scope');
     actorId = actor.id;
     const seeded = await seedApprovedVersion(db);
+    const unrelated = await seedApprovedVersion(db);
+    const cases = [
+      { name: 'empty-topic', scope: { topicId: '', subjectId: seeded.subjectId }, message: 'invalid-input' },
+      { name: 'empty-subject', scope: { topicId: seeded.topicId, subjectId: '' }, message: 'invalid-input' },
+      { name: 'foreign-topic', scope: { topicId: unrelated.topicId, subjectId: seeded.subjectId }, message: 'content-unavailable' },
+      { name: 'foreign-subject', scope: { topicId: seeded.topicId, subjectId: unrelated.subjectId }, message: 'content-unavailable' },
+    ];
 
-    const response = await db.rpc('service', 'start_learning_v1', {
-      actor_id: actor.id,
-      operation_id: crypto.randomUUID(),
-      payload_hash: 'start:empty-scope',
-      plan: startPlan(seeded, { topicId: '', subjectId: '' }),
-    });
-
-    expect(response.status).toBeGreaterThanOrEqual(400);
-    expect(response.data).toMatchObject({ message: 'invalid-input' });
+    for (const testCase of cases) {
+      const response = await db.rpc('service', 'start_learning_v1', {
+        actor_id: actor.id,
+        operation_id: crypto.randomUUID(),
+        payload_hash: `start:scope:${testCase.name}`,
+        plan: startPlan(seeded, testCase.scope),
+      });
+      expect(response.status).toBeGreaterThanOrEqual(400);
+      expect(response.data).toMatchObject({ message: testCase.message });
+    }
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id])).toBe(0);
   });
 
@@ -293,9 +301,9 @@ describe('L02a-R learning RPC validation', () => {
     const session = await startIssuedSession(db, actor.id, seeded);
     const valid = submittedItem(session, seeded)[0]!;
     const malformedItems = [
-      { ...valid, points: 0.5 },
-      { ...valid, points: -1 },
-      { ...valid, timeSpentMs: 7_200_001 },
+      [{ ...valid, points: 0.5 }],
+      [{ ...valid, points: -1 }],
+      [{ ...valid, timeSpentMs: 7_200_001 }],
       [valid, valid],
     ];
 
@@ -317,5 +325,16 @@ describe('L02a-R learning RPC validation', () => {
       `SELECT count(*)::int FROM public.operation_receipts
        WHERE actor_id = $1 AND kind = 'learning.submit'`, [actor.id]
     )).toBe(0);
+
+    const acceptedAtDurationLimit = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:duration-limit',
+      session_id: session.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{ ...valid, timeSpentMs: 7_200_000 }],
+    });
+    expect(acceptedAtDurationLimit.status, JSON.stringify(acceptedAtDurationLimit.data)).toBe(200);
+    expect(acceptedAtDurationLimit.data).toMatchObject({ score: 1, maxScore: 1 });
   });
 });

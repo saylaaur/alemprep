@@ -181,6 +181,12 @@ describe('L02 atomic learning RPC', () => {
       `SELECT count(*)::int FROM public.operation_receipts
        WHERE actor_id = $1 AND kind = 'learning.submit'`, [actor.id]
     )).toBe(1);
+    const changedPayload = await db.rpc('service', 'commit_learning_v1', {
+      ...commitArgs,
+      payload_hash: 'submit:concurrency:changed-payload',
+    });
+    expect(changedPayload.status, JSON.stringify(changedPayload.data)).toBe(200);
+    expect(changedPayload.data).toMatchObject({ error: 'operation-conflict' });
     await db.execute(`UPDATE public.sessions SET expires_at = now() - interval '1 second' WHERE id = $1`, [session.id]);
     const postExpiryReplay = await db.rpc('service', 'commit_learning_v1', commitArgs);
     expect(postExpiryReplay.status, JSON.stringify(postExpiryReplay.data)).toBe(200);
@@ -194,6 +200,17 @@ describe('L02 atomic learning RPC', () => {
     expect(secondOperation.data).toMatchObject({ error: 'already-submitted' });
     expect(await db.scalar<number>(
       'SELECT count(*)::int FROM public.attempts WHERE session_id = $1 AND integrity_version = 1', [session.id]
+    )).toBe(1);
+    await db.execute(
+      `UPDATE public.question_publications SET status = 'quarantined' WHERE question_version_id = $1`,
+      [seeded.versionId]
+    );
+    const quarantinedReplay = await db.rpc('service', 'commit_learning_v1', commitArgs);
+    expect(quarantinedReplay.status, JSON.stringify(quarantinedReplay.data)).toBe(200);
+    expect(quarantinedReplay.data).toEqual(replies[0]!.data);
+    expect(await db.scalar<number>(
+      `SELECT count(*)::int FROM public.audit_events
+       WHERE entity_id = $1 AND event_type = 'learning.submitted'`, [session.id]
     )).toBe(1);
   });
 
@@ -228,14 +245,46 @@ describe('L02 atomic learning RPC', () => {
       `SELECT count(*)::int FROM public.operation_receipts
        WHERE actor_id = $1 AND kind = 'learning.start'`, [actor.id]
     )).toBe(1);
+    const issued = (started.data as { sessions: { id: string; itemIds: string[] }[] }).sessions;
+    const [firstIssued, secondIssued] = issued;
+    const firstCommit = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:mock-pair:first',
+      session_id: firstIssued!.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{
+        itemId: firstIssued!.itemIds[0], questionVersionId: first.versionId,
+        answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1000,
+      }],
+    });
+    const secondCommit = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:mock-pair:second',
+      session_id: secondIssued!.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{
+        itemId: secondIssued!.itemIds[0], questionVersionId: second.versionId,
+        answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1000,
+      }],
+    });
+    expect(firstCommit.status, JSON.stringify(firstCommit.data)).toBe(200);
+    expect(secondCommit.status, JSON.stringify(secondCommit.data)).toBe(200);
+    expect(await db.scalar<number>(
+      `SELECT count(*)::int FROM public.reward_ledger
+       WHERE user_id = $1 AND reward_key LIKE 'exam-bonus:%'`, [actor.id]
+    )).toBe(2);
   });
 
-  it('accepts one issued session when the same learner also has another active session', async () => {
+  it('keeps simultaneous learner sessions isolated and accepts each owner-issued item', async () => {
     db = await createDbHarness();
-    const actor = await db.actor('learning-atomic-multiple-sessions');
-    actorIds.push(actor.id);
+    const actor = await db.actor('learning-atomic-multiple-sessions-a');
+    const secondActor = await db.actor('learning-atomic-multiple-sessions-b');
+    actorIds.push(actor.id, secondActor.id);
     const first = await seedApprovedVersion(db);
     const second = await seedApprovedVersion(db);
+    const third = await seedApprovedVersion(db);
 
     const firstStarted = await db.rpc('service', 'start_learning_v1', {
       actor_id: actor.id,
@@ -252,8 +301,33 @@ describe('L02 atomic learning RPC', () => {
     expect(firstStarted.status, JSON.stringify(firstStarted.data)).toBe(200);
     expect(secondStarted.status, JSON.stringify(secondStarted.data)).toBe(200);
     const firstSession = (firstStarted.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+    const secondSession = (secondStarted.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+    const thirdStarted = await db.rpc('service', 'start_learning_v1', {
+      actor_id: secondActor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'start:multiple-sessions:third',
+      plan: startPlan(third),
+    });
+    expect(thirdStarted.status, JSON.stringify(thirdStarted.data)).toBe(200);
+    const thirdSession = (thirdStarted.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
 
-    const committed = await db.rpc('service', 'commit_learning_v1', {
+    const substituted = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:multiple-sessions:substitute-a2-into-a1',
+      session_id: firstSession.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{
+        itemId: secondSession.itemIds[0], questionVersionId: second.versionId,
+        answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1000,
+      }],
+    });
+    expect(substituted.status).toBeGreaterThanOrEqual(400);
+    expect(substituted.data).toMatchObject({ message: 'invalid-input' });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [firstSession.id]))
+      .toBe(0);
+
+    const firstCommitted = await db.rpc('service', 'commit_learning_v1', {
       actor_id: actor.id,
       operation_id: crypto.randomUUID(),
       payload_hash: 'submit:multiple-sessions:first',
@@ -265,12 +339,37 @@ describe('L02 atomic learning RPC', () => {
       }],
     });
 
-    expect(committed.status, JSON.stringify(committed.data)).toBe(200);
+    expect(firstCommitted.status, JSON.stringify(firstCommitted.data)).toBe(200);
+    const secondCommitted = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:multiple-sessions:second',
+      session_id: secondSession.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{
+        itemId: secondSession.itemIds[0], questionVersionId: second.versionId,
+        answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1000,
+      }],
+    });
+    expect(secondCommitted.status, JSON.stringify(secondCommitted.data)).toBe(200);
+    const thirdCommitted = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: secondActor.id,
+      operation_id: crypto.randomUUID(),
+      payload_hash: 'submit:multiple-sessions:third',
+      session_id: thirdSession.id,
+      scoring_version: 'ent-v1',
+      graded_items: [{
+        itemId: thirdSession.itemIds[0], questionVersionId: third.versionId,
+        answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1000,
+      }],
+    });
+    expect(thirdCommitted.status, JSON.stringify(thirdCommitted.data)).toBe(200);
     expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [firstSession.id]))
       .toBe('submitted');
-    const secondSession = (secondStarted.data as { sessions: { id: string }[] }).sessions[0]!;
     expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [secondSession.id]))
-      .toBe('active');
+      .toBe('submitted');
+    expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [thirdSession.id]))
+      .toBe('submitted');
   });
 
   it('rejects a submitted item that omits its duration before creating facts', async () => {

@@ -9,7 +9,6 @@ import { assertSafeDbTestTarget } from './test-target';
 const execFileAsync = promisify(execFile);
 const l01MigrationPath = `${process.cwd()}/supabase/migrations/0024_learning_integrity_schema.sql`;
 const l02MigrationPath = `${process.cwd()}/supabase/migrations/0025_learning_integrity_rpc.sql`;
-const l02aMigrationPath = `${process.cwd()}/supabase/migrations/0026_learning_rpc_correctness.sql`;
 const l02aCorrectionMigrationPath = `${process.cwd()}/supabase/migrations/0027_learning_rpc_validation.sql`;
 const supabaseCli = `${process.cwd()}/node_modules/.bin/supabase`;
 
@@ -250,16 +249,16 @@ describe('0024 learning integrity migration path', () => {
       const acceptedBeforeUpgrade = await db.rpc('service', 'commit_learning_v1', submitArgs);
       expect(acceptedBeforeUpgrade.status, JSON.stringify(acceptedBeforeUpgrade.data)).toBe(200);
 
+      const activeStartOperationId = crypto.randomUUID();
       const activeStart = await db.rpc('service', 'start_learning_v1', {
         actor_id: actor.id,
-        operation_id: crypto.randomUUID(),
+        operation_id: activeStartOperationId,
         payload_hash: 'start:before-0027:active',
         plan: trustedPlan(seeded),
       });
       expect(activeStart.status, JSON.stringify(activeStart.data)).toBe(200);
       const activeSession = (activeStart.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
 
-      await applyMigration(db, l02aMigrationPath);
       await applyMigration(db, l02aCorrectionMigrationPath);
 
       expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [firstSession.id]))
@@ -268,6 +267,41 @@ describe('0024 learning integrity migration path', () => {
         .toBe(true);
       expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [activeSession.id]))
         .toBe('active');
+
+      const activeSubmit = await db.rpc('service', 'commit_learning_v1', {
+        actor_id: actor.id,
+        operation_id: crypto.randomUUID(),
+        payload_hash: 'submit:after-0027:issued-before-upgrade',
+        session_id: activeSession.id,
+        scoring_version: 'ent-v1',
+        graded_items: [{
+          itemId: activeSession.itemIds[0],
+          questionVersionId: seeded.versionId,
+          answer: 'A',
+          points: 1,
+          maxPoints: 1,
+          timeSpentMs: 1_000,
+        }],
+      });
+      expect(activeSubmit.status, JSON.stringify(activeSubmit.data)).toBe(200);
+      expect(activeSubmit.data).toMatchObject({ score: 1, maxScore: 1 });
+      expect(await db.scalar<number>(
+        'SELECT count(*)::int FROM public.session_items WHERE session_id = $1 AND question_version_id = $2',
+        [activeSession.id, seeded.versionId]
+      )).toBe(1);
+      expect(await db.scalar<number>('SELECT total_questions FROM public.sessions WHERE id = $1', [activeSession.id]))
+        .toBe(1);
+      expect(await db.scalar<string>('SELECT manifest_hash FROM public.sessions WHERE id = $1', [activeSession.id]))
+        .toBe(seeded.manifestHash);
+
+      const startReplayAfterUpgrade = await db.rpc('service', 'start_learning_v1', {
+        actor_id: actor.id,
+        operation_id: activeStartOperationId,
+        payload_hash: 'start:before-0027:active',
+        plan: trustedPlan(seeded),
+      });
+      expect(startReplayAfterUpgrade.status, JSON.stringify(startReplayAfterUpgrade.data)).toBe(200);
+      expect(startReplayAfterUpgrade.data).toEqual(activeStart.data);
       const replayAfterUpgrade = await db.rpc('service', 'commit_learning_v1', submitArgs);
       expect(replayAfterUpgrade.status, JSON.stringify(replayAfterUpgrade.data)).toBe(200);
       expect(replayAfterUpgrade.data).toEqual(acceptedBeforeUpgrade.data);
@@ -275,7 +309,19 @@ describe('0024 learning integrity migration path', () => {
         `SELECT has_function_privilege('authenticated', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
       )).toBe(false);
       expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('anon', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
         `SELECT has_function_privilege('service_role', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(true);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('authenticated', 'public.start_learning_v1(uuid,uuid,text,jsonb)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('anon', 'public.start_learning_v1(uuid,uuid,text,jsonb)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('service_role', 'public.start_learning_v1(uuid,uuid,text,jsonb)', 'EXECUTE')`
       )).toBe(true);
     } finally {
       if (actor) {

@@ -1,5 +1,20 @@
 # Журнал исполнения production-плана
 
+## 16.09.2026 — L02a-R test-evidence candidate, pending Astra review
+
+- От базы `78c960586a2cbae882561fd472faa40949d3a73a` исправлена P2 matrix: fractional, negative и `timeSpentMs=7200001` теперь передаются как настоящий `graded_items` array; допустимая граница `7200000` принята. Добавлены service-only integration scenarios: changed submit payload conflict, receipt replay после quarantine без новых audit facts, сдача двух mock blocks, A1/A2/B1 с запретом подмены item.
+- Добавлен test-only connection helper и `learning-rpc-locking.test.ts`: controlled PostgreSQL barriers подтверждают quarantine-first для start и submit, start-first затем quarantine, а также expiry во время ожидания `profiles FOR UPDATE`. Все барьеры наблюдают `pg_stat_activity.wait_event_type = 'Lock'`, имеют timeout и `finally` cleanup; это не sleep-based assertion.
+- Upgrade `0026 → 0027` теперь сдаёт active session, выданную до upgrade, сверяет item/denominator/manifest и start receipt replay; grants обеих RPC проверены для anon/authenticated/service_role. Убрано повторное применение 0026 после `resetTo('0026')`.
+- Локальная verification: `npm run typecheck` exit 0; `npm run lint` exit 0; `npm test` 56 files / 575 tests exit 0; serial `npm run test:db:migration` 4/4 exit 0 (134.73 s); затем final serial `npm run test:db` 6 files / 44 tests exit 0 (34.29 s). Ранний migration failure был следствием параллельных local resets после перезапуска Docker; debug reset до 0023 воспроизведён отдельно успешно, затем gates выполнялись только последовательно.
+- Schema/hosted: новая migration не создана; 0027 проверена только на local Docker и **не подтверждена применённой hosted**. Build/CI/browser/hosted smoke этим candidate не запускались: `npm run build` блокируется execution sandbox — сначала Google Fonts fetch, при retry с сетью Turbopack не может создать subprocess/bind port (`Operation not permitted`). Это не application assertion и требует exact-head CI вне sandbox. L02a остаётся pending; следующий шаг — Astra review exact commit, затем только при ACCEPT L02b.
+
+## 15.09.2026 — повторное Astra review L02a-R
+
+- Reviewed `78c960586a2cbae882561fd472faa40949d3a73a`: [CHANGES REQUIRED](reviews/2026-09-15-l02ar.md). R1–R4 SQL fixes подтверждены. Один P2 в новом тесте: fractional/negative/oversized values передаются объектом вместо массива, отказ случается до проверки чисел. Остальные незакрытые обязательные сценарии и следующий test-only проход перечислены в отчёте.
+- Свежие проверки: typecheck/lint exit 0; unit 56 files / 575 tests exit 0; DB 5 files / 40 tests exit 0, 31.40 s. Local prosrc обеих RPC совпал с committed 0027; EXECUTE anon/authenticated=false, service_role=true.
+- Mutation probe на loopback Docker: внутри synthetic transaction удалена числовая проверка; object cases по-прежнему rejected, array с timeSpentMs=7200001 accepted. На исходной функции этот array rejected. DDL и fixture откатились ROLLBACK. Это дефект теста, не доказательство текущего обхода SQL. Production не затронут.
+- Migration-path/build/CI/browser/hosted smoke этим review не запускались. Source/SQL/tests не изменены; сохранены review/docs без commit/push/merge. Следующий ready: завершить L02a-R tests, L02b закрыт.
+
 ## 09.09.2026 — архитектура и планирование
 
 - Подготовлены архитектура, девять implementation plans, карта решений, threat model, release runbook и prompts Terra/Astra.
