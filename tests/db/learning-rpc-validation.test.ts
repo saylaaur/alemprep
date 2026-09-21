@@ -460,7 +460,7 @@ describe('L02a-R learning RPC validation', () => {
     const before = await learningFacts(db, actor.id);
     await expect(db.scalar(call, args)).rejects.toMatchObject({ code: '22023', message: 'invalid-input' });
     const definition = await db.scalar<string>(
-      "SELECT pg_get_functiondef('public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)'::regprocedure)"
+      "SELECT pg_get_functiondef('public.commit_learning_v1_l02a(uuid,uuid,text,uuid,jsonb,text)'::regprocedure)"
     );
     const mutant = definition.replace(/IF \(item->>'points'\) !~[\s\S]*?END IF;/, 'NULL;');
     expect(mutant).not.toBe(definition);
@@ -478,7 +478,7 @@ describe('L02a-R learning RPC validation', () => {
       connection.release();
     }
     expect(await db.scalar<string>(
-      "SELECT pg_get_functiondef('public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)'::regprocedure)"
+      "SELECT pg_get_functiondef('public.commit_learning_v1_l02a(uuid,uuid,text,uuid,jsonb,text)'::regprocedure)"
     )).toBe(definition);
     await expectUnchangedLearning(db, actor.id, before);
     await expect(db.scalar(call, args)).rejects.toMatchObject({ code: '22023', message: 'invalid-input' });
