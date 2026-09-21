@@ -12,14 +12,14 @@
 
 ## Порядок выполнения (план)
 
-**Последний gate 15.09:** [review 78c9605](docs/production/reviews/2026-09-15-l02ar.md) — CHANGES REQUIRED. Следующий candidate L02a-R исправляет numeric regression, добавляет controlled PostgreSQL lock-races, multi-session/mock/replay и upgrade evidence; он ещё ждёт повторного Astra review. Новая миграция только ради тестов не нужна.
+**Последний gate 15.09:** [review 78c9605](docs/production/reviews/2026-09-15-l02ar.md) — CHANGES REQUIRED. Candidate L02a-R в ветке `codex/l02ar-evidence-completion` закрывает указанную матрицу локальными тестами и ждёт отдельного Astra review. Новая миграция только ради тестов не нужна.
 
 **Актуальный приоритет с 09.09.2026 — production и пилот в двух сельских школах.**
 
 **Стратегия от 10.09:** [ROADMAP до 1 июня 2027](ROADMAP.md) — регулярная работа двух школ, проверенный KK и кейс для технических стажировок/будущих стартапов. Ближайший формат — [сопровождаемый пилот](docs/pilot/SUPERVISED_PILOT.md), с отдельным допуском SP0–SP7; полный технический план сохраняется. В C00a исправлены обрезка счётчиков до 1 000 строк вместо 4 646 и потеря ошибок чтения. Дата первого урока ещё не согласована школами.
 Основной вход исполнителя: [сверка 14.09 и карточки Terra High](docs/superpowers/plans/2026-09-14-execution-rebaseline.md), [промпт Terra](docs/production/IMPLEMENTER_PROMPT.md), [журнал](docs/production/EXECUTION_LOG.md). **Следующая ready задача — L02a-R (review 15.09).** E02 и L01 в main; L02 смержен частично и требует исправлений/доведения L02a–d до Astra gate. Затем L03a–d и L04; остальные блоки — по [production-плану](docs/production/README.md). C00b технически подготовлен: деньги нужны для реального перевода, а не для продолжения разработки на synthetic RU/KK. Применение hosted 0024/0025 не подтверждено. Новые номера будущих миграций — в сверке 14.09; старые SQL не менять.
 
-- [ ] **L02a → L02a-R:** candidate `a502299` получил CHANGES REQUIRED 15.09: [4 воспроизведённых дефекта и карточка исправлений](docs/production/reviews/2026-09-15-l02a.md). Корректировки 0027 и расширенное DB evidence подготовлены локально; повторный Astra gate ещё нужен. 0026 применена по сообщению владельца; не менять. L02b ещё не открыт.
+- [ ] **L02a → L02a-R:** candidate `a502299` получил CHANGES REQUIRED 15.09: [4 воспроизведённых дефекта и карточка исправлений](docs/production/reviews/2026-09-15-l02a.md). Корректировки 0027 не менялись; расширенное DB evidence подготовлено в `codex/l02ar-evidence-completion`; повторный Astra gate ещё нужен. 0026 применена по сообщению владельца; не менять. L02b ещё не открыт.
 - [ ] **L02b:** атомарные reward/streak/achievement invariants; 0028 rewards migration. Astra gate.
 - [ ] **L02c/L02d:** production server start/state/submit/review и полная приёмка L02.
 - [ ] **L03a–d/L04:** перевести все пользовательские режимы, закрыть обходы; совместимая выкладка и revoke 0029.

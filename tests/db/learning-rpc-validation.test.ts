@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { createDbHarness, type DbHarness } from './helpers';
+import { expectUnchangedLearning, learningFacts } from './learning-facts';
 
 type SeededLearning = {
   questionId: string;
@@ -8,6 +9,7 @@ type SeededLearning = {
   topicId: string;
   subjectId: string;
   manifestHash: string;
+  contentHash: string;
 };
 
 type IssuedSession = {
@@ -58,6 +60,7 @@ async function seedApprovedVersion(db: DbHarness): Promise<SeededLearning> {
     topicId,
     subjectId,
     manifestHash: `sha256:${createHash('sha256').update(`${versionId}:sha256:${suffix}`).digest('hex')}`,
+    contentHash: `sha256:${suffix}`,
   };
 }
 
@@ -126,6 +129,7 @@ describe('L02a-R learning RPC validation', () => {
     const seeded = await seedApprovedVersion(db);
     const session = await startIssuedSession(db, actor.id, seeded);
     await db.execute(`UPDATE public.sessions SET scoring_version = 'future-v99' WHERE id = $1`, [session.id]);
+    const before = await learningFacts(db, actor.id);
 
     const response = await db.rpc('service', 'commit_learning_v1', {
       actor_id: actor.id,
@@ -140,6 +144,7 @@ describe('L02a-R learning RPC validation', () => {
     expect(response.data).toMatchObject({ message: 'invalid-input' });
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id])).toBe(0);
     expect(await db.scalar<number>('SELECT xp FROM public.profiles WHERE id = $1', [actor.id])).toBe(0);
+    await expectUnchangedLearning(db, actor.id, before);
   });
 
   it('rejects a session whose issued item positions have a gap before attempts are written', async () => {
@@ -149,6 +154,7 @@ describe('L02a-R learning RPC validation', () => {
     const seeded = await seedApprovedVersion(db);
     const session = await startIssuedSession(db, actor.id, seeded);
     await db.execute('UPDATE public.session_items SET position = 7 WHERE session_id = $1', [session.id]);
+    const before = await learningFacts(db, actor.id);
 
     const response = await db.rpc('service', 'commit_learning_v1', {
       actor_id: actor.id,
@@ -162,6 +168,7 @@ describe('L02a-R learning RPC validation', () => {
     expect(response.status).toBeGreaterThanOrEqual(400);
     expect(response.data).toMatchObject({ message: 'invalid-input' });
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id])).toBe(0);
+    await expectUnchangedLearning(db, actor.id, before);
   });
 
   it('rejects empty and mismatched topic or subject scope instead of silently removing it', async () => {
@@ -178,6 +185,7 @@ describe('L02a-R learning RPC validation', () => {
     ];
 
     for (const testCase of cases) {
+      const before = await learningFacts(db, actor.id);
       const response = await db.rpc('service', 'start_learning_v1', {
         actor_id: actor.id,
         operation_id: crypto.randomUUID(),
@@ -186,6 +194,7 @@ describe('L02a-R learning RPC validation', () => {
       });
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.data).toMatchObject({ message: testCase.message });
+      await expectUnchangedLearning(db, actor.id, before);
     }
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id])).toBe(0);
   });
@@ -210,6 +219,7 @@ describe('L02a-R learning RPC validation', () => {
       [seeded.versionId]
     );
 
+    const before = await learningFacts(db, actor.id);
     const response = await db.rpc('service', 'commit_learning_v1', {
       actor_id: actor.id,
       operation_id: crypto.randomUUID(),
@@ -223,6 +233,7 @@ describe('L02a-R learning RPC validation', () => {
     expect(response.data).toMatchObject({ error: 'already-submitted' });
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id])).toBe(1);
     expect(await db.scalar<number>('SELECT xp FROM public.profiles WHERE id = $1', [actor.id])).toBe(10);
+    await expectUnchangedLearning(db, actor.id, before);
   });
 
   it('replays the original start receipt after its issued version is quarantined', async () => {
@@ -244,10 +255,12 @@ describe('L02a-R learning RPC validation', () => {
       [seeded.versionId]
     );
 
+    const before = await learningFacts(db, actor.id);
     const replay = await db.rpc('service', 'start_learning_v1', args);
 
     expect(replay.status, JSON.stringify(replay.data)).toBe(200);
     expect(replay.data).toEqual(started.data);
+    await expectUnchangedLearning(db, actor.id, before);
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id])).toBe(1);
     expect(await db.scalar<number>(
       `SELECT count(*)::int FROM public.audit_events
@@ -308,6 +321,7 @@ describe('L02a-R learning RPC validation', () => {
     ];
 
     for (const gradedItems of malformedItems) {
+      const before = await learningFacts(db, actor.id);
       const response = await db.rpc('service', 'commit_learning_v1', {
         actor_id: actor.id,
         operation_id: crypto.randomUUID(),
@@ -318,6 +332,7 @@ describe('L02a-R learning RPC validation', () => {
       });
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.data).toMatchObject({ message: 'invalid-input' });
+      await expectUnchangedLearning(db, actor.id, before);
     }
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id])).toBe(0);
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.reward_ledger WHERE user_id = $1', [actor.id])).toBe(0);
@@ -336,5 +351,136 @@ describe('L02a-R learning RPC validation', () => {
     });
     expect(acceptedAtDurationLimit.status, JSON.stringify(acceptedAtDurationLimit.data)).toBe(200);
     expect(acceptedAtDurationLimit.data).toMatchObject({ score: 1, maxScore: 1 });
+  });
+
+  it('rejects SQL NULL and JSON null separately for both RPC payloads without side effects', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('validation-sql-null');
+    actorId = actor.id;
+    const seeded = await seedApprovedVersion(db);
+    const session = await startIssuedSession(db, actor.id, seeded);
+    for (const value of [null, 'null']) {
+      const before = await learningFacts(db, actor.id);
+      await expect(db.scalar(
+        'SELECT public.start_learning_v1($1, $2, $3, $4::jsonb)',
+        [actor.id, crypto.randomUUID(), 'start:null', value]
+      )).rejects.toMatchObject({ code: '22023', message: 'invalid-input' });
+      await expectUnchangedLearning(db, actor.id, before);
+      await expect(db.scalar(
+        'SELECT public.commit_learning_v1($1, $2, $3, $4, $5::jsonb, $6)',
+        [actor.id, crypto.randomUUID(), 'submit:null', session.id, value, 'ent-v1']
+      )).rejects.toMatchObject({ code: '22023', message: 'invalid-input' });
+      await expectUnchangedLearning(db, actor.id, before);
+    }
+  });
+
+  it('rejects missing, extra, foreign and duplicate items at the issued denominator', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('validation-item-membership');
+    actorId = actor.id;
+    const first = await seedApprovedVersion(db);
+    const second = await seedApprovedVersion(db);
+    const manifest = `sha256:${createHash('sha256')
+      .update(`${first.versionId}:${first.contentHash},${second.versionId}:${second.contentHash}`).digest('hex')}`;
+    const started = await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id, operation_id: crypto.randomUUID(), payload_hash: 'start:two-items',
+      plan: { sessions: [{
+        ...startPlan(first).sessions[0], mode: 'diagnostic', topicId: null, subjectId: null,
+        expiresAt: new Date(Date.now() + 20 * 60 * 1000).toISOString(),
+        manifestHash: manifest, items: [{ versionId: first.versionId }, { versionId: second.versionId }],
+      }] },
+    });
+    expect(started.status, JSON.stringify(started.data)).toBe(200);
+    const session = (started.data as { sessions: IssuedSession[] }).sessions[0]!;
+    const a = submittedItem(session, first)[0]!;
+    const b = { ...a, itemId: session.itemIds[1], questionVersionId: second.versionId };
+    const { answer: omittedAnswer, ...missingAnswer } = a;
+    expect(omittedAnswer).toBe('A');
+    const cases = [
+      [], [a], [a, b, { ...a, itemId: crypto.randomUUID() }],
+      [a, a], // Same count as issuance: count mismatch cannot mask the duplicate.
+      [{ ...a, questionVersionId: second.versionId }, b],
+      [{ ...a, itemId: crypto.randomUUID() }, b],
+      [missingAnswer, b], [{ ...a, untrustedScore: 99 }, b],
+    ];
+    for (const gradedItems of cases) {
+      const before = await learningFacts(db, actor.id);
+      const response = await db.rpc('service', 'commit_learning_v1', {
+        actor_id: actor.id, operation_id: crypto.randomUUID(), payload_hash: 'submit:bad-membership',
+        session_id: session.id, scoring_version: 'ent-v1', graded_items: gradedItems,
+      });
+      expect(response.status, JSON.stringify(response.data)).toBeGreaterThanOrEqual(400);
+      expect(response.data).toMatchObject({ message: 'invalid-input' });
+      await expectUnchangedLearning(db, actor.id, before);
+    }
+    const accepted = await db.rpc('service', 'commit_learning_v1', {
+      actor_id: actor.id, operation_id: crypto.randomUUID(), payload_hash: 'submit:valid-membership',
+      session_id: session.id, scoring_version: 'ent-v1', graded_items: [a, b],
+    });
+    expect(accepted.status, JSON.stringify(accepted.data)).toBe(200);
+    expect(accepted.data).toMatchObject({ score: 2, maxScore: 2 });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id])).toBe(2);
+  });
+
+  it('rejects null or coherently tampered stored denominators without writing any facts', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('validation-denominators');
+    actorId = actor.id;
+    const seeded = await seedApprovedVersion(db);
+    const cases = [
+      { total: null, ids: [seeded.questionId] },
+      { total: 1, ids: null },
+      { total: 0, ids: [] },
+      { total: 2, ids: [seeded.questionId, seeded.questionId] },
+    ];
+    for (const testCase of cases) {
+      const session = await startIssuedSession(db, actor.id, seeded);
+      await db.execute('UPDATE public.sessions SET total_questions = $2, question_ids = $3::uuid[] WHERE id = $1',
+        [session.id, testCase.total, testCase.ids]);
+      const before = await learningFacts(db, actor.id);
+      const rejected = await db.rpc('service', 'commit_learning_v1', {
+        actor_id: actor.id, operation_id: crypto.randomUUID(), payload_hash: 'submit:denominator',
+        session_id: session.id, scoring_version: 'ent-v1', graded_items: submittedItem(session, seeded),
+      });
+      expect(rejected.status).toBeGreaterThanOrEqual(400);
+      expect(rejected.data).toMatchObject({ message: 'invalid-input' });
+      await expectUnchangedLearning(db, actor.id, before);
+    }
+  });
+
+  it('demonstrates that removing the numeric guard admits the over-limit duration', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('validation-mutation-control');
+    actorId = actor.id;
+    const seeded = await seedApprovedVersion(db);
+    const session = await startIssuedSession(db, actor.id, seeded);
+    const items = [{ ...submittedItem(session, seeded)[0], timeSpentMs: 7_200_001 }];
+    const args = [actor.id, crypto.randomUUID(), 'submit:mutation', session.id, JSON.stringify(items), 'ent-v1'];
+    const call = 'SELECT public.commit_learning_v1($1, $2, $3, $4, $5::jsonb, $6)::text';
+    const before = await learningFacts(db, actor.id);
+    await expect(db.scalar(call, args)).rejects.toMatchObject({ code: '22023', message: 'invalid-input' });
+    const definition = await db.scalar<string>(
+      "SELECT pg_get_functiondef('public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)'::regprocedure)"
+    );
+    const mutant = definition.replace(/IF \(item->>'points'\) !~[\s\S]*?END IF;/, 'NULL;');
+    expect(mutant).not.toBe(definition);
+    const connection = await db.connection();
+    try {
+      await connection.execute('BEGIN');
+      // DDL and facts exist only inside this local transaction and always roll back.
+      await connection.execute(mutant);
+      const accepted = JSON.parse(await connection.scalar<string>(call, args)) as unknown;
+      expect(accepted).toMatchObject({ score: 1, maxScore: 1 });
+      expect(await connection.scalar<number>('SELECT time_spent_ms FROM public.attempts WHERE session_id = $1', [session.id]))
+        .toBe(7_200_001);
+    } finally {
+      await connection.execute('ROLLBACK');
+      connection.release();
+    }
+    expect(await db.scalar<string>(
+      "SELECT pg_get_functiondef('public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)'::regprocedure)"
+    )).toBe(definition);
+    await expectUnchangedLearning(db, actor.id, before);
+    await expect(db.scalar(call, args)).rejects.toMatchObject({ code: '22023', message: 'invalid-input' });
   });
 });

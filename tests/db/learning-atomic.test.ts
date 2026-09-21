@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { createDbHarness, type DbHarness } from './helpers';
+import { expectUnchangedLearning, learningFacts } from './learning-facts';
 
 type SeededLearning = {
   questionId: string;
@@ -181,12 +182,15 @@ describe('L02 atomic learning RPC', () => {
       `SELECT count(*)::int FROM public.operation_receipts
        WHERE actor_id = $1 AND kind = 'learning.submit'`, [actor.id]
     )).toBe(1);
+    const beforeConflict = await learningFacts(db, actor.id);
     const changedPayload = await db.rpc('service', 'commit_learning_v1', {
       ...commitArgs,
       payload_hash: 'submit:concurrency:changed-payload',
+      graded_items: [{ ...commitArgs.graded_items[0], answer: 'B', points: 0 }],
     });
     expect(changedPayload.status, JSON.stringify(changedPayload.data)).toBe(200);
     expect(changedPayload.data).toMatchObject({ error: 'operation-conflict' });
+    await expectUnchangedLearning(db, actor.id, beforeConflict);
     await db.execute(`UPDATE public.sessions SET expires_at = now() - interval '1 second' WHERE id = $1`, [session.id]);
     const postExpiryReplay = await db.rpc('service', 'commit_learning_v1', commitArgs);
     expect(postExpiryReplay.status, JSON.stringify(postExpiryReplay.data)).toBe(200);
@@ -205,9 +209,11 @@ describe('L02 atomic learning RPC', () => {
       `UPDATE public.question_publications SET status = 'quarantined' WHERE question_version_id = $1`,
       [seeded.versionId]
     );
+    const beforeReplay = await learningFacts(db, actor.id);
     const quarantinedReplay = await db.rpc('service', 'commit_learning_v1', commitArgs);
     expect(quarantinedReplay.status, JSON.stringify(quarantinedReplay.data)).toBe(200);
     expect(quarantinedReplay.data).toEqual(replies[0]!.data);
+    await expectUnchangedLearning(db, actor.id, beforeReplay);
     expect(await db.scalar<number>(
       `SELECT count(*)::int FROM public.audit_events
        WHERE entity_id = $1 AND event_type = 'learning.submitted'`, [session.id]
@@ -271,6 +277,12 @@ describe('L02 atomic learning RPC', () => {
     });
     expect(firstCommit.status, JSON.stringify(firstCommit.data)).toBe(200);
     expect(secondCommit.status, JSON.stringify(secondCommit.data)).toBe(200);
+    expect(firstCommit.data).toMatchObject({ sessionId: firstIssued!.id, score: 1, maxScore: 1 });
+    expect(secondCommit.data).toMatchObject({ sessionId: secondIssued!.id, score: 1, maxScore: 1 });
+    expect(firstIssued!.id).not.toBe(secondIssued!.id);
+    expect(await db.scalar<number>(
+      `SELECT count(*)::int FROM public.operation_receipts WHERE actor_id = $1 AND kind = 'learning.submit'`, [actor.id]
+    )).toBe(2);
     expect(await db.scalar<number>(
       `SELECT count(*)::int FROM public.reward_ledger
        WHERE user_id = $1 AND reward_key LIKE 'exam-bonus:%'`, [actor.id]
@@ -311,6 +323,8 @@ describe('L02 atomic learning RPC', () => {
     expect(thirdStarted.status, JSON.stringify(thirdStarted.data)).toBe(200);
     const thirdSession = (thirdStarted.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
 
+    const beforeSubstitution = await learningFacts(db, actor.id);
+    const beforeOtherLearner = await learningFacts(db, secondActor.id);
     const substituted = await db.rpc('service', 'commit_learning_v1', {
       actor_id: actor.id,
       operation_id: crypto.randomUUID(),
@@ -324,6 +338,8 @@ describe('L02 atomic learning RPC', () => {
     });
     expect(substituted.status).toBeGreaterThanOrEqual(400);
     expect(substituted.data).toMatchObject({ message: 'invalid-input' });
+    await expectUnchangedLearning(db, actor.id, beforeSubstitution);
+    await expectUnchangedLearning(db, secondActor.id, beforeOtherLearner);
     expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [firstSession.id]))
       .toBe(0);
 

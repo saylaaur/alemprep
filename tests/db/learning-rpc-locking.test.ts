@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { createDbHarness, type DbHarness } from './helpers';
+import { expectUnchangedLearning, learningFacts } from './learning-facts';
 
 type SeededLearning = {
   questionId: string;
@@ -83,42 +84,23 @@ function submittedItem(session: IssuedSession, seeded: SeededLearning) {
   }];
 }
 
-async function waitForRpcLock(db: DbHarness, rpcName: string): Promise<void> {
+async function waitForLock(db: DbHarness, queryFragment: string, blockerPid: number): Promise<number> {
   const deadline = Date.now() + 5_000;
   while (Date.now() < deadline) {
-    const waiting = await db.scalar<boolean>(
-      `SELECT EXISTS (
-         SELECT 1
+    const waiting = await db.scalar<number | null>(
+      `SELECT pid
          FROM pg_catalog.pg_stat_activity
          WHERE state = 'active'
            AND wait_event_type = 'Lock'
            AND query ILIKE $1
-       )`,
-      [`%${rpcName}%`]
+           AND $2 = ANY(pg_catalog.pg_blocking_pids(pid))
+         LIMIT 1`,
+      [`%${queryFragment}%`, blockerPid]
     );
-    if (waiting) return;
+    if (waiting !== null) return waiting;
     await new Promise((resolve) => setTimeout(resolve, 25));
   }
-  throw new Error(`${rpcName} did not enter a PostgreSQL lock wait within 5 seconds`);
-}
-
-async function waitForQueryLock(db: DbHarness, queryFragment: string): Promise<void> {
-  const deadline = Date.now() + 5_000;
-  while (Date.now() < deadline) {
-    const waiting = await db.scalar<boolean>(
-      `SELECT EXISTS (
-         SELECT 1
-         FROM pg_catalog.pg_stat_activity
-         WHERE state = 'active'
-           AND wait_event_type = 'Lock'
-           AND query ILIKE $1
-       )`,
-      [`%${queryFragment}%`]
-    );
-    if (waiting) return;
-    await new Promise((resolve) => setTimeout(resolve, 25));
-  }
-  throw new Error(`${queryFragment} did not enter a PostgreSQL lock wait within 5 seconds`);
+  throw new Error(`${queryFragment} was not observed blocked by backend ${blockerPid}`);
 }
 
 async function expectNoSubmitFacts(db: DbHarness, actorId: string, sessionId: string): Promise<void> {
@@ -141,8 +123,13 @@ async function expectNoSubmitFacts(db: DbHarness, actorId: string, sessionId: st
 describe('L02a-R publication locking', () => {
   let db: DbHarness | undefined;
   let actorId: string | undefined;
+  let pending: Promise<unknown>[] = [];
 
   afterEach(async () => {
+    // Every test releases its locks in finally before outstanding HTTP/SQL work
+    // drains. Never delete fixture rows while a failed barrier still has a writer.
+    await Promise.allSettled(pending);
+    pending = [];
     if (actorId) {
       await db?.execute('DELETE FROM public.attempts WHERE user_id = $1', [actorId]);
       await db?.execute(
@@ -164,6 +151,7 @@ describe('L02a-R publication locking', () => {
     const actor = await db.actor('learning-lock-start-quarantine');
     actorId = actor.id;
     const seeded = await seedApprovedVersion(db);
+    const before = await learningFacts(db, actor.id);
     const locker = await db.connection();
     let transactionOpen = false;
 
@@ -180,13 +168,15 @@ describe('L02a-R publication locking', () => {
         payload_hash: 'start:blocked-by-quarantine',
         plan: startPlan(seeded),
       });
-      await waitForRpcLock(db, 'start_learning_v1');
+      pending.push(started);
+      await waitForLock(db, 'start_learning_v1', locker.backendPid);
       await locker.execute('COMMIT');
       transactionOpen = false;
 
       const response = await started;
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.data).toMatchObject({ message: 'content-unavailable' });
+      await expectUnchangedLearning(db, actor.id, before);
       expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id]))
         .toBe(0);
       expect(await db.scalar<number>(
@@ -216,6 +206,7 @@ describe('L02a-R publication locking', () => {
     });
     expect(issued.status, JSON.stringify(issued.data)).toBe(200);
     const session = (issued.data as { sessions: IssuedSession[] }).sessions[0]!;
+    const before = await learningFacts(db, actor.id);
     const locker = await db.connection();
     let transactionOpen = false;
 
@@ -234,7 +225,8 @@ describe('L02a-R publication locking', () => {
         scoring_version: 'ent-v1',
         graded_items: submittedItem(session, seeded),
       });
-      await waitForRpcLock(db, 'commit_learning_v1');
+      pending.push(submitted);
+      await waitForLock(db, 'commit_learning_v1', locker.backendPid);
       await locker.execute('COMMIT');
       transactionOpen = false;
 
@@ -242,17 +234,31 @@ describe('L02a-R publication locking', () => {
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.data).toMatchObject({ message: 'content-unavailable' });
       await expectNoSubmitFacts(db, actor.id, session.id);
+      await expectUnchangedLearning(db, actor.id, before);
     } finally {
       if (transactionOpen) await locker.execute('ROLLBACK');
       locker.release();
     }
   });
 
-  it('lets an already-locking start finish before a later quarantine update, then blocks submission', async () => {
+  it.each(['start', 'submit'] as const)('serializes %s-first before quarantine and preserves its receipt on retry', async (kind) => {
     db = await createDbHarness();
     const actor = await db.actor('learning-lock-start-first');
     actorId = actor.id;
     const seeded = await seedApprovedVersion(db);
+    const initial = kind === 'submit' ? await db.rpc('service', 'start_learning_v1', {
+      actor_id: actor.id, operation_id: crypto.randomUUID(), payload_hash: 'start:before-submit-first', plan: startPlan(seeded),
+    }) : undefined;
+    if (initial) expect(initial.status, JSON.stringify(initial.data)).toBe(200);
+    const issuedSession = initial ? (initial.data as { sessions: IssuedSession[] }).sessions[0]! : undefined;
+    const operationId = crypto.randomUUID();
+    const rpcName = kind === 'start' ? 'start_learning_v1' : 'commit_learning_v1';
+    const args = kind === 'start' ? {
+      actor_id: actor.id, operation_id: operationId, payload_hash: 'start:first-lock', plan: startPlan(seeded),
+    } : {
+      actor_id: actor.id, operation_id: operationId, payload_hash: 'submit:first-lock',
+      session_id: issuedSession!.id, scoring_version: 'ent-v1', graded_items: submittedItem(issuedSession!, seeded),
+    };
     const barrier = await db.connection();
     const quarantine = await db.connection();
     const advisoryKey = 98_271;
@@ -266,7 +272,7 @@ describe('L02a-R publication locking', () => {
         CREATE OR REPLACE FUNCTION public.l02ar_pause_start_audit()
         RETURNS trigger LANGUAGE plpgsql AS $$
         BEGIN
-          IF NEW.event_type = 'learning.started' THEN
+          IF NEW.operation_id = '${operationId}'::uuid THEN
             PERFORM pg_catalog.pg_advisory_xact_lock(${advisoryKey});
           END IF;
           RETURN NEW;
@@ -279,25 +285,28 @@ describe('L02a-R publication locking', () => {
       triggerInstalled = true;
       await barrier.execute(`SELECT pg_catalog.pg_advisory_lock(${advisoryKey})`);
       barrierHeld = true;
-      startPromise = db.rpc('service', 'start_learning_v1', {
-        actor_id: actor.id,
-        operation_id: crypto.randomUUID(),
-        payload_hash: 'start:holds-publication-share-lock',
-        plan: startPlan(seeded),
-      });
-      await waitForRpcLock(db, 'start_learning_v1');
+      startPromise = db.rpc('service', rpcName, args);
+      const learningPid = await waitForLock(db, rpcName, barrier.backendPid);
       quarantinePromise = quarantine.execute(
         `UPDATE public.question_publications SET status = 'quarantined' WHERE question_version_id = $1`,
         [seeded.versionId]
       );
-      await waitForQueryLock(db, 'UPDATE public.question_publications');
+      // Attach failure handling before awaiting a barrier, so a timeout cannot
+      // become an unhandled rejection during cleanup.
+      void quarantinePromise.catch(() => undefined);
+      await waitForLock(db, 'UPDATE public.question_publications', learningPid);
       await barrier.execute(`SELECT pg_catalog.pg_advisory_unlock(${advisoryKey})`);
       barrierHeld = false;
 
       const started = await startPromise;
       expect(started.status, JSON.stringify(started.data)).toBe(200);
       await quarantinePromise;
-      const session = (started.data as { sessions: IssuedSession[] }).sessions[0]!;
+      const session = issuedSession ?? (started.data as { sessions: IssuedSession[] }).sessions[0]!;
+      const beforeReplay = await learningFacts(db, actor.id);
+      const replay = await db.rpc('service', rpcName, args);
+      expect(replay.status).toBe(200);
+      expect(replay.data).toEqual(started.data);
+      await expectUnchangedLearning(db, actor.id, beforeReplay);
       const rejected = await db.rpc('service', 'commit_learning_v1', {
         actor_id: actor.id,
         operation_id: crypto.randomUUID(),
@@ -306,9 +315,18 @@ describe('L02a-R publication locking', () => {
         scoring_version: 'ent-v1',
         graded_items: submittedItem(session, seeded),
       });
-      expect(rejected.status).toBeGreaterThanOrEqual(400);
-      expect(rejected.data).toMatchObject({ message: 'content-unavailable' });
-      await expectNoSubmitFacts(db, actor.id, session.id);
+      if (kind === 'start') {
+        expect(rejected.status).toBeGreaterThanOrEqual(400);
+        expect(rejected.data).toMatchObject({ message: 'content-unavailable' });
+        await expectNoSubmitFacts(db, actor.id, session.id);
+      } else {
+        expect(started.data).toMatchObject({ score: 1, maxScore: 1 });
+        expect(rejected.status).toBe(200);
+        expect(rejected.data).toEqual({ error: 'already-submitted' });
+        expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE session_id = $1', [session.id])).toBe(1);
+        expect(await db.scalar<number>('SELECT xp FROM public.profiles WHERE id = $1', [actor.id])).toBe(10);
+      }
+      await expectUnchangedLearning(db, actor.id, beforeReplay);
     } finally {
       if (barrierHeld) await barrier.execute(`SELECT pg_catalog.pg_advisory_unlock(${advisoryKey})`);
       if (startPromise) await startPromise.catch(() => undefined);
@@ -322,7 +340,7 @@ describe('L02a-R publication locking', () => {
     }
   });
 
-  it('rechecks expiry after waiting for the learner lock before writing any submit facts', async () => {
+  it('rejects a deadline that naturally passes while waiting on publication after reading the session', async () => {
     db = await createDbHarness();
     const actor = await db.actor('learning-lock-expiry');
     actorId = actor.id;
@@ -341,7 +359,11 @@ describe('L02a-R publication locking', () => {
     try {
       await locker.execute('BEGIN');
       transactionOpen = true;
-      await locker.execute('SELECT 1 FROM public.profiles WHERE id = $1 FOR UPDATE', [actor.id]);
+      await locker.execute('SELECT 1 FROM public.question_publications WHERE question_version_id = $1 FOR UPDATE', [seeded.versionId]);
+      // Set the deadline once, before submit. The RPC reads this session then
+      // waits on publication; only wall-clock time changes while it is blocked.
+      await db.execute("UPDATE public.sessions SET expires_at = clock_timestamp() + interval '1200 milliseconds' WHERE id = $1", [session.id]);
+      const before = await learningFacts(db, actor.id);
       const submitted = db.rpc('service', 'commit_learning_v1', {
         actor_id: actor.id,
         operation_id: crypto.randomUUID(),
@@ -350,8 +372,15 @@ describe('L02a-R publication locking', () => {
         scoring_version: 'ent-v1',
         graded_items: submittedItem(session, seeded),
       });
-      await waitForRpcLock(db, 'commit_learning_v1');
-      await db.execute(`UPDATE public.sessions SET expires_at = now() - interval '1 second' WHERE id = $1`, [session.id]);
+      pending.push(submitted);
+      const pid = await waitForLock(db, 'commit_learning_v1', locker.backendPid);
+      expect(await db.scalar<boolean>(`
+        SELECT a.query_start < s.expires_at AND clock_timestamp() < s.expires_at
+        FROM pg_stat_activity a CROSS JOIN public.sessions s WHERE a.pid = $1 AND s.id = $2`, [pid, session.id])).toBe(true);
+      await expect.poll(() => db!.scalar<boolean>(
+        'SELECT clock_timestamp() >= expires_at FROM public.sessions WHERE id = $1', [session.id]
+      ), { timeout: 1700, interval: 20 }).toBe(true);
+      expect(await db.scalar<boolean>('SELECT $1 = ANY(pg_blocking_pids($2))', [locker.backendPid, pid])).toBe(true);
       await locker.execute('COMMIT');
       transactionOpen = false;
 
@@ -359,6 +388,7 @@ describe('L02a-R publication locking', () => {
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.data).toMatchObject({ message: 'expired' });
       await expectNoSubmitFacts(db, actor.id, session.id);
+      await expectUnchangedLearning(db, actor.id, before);
     } finally {
       if (transactionOpen) await locker.execute('ROLLBACK');
       locker.release();

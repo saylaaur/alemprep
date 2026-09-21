@@ -28,7 +28,9 @@ export type DbResponse = {
 };
 
 export type DbConnection = {
+  backendPid: number;
   execute(sql: string, params?: unknown[]): Promise<void>;
+  scalar<T extends string | number | boolean | null>(sql: string, params?: unknown[]): Promise<T>;
   release(): void;
 };
 
@@ -178,9 +180,16 @@ export async function createDbHarness(): Promise<DbHarness> {
 
     async connection() {
       const client: PoolClient = await pool.connect();
+      const pid = await client.query<{ pid: number }>('SELECT pg_backend_pid() AS pid');
+      await client.query("SET statement_timeout = '8s'");
       return {
+        backendPid: pid.rows[0]!.pid,
         async execute(sql: string, params: unknown[] = []) {
           await client.query(sql, params);
+        },
+        async scalar<T extends string | number | boolean | null>(sql: string, params: unknown[] = []) {
+          const result = await client.query<Record<string, T>>(sql, params);
+          return Object.values(result.rows[0] ?? {})[0] ?? (null as T);
         },
         release() {
           client.release();
