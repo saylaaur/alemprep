@@ -1,5 +1,12 @@
 # Журнал исполнения production-плана
 
+## 21.09.2026 — независимое принятие L02a-R и интеграция планов
+
+- Независимый read-only reviewer завершил [review](reviews/2026-09-21-l02ar.md) точного `e475f67aa4c117fc0e3515b3a3da1d7ede98c3e8`: ACCEPT в пределах завершения L02a-R evidence, без P0/P1/P2. Матрица review 15.09 закрыта. Reviewer прочитал код и фактические логи; новый DB reset не запускал. Прерванный ранее из-за лимита review не использовался как одобрение.
+- Стандартный `npm run build` повторён вне ограниченной сети: шрифты больше не являются текущим failure, но Turbopack падает на создании внутреннего процесса/порта (`Operation not permitted`). `npm run build -- --webpack` с фиктивными CI-переменными завершился exit 0, 25 static pages. Это дополнительная локальная проверка, не замена обязательного standard CI build.
+- Локально объединён согласованный контентный план `fcdede3` с технической веткой. Конфликты только Markdown: сохранены review/history, native-KK путь K00–K03, актуальные номера 0027/0028/0029; следующий технический ID — L02b после required CI и интеграции. Runtime/SQL/test payload совпадает с reviewed `e475f67`.
+- Read-only GitHub подтвердил текущий origin `https://github.com/saylaaur/alemprep.git`, signed-in owner `saylaaur`, permission ADMIN и remote main `52d5181`. Это новые проверенные данные о назначении отправки; source-код/тесты/документация относятся к этому проекту. CI/push/merge фиксируются отдельно после фактического результата. Hosted migration и платные API не выполнялись.
+
 ## 16.09.2026 — L02a-R test-evidence candidate, pending Astra review
 
 - От базы `78c960586a2cbae882561fd472faa40949d3a73a` исправлена P2 matrix: fractional, negative и `timeSpentMs=7200001` теперь передаются как настоящий `graded_items` array; допустимая граница `7200000` принята. Добавлены service-only integration scenarios: changed submit payload conflict, receipt replay после quarantine без новых audit facts, сдача двух mock blocks, A1/A2/B1 с запретом подмены item.
@@ -14,6 +21,13 @@
 - Свежие проверки: typecheck/lint exit 0; unit 56 files / 575 tests exit 0; DB 5 files / 40 tests exit 0, 31.40 s. Local prosrc обеих RPC совпал с committed 0027; EXECUTE anon/authenticated=false, service_role=true.
 - Mutation probe на loopback Docker: внутри synthetic transaction удалена числовая проверка; object cases по-прежнему rejected, array с timeSpentMs=7200001 accepted. На исходной функции этот array rejected. DDL и fixture откатились ROLLBACK. Это дефект теста, не доказательство текущего обхода SQL. Production не затронут.
 - Migration-path/build/CI/browser/hosted smoke этим review не запускались. Source/SQL/tests не изменены; сохранены review/docs без commit/push/merge. Следующий ready: завершить L02a-R tests, L02b закрыт.
+## 20.09.2026 — пересмотр казахского контента и допуска, planning only
+
+- По предложению владельца оценён native-KK путь из купленных пробников. [Новый план](../superpowers/plans/2026-09-20-kazakh-pilot-rebaseline.md) рекомендует образец → 20–30 кандидатов → 50–80 принятых задач, а не автоматическую закупку десяти и массовую генерацию. Подготовлен [intake](../pilot/KAZAKH_SOURCE_INTAKE.md). Поставщик/цена/reviewer пока неизвестны.
+- Сверены код legacy generation/import, текущий checkout `0e638fa` и сохранённый commit `3f4c5a2`. KK legacy importer требует переводной lineage; нужен отдельный native draft/import contract K01/K03. C00a/C00b, L/E и UI не выбрасываются. Google остаётся резервом; тариф проверен на официальной странице, смета проекта 10.09: первые 200 math ~$1.06, весь RU ~$34.39 до credit/retries/налогов/редактора.
+- Статус L02a-R не повышен: commit доступен в Git, временный worktree prunable. Исторические 575 unit / 44 DB / 4 migration tests не являются свежим acceptance; в §2 нового плана перечислен остаток review matrix. Hosted/CI/runtime 20.09 не проверялись. 0026 применена по предыдущему сообщению владельца; 0027 hosted не подтверждена. Смена маршрута контента это не меняет.
+- Обновлены входные документы, критерий языков программы и относительный срок: дата 20–21 сентября снята. Финансирование рассматривается после evidence пилота; API перевод не объявляется главным барьером.
+- Изменения только Markdown; код, SQL, production, платные API и покупки не выполнялись. Проверка этого прохода — diff/ссылки/согласованность документов, не повтор runtime gates. Следующее: K00 и завершение L02a-R, затем synthetic K01.
 
 ## 09.09.2026 — архитектура и планирование
 

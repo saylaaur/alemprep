@@ -12,7 +12,18 @@
 
 ## Порядок выполнения (план)
 
-**Последний gate 15.09:** [review 78c9605](docs/production/reviews/2026-09-15-l02ar.md) — CHANGES REQUIRED. Candidate L02a-R в ветке `codex/l02ar-evidence-completion` закрывает указанную матрицу локальными тестами и ждёт отдельного Astra review. Новая миграция только ради тестов не нужна.
+**Gate 21.09 — читать первым:** [независимое review e475f67](docs/production/reviews/2026-09-21-l02ar.md) приняло L02a-R evidence. Следующий шаг — CI и интеграция; затем L02b. Webpack build PASS, standard Turbopack локально блокируется средой. Это не приёмка всего L02 или пилота.
+
+**Контентный план:** [пересмотр для казахского пилота](docs/superpowers/plans/2026-09-20-kazakh-pilot-rebaseline.md). K00 (образец/условия/проверяющий), затем synthetic K01 и маленькая native-KK партия. Десять пробников и платная генерация пока не согласованы как закупка. Google pipeline сохраняется для пробелов. 0027 занята L02a-R, rewards — 0028, revoke — 0029. Полный пилот ещё не принят, дата не назначена.
+
+Ближайшие результаты:
+
+- [x] **L02a-R local evidence/review:** `e475f67`, 49 DB / 4 migration / 575 unit; независимое ACCEPT.
+- [ ] **L02a-R integration:** standard CI на итоговом SHA, required checks и merge, затем L02b.
+- [ ] **K00:** заполнить [карточку источника](docs/pilot/KAZAKH_SOURCE_INTAKE.md) и оценить 20–30 кандидатов.
+- [ ] **K01–K03:** native-KK drafts → human acceptance → versioned import/program, по новой карточке; не legacy `--publish`.
+
+Ниже — историческая очередь 14.09; её статусы/номера заменены уточнением выше, сами технические контракты сохранены.
 
 **Актуальный приоритет с 09.09.2026 — production и пилот в двух сельских школах.**
 

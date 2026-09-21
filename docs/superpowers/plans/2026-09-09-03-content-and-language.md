@@ -1,5 +1,7 @@
 # 03 — Content and language Implementation Plan
 
+**Поправка 20.09:** [K00–K03](2026-09-20-kazakh-pilot-rebaseline.md) добавляют native-KK как основной эксперимент для первого пилота. Требование ниже «только переводим» относится к C00b, не ко всему продукту. Native-KK не требует фиктивной RU-пары; K03 передаёт принятые версии в C01/C02. Google C00b/C00c остаётся альтернативой для перевода. Номера будущих миграций из старого текста не использовать: сверить ветку `3f4c5a2` (0027 L02a-R, 0028 rewards, 0029 revoke). Все human review, safe DTO и publication gates сохраняются.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Допускать в школьные уроки только проверенную программу RU/KK с корректными объяснениями и медиа.
