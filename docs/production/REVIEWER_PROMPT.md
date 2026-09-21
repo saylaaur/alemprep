@@ -54,4 +54,4 @@ P0/P1 и missing mandatory gate запрещают переход зависим
 | Внешние действия | Что действительно менялось в GitHub/Vercel/DB |
 | Риски | Обязательные human/provider gates и воспроизводимые failures |
 
-Независимое ревью не расходовать на каждый синхронный RU/KK key. Обязательные checkpoints: L04, S04, R03, O04, P01; перед L04 полезно проверить L02 concurrency diff отдельно.
+Независимое ревью не расходовать на каждый синхронный RU/KK key. Обязательные checkpoints: L02a, L02b, L02d (весь L02), L04, S04, R03, O04, P01. Перед review прочитать сверку 14.09: docs/superpowers/plans/2026-09-14-execution-rebaseline.md. Проверять весь контракт, включая отсутствующие функции/ветви, multi-session RPC и alternate actions. Merge/зелёные тесты не являются самостоятельным acceptance. Review, прерванное лимитом, не считается одобрением.

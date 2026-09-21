@@ -15,7 +15,7 @@
 
 ## R01 — Метрики, аудит и воспроизводимый snapshot
 
-**Files:** create `supabase/migrations/0032_pilot_reports.sql`, `lib/reporting/{contracts,metrics,service}.ts`, `lib/operations/jobs.ts`, `scripts/pilot/run-jobs.ts`, `lib/reporting/metrics.test.ts`, `tests/db/report-snapshot.test.ts`, `tests/fixtures/reports.ts`; modify `types/db.ts`, `package.json`.
+**Files:** create `supabase/migrations/0035_pilot_reports.sql`, `lib/reporting/{contracts,metrics,service}.ts`, `lib/operations/jobs.ts`, `scripts/pilot/run-jobs.ts`, `lib/reporting/metrics.test.ts`, `tests/db/report-snapshot.test.ts`, `tests/fixtures/reports.ts`; modify `types/db.ts`, `package.json`.
 **Consumes:** S02 participants, L02 trusted sessions/audit, O01 limits/flags.
 **Produces:** report_runs/report_participants/operation_jobs (§5.3), `computeMetrics(input: ReportSource): PilotMetrics`, `requestPilotReport(input:ReportRequest): Promise<Result<{reportId:string}>>`, `runJobs(input:{limit:number;leaseSeconds:number}): Promise<{done:number;failed:number}>`.
 
@@ -49,7 +49,7 @@ expect(computeMetrics(reportFixture())).toEqual({
 
 `reportFixture()` — export из `tests/fixtures/reports.ts` со значениями выше. Кейсы: пустой набор→null rates, maxPoints0 rejected, duplicate completion выбирается на SQL границе по acceptedAt/id, legacy/demo excluded, event после cutoff excluded.
 - [ ] Migration создаёт immutable report_runs и snapshot participants, jobs с lease/attempts. Snapshot строится одним SQL statement либо REPEATABLE READ transaction с cutoff: eligibility, первые v1 completions, paired results, versions и status events. Не вычислять eligibility по сегодняшнему membership. Scope сохраняется с report, но **право чтения проверяется заново**.
-- [ ] Eligibility v1: участник assignment с eligible_from < min(end,closes), withdrawn_at null или после opens; отозван до начала → исключён, после начала → отдельный withdrawn count и остаётся denominator с пометкой. Demo/test — server-controlled `profiles.account_kind` real/demo/test (новое поле 0032, client grant отсутствует). Legacy исключается до агрегирования. Период фильтрует назначение по opens_at; outcome до min(closes,cutoff), поздние сохранения отдельно отмечены.
+- [ ] Eligibility v1: участник assignment с eligible_from < min(end,closes), withdrawn_at null или после opens; отозван до начала → исключён, после начала → отдельный withdrawn count и остаётся denominator с пометкой. Demo/test — server-controlled `profiles.account_kind` real/demo/test (новое поле 0035, client grant отсутствует). Legacy исключается до агрегирования. Период фильтрует назначение по opens_at; outcome до min(closes,cutoff), поздние сохранения отдельно отмечены.
 - [ ] Snapshot test: запрос отчёта → новая попытка/смена членства/новая версия контента → старый готовый отчёт byte-equivalent; новый report ID учитывает новое состояние. Correction audit не переписывает старый report молча.
 - [ ] Jobs lease≤60s, batch≤5, maxAttempts3, backoff30/120/600s; crashed worker возобновляет после lease, unique report completion CAS. «Готово» после атомарного сохранения snapshot result. Job payload только IDs, без child answers. Доступ только server/operator, не публичная cron без bearer проверки.
 - [ ] Audit allowlist: learning.started/submitted/cancelled, membership.created/ended, teacher.assigned/revoked, assignment.published/cancelled/participant_added, content.published/quarantined, report.requested/ready/exported, privacy.requested/completed. Успешные mutations требуют event. Не сохранять «успех» из браузерного click.
@@ -69,7 +69,7 @@ expect(computeMetrics(reportFixture())).toEqual({
 
 ## R03 — Retention, отзыв, экспорт и удаление
 
-**Files:** create `supabase/migrations/0033_privacy_lifecycle.sql`, `lib/pilot/privacy.ts`, `scripts/pilot/{privacy-request,apply-retention,reconcile-learning}.ts`, `tests/db/privacy-lifecycle.test.ts`, `docs/pilot/PRIVACY_OPERATIONS.md`, `app/[locale]/privacy/page.tsx`, `app/[locale]/terms/page.tsx`; modify `types/db.ts`, `messages/{ru,kk}.json`, footer links лендинга.
+**Files:** create `supabase/migrations/0036_privacy_lifecycle.sql`, `lib/pilot/privacy.ts`, `scripts/pilot/{privacy-request,apply-retention,reconcile-learning}.ts`, `tests/db/privacy-lifecycle.test.ts`, `docs/pilot/PRIVACY_OPERATIONS.md`, `app/[locale]/privacy/page.tsx`, `app/[locale]/terms/page.tsx`; modify `types/db.ts`, `messages/{ru,kk}.json`, footer links лендинга.
 **Consumes:** D02/D04 approved policy, R01 sources/jobs.
 **Produces:** privacy_requests, operator workflow, reconciliation report; публичные тексты отражают реального оператора/контур после RU/KK приёмки.
 

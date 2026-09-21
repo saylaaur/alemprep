@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
 import { createClient } from '@supabase/supabase-js';
-import { Pool } from 'pg';
+import { Pool, type PoolClient } from 'pg';
 import { assertSafeDbConnectionString, assertSafeDbTestTarget } from './test-target';
 
 const execFileAsync = promisify(execFile);
@@ -27,12 +27,20 @@ export type DbResponse = {
   data: unknown;
 };
 
+export type DbConnection = {
+  backendPid: number;
+  execute(sql: string, params?: unknown[]): Promise<void>;
+  scalar<T extends string | number | boolean | null>(sql: string, params?: unknown[]): Promise<T>;
+  release(): void;
+};
+
 export type DbHarness = {
   actor(label: string): Promise<TestActor>;
   rest(actor: TestActor | null, path: string, init?: RequestInit): Promise<DbResponse>;
-  rpc(actor: TestActor | 'service', name: string, args: Record<string, unknown>): Promise<DbResponse>;
+  rpc(actor: TestActor | 'service' | 'anon', name: string, args: Record<string, unknown>): Promise<DbResponse>;
   execute(sql: string, params?: unknown[]): Promise<void>;
   scalar<T extends string | number | boolean | null>(sql: string, params?: unknown[]): Promise<T>;
+  connection(): Promise<DbConnection>;
   close(): Promise<void>;
 };
 
@@ -142,7 +150,11 @@ export async function createDbHarness(): Promise<DbHarness> {
 
     async rpc(actor, name, args) {
       if (!/^[a-z_][a-z0-9_]*$/i.test(name)) throw new Error('test RPC name is invalid');
-      const accessToken = actor === 'service' ? status.SERVICE_ROLE_KEY : actor.accessToken;
+      const accessToken = actor === 'service'
+        ? status.SERVICE_ROLE_KEY
+        : actor === 'anon'
+          ? status.ANON_KEY
+          : actor.accessToken;
       const response = await fetch(requestUrl(apiUrl, `/rest/v1/rpc/${name}`), {
         method: 'POST',
         headers: {
@@ -164,6 +176,25 @@ export async function createDbHarness(): Promise<DbHarness> {
 
     async execute(sql: string, params: unknown[] = []) {
       await pool.query(sql, params);
+    },
+
+    async connection() {
+      const client: PoolClient = await pool.connect();
+      const pid = await client.query<{ pid: number }>('SELECT pg_backend_pid() AS pid');
+      await client.query("SET statement_timeout = '8s'");
+      return {
+        backendPid: pid.rows[0]!.pid,
+        async execute(sql: string, params: unknown[] = []) {
+          await client.query(sql, params);
+        },
+        async scalar<T extends string | number | boolean | null>(sql: string, params: unknown[] = []) {
+          const result = await client.query<Record<string, T>>(sql, params);
+          return Object.values(result.rows[0] ?? {})[0] ?? (null as T);
+        },
+        release() {
+          client.release();
+        },
+      };
     },
 
     async close() {

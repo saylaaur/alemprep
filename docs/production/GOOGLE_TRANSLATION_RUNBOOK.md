@@ -1,5 +1,7 @@
 # Google NMT drafts — operator runbook
 
+**20.09:** инструмент сохранён как резерв и для расширения банка. Новый [план пилота](../superpowers/plans/2026-09-20-kazakh-pilot-rebaseline.md) сначала проверяет небольшую native-KK подборку. Активация billing не блокирует серверную разработку; этот runbook не запускается автоматически при покупке пробников.
+
 This command produces private machine drafts only. It never inserts rows in Supabase, changes `is_published`, or makes an in-browser translation feature. A Kazakh and subject-matter reviewer must accept the resulting pairs before C00c.
 
 ## Быстрый старт для первой пробной партии

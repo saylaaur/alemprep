@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -8,6 +9,7 @@ import { assertSafeDbTestTarget } from './test-target';
 const execFileAsync = promisify(execFile);
 const l01MigrationPath = `${process.cwd()}/supabase/migrations/0024_learning_integrity_schema.sql`;
 const l02MigrationPath = `${process.cwd()}/supabase/migrations/0025_learning_integrity_rpc.sql`;
+const l02aCorrectionMigrationPath = `${process.cwd()}/supabase/migrations/0027_learning_rpc_validation.sql`;
 const supabaseCli = `${process.cwd()}/node_modules/.bin/supabase`;
 
 function testTargetEnv() {
@@ -33,6 +35,72 @@ async function applyL01(db: DbHarness): Promise<void> {
 async function applyL02(db: DbHarness): Promise<void> {
   const sql = await readFile(l02MigrationPath, 'utf8');
   await db.execute(sql);
+}
+
+async function applyMigration(db: DbHarness, migrationPath: string): Promise<void> {
+  await db.execute(await readFile(migrationPath, 'utf8'));
+}
+
+async function seedApprovedVersion(db: DbHarness): Promise<{
+  versionId: string;
+  topicId: string;
+  subjectId: string;
+  manifestHash: string;
+}> {
+  const suffix = crypto.randomUUID();
+  const subjectId = await db.scalar<string>(
+    `INSERT INTO public.subjects (slug, name_ru, name_kk, is_active)
+     VALUES ($1, 'Upgrade subject', 'Upgrade пәні', true) RETURNING id`,
+    [`upgrade-${suffix}`]
+  );
+  const topicId = await db.scalar<string>(
+    `INSERT INTO public.topics (subject_id, slug, name_ru, name_kk)
+     VALUES ($1, $2, 'Upgrade topic', 'Upgrade тақырыбы') RETURNING id`,
+    [subjectId, `upgrade-${suffix}`]
+  );
+  const questionId = await db.scalar<string>(
+    `INSERT INTO public.questions (topic_id, language, type, body, is_published)
+     VALUES ($1, 'kk', 'single', $2::jsonb, true) RETURNING id`,
+    [topicId, JSON.stringify({ stem: 'upgrade', options: [{ id: 'A', content: 'A' }], correct: 'A' })]
+  );
+  const versionId = await db.scalar<string>(
+    `INSERT INTO public.question_versions
+       (question_id, family_id, revision, locale, type, public_body, grading_body, content_hash)
+     VALUES ($1, gen_random_uuid(), 1, 'kk', 'single', $2::jsonb, $3::jsonb, $4)
+     RETURNING id`,
+    [
+      questionId,
+      JSON.stringify({ stem: 'upgrade', options: [{ id: 'A', content: 'A' }] }),
+      JSON.stringify({ stem: 'upgrade', options: [{ id: 'A', content: 'A' }], correct: 'A' }),
+      `sha256:${suffix}`,
+    ]
+  );
+  await db.execute(
+    `INSERT INTO public.question_publications (question_version_id, status)
+     VALUES ($1, 'approved')`,
+    [versionId]
+  );
+  return {
+    versionId,
+    topicId,
+    subjectId,
+    manifestHash: `sha256:${createHash('sha256').update(`${versionId}:sha256:${suffix}`).digest('hex')}`,
+  };
+}
+
+function trustedPlan(seeded: Awaited<ReturnType<typeof seedApprovedVersion>>) {
+  return {
+    sessions: [{
+      mode: 'practice',
+      topicId: seeded.topicId,
+      subjectId: seeded.subjectId,
+      locale: 'kk',
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      scoringVersion: 'ent-v1',
+      manifestHash: seeded.manifestHash,
+      items: [{ versionId: seeded.versionId }],
+    }],
+  };
 }
 
 async function seedLegacyHistory(db: DbHarness, actor: TestActor): Promise<{
@@ -142,6 +210,132 @@ describe('0024 learning integrity migration path', () => {
         `SELECT has_function_privilege('service_role', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
       )).toBe(true);
     } finally {
+      await db.close();
+    }
+  }, 90_000);
+
+  it('preserves populated 0026 sessions and receipts when applying the 0027 correction', async () => {
+    await resetTo('0026');
+    const db = await createDbHarness();
+    let actor: TestActor | undefined;
+    try {
+      actor = await db.actor('migration-l02a-r');
+      const seeded = await seedApprovedVersion(db);
+      const firstOperationId = crypto.randomUUID();
+      const firstStart = await db.rpc('service', 'start_learning_v1', {
+        actor_id: actor.id,
+        operation_id: firstOperationId,
+        payload_hash: 'start:before-0027:first',
+        plan: trustedPlan(seeded),
+      });
+      expect(firstStart.status, JSON.stringify(firstStart.data)).toBe(200);
+      const firstSession = (firstStart.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+      const submitOperationId = crypto.randomUUID();
+      const submitArgs = {
+        actor_id: actor.id,
+        operation_id: submitOperationId,
+        payload_hash: 'submit:before-0027',
+        session_id: firstSession.id,
+        scoring_version: 'ent-v1',
+        graded_items: [{
+          itemId: firstSession.itemIds[0],
+          questionVersionId: seeded.versionId,
+          answer: 'A',
+          points: 1,
+          maxPoints: 1,
+          timeSpentMs: 1_000,
+        }],
+      };
+      const acceptedBeforeUpgrade = await db.rpc('service', 'commit_learning_v1', submitArgs);
+      expect(acceptedBeforeUpgrade.status, JSON.stringify(acceptedBeforeUpgrade.data)).toBe(200);
+
+      const activeStartOperationId = crypto.randomUUID();
+      const activeStart = await db.rpc('service', 'start_learning_v1', {
+        actor_id: actor.id,
+        operation_id: activeStartOperationId,
+        payload_hash: 'start:before-0027:active',
+        plan: trustedPlan(seeded),
+      });
+      expect(activeStart.status, JSON.stringify(activeStart.data)).toBe(200);
+      const activeSession = (activeStart.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+
+      await applyMigration(db, l02aCorrectionMigrationPath);
+
+      expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [firstSession.id]))
+        .toBe('submitted');
+      expect(await db.scalar<boolean>('SELECT receipt IS NOT NULL FROM public.sessions WHERE id = $1', [firstSession.id]))
+        .toBe(true);
+      expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [activeSession.id]))
+        .toBe('active');
+
+      const activeSubmit = await db.rpc('service', 'commit_learning_v1', {
+        actor_id: actor.id,
+        operation_id: crypto.randomUUID(),
+        payload_hash: 'submit:after-0027:issued-before-upgrade',
+        session_id: activeSession.id,
+        scoring_version: 'ent-v1',
+        graded_items: [{
+          itemId: activeSession.itemIds[0],
+          questionVersionId: seeded.versionId,
+          answer: 'A',
+          points: 1,
+          maxPoints: 1,
+          timeSpentMs: 1_000,
+        }],
+      });
+      expect(activeSubmit.status, JSON.stringify(activeSubmit.data)).toBe(200);
+      expect(activeSubmit.data).toMatchObject({ score: 1, maxScore: 1 });
+      expect(await db.scalar<number>(
+        'SELECT count(*)::int FROM public.session_items WHERE session_id = $1 AND question_version_id = $2',
+        [activeSession.id, seeded.versionId]
+      )).toBe(1);
+      expect(await db.scalar<number>('SELECT total_questions FROM public.sessions WHERE id = $1', [activeSession.id]))
+        .toBe(1);
+      expect(await db.scalar<string>('SELECT manifest_hash FROM public.sessions WHERE id = $1', [activeSession.id]))
+        .toBe(seeded.manifestHash);
+
+      const startReplayAfterUpgrade = await db.rpc('service', 'start_learning_v1', {
+        actor_id: actor.id,
+        operation_id: activeStartOperationId,
+        payload_hash: 'start:before-0027:active',
+        plan: trustedPlan(seeded),
+      });
+      expect(startReplayAfterUpgrade.status, JSON.stringify(startReplayAfterUpgrade.data)).toBe(200);
+      expect(startReplayAfterUpgrade.data).toEqual(activeStart.data);
+      const replayAfterUpgrade = await db.rpc('service', 'commit_learning_v1', submitArgs);
+      expect(replayAfterUpgrade.status, JSON.stringify(replayAfterUpgrade.data)).toBe(200);
+      expect(replayAfterUpgrade.data).toEqual(acceptedBeforeUpgrade.data);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('authenticated', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('anon', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('service_role', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(true);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('authenticated', 'public.start_learning_v1(uuid,uuid,text,jsonb)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('anon', 'public.start_learning_v1(uuid,uuid,text,jsonb)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('service_role', 'public.start_learning_v1(uuid,uuid,text,jsonb)', 'EXECUTE')`
+      )).toBe(true);
+    } finally {
+      if (actor) {
+        await db.execute('DELETE FROM public.attempts WHERE user_id = $1', [actor.id]);
+        await db.execute(
+          `DELETE FROM public.session_items
+           WHERE session_id IN (SELECT id FROM public.sessions WHERE user_id = $1)`,
+          [actor.id]
+        );
+        await db.execute('DELETE FROM public.reward_ledger WHERE user_id = $1', [actor.id]);
+        await db.execute('DELETE FROM public.operation_receipts WHERE actor_id = $1', [actor.id]);
+        await db.execute('DELETE FROM public.audit_events WHERE actor_id = $1', [actor.id]);
+        await db.execute('DELETE FROM public.sessions WHERE user_id = $1', [actor.id]);
+      }
       await db.close();
     }
   }, 90_000);

@@ -1,6 +1,6 @@
 # Выпуск, откат и запуск пилота
 
-Применять после P01 и конкретного разрешения внешнего действия. Документирование и локальная проверка не меняют production сами по себе. Указанные номера миграций — зарезервированная последовательность планов, а не уже существующие файлы.
+Применять после P01 и конкретного разрешения внешнего действия. Документирование и локальная проверка не меняют production сами по себе. 0024/0025 уже существуют; 0026 применена по сообщению владельца, а 0027 — локальный candidate до повторного review. Остальные номера — резерв из сверки 14.09. См. docs/superpowers/plans/2026-09-14-execution-rebaseline.md: 0026/0027 corrections, 0028 rewards, 0029 revoke, затем до 0037. До публичного включения L03 требуются совместимый candidate и закрытие legacy writes; main может деплоиться автоматически.
 
 ## 1. Что собрать перед кнопкой выпуска
 
@@ -11,7 +11,7 @@ Release record: candidate full SHA, verified CI run, test timestamps, schema/mig
 ## 2. Git и CI
 
 1. `git status --short`, inspect base..head diff, redacted secret/content scan. Stage только task files. Локальные pitch/generated/docs не публикуются автоматически.
-2. Подготовить branch/PR к **проверенному** `saylaaur/alemprep`, записать payload scope. Предыдущий branch push был остановлен автоматической проверкой разрешений, не GitHub. Без конкретного разрешения после этого отказа его не повторять и не обходить другим инструментом.
+2. Подготовить branch/PR к **проверенному** `saylaaur/alemprep`, записать payload scope. Владелец впоследствии разрешил обычные commits/push/merge; не вводить повторный approval для каждого PR. Если текущая automatic approval review отклоняет конкретное действие, не обходить отказ: сохранить evidence и объяснить причину владельцу.
 3. PR triggers Verify and Security; plain branch push сам по себе не triggers существующий workflow. Preview работает на staging env, не production service key. CI Node22 clean install/typecheck/lint/test/build плюс новые DB/E2E suites. Security runs an explicit full reachable-history scan with redacted output; a match stops release and starts credential rotation, not a public incident report.
 4. Review точного head. Merge создаёт новый SHA при merge/squash — production build и smoke должны относиться к нему; зелёный pre-merge head не заменяет deployment metadata нового SHA.
 
@@ -19,7 +19,7 @@ Release record: candidate full SHA, verified CI run, test timestamps, schema/mig
 
 1. Read-only inventory: tables/columns/functions/grants/RLS/constraints/indexes. Старый hosted проект без migration ledger нельзя reset или пометить всеми версиями без сверки.
 2. Сопоставить каждую реально применённую миграцию с definitions/checksum; расхождение оформить corrective новой миграцией. Baseline ledger заводить только по проверенным объектам и процедуре выбранного CLI, сохранив audit; не переигрывать seeds над production.
-3. Проверить sequence 0024→0034 на fresh DB и populated synthetic baseline. Уникальные constraints/backfill отрабатывают legacy NULLs. Большие backfill — batch с измеренным временем/locks, не безлимитный transaction в час урока.
+3. Проверить sequence 0024→0037 на fresh DB и populated synthetic baseline. Уникальные constraints/backfill отрабатывают legacy NULLs. Большие backfill — batch с измеренным временем/locks, не безлимитный transaction в час урока.
 4. Schema expansion совместима со старым app, contract revokes — отдельное окно. Новые grants нельзя включать позже UI «когда-нибудь»; новый table сразу RLS/default deny.
 
 ## 4. Первая починка совместимости и основной cutover

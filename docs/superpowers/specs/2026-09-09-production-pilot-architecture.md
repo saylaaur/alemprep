@@ -94,7 +94,7 @@ FK `attempts.question_id` сейчас каскадный: заменить но
 
 Индексы: attempts(user_id,attempted_at DESC), attempts(session_id), sessions(user_id,started_at DESC), sessions(assignment_id,user_id), session_items(session_id,position), audit_events(school_id,occurred_at DESC,id), audit_events(entity_type,entity_id,occurred_at), operation_receipts(created_at), reward_ledger(user_id,day). Подтверждать EXPLAIN на ожидаемом объёме; не создавать дубликаты существующих индексов.
 
-Миграции зарезервированы после интеграции 0022/0023: `0024_learning_integrity_schema.sql`, `0025_learning_integrity_rpc.sql`, `0026_learning_write_cutover.sql`. До их создания проверить отсутствие совпадающих номеров. Старые миграции не переименовывать, ledger не подделывать.
+Миграции зарезервированы после интеграции 0022/0023: `0024_learning_integrity_schema.sql`, `0025_learning_integrity_rpc.sql`, `0026_learning_rpc_correctness.sql`, `0027_learning_rpc_validation.sql`, `0028_learning_rewards.sql`, `0029_learning_write_cutover.sql`. До их создания проверить отсутствие совпадающих номеров. Старые миграции не переименовывать, ledger не подделывать.
 
 ### 5.2 Школы и назначения
 
@@ -183,16 +183,16 @@ Canonical hash включает kind, sessionId, отсортированные 
 
 Границы: UUID всех IDs; максимум 80 items на submit; single ≤1 допустимого option ID, multi уникальные option IDs ≤10, matching ключи только выданных left IDs ≤10, строки ID ≤80 символов. Время integer 0..7_200_000 ms — диагностическое, не доказательство учёбы; start/expiry серверные. Payload JSON ≤64 KiB, проверка до дорогих запросов; транспортный limit также ограничить совместимым Next config. Не принимать произвольные URL/SQL/фильтры сортировки.
 
-Награды v1: существующий XP_PER_CORRECT сохраняется, но выдаётся за первую полностью правильную работу с `family_id` в день; дневной предел 200 XP от ответов. Exam bonus — один раз на успешно завершённый блок согласно существующему EXAM_BLOCK_BONUS, максимум два бонуса в день; знаменатель полного manifest. Эти учебные правила фиксируются тестами и текстом интерфейса, не обещают защиту от человека, который уже знает ответ. Старые XP сохраняются как legacy история интерфейса; школьные метрики их не используют.
+Награды v1: существующий XP_PER_CORRECT сохраняется, но выдаётся за первую полностью правильную работу с `family_id` в день; дневной предел 200 XP от ответов. Exam bonus — один раз на успешно завершённый блок согласно существующему EXAM_BLOCK_BONUS, максимум два бонуса в день; знаменатель полного manifest. Эти учебные правила фиксируются тестами и текстом интерфейса, не обещают защиту от человека, который уже знает ответ. Уточнение 14.09: diagnostic не выдаёт XP и не продлевает streak. Weekly сохраняет бонус 30, только один раз за ISO-неделю Asia/Almaty, с DB-уникальностью user+week независимо от дня. Practice/mock_exam/weekly участвуют в family cap; accepted retry не начисляет повторно. Стрик и новые достижения входят в атомарную операцию; новый badge требует trusted фактов, legacy display totals недостаточно. Старые XP сохраняются как legacy история интерфейса; школьные метрики их не используют.
 
 ## 8. Переход без опасного окна
 
-Общий порядок новых миграций: 0024 L01 schema → 0025 L02 RPC → 0026 L04 revoke → 0027 C01 programs → 0028 C02 reports → 0029 S01 scopes → 0030 S02 assignments → 0031 O01 limits/flags → 0032 R01 reports/jobs → 0033 R03 privacy → 0034 O03 индексы при необходимости. Task IDs не равны номерам миграций. Если выбран более ранний AI-off task, он делает только config/code без преждевременной SQL миграции.
+Общий порядок новых миграций: 0024 L01 schema → 0025 L02 partial RPC → 0026 L02a correctness → 0027 L02a-R validation → 0028 L02b rewards → 0029 L04 revoke → 0030 C01 programs → 0031 C02 reports → 0032 S01 scopes → 0033 S02 assignments → 0034 O01 limits/flags → 0035 R01 reports/jobs → 0036 R03 privacy → 0037 O03 индексы при необходимости. Task IDs не равны номерам миграций. Если выбран более ранний AI-off task, он делает только config/code без преждевременной SQL миграции.
 
 1. Примирить ветки и фактическую схему, получить рабочий совместимый baseline. Production не должен оставаться на старом коде, который пытается писать XP с уже отозванными правами.
 2. Expand: добавить v1 schema/RPC без закрытия старых writes; v1 включён только на synthetic staging. Existing attempts/sessions остаются integrity_version=0.
 3. Перевести все practice/exam/diagnostic/weekly/AI/achievement mutations на разрешённые серверные пути. Прямой экспорт createExamSession с клиентским manifest убрать. Старые активные сессии завершать как cancelled при cutover, предложить начать заново; не начислять задним числом.
-4. Короткое объявленное окно обслуживания записей: старое приложение остановлено для writes; применить 0026, которая закрывает клиентские writes и широкие ALL policies; выпустить совместимый code SHA. Все действия отрабатываются на стенде заранее.
+4. Короткое объявленное окно обслуживания записей: старое приложение остановлено для writes; применить 0029, которая закрывает клиентские writes и широкие ALL policies; выпустить совместимый code SHA. Все действия отрабатываются на стенде заранее.
 5. Проверить реальные browser + direct REST сценарии. Откат возможен только на сборку, работающую с новыми grants. Откатывать безопасность выдачей UPDATE xp нельзя.
 6. Переключить чтение school reports только на integrity_version=1. Не переписывать legacy данные как trusted; не стирать пользовательский прогресс ради нового дизайна.
 

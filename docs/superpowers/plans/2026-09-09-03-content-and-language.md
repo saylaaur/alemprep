@@ -1,11 +1,15 @@
 # 03 — Content and language Implementation Plan
 
+**Поправка 20.09:** [K00–K03](2026-09-20-kazakh-pilot-rebaseline.md) добавляют native-KK как основной эксперимент для первого пилота. Требование ниже «только переводим» относится к C00b, не ко всему продукту. Native-KK не требует фиктивной RU-пары; K03 передаёт принятые версии в C01/C02. Google C00b/C00c остаётся альтернативой для перевода. Номера будущих миграций из старого текста не использовать: сверить ветку `3f4c5a2` (0027 L02a-R, 0028 rewards, 0029 revoke). Все human review, safe DTO и publication gates сохраняются.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Допускать в школьные уроки только проверенную программу RU/KK с корректными объяснениями и медиа.
 **Architecture:** C00a–C00c готовят KK из существующих RU-вопросов до L01: offline Google NMT, структурные инварианты, человеческая приёмка и текущий draft/review flow. Затем версии L01 + отдельные publication records; approved программа фиксирует конкретные question version IDs. Проверка содержания человеком обязательна.
 **Tech Stack:** TypeScript, existing ContentBlocks/MathText, SQL, Vitest/Playwright, next-intl.
 **Spec:** [архитектура](../specs/2026-09-09-production-pilot-architecture.md), §§2,5,9.
+
+**Актуализация 14.09, дополнение 15.09:** C00a и техническая часть C00b существуют; реальный перевод/вычитка/публикация остаются открытыми. Synthetic importer/program/quarantine можно реализовывать до оплаты; реальная приёмка C00c/C01 требует человека. См. [текущие статусы и зависимости](2026-09-14-execution-rebaseline.md). Новые номера программ/жалоб — 0030/0031.
 
 ## Global Constraints
 
@@ -29,7 +33,7 @@ Read-only `scripts/audit-production-inventory.ts` 09.09.2026 16:27 UTC: 4 705 в
 
 ## C00a — P0: покрытие по темам и честная доступность
 
-**Статус 10.09.2026:** техническая часть реализована; см. [отчёт](../../qa/kazakh-coverage.md) и [журнал](../../production/EXECUTION_LOG.md). Следующий кодовый блок C00b. Изменений контента/БД и платных вызовов не было. Пункты ниже остаются исходными критериями; человеческая приёмка и программа первого урока не объявлены выполненными.
+**Статус 10.09.2026:** техническая часть реализована; см. [отчёт](../../qa/kazakh-coverage.md) и [журнал](../../production/EXECUTION_LOG.md). На дату этой записи следующим был C00b; технический pipeline теперь существует. Текущий ready кодовый блок — L02a по сверке 14.09, платный sample и C00c ожидают бюджет/приёмку. Изменений контента/БД и платных вызовов не было. Пункты ниже остаются исходными критериями; человеческая приёмка и программа первого урока не объявлены выполненными.
 
 Получена детерминированная приватная выборка 30 RU math с source hashes: `/private/tmp/alemprep-kk-source-sample-20260910.json`. В ней есть radicals, три формата, контекст, формулы, текстовые варианты и отрицание; структурированной таблицы в доступном опубликованном math-банке не найдено. Табличные поля проверяются synthetic regression fixture; C00b обязан сохранить этот кейс в end-to-end проверке перевода. Классы/темы и реальный набор первых уроков подтверждаются школой отдельно. Для повторного получения manifest запустить `npm run audit:kk`.
 
@@ -91,14 +95,14 @@ type TranslationCheckpoint = {
 
 ## C01 — Отбор, версии и программа пилота
 
-**Files:** create `supabase/migrations/0027_pilot_programs.sql`, `lib/content/pilot-catalog.ts`, `scripts/pilot/{validate-program,publish-program}.ts`, `scripts/lib/pilot-program.test.ts`, `docs/pilot/CONTENT_REVIEW.md`, `tests/fixtures/pilot-program.ts`; modify `scripts/lib/content-audit.ts`, `types/db.ts`, `package.json`.
+**Files:** create `supabase/migrations/0030_pilot_programs.sql`, `lib/content/pilot-catalog.ts`, `scripts/pilot/{validate-program,publish-program}.ts`, `scripts/lib/pilot-program.test.ts`, `docs/pilot/CONTENT_REVIEW.md`, `tests/fixtures/pilot-program.ts`; modify `scripts/lib/content-audit.ts`, `types/db.ts`, `package.json`.
 **Consumes:** L01 question_versions/publications; C00c принятые пары/source hashes/review references; D03 subjects/topics/language. Переносить существующий перевод и подтверждения проверки; не переводить повторно автоматически. Если исходник/перевод изменён, прежняя приёмка становится stale.
 **Produces:** pilot_programs/items из spec; `getApprovedProgram(id: string, locale: Locale): Promise<ApprovedProgram | null>`; `validateProgram(program): ProgramIssue[]`.
 
 ApprovedProgram = `{id:string; version:number; locale:Locale; items:{position:number; purpose:'practice'|'baseline'|'endline'; questionVersionId:string}[]}`. ProgramIssue = `{code:'missing-locale'|'missing-review'|'missing-source-rights'|'invalid-body'|'invalid-explanation'|'missing-media'|'invalid-pair'; versionId:string; detail:string}`. Один program содержит пары версий RU/KK; выдача фильтрует язык без fallback, сохраняя эквивалентный family и purpose. Позиция уникальна **в пределах locale+purpose**, schema/items хранит locale/purpose явно, FK version проверяет их соответствие.
 
 - [ ] Составить synthetic программу: по одной single/multi/matching, контекст с таблицей и рисунком, RU/KK пары. Написать тесты rejected missing table/image/answer/explanation/translation, mismatched difficulty/answer между языками, устаревший review после новой revision.
-- [ ] Миграция 0027 создаёт schema программы, immutable approved items; редактирование approved = новая version/program ID. SQL запрещает approved, если нужная publication не approved. Проверки source_rights_ref и review_ref не заменяют проверку прав на оригинальные материалы.
+- [ ] Миграция 0030 создаёт schema программы, immutable approved items; редактирование approved = новая version/program ID. SQL запрещает approved, если нужная publication не approved. Проверки source_rights_ref и review_ref не заменяют проверку прав на оригинальные материалы.
 - [ ] `validate-program` по умолчанию read-only, печатает только counts/issue IDs; `publish-program` имеет dry-run по умолчанию, пишет через проверенную operator функцию с audit и operation ID только после review. Synthetic fixture можно в Git, реальные исходники НЦТ/фото/ограниченные вопросы не добавлять.
 - [ ] Методист выбирает небольшой связный набор тем после D03, проверяет все условия, варианты, баллы, объяснения, таблицы и изображения. KK принимается знающим язык человеком; русский fallback в школьном уроке запрещён. Для каждого family — math review, language review, media/source check, дата, версия, reviewer reference в закрытом реестре. Не ставить human review от имени модели.
 - [ ] Baseline/endline: сопоставимые по темам/типам/сложности разные варианты; не использовать exact practice questions, по которым только что показывался ответ. Учитель принимает сопоставимость; report показывает versions, без обещания валидированного стандартизированного теста.
@@ -113,7 +117,7 @@ it('blocks a Kazakh lesson instead of silently using Russian', () => {
 
 ## C02 — Рендер, жалоба и карантин
 
-**Files:** modify `components/content/{ContentBlocks,QuestionStem}.tsx`, `components/math/MathText.tsx`, `app/[locale]/(app)/admin/review/{page,ReviewCard}.tsx`, `lib/supabase/admin-actions.ts`, `messages/{ru,kk}.json`; create `components/content/ReportQuestionButton.tsx`, `lib/content/report.ts`, `supabase/migrations/0028_content_reports.sql`, `tests/e2e/content.spec.ts`, `tests/db/content-publication.test.ts`.
+**Files:** modify `components/content/{ContentBlocks,QuestionStem}.tsx`, `components/math/MathText.tsx`, `app/[locale]/(app)/admin/review/{page,ReviewCard}.tsx`, `lib/supabase/admin-actions.ts`, `messages/{ru,kk}.json`; create `components/content/ReportQuestionButton.tsx`, `lib/content/report.ts`, `supabase/migrations/0031_content_reports.sql`, `tests/e2e/content.spec.ts`, `tests/db/content-publication.test.ts`.
 **Consumes:** C01 programs и L01 publications.
 **Produces:** readable mobile content + `reportQuestion({operationId,sessionItemId,reason})` c reason `statement|answer|explanation|translation|media`; reason enum вместо свободного текста в MVP.
 
