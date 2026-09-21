@@ -12,14 +12,14 @@
 
 ## Порядок выполнения (план)
 
-**Gate 21.09 — читать первым:** [независимое review e475f67](docs/production/reviews/2026-09-21-l02ar.md) приняло L02a-R evidence. Следующий шаг — CI и интеграция; затем L02b. Webpack build PASS, standard Turbopack локально блокируется средой. Это не приёмка всего L02 или пилота.
+**Gate 21.09 — читать первым:** [независимое review e475f67](docs/production/reviews/2026-09-21-l02ar.md) приняло L02a-R evidence; [PR #28](https://github.com/saylaaur/alemprep/pull/28) прошёл required CI (включая standard build) и merged как `008ea49`. **Следующая ready задача — L02b.** Это не приёмка всего L02 или пилота. Формулировки «CI/интеграция ещё нужны» в review packet и планах ниже относятся к моменту до merge.
 
 **Контентный план:** [пересмотр для казахского пилота](docs/superpowers/plans/2026-09-20-kazakh-pilot-rebaseline.md). K00 (образец/условия/проверяющий), затем synthetic K01 и маленькая native-KK партия. Десять пробников и платная генерация пока не согласованы как закупка. Google pipeline сохраняется для пробелов. 0027 занята L02a-R, rewards — 0028, revoke — 0029. Полный пилот ещё не принят, дата не назначена.
 
 Ближайшие результаты:
 
 - [x] **L02a-R local evidence/review:** `e475f67`, 49 DB / 4 migration / 575 unit; независимое ACCEPT.
-- [ ] **L02a-R integration:** standard CI на итоговом SHA, required checks и merge, затем L02b.
+- [x] **L02a-R integration:** head `eec0650`, required verify/Gitleaks/Vercel PASS, merge `008ea49`; L02b открыт.
 - [ ] **K00:** заполнить [карточку источника](docs/pilot/KAZAKH_SOURCE_INTAKE.md) и оценить 20–30 кандидатов.
 - [ ] **K01–K03:** native-KK drafts → human acceptance → versioned import/program, по новой карточке; не legacy `--publish`.
 

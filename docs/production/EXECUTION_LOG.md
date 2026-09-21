@@ -1,5 +1,12 @@
 # Журнал исполнения production-плана
 
+## 21.09.2026 — L02a-R CI PASS и merge, следующий L02b
+
+- [PR #28](https://github.com/saylaaur/alemprep/pull/28), exact head `eec0650155c2918c44a317120bce39b815ad1471`: required `verify`, `gitleaks`, `Vercel` SUCCESS. [Verify run](https://github.com/saylaaur/alemprep/actions/runs/35573506855) завершился за 5m49s: typecheck/lint/unit, standard Turbopack build, local DB, isolated migration-path и 4 Playwright Chromium сценария PASS. Локальный запрет порта не воспроизвёлся в CI.
+- GitHub подтвердил merge 21.09 07:40:08 UTC: `008ea49807a1c8bffac386e961445f744587fd4f`. Main сохранён под защитой required checks; merge выполнен с `--match-head-commit`, без admin bypass. Основная папка `/Users/macbook/Desktop/alemprep` обновлена fast-forward, пользовательские untracked материалы сохранены.
+- Application source, dependencies и workflows совпадают с прежним main `52d5181`; runtime cutover не выполнялся, hosted SQL не запускалась. Автоматический Vercel production rollout и alias→SHA этим проходом отдельно не подтверждались. Hosted 0027 остаётся unconfirmed.
+- **Next ready: L02b (0028 rewards/streak/achievements)** от принятого кода `008ea49` и этой документальной записи; отдельный Astra gate обязателен. K00–K03 остаются контентным направлением, весь L02/школьный допуск не закрыты. Старые pending-формулировки ниже и в review packet — история до этого merge.
+
 ## 21.09.2026 — независимое принятие L02a-R и интеграция планов
 
 - Независимый read-only reviewer завершил [review](reviews/2026-09-21-l02ar.md) точного `e475f67aa4c117fc0e3515b3a3da1d7ede98c3e8`: ACCEPT в пределах завершения L02a-R evidence, без P0/P1/P2. Матрица review 15.09 закрыта. Reviewer прочитал код и фактические логи; новый DB reset не запускал. Прерванный ранее из-за лимита review не использовался как одобрение.
