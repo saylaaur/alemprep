@@ -4,6 +4,7 @@ import {
   selectMockExamSessions,
   selectPairedAssessmentSession,
   selectPracticeSession,
+  type ApprovedLearningVersion,
   type SelectedLearningSession,
 } from '@/lib/content/learning-catalog';
 import { DIAGNOSTIC_BLUEPRINT, EXAM_BLUEPRINT } from '@/lib/exam';
@@ -37,11 +38,22 @@ async function selectSessions(
   request: StartRequest,
   now: Date,
 ): Promise<SelectedLearningSession[] | { error: StartFailure }> {
-  const subjectSlugs = request.second ? ['math', request.second] as const : undefined;
-  const candidates = await loadApprovedLearningVersions(content, request.locale, request.topicSlug
-    ? { topicSlug: request.topicSlug }
-    : { subjectSlugs });
-  if (isFailure(candidates)) return candidates;
+  let candidates: ApprovedLearningVersion[];
+  if (request.topicSlug) {
+    const result = await loadApprovedLearningVersions(content, request.locale, { topicSlug: request.topicSlug });
+    if (isFailure(result)) return result;
+    candidates = result;
+  } else if (request.second) {
+    const [math, second] = await Promise.all([
+      loadApprovedLearningVersions(content, request.locale, { subjectSlugs: ['math'] }),
+      loadApprovedLearningVersions(content, request.locale, { subjectSlugs: [request.second] }),
+    ]);
+    if (isFailure(math)) return math;
+    if (isFailure(second)) return second;
+    candidates = [...math, ...second];
+  } else {
+    return { error: 'temporarily-unavailable' };
+  }
 
   if (request.mode === 'practice') {
     const selected = request.topicSlug ? selectPracticeSession({

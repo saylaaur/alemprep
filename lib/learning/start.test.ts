@@ -93,4 +93,22 @@ describe('learning start service', () => {
     expect(contentCalls).toEqual([{ locale: 'kk', selection: { topicSlug: 'radicals-and-expressions' } }]);
     expect(rpcCalls).toEqual([expect.objectContaining({ name: 'start_learning_v1' })]);
   });
+
+  it('reads each assessment subject through its own bounded catalog query', async () => {
+    const contentCalls: unknown[] = [];
+    const service = createLearningStartService({
+      actorId: async () => actorId,
+      content: contentClient(contentCalls),
+      rpc: rpcClient([]),
+      now: () => new Date('2026-09-22T10:00:00.000Z'),
+      findReplay: async () => null,
+    });
+
+    await expect(service.startLearning({ operationId, locale: 'kk', mode: 'mock_exam', second: 'physics' }))
+      .resolves.toMatchObject({ ok: false, error: 'content-unavailable' });
+    expect(contentCalls).toEqual([
+      { locale: 'kk', selection: { subjectSlugs: ['math'] } },
+      { locale: 'kk', selection: { subjectSlugs: ['physics'] } },
+    ]);
+  });
 });
