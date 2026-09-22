@@ -1,5 +1,6 @@
 import 'server-only';
 
+import type { LearningSessionPlan } from '@/lib/content/learning-catalog';
 import type { LearningError, Receipt } from './contracts';
 import type { ServerGradedItem } from './service';
 
@@ -19,6 +20,22 @@ export type CommitRpcInput = {
   gradedItems: ServerGradedItem[];
 };
 
+export type StartedSessionReference = {
+  id: string;
+  mode: 'practice' | 'mock_exam' | 'diagnostic' | 'weekly';
+  expiresAt: string;
+  itemIds: string[];
+};
+
+export type StartedLearningReferences = { sessions: StartedSessionReference[] };
+
+export type StartRpcInput = {
+  actorId: string;
+  operationId: string;
+  payloadHash: string;
+  plan: { sessions: LearningSessionPlan[] };
+};
+
 const knownErrors = new Set<CommitError>([
   'forbidden', 'not-found', 'expired', 'already-submitted',
   'operation-conflict', 'content-unavailable', 'rate-limited', 'temporarily-unavailable',
@@ -26,6 +43,24 @@ const knownErrors = new Set<CommitError>([
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const modes = new Set<StartedSessionReference['mode']>(['practice', 'mock_exam', 'diagnostic', 'weekly']);
+
+function isUuid(value: unknown): value is string {
+  return typeof value === 'string' && uuidPattern.test(value);
+}
+
+function isStartedReferences(value: unknown): value is StartedLearningReferences {
+  if (!isRecord(value) || !Array.isArray(value.sessions) || value.sessions.length < 1 || value.sessions.length > 2) {
+    return false;
+  }
+  return value.sessions.every((session) => isRecord(session)
+    && isUuid(session.id)
+    && typeof session.mode === 'string' && modes.has(session.mode as StartedSessionReference['mode'])
+    && typeof session.expiresAt === 'string' && !Number.isNaN(Date.parse(session.expiresAt))
+    && Array.isArray(session.itemIds) && session.itemIds.length > 0 && session.itemIds.every(isUuid));
 }
 
 function isReceipt(value: unknown): value is Receipt {
@@ -44,6 +79,24 @@ function isReceipt(value: unknown): value is Receipt {
 function rpcError(value: unknown): CommitError | null {
   if (!isRecord(value) || typeof value.error !== 'string') return null;
   return knownErrors.has(value.error as CommitError) ? value.error as CommitError : null;
+}
+
+/** Strict transport adapter for the service-only, atomic start RPC. */
+export async function startLearningRpc(
+  client: LearningRpcClient,
+  input: StartRpcInput,
+): Promise<StartedLearningReferences | { error: CommitError }> {
+  const response = await client.rpc('start_learning_v1', {
+    actor_id: input.actorId,
+    operation_id: input.operationId,
+    payload_hash: input.payloadHash,
+    plan: input.plan,
+  });
+  if (response.error) return { error: 'temporarily-unavailable' };
+  if (isStartedReferences(response.data)) return response.data;
+  const error = rpcError(response.data);
+  if (error) return { error };
+  return { error: 'temporarily-unavailable' };
 }
 
 /**
