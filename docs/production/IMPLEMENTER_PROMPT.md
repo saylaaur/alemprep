@@ -1,6 +1,6 @@
 # Промпт исполнителя — Terra High
 
-**Актуальный gate L02b 22.09:** L02b-R candidate закрывает findings из [CHANGES REQUIRED review](reviews/2026-09-21-l02b.md), но требует нового Astra review точного commit SHA. Работать в `/private/tmp/alemprep-l02b-rewards-20260921`; не применять 0028 hosted и не начинать L02c до ACCEPT. Старый текст ниже — исторический старт L02b.
+**Актуальный gate L02b 22.09:** L02b-R2 candidate закрывает findings из [CHANGES REQUIRED review](reviews/2026-09-21-l02b.md) и прошёл полный local DB/migration evidence; всё ещё требуется новый Astra review точного commit SHA. Работать в `/private/tmp/alemprep-l02b-rewards-20260921`; не применять 0028 hosted и не начинать L02c до ACCEPT. Старый текст ниже — исторический старт L02b.
 
 **Gate 21.09:** [review e475f67](reviews/2026-09-21-l02ar.md) — ACCEPT для завершения evidence L02a-R. Сначала завершить required CI и интеграцию этой ветки, затем выполнять **L02b** по карточке сверки 14.09. Не повторять L02a/0026/0027. Hosted 0027 не подтверждена, applied 0026 не редактировать.
 

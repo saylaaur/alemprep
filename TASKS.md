@@ -1,6 +1,6 @@
 # AlemPrep — Бэклог задач
 
-**L02b-R candidate 22.09 — повторный Astra gate pending:** исходный [review CHANGES REQUIRED](docs/production/reviews/2026-09-21-l02b.md) закрыт изменениями и отдельными local DB probes; exact-SHA review обязателен до L02c. Полный DB runner в этой среде не вернул финальный отчёт, поэтому не засчитан как PASS. L02c закрыт.
+**L02b-R2 candidate 22.09 — повторный Astra gate pending:** исходный [review CHANGES REQUIRED](docs/production/reviews/2026-09-21-l02b.md) закрыт изменениями, локальными probes и полными DB/migration gates; exact-SHA review обязателен до L02c. L02c закрыт.
 
 > Приоритизированный список реальных задач. Контекст проекта — в `CLAUDE.md`, стратегия — в `ROADMAP.md`.
 >

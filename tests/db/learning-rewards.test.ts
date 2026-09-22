@@ -131,6 +131,46 @@ async function backdateTrustedAttempt(db: DbHarness, sessionId: string, daysAgo:
   );
 }
 
+async function installWeeklyFinishClock(
+  db: DbHarness,
+  entries: Array<{ sessionId: string; finishedAt: string }>
+): Promise<() => Promise<void>> {
+  await db.execute(`
+    CREATE TABLE public.test_l02b_week_clock (
+      session_id UUID PRIMARY KEY,
+      finished_at TIMESTAMPTZ NOT NULL
+    );
+    GRANT SELECT ON public.test_l02b_week_clock TO service_role;
+    CREATE FUNCTION public.test_l02b_week_clock() RETURNS trigger LANGUAGE plpgsql AS $$
+    DECLARE
+      overridden_finished_at TIMESTAMPTZ;
+    BEGIN
+      SELECT clock_row.finished_at INTO overridden_finished_at
+      FROM public.test_l02b_week_clock AS clock_row
+      WHERE clock_row.session_id = NEW.id;
+      IF FOUND THEN
+        NEW.finished_at := overridden_finished_at;
+      END IF;
+      RETURN NEW;
+    END;
+    $$;
+    CREATE TRIGGER test_l02b_week_clock
+    BEFORE UPDATE OF finished_at ON public.sessions
+    FOR EACH ROW EXECUTE FUNCTION public.test_l02b_week_clock();
+  `);
+  for (const entry of entries) {
+    await db.execute(
+      `INSERT INTO public.test_l02b_week_clock (session_id, finished_at) VALUES ($1, $2::timestamptz)`,
+      [entry.sessionId, entry.finishedAt]
+    );
+  }
+  return async () => {
+    await db.execute(`DROP TRIGGER test_l02b_week_clock ON public.sessions;
+      DROP FUNCTION public.test_l02b_week_clock();
+      DROP TABLE public.test_l02b_week_clock;`);
+  };
+}
+
 describe('L02b trusted learning rewards', () => {
   let db: DbHarness | undefined;
   let actorId: string | undefined;
@@ -224,29 +264,65 @@ describe('L02b trusted learning rewards', () => {
     )).toBe(1);
   });
 
-  it('does not add a second weekly bonus when the existing receipt uses another day in the ISO week', async () => {
+  it('adds one weekly bonus across two accepted sessions on different Almaty days in one ISO week', async () => {
     db = await createDbHarness();
     const actor = await db.actor('rewards-weekly-once');
     actorId = actor.id;
     const seeded = await seed(db);
-    const issued = await issue(db, actor.id, seeded, 'weekly');
-    const rewardKey = await db.scalar<string>(
-      `SELECT 'weekly-bonus:' || to_char(timezone('Asia/Almaty', now())::date, 'IYYY')
-        || '-W' || to_char(timezone('Asia/Almaty', now())::date, 'IW')`
-    );
-    await db.execute(
-      `INSERT INTO public.reward_ledger (user_id, session_id, reward_key, amount, day)
-       VALUES ($1, $2, $3, 30, timezone('Asia/Almaty', now())::date - 1)`,
-      [actor.id, issued.id, rewardKey]
-    );
+    const first = await issue(db, actor.id, seeded, 'weekly');
+    const second = await issue(db, actor.id, seeded, 'weekly');
+    const cleanupClock = await installWeeklyFinishClock(db, [
+      { sessionId: first.id, finishedAt: '2026-01-05T06:00:00Z' },
+      { sessionId: second.id, finishedAt: '2026-01-07T06:00:00Z' },
+    ]);
+    try {
+      const firstReceipt = await submit(db, actor.id, first, seeded);
+      const secondReceipt = await submit(db, actor.id, second, seeded);
 
-    const receipt = await submit(db, actor.id, issued, seeded);
+      expect(firstReceipt.status, JSON.stringify(firstReceipt.data)).toBe(200);
+      expect(secondReceipt.status, JSON.stringify(secondReceipt.data)).toBe(200);
+      expect(firstReceipt.data).toMatchObject({ xpAwarded: 40 });
+      // The correct-family row is created by L02a with the real transaction
+      // day, so the second session has no +10. This assertion isolates the
+      // weekly rule: a different controlled Almaty day in W02 gets no +30.
+      expect(secondReceipt.data).toMatchObject({ xpAwarded: 0 });
+      expect(await db.scalar<number>(
+        `SELECT count(*)::int FROM public.reward_ledger
+         WHERE user_id = $1 AND reward_key = 'weekly-bonus:2026-W02'`, [actor.id]
+      )).toBe(1);
+    } finally {
+      await cleanupClock();
+    }
+  });
 
-    expect(receipt.status, JSON.stringify(receipt.data)).toBe(200);
-    expect(receipt.data).toMatchObject({ xpAwarded: 10 });
-    expect(await db.scalar<number>(
-      `SELECT count(*)::int FROM public.reward_ledger WHERE user_id = $1 AND reward_key = $2`, [actor.id, rewardKey]
-    )).toBe(1);
+  it('adds weekly bonus again for an accepted session in the next Almaty ISO week', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('rewards-weekly-new-week');
+    actorId = actor.id;
+    const seeded = await seed(db);
+    const first = await issue(db, actor.id, seeded, 'weekly');
+    const second = await issue(db, actor.id, seeded, 'weekly');
+    const cleanupClock = await installWeeklyFinishClock(db, [
+      { sessionId: first.id, finishedAt: '2026-01-05T06:00:00Z' },
+      { sessionId: second.id, finishedAt: '2026-01-12T06:00:00Z' },
+    ]);
+    try {
+      const firstReceipt = await submit(db, actor.id, first, seeded);
+      const secondReceipt = await submit(db, actor.id, second, seeded);
+
+      expect(firstReceipt.status, JSON.stringify(firstReceipt.data)).toBe(200);
+      expect(secondReceipt.status, JSON.stringify(secondReceipt.data)).toBe(200);
+      expect(firstReceipt.data).toMatchObject({ xpAwarded: 40 });
+      // Same-family daily credit remains consumed by L02a; the +30 proves
+      // L02b derives a new weekly key from the accepted session's week.
+      expect(secondReceipt.data).toMatchObject({ xpAwarded: 30 });
+      expect(await db.scalar<number>(
+        `SELECT count(*)::int FROM public.reward_ledger
+         WHERE user_id = $1 AND reward_key IN ('weekly-bonus:2026-W02', 'weekly-bonus:2026-W03')`, [actor.id]
+      )).toBe(2);
+    } finally {
+      await cleanupClock();
+    }
   });
 
   it('uses the Asia/Almaty ISO week across the UTC midnight boundary', async () => {
@@ -380,6 +456,31 @@ describe('L02b trusted learning rewards', () => {
 
     expect(receipt.status, JSON.stringify(receipt.data)).toBe(200);
     expect(await db.scalar<number>('SELECT current_streak FROM public.profiles WHERE id = $1', [actor.id])).toBe(7);
+    expect(await db.scalar<number>('SELECT streak_freezes FROM public.profiles WHERE id = $1', [actor.id])).toBe(1);
+    expect(await db.scalar<string>(
+      `SELECT last_freeze_used_date::text FROM public.profiles WHERE id = $1`, [actor.id]
+    )).toBe(await db.scalar<string>(`SELECT timezone('Asia/Almaty', now())::date::text`));
+  });
+
+  it('does not spend or award freezes twice when two sessions submit concurrently', async () => {
+    db = await createDbHarness();
+    const actor = await db.actor('rewards-concurrent-freeze');
+    actorId = actor.id;
+    const seeded = await seed(db);
+    await db.execute(
+      `UPDATE public.profiles
+       SET current_streak = 6, longest_streak = 6, streak_freezes = 1,
+         last_active_date = timezone('Asia/Almaty', now())::date - 2
+       WHERE id = $1`, [actor.id]
+    );
+    const [first, second] = await Promise.all([
+      submit(db, actor.id, await issue(db, actor.id, seeded, 'practice'), seeded),
+      submit(db, actor.id, await issue(db, actor.id, seeded, 'practice'), seeded),
+    ]);
+
+    expect([first.status, second.status], JSON.stringify([first.data, second.data])).toEqual([200, 200]);
+    expect(await db.scalar<number>('SELECT current_streak FROM public.profiles WHERE id = $1', [actor.id])).toBe(7);
+    expect(await db.scalar<number>('SELECT longest_streak FROM public.profiles WHERE id = $1', [actor.id])).toBe(7);
     expect(await db.scalar<number>('SELECT streak_freezes FROM public.profiles WHERE id = $1', [actor.id])).toBe(1);
     expect(await db.scalar<string>(
       `SELECT last_freeze_used_date::text FROM public.profiles WHERE id = $1`, [actor.id]
