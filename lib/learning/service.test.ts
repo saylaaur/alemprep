@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import type { SelectedLearningSession } from '@/lib/content/learning-catalog';
 import type { QuestionVersion } from '@/lib/content/versions';
-import { createLearningService, startPayloadHash, submitPayloadHash } from './service';
+import { createLearningService, materializeStartedLearning, startPayloadHash, submitPayloadHash } from './service';
 
 const firstItemId = '17111111-1111-4111-8111-111111111111';
 const secondItemId = '27222222-2222-4222-8222-222222222222';
@@ -24,6 +25,33 @@ function version(id: string, questionId: string): QuestionVersion {
 }
 
 describe('learning service', () => {
+  it('materializes issued items through the public DTO allowlist only', () => {
+    const selected: SelectedLearningSession = {
+      versions: [version('68666666-6666-4666-8666-666666666666', '79777777-7777-4777-8777-777777777777')],
+      plan: {
+        mode: 'practice', locale: 'kk',
+        topicId: '48444444-4444-4444-8444-444444444444',
+        subjectId: '58555555-5555-4555-8555-555555555555',
+        expiresAt: '2026-09-22T12:00:00.000Z', scoringVersion: 'ent-v1',
+        manifestHash: 'sha256:test', items: [{ versionId: '68666666-6666-4666-8666-666666666666' }],
+      },
+    };
+
+    const started = materializeStartedLearning({
+      selected: [selected],
+      issued: { sessions: [{
+        id: sessionId, mode: 'practice', expiresAt: '2026-09-22T12:00:00.000Z', itemIds: [firstItemId],
+      }] },
+    });
+
+    expect(started).toMatchObject({
+      sessions: [{ id: sessionId, items: [{ id: firstItemId, question: { id: selected.versions[0]?.id } }] }],
+    });
+    expect(JSON.stringify(started)).not.toContain('correct');
+    expect(JSON.stringify(started)).not.toContain('gradingBody');
+    expect(JSON.stringify(started)).not.toContain('explanation');
+  });
+
   it('hashes the validated start request without its idempotency operation ID', () => {
     const request = {
       operationId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
