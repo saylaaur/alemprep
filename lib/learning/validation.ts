@@ -110,6 +110,10 @@ export function validateStart(raw: unknown): StartInput {
   return startSchema.parse(raw);
 }
 
+export function validateSessionId(raw: unknown): string {
+  return uuid.parse(raw);
+}
+
 export function validateSubmit(raw: unknown): SubmitInput {
   assertSafeObjectKeys(raw);
   assertPayloadSize(raw);

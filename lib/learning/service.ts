@@ -3,9 +3,9 @@ import 'server-only';
 import { createHash, randomUUID } from 'node:crypto';
 import { ZodError } from 'zod';
 import type { QuestionVersion } from '@/lib/content/versions';
-import type { Answer, LearningError, Receipt, Result, StartedLearning, StartInput, SubmitInput } from './contracts';
+import type { Answer, LearningError, LearningState, Receipt, Result, StartedLearning, StartInput, SubmitInput } from './contracts';
 import { gradeVersionAnswer } from './grading';
-import { validateStart, validateSubmit } from './validation';
+import { validateSessionId, validateStart, validateSubmit } from './validation';
 
 export type IssuedLearningSession = {
   id: string;
@@ -30,6 +30,10 @@ export type LearningServiceDependencies = {
     payloadHash: string;
     request: Omit<StartInput, 'operationId'>;
   }) => Promise<StartedLearning | { error: Exclude<LearningError, 'unauthenticated' | 'invalid-input'> }>;
+  getState: (input: {
+    actorId: string;
+    sessionId: string;
+  }) => Promise<LearningState | { error: Exclude<LearningError, 'unauthenticated' | 'invalid-input'> }>;
   loadIssuedSession: (actorId: string, sessionId: string) => Promise<IssuedLearningSession | null>;
   commit: (input: {
     actorId: string;
@@ -119,6 +123,21 @@ export function createLearningService(dependencies: LearningServiceDependencies)
       });
       if ('error' in started) return failure(started.error);
       return { ok: true, value: started };
+    },
+
+    async getState(raw: unknown): Promise<Result<LearningState>> {
+      let sessionId: string;
+      try {
+        sessionId = validateSessionId(raw);
+      } catch (error) {
+        if (error instanceof ZodError) return failure('invalid-input');
+        throw error;
+      }
+      const actorId = await dependencies.actorId();
+      if (!actorId) return failure('unauthenticated');
+      const state = await dependencies.getState({ actorId, sessionId });
+      if ('error' in state) return failure(state.error);
+      return { ok: true, value: state };
     },
 
     async submit(raw: unknown): Promise<Result<Receipt>> {
