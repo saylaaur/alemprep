@@ -29,6 +29,19 @@ describe('learning input validation', () => {
     })).toMatchObject({ mode: 'practice', topicSlug: 'radicals-and-expressions' });
   });
 
+  it('requires a second subject for paired assessment modes and rejects mixed selectors', () => {
+    expect(() => validateStart({ operationId, locale: 'kk', mode: 'mock_exam' })).toThrow(ZodError);
+    expect(() => validateStart({
+      operationId,
+      locale: 'kk',
+      mode: 'practice',
+      topicSlug: 'radicals-and-expressions',
+      second: 'physics',
+    })).toThrow(ZodError);
+    expect(validateStart({ operationId, locale: 'kk', mode: 'weekly', second: 'informatics' }))
+      .toMatchObject({ mode: 'weekly', second: 'informatics' });
+  });
+
   it.each([null, [], NaN, Infinity])('rejects an invalid submit root (%p)', (raw) => {
     expect(() => validateSubmit(raw)).toThrow(ZodError);
   });

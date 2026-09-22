@@ -84,6 +84,27 @@ const startSchema = z.object({
       message: 'practice requires a topic selector',
     });
   }
+  if (input.mode === 'practice' && input.second) {
+    context.addIssue({
+      code: 'custom',
+      path: ['second'],
+      message: 'practice does not accept a second subject selector',
+    });
+  }
+  if (input.mode !== 'practice' && !input.second) {
+    context.addIssue({
+      code: 'custom',
+      path: ['second'],
+      message: 'assessment modes require a second subject selector',
+    });
+  }
+  if (input.mode !== 'practice' && input.topicSlug) {
+    context.addIssue({
+      code: 'custom',
+      path: ['topicSlug'],
+      message: 'assessment modes do not accept a topic selector',
+    });
+  }
 });
 
 const submitSchema = z.object({
