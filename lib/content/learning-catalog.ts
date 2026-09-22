@@ -25,6 +25,12 @@ export type LearningSessionPlan = {
   items: { versionId: string }[];
 };
 
+/** Server-only pairing of an RPC plan and the immutable versions it names. */
+export type SelectedLearningSession = {
+  plan: LearningSessionPlan;
+  versions: QuestionVersion[];
+};
+
 type BlueprintPart = { type: QuestionType; count: number };
 
 function expiresAt(mode: LearningMode, now: Date): string {
@@ -103,24 +109,66 @@ function toSessionPlan(input: {
   };
 }
 
+export function selectPracticeSession(input: {
+  locale: 'ru' | 'kk';
+  topicSlug: string;
+  candidates: readonly ApprovedLearningVersion[];
+  now: Date;
+}): SelectedLearningSession | null {
+  const candidate = input.candidates
+    .filter((entry) => isApprovedForLocale(entry, input.locale) && entry.topicSlug === input.topicSlug)
+    .sort(byVersionId)[0];
+  if (!candidate) return null;
+  const versions = [candidate.version];
+  return {
+    versions,
+    plan: toSessionPlan({
+    mode: 'practice',
+    locale: input.locale,
+    topicId: candidate.topicId,
+    subjectId: candidate.subjectId,
+    versions,
+    now: input.now,
+    }),
+  };
+}
+
 export function buildPracticeSessionPlan(input: {
   locale: 'ru' | 'kk';
   topicSlug: string;
   candidates: readonly ApprovedLearningVersion[];
   now: Date;
 }): LearningSessionPlan | null {
-  const candidate = input.candidates
-    .filter((entry) => isApprovedForLocale(entry, input.locale) && entry.topicSlug === input.topicSlug)
-    .sort(byVersionId)[0];
-  if (!candidate) return null;
-  return toSessionPlan({
-    mode: 'practice',
+  return selectPracticeSession(input)?.plan ?? null;
+}
+
+export function selectAssessmentSession(input: {
+  locale: 'ru' | 'kk';
+  mode: Exclude<LearningMode, 'practice'>;
+  subjectSlug: string;
+  candidates: readonly ApprovedLearningVersion[];
+  blueprint: readonly BlueprintPart[];
+  now: Date;
+}): SelectedLearningSession | null {
+  const candidates = input.candidates.filter((entry) =>
+    isApprovedForLocale(entry, input.locale) && entry.subjectSlug === input.subjectSlug,
+  );
+  const picked = pickBalancedDeterministically(candidates, input.blueprint);
+  if (!picked || picked.length === 0) return null;
+  const subjectId = picked[0]?.subjectId;
+  if (!subjectId || picked.some((entry) => entry.subjectId !== subjectId)) return null;
+  const versions = picked.map((entry) => entry.version);
+  return {
+    versions,
+    plan: toSessionPlan({
+    mode: input.mode,
     locale: input.locale,
-    topicId: candidate.topicId,
-    subjectId: candidate.subjectId,
-    versions: [candidate.version],
+    topicId: null,
+    subjectId,
+    versions,
     now: input.now,
-  });
+    }),
+  };
 }
 
 export function buildAssessmentSessionPlan(input: {
@@ -131,19 +179,59 @@ export function buildAssessmentSessionPlan(input: {
   blueprint: readonly BlueprintPart[];
   now: Date;
 }): LearningSessionPlan | null {
-  const candidates = input.candidates.filter((entry) =>
-    isApprovedForLocale(entry, input.locale) && entry.subjectSlug === input.subjectSlug,
-  );
-  const picked = pickBalancedDeterministically(candidates, input.blueprint);
-  if (!picked || picked.length === 0) return null;
-  const subjectId = picked[0]?.subjectId;
-  if (!subjectId || picked.some((entry) => entry.subjectId !== subjectId)) return null;
-  return toSessionPlan({
-    mode: input.mode,
-    locale: input.locale,
-    topicId: null,
-    subjectId,
-    versions: picked.map((entry) => entry.version),
-    now: input.now,
+  return selectAssessmentSession(input)?.plan ?? null;
+}
+
+/** Both blocks must exist before the caller invokes the atomic start RPC. */
+export function selectMockExamSessions(input: {
+  locale: 'ru' | 'kk';
+  secondSubjectSlug: 'physics' | 'informatics';
+  candidates: readonly ApprovedLearningVersion[];
+  blueprint: readonly BlueprintPart[];
+  now: Date;
+}): [SelectedLearningSession, SelectedLearningSession] | null {
+  const first = selectAssessmentSession({
+    ...input,
+    mode: 'mock_exam',
+    subjectSlug: 'math',
   });
+  const second = selectAssessmentSession({
+    ...input,
+    mode: 'mock_exam',
+    subjectSlug: input.secondSubjectSlug,
+  });
+  if (!first || !second) return null;
+  return [first, second];
+}
+
+/** Diagnostic and weekly keep one combined session, but require both subjects. */
+export function selectPairedAssessmentSession(input: {
+  locale: 'ru' | 'kk';
+  mode: 'diagnostic' | 'weekly';
+  secondSubjectSlug: 'physics' | 'informatics';
+  candidates: readonly ApprovedLearningVersion[];
+  blueprint: readonly BlueprintPart[];
+  now: Date;
+}): SelectedLearningSession | null {
+  const first = selectAssessmentSession({
+    ...input,
+    subjectSlug: 'math',
+  });
+  const second = selectAssessmentSession({
+    ...input,
+    subjectSlug: input.secondSubjectSlug,
+  });
+  if (!first || !second) return null;
+  const versions = [...first.versions, ...second.versions];
+  return {
+    versions,
+    plan: toSessionPlan({
+      mode: input.mode,
+      locale: input.locale,
+      topicId: null,
+      subjectId: null,
+      versions,
+      now: input.now,
+    }),
+  };
 }

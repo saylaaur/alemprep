@@ -4,6 +4,8 @@ import {
   buildAssessmentSessionPlan,
   buildPracticeSessionPlan,
   contentManifestHash,
+  selectPairedAssessmentSession,
+  selectMockExamSessions,
   type ApprovedLearningVersion,
 } from './learning-catalog';
 
@@ -89,5 +91,52 @@ describe('learning catalog planning', () => {
 
     expect(plan?.items.map((item) => item.versionId)).toEqual([earlier.version.id, later.version.id]);
     expect(plan?.expiresAt).toBe('2026-09-22T10:45:00.000Z');
+  });
+
+  it('builds both mock-exam subject blocks atomically from complete approved catalogs', () => {
+    const math = candidate('10000000-0000-4000-8000-000000000030', 'single');
+    const physics = candidate('10000000-0000-4000-8000-000000000031', 'single', {
+      subjectId: '50000000-0000-4000-8000-000000000002',
+      subjectSlug: 'physics',
+      topicId: '40000000-0000-4000-8000-000000000002',
+      topicSlug: 'kinematics',
+    });
+
+    const sessions = selectMockExamSessions({
+      locale: 'kk',
+      secondSubjectSlug: 'physics',
+      candidates: [physics, math],
+      blueprint: [{ type: 'single', count: 1 }],
+      now: new Date('2026-09-22T10:00:00.000Z'),
+    });
+
+    expect(sessions?.map(({ plan }) => ({
+      subjectId: plan.subjectId,
+      expiresAt: plan.expiresAt,
+      items: plan.items,
+    }))).toEqual([
+      { subjectId: math.subjectId, expiresAt: '2026-09-22T12:40:00.000Z', items: [{ versionId: math.version.id }] },
+      { subjectId: physics.subjectId, expiresAt: '2026-09-22T12:40:00.000Z', items: [{ versionId: physics.version.id }] },
+    ]);
+  });
+
+  it('does not shorten a paired diagnostic when either subject lacks its blueprint', () => {
+    const math = candidate('10000000-0000-4000-8000-000000000040', 'single');
+    const physics = candidate('10000000-0000-4000-8000-000000000041', 'single', {
+      subjectId: '50000000-0000-4000-8000-000000000002',
+      subjectSlug: 'physics',
+      topicId: '40000000-0000-4000-8000-000000000002',
+      topicSlug: 'kinematics',
+    });
+
+    const diagnostic = selectPairedAssessmentSession({
+      locale: 'kk',
+      mode: 'diagnostic',
+      secondSubjectSlug: 'physics',
+      candidates: [math, physics],
+      blueprint: [{ type: 'single', count: 1 }, { type: 'multi', count: 1 }],
+      now: new Date('2026-09-22T10:00:00.000Z'),
+    });
+    expect(diagnostic).toBeNull();
   });
 });
