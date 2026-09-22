@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { commitLearningRpc, startLearningRpc, type LearningRpcClient } from './repository';
+import {
+  commitLearningRpc,
+  loadApprovedLearningVersions,
+  startLearningRpc,
+  type LearningContentClient,
+  type LearningRpcClient,
+} from './repository';
 
 const actorId = '11111111-1111-4111-8111-111111111111';
 const operationId = '22222222-2222-4222-8222-222222222222';
@@ -101,5 +107,57 @@ describe('commitLearningRpc', () => {
       actor_id: '22222222-2222-4222-8222-222222222222',
       graded_items: [],
     }) })]);
+  });
+});
+
+function approvedVersionRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: versionId,
+    question_id: '88888888-8888-4888-8888-888888888888',
+    family_id: '99999999-9999-4999-8999-999999999999',
+    revision: 1,
+    locale: 'kk',
+    type: 'single',
+    public_body: { stem: 'Сұрақ', options: [{ id: 'A', content: '1' }] },
+    grading_body: { stem: 'Сұрақ', options: [{ id: 'A', content: '1' }], correct: 'A' },
+    explanation: null,
+    context_snapshot: null,
+    content_hash: 'sha256:version',
+    question_publications: { status: 'approved' },
+    questions: {
+      topic_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      topics: {
+        slug: 'radicals-and-expressions',
+        subject_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+        subjects: { slug: 'math' },
+      },
+    },
+    ...overrides,
+  };
+}
+
+describe('approved immutable version reader', () => {
+  it('decodes only complete approved immutable rows', async () => {
+    const client: LearningContentClient = {
+      readApprovedVersions: async () => ({ data: [approvedVersionRow()], error: null }),
+    };
+
+    await expect(loadApprovedLearningVersions(client, 'kk')).resolves.toEqual([expect.objectContaining({
+      approvalStatus: 'approved',
+      topicSlug: 'radicals-and-expressions',
+      subjectSlug: 'math',
+      version: expect.objectContaining({ id: versionId, locale: 'kk', type: 'single' }),
+    })]);
+  });
+
+  it('fails closed when an approved row carries malformed JSON instead of casting it', async () => {
+    const client: LearningContentClient = {
+      readApprovedVersions: async () => ({
+        data: [approvedVersionRow({ public_body: { stem: 'Сұрақ', options: [{ id: 'A', content: '1' }], correct: 'A' } })],
+        error: null,
+      }),
+    };
+
+    await expect(loadApprovedLearningVersions(client, 'kk')).resolves.toEqual({ error: 'content-unavailable' });
   });
 });
