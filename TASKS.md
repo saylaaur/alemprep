@@ -1,5 +1,7 @@
 # AlemPrep — Бэклог задач
 
+**L02b accepted 22.09:** [Astra review](docs/production/reviews/2026-09-22-l02br.md) приняло exact code SHA `0e1be82` после local DB/migration gates. L02c открыт; 0028 всё ещё не применять hosted без отдельного rollout.
+
 > Приоритизированный список реальных задач. Контекст проекта — в `CLAUDE.md`, стратегия — в `ROADMAP.md`.
 >
 > **Как пользоваться:** бери задачу сверху (P0 → P1 → P2). Один таск = один коммит.
@@ -12,14 +14,14 @@
 
 ## Порядок выполнения (план)
 
-**Gate 21.09 — читать первым:** [независимое review e475f67](docs/production/reviews/2026-09-21-l02ar.md) приняло L02a-R evidence. Следующий шаг — CI и интеграция; затем L02b. Webpack build PASS, standard Turbopack локально блокируется средой. Это не приёмка всего L02 или пилота.
+**Gate 21.09 — читать первым:** [независимое review e475f67](docs/production/reviews/2026-09-21-l02ar.md) приняло L02a-R evidence; [PR #28](https://github.com/saylaaur/alemprep/pull/28) прошёл required CI (включая standard build) и merged как `008ea49`. **Следующая ready задача — L02b.** Это не приёмка всего L02 или пилота. Формулировки «CI/интеграция ещё нужны» в review packet и планах ниже относятся к моменту до merge.
 
 **Контентный план:** [пересмотр для казахского пилота](docs/superpowers/plans/2026-09-20-kazakh-pilot-rebaseline.md). K00 (образец/условия/проверяющий), затем synthetic K01 и маленькая native-KK партия. Десять пробников и платная генерация пока не согласованы как закупка. Google pipeline сохраняется для пробелов. 0027 занята L02a-R, rewards — 0028, revoke — 0029. Полный пилот ещё не принят, дата не назначена.
 
 Ближайшие результаты:
 
 - [x] **L02a-R local evidence/review:** `e475f67`, 49 DB / 4 migration / 575 unit; независимое ACCEPT.
-- [ ] **L02a-R integration:** standard CI на итоговом SHA, required checks и merge, затем L02b.
+- [x] **L02a-R integration:** head `eec0650`, required verify/Gitleaks/Vercel PASS, merge `008ea49`; L02b открыт.
 - [ ] **K00:** заполнить [карточку источника](docs/pilot/KAZAKH_SOURCE_INTAKE.md) и оценить 20–30 кандидатов.
 - [ ] **K01–K03:** native-KK drafts → human acceptance → versioned import/program, по новой карточке; не legacy `--publish`.
 
@@ -31,7 +33,7 @@
 Основной вход исполнителя: [сверка 14.09 и карточки Terra High](docs/superpowers/plans/2026-09-14-execution-rebaseline.md), [промпт Terra](docs/production/IMPLEMENTER_PROMPT.md), [журнал](docs/production/EXECUTION_LOG.md). **Следующая ready задача — L02a-R (review 15.09).** E02 и L01 в main; L02 смержен частично и требует исправлений/доведения L02a–d до Astra gate. Затем L03a–d и L04; остальные блоки — по [production-плану](docs/production/README.md). C00b технически подготовлен: деньги нужны для реального перевода, а не для продолжения разработки на synthetic RU/KK. Применение hosted 0024/0025 не подтверждено. Новые номера будущих миграций — в сверке 14.09; старые SQL не менять.
 
 - [ ] **L02a → L02a-R:** candidate `a502299` получил CHANGES REQUIRED 15.09: [4 воспроизведённых дефекта и карточка исправлений](docs/production/reviews/2026-09-15-l02a.md). Корректировки 0027 не менялись; расширенное DB evidence подготовлено в `codex/l02ar-evidence-completion`; повторный Astra gate ещё нужен. 0026 применена по сообщению владельца; не менять. L02b ещё не открыт.
-- [ ] **L02b:** атомарные reward/streak/achievement invariants; 0028 rewards migration. Astra gate.
+- [x] **L02b:** атомарные reward/streak/achievement invariants; 0028 rewards migration. Astra accepted `0e1be82`; hosted rollout отдельно.
 - [ ] **L02c/L02d:** production server start/state/submit/review и полная приёмка L02.
 - [ ] **L03a–d/L04:** перевести все пользовательские режимы, закрыть обходы; совместимая выкладка и revoke 0029.
 - [ ] **Контент отдельно:** после бюджета выполнить sample→human review→C00c/C01, без автопубликации. Synthetic C/S/R код может продолжаться до оплаты.

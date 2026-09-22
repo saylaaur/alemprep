@@ -1,5 +1,19 @@
 # Журнал исполнения production-плана
 
+## 21.09.2026 — Astra L02b working-tree review: CHANGES REQUIRED
+
+- Объект: 4f771c0 плюс uncommitted SQL/test corrections; SHA-256 в [review packet](reviews/2026-09-21-l02b.md).
+- Воспроизведены browser DELETE accepted v1 attempt (HTTP 200) и повторная profile mutation при concurrent replay (3 UPDATE вместо 2). Review probes сохранены для L02b-R.
+- Typecheck/lint exit 0; existing DB suite 55 PASS/1 timeout, exit 1. Полный migration-path результат — в review packet. Production SQL в review не менялась; hosted/push/merge отсутствуют.
+- Next: L02b-R по R1–R4. L02c не открыт.
+
+## 21.09.2026 — L02a-R CI PASS и merge, следующий L02b
+
+- [PR #28](https://github.com/saylaaur/alemprep/pull/28), exact head `eec0650155c2918c44a317120bce39b815ad1471`: required `verify`, `gitleaks`, `Vercel` SUCCESS. [Verify run](https://github.com/saylaaur/alemprep/actions/runs/35573506855) завершился за 5m49s: typecheck/lint/unit, standard Turbopack build, local DB, isolated migration-path и 4 Playwright Chromium сценария PASS. Локальный запрет порта не воспроизвёлся в CI.
+- GitHub подтвердил merge 21.09 07:40:08 UTC: `008ea49807a1c8bffac386e961445f744587fd4f`. Main сохранён под защитой required checks; merge выполнен с `--match-head-commit`, без admin bypass. Основная папка `/Users/macbook/Desktop/alemprep` обновлена fast-forward, пользовательские untracked материалы сохранены.
+- Application source, dependencies и workflows совпадают с прежним main `52d5181`; runtime cutover не выполнялся, hosted SQL не запускалась. Автоматический Vercel production rollout и alias→SHA этим проходом отдельно не подтверждались. Hosted 0027 остаётся unconfirmed.
+- **Next ready: L02b (0028 rewards/streak/achievements)** от принятого кода `008ea49` и этой документальной записи; отдельный Astra gate обязателен. K00–K03 остаются контентным направлением, весь L02/школьный допуск не закрыты. Старые pending-формулировки ниже и в review packet — история до этого merge.
+
 ## 21.09.2026 — независимое принятие L02a-R и интеграция планов
 
 - Независимый read-only reviewer завершил [review](reviews/2026-09-21-l02ar.md) точного `e475f67aa4c117fc0e3515b3a3da1d7ede98c3e8`: ACCEPT в пределах завершения L02a-R evidence, без P0/P1/P2. Матрица review 15.09 закрыта. Reviewer прочитал код и фактические логи; новый DB reset не запускал. Прерванный ранее из-за лимита review не использовался как одобрение.
@@ -199,3 +213,20 @@
 - Числовая проверка имеет mutation control в откатываемой транзакции local PostgreSQL: при временном удалении guards over-limit duration принимается, после ROLLBACK исходная функция и факты восстанавливаются. Это доказывает, что regression действительно защищает numeric branch, а не только форму JSON. Другие evidence включают A1/A2/B1 substitution, сдачу обоих mock blocks, changed-payload conflict и accepted retry после quarantine.
 - Свежие local проверки: `npm run typecheck` PASS; `npm run lint` PASS; `npm test` — 56 files / 575 tests PASS; targeted RPC DB — 3 files / 33 tests PASS; `npm run test:db:migration` — 1 file / 4 tests PASS за 137.43s; затем `npm run test:db` — 6 files / 49 tests PASS за 61.43s. Миграционные и DB-прогоны выполнялись последовательно на Docker local synthetic Supabase; hosted/staging/production не читались и не менялись.
 - `npm run build` получил normal dependency tree, но не прошёл из-за недоступности `fonts.googleapis.com` при fetch Inter и JetBrains Mono. Это external network failure после запуска Turbopack, не TypeScript/source regression; CI build остаётся обязательным evidence. Независимый Astra review не завершён в этом проходе, поэтому L02b не открыт и candidate не считать принятым.
+## 22.09.2026 — L02b-R2 candidate: complete local gates
+
+- После final serial local reset: полный `npm run test:db` — **8 files / 68 tests PASS, 72.48s**; полный `npm run test:db:migration` — **1 file / 5 tests PASS, 166.49s**. `learning-rewards` с controlled weekly RPC fixtures — **15/15 PASS**. Migration suite завершает восстановлением latest schema.
+- Test-only scoped trigger контролирует `finished_at` двух настоящих service weekly RPC: разные дни W02 дают ровно один `weekly-bonus:2026-W02`; W02→W03 создаёт два weekly keys и второй `+30`. Добавлена race-проверка двух sessions из freeze-состояния: один расход, одно пересечение границы 7 и конечный freeze count 1.
+- Next: commit exact candidate SHA and repeat Astra review. No hosted/deploy action is authorized by these local gates.
+
+## 22.09.2026 — L02b-R candidate: trusted rewards and replay corrections
+
+- В `0028` browser RLS теперь не позволяет удалить/создать trusted (`integrity_version=1`) facts; wrapper берёт тот же advisory lock до receipt lookup. Legacy server actions больше не пытаются молча mint achievements: до L03 badges выдаёт только trusted RPC.
+- Добавлены постоянные probes: authenticated/anon DELETE, concurrent same-operation replay, retry после сдвига accepted session на другой Almaty day, concurrent daily cap. Rewards suite покрывает одну RU/KK family, Asia/Almaty ISO-week boundary, 7 последовательных trusted days, scattered days, diagnostic history и rollback audit/achievement facts.
+- Local evidence at this intermediate candidate: reset 0001–0028 PASS; `learning-rewards` 13/13, `l02b-review-probes` 4/4, `learning-atomic` 17/17, `learning-rpc-locking` 5/5, `learning-rpc-validation` 11/11, focused 0027→0028 migration test PASS; `npm test` 576/576; typecheck/lint PASS. The later R2 entry records the final complete DB/migration gates.
+- Hosted Supabase, Vercel, GitHub/CI, paid APIs, push and merge were not changed. Next: commit this candidate, then exact-SHA Astra review; L02c remains closed.
+## 22.09.2026 — Astra L02b exact-SHA review: ACCEPT
+
+- Независимый review принял code SHA `0e1be82dd606289426246a4c60f10d06409a6494`: R1 browser trusted-fact RLS, R2 replay lock, R3 migration-path privilege placement и R4 evidence matrix закрыты.
+- Evidence: `npm run test:db` **8/68 PASS, 72.48s**; `npm run test:db:migration` **1/5 PASS, 166.49s**; `npm test` **56/576 PASS**; typecheck/lint/diff check clean. Test-only weekly clock trigger scoped and cleaned in `finally`.
+- L02c is now ready. This gate does not authorize hosted migration, Vercel deployment, paid APIs, or a pilot release.
