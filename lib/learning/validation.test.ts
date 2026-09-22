@@ -19,6 +19,16 @@ describe('learning input validation', () => {
     })).toThrow(ZodError);
   });
 
+  it('requires a bounded topic selector for a practice start', () => {
+    expect(() => validateStart({ operationId, locale: 'kk', mode: 'practice' })).toThrow(ZodError);
+    expect(validateStart({
+      operationId,
+      locale: 'kk',
+      mode: 'practice',
+      topicSlug: 'radicals-and-expressions',
+    })).toMatchObject({ mode: 'practice', topicSlug: 'radicals-and-expressions' });
+  });
+
   it.each([null, [], NaN, Infinity])('rejects an invalid submit root (%p)', (raw) => {
     expect(() => validateSubmit(raw)).toThrow(ZodError);
   });

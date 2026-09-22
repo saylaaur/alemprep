@@ -83,6 +83,7 @@ describe('learning service', () => {
     const assigned = await service.start({
       operationId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
       locale: 'kk', mode: 'practice',
+      topicSlug: 'radicals-and-expressions',
       assignmentId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
     });
     expect(assigned).toMatchObject({ ok: false, error: 'forbidden' });

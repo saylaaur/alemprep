@@ -76,7 +76,15 @@ const startSchema = z.object({
   topicSlug: z.string().trim().min(1).max(160).optional(),
   second: z.enum(['physics', 'informatics']).optional(),
   assignmentId: uuid.optional(),
-}).strict();
+}).strict().superRefine((input, context) => {
+  if (input.mode === 'practice' && !input.topicSlug) {
+    context.addIssue({
+      code: 'custom',
+      path: ['topicSlug'],
+      message: 'practice requires a topic selector',
+    });
+  }
+});
 
 const submitSchema = z.object({
   operationId: uuid,
