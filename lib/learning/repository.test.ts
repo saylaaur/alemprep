@@ -142,7 +142,7 @@ describe('approved immutable version reader', () => {
       readApprovedVersions: async () => ({ data: [approvedVersionRow()], error: null }),
     };
 
-    await expect(loadApprovedLearningVersions(client, 'kk')).resolves.toEqual([expect.objectContaining({
+    await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' })).resolves.toEqual([expect.objectContaining({
       approvalStatus: 'approved',
       topicSlug: 'radicals-and-expressions',
       subjectSlug: 'math',
@@ -158,6 +158,6 @@ describe('approved immutable version reader', () => {
       }),
     };
 
-    await expect(loadApprovedLearningVersions(client, 'kk')).resolves.toEqual({ error: 'content-unavailable' });
+    await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' })).resolves.toEqual({ error: 'content-unavailable' });
   });
 });

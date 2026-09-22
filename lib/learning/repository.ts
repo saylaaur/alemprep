@@ -1,5 +1,6 @@
 import 'server-only';
 
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import type { ApprovedLearningVersion, LearningSessionPlan } from '@/lib/content/learning-catalog';
 import type { ContentBlock, ContextContent, Explanation, QuestionBody } from '@/types/db';
@@ -15,10 +16,14 @@ export type LearningRpcClient = {
 };
 
 type ContentResponse = { data: unknown; error: unknown | null };
+export type ApprovedVersionSelection = {
+  topicSlug?: string;
+  subjectSlugs?: readonly string[];
+};
 
 /** Narrow read port so tests can exercise decoders without a live Supabase client. */
 export type LearningContentClient = {
-  readApprovedVersions: (locale: 'ru' | 'kk') => Promise<ContentResponse>;
+  readApprovedVersions: (locale: 'ru' | 'kk', selection: ApprovedVersionSelection) => Promise<ContentResponse>;
 };
 
 export type CommitRpcInput = {
@@ -205,8 +210,9 @@ function decodeApprovedLearningVersion(raw: unknown): ApprovedLearningVersion | 
 export async function loadApprovedLearningVersions(
   client: LearningContentClient,
   locale: 'ru' | 'kk',
+  selection: ApprovedVersionSelection,
 ): Promise<ApprovedLearningVersion[] | { error: 'content-unavailable' | 'temporarily-unavailable' }> {
-  const response = await client.readApprovedVersions(locale);
+  const response = await client.readApprovedVersions(locale, selection);
   if (response.error) return { error: 'temporarily-unavailable' };
   if (!Array.isArray(response.data)) return { error: 'content-unavailable' };
   const versions: ApprovedLearningVersion[] = [];
@@ -216,6 +222,35 @@ export async function loadApprovedLearningVersions(
     versions.push(version);
   }
   return versions;
+}
+
+const approvedVersionSelect = `
+  id, question_id, family_id, revision, locale, type, public_body, grading_body,
+  explanation, context_snapshot, content_hash,
+  question_publications!inner(status),
+  questions!inner(topic_id, topics!inner(slug, subject_id, subjects!inner(slug)))
+`;
+
+/** Production implementation of the bounded immutable catalog read. */
+export function createSupabaseLearningContentClient(client: SupabaseClient): LearningContentClient {
+  return {
+    async readApprovedVersions(locale, selection) {
+      let query = client
+        .from('question_versions')
+        .select(approvedVersionSelect)
+        .eq('locale', locale)
+        .eq('question_publications.status', 'approved')
+        .order('id', { ascending: true })
+        .limit(160);
+      if (selection.topicSlug) {
+        query = query.eq('questions.topics.slug', selection.topicSlug);
+      } else if (selection.subjectSlugs && selection.subjectSlugs.length > 0) {
+        query = query.in('questions.topics.subjects.slug', [...selection.subjectSlugs]);
+      }
+      const { data, error } = await query;
+      return { data, error };
+    },
+  };
 }
 
 function isReceipt(value: unknown): value is Receipt {
