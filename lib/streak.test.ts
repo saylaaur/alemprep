@@ -21,10 +21,9 @@ describe('localDateStr', () => {
   it('формат YYYY-MM-DD с ведущими нулями', () => {
     expect(localDateStr(new Date(2026, 0, 5))).toBe('2026-01-05');
   });
-  it('использует локальную дату, а не UTC', () => {
-    // 00:30 локального времени: toISOString() дал бы предыдущий день в TZ восточнее UTC
-    const d = new Date(2026, 6, 4, 0, 30);
-    expect(localDateStr(d)).toBe('2026-07-04');
+  it('использует день Asia/Almaty независимо от timezone сервера', () => {
+    expect(localDateStr(new Date('2026-01-01T18:59:59Z'))).toBe('2026-01-01');
+    expect(localDateStr(new Date('2026-01-01T19:00:00Z'))).toBe('2026-01-02');
   });
 });
 

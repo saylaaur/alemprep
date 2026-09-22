@@ -56,15 +56,23 @@ DECLARE
   next_freezes INTEGER;
   freeze_used BOOLEAN := false;
   trusted_attempt_count INTEGER;
-  trusted_active_days INTEGER;
+  trusted_streak_days INTEGER;
   topic_mastery BOOLEAN;
   exam_ninety BOOLEAN := false;
 BEGIN
+  -- The wrapper owns the same idempotency boundary as L02a. Lock before the
+  -- receipt lookup so concurrent retries cannot enter reward processing.
+  PERFORM pg_catalog.set_config('lock_timeout', '2s', true);
+  PERFORM pg_catalog.set_config('statement_timeout', '5s', true);
   IF actor_id IS NULL OR operation_id IS NULL OR session_id IS NULL
     OR payload_hash IS NULL OR char_length(payload_hash) = 0
     OR scoring_version IS NULL THEN
     RAISE EXCEPTION 'invalid-input' USING ERRCODE = '22023';
   END IF;
+
+  PERFORM pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended(actor_id::text || ':' || operation_id::text, 0)
+  );
 
   -- Preserve an already accepted receipt exactly, including receipts created
   -- before this migration. A changed payload retains the existing contract.
@@ -152,18 +160,49 @@ BEGIN
       last_freeze_used_date = CASE WHEN freeze_used THEN almaty_day ELSE profile_row.last_freeze_used_date END
     WHERE id = actor_id;
 
+    -- Only immutable facts written by the service-only RPC count here. Legacy
+    -- rows and diagnostics remain visible history, but cannot unlock rewards.
     SELECT count(*)::integer INTO trusted_attempt_count
-    FROM public.attempts
-    WHERE user_id = actor_id AND integrity_version = 1;
-    SELECT count(DISTINCT timezone('Asia/Almaty', attempted_at)::date)::integer
-    INTO trusted_active_days
-    FROM public.attempts
-    WHERE user_id = actor_id AND integrity_version = 1;
+    FROM public.attempts AS trusted_attempt
+    JOIN public.sessions AS trusted_session ON trusted_session.id = trusted_attempt.session_id
+    WHERE trusted_attempt.user_id = actor_id
+      AND trusted_attempt.integrity_version = 1
+      AND trusted_session.integrity_version = 1
+      AND trusted_session.status = 'submitted'
+      AND trusted_session.receipt IS NOT NULL
+      AND trusted_session.mode::text <> 'diagnostic';
+    WITH RECURSIVE trusted_days AS (
+      SELECT DISTINCT timezone('Asia/Almaty', trusted_attempt.attempted_at)::date AS active_day
+      FROM public.attempts AS trusted_attempt
+      JOIN public.sessions AS trusted_session ON trusted_session.id = trusted_attempt.session_id
+      WHERE trusted_attempt.user_id = actor_id
+        AND trusted_attempt.integrity_version = 1
+        AND trusted_session.integrity_version = 1
+        AND trusted_session.status = 'submitted'
+        AND trusted_session.receipt IS NOT NULL
+        AND trusted_session.mode::text <> 'diagnostic'
+    ), trusted_streak AS (
+      SELECT almaty_day AS active_day
+      UNION ALL
+      SELECT trusted_streak.active_day - 1
+      FROM trusted_streak
+      WHERE trusted_streak.active_day > almaty_day - 29
+        AND EXISTS (
+        SELECT 1 FROM trusted_days WHERE trusted_days.active_day = trusted_streak.active_day - 1
+      )
+    )
+    SELECT count(*)::integer INTO trusted_streak_days FROM trusted_streak;
     SELECT EXISTS (
       SELECT 1
       FROM public.attempts AS trusted_attempt
+      JOIN public.sessions AS trusted_session ON trusted_session.id = trusted_attempt.session_id
       JOIN public.questions AS question_row ON question_row.id = trusted_attempt.question_id
-      WHERE trusted_attempt.user_id = actor_id AND trusted_attempt.integrity_version = 1
+      WHERE trusted_attempt.user_id = actor_id
+        AND trusted_attempt.integrity_version = 1
+        AND trusted_session.integrity_version = 1
+        AND trusted_session.status = 'submitted'
+        AND trusted_session.receipt IS NOT NULL
+        AND trusted_session.mode::text <> 'diagnostic'
       GROUP BY question_row.topic_id
       HAVING count(*) >= 10
         AND count(*) FILTER (WHERE trusted_attempt.is_correct)::numeric / count(*) > 0.9
@@ -178,10 +217,10 @@ BEGIN
       ('first-question', trusted_attempt_count >= 1),
       ('solved-100', trusted_attempt_count >= 100),
       ('solved-500', trusted_attempt_count >= 500),
-      -- A legacy display streak cannot unlock a new achievement. The visible
-      -- streak remains intact, while the badge requires trusted active days.
-      ('streak-7', next_streak >= 7 AND trusted_active_days >= 7),
-      ('streak-30', next_streak >= 30 AND trusted_active_days >= 30),
+      -- Display streak preserves legacy history; badges require an actual
+      -- consecutive trusted run that ends on this Almaty day.
+      ('streak-7', trusted_streak_days >= 7),
+      ('streak-30', trusted_streak_days >= 30),
       ('topic-mastery', topic_mastery),
       ('exam-complete', session_mode = 'mock_exam'),
       ('exam-90', exam_ninety)
@@ -209,3 +248,26 @@ GRANT EXECUTE ON FUNCTION public.commit_learning_v1(UUID, UUID, TEXT, UUID, JSON
 -- The wrapper is SECURITY INVOKER, so its server-only caller needs this
 -- internal dependency too. It remains unavailable to browser roles.
 GRANT EXECUTE ON FUNCTION public.commit_learning_v1_l02a(UUID, UUID, TEXT, UUID, JSONB, TEXT) TO service_role;
+
+-- Legacy browser writes may remain as integrity=0 display history until L04,
+-- but no browser principal can manufacture v1 facts or achievements. The
+-- legacy server actions deliberately stop awarding badges in this migration;
+-- L03 reconnects those screens to the trusted RPC before the L04 cutover.
+DROP POLICY IF EXISTS "sessions_insert_own" ON public.sessions;
+CREATE POLICY "sessions_insert_own" ON public.sessions
+  FOR INSERT WITH CHECK (auth.uid() = user_id AND integrity_version = 0);
+DROP POLICY IF EXISTS "sessions_update_own" ON public.sessions;
+CREATE POLICY "sessions_update_own" ON public.sessions
+  FOR UPDATE USING (auth.uid() = user_id AND integrity_version = 0)
+  WITH CHECK (auth.uid() = user_id AND integrity_version = 0);
+DROP POLICY IF EXISTS "attempts_insert_own" ON public.attempts;
+CREATE POLICY "attempts_insert_own" ON public.attempts
+  FOR INSERT WITH CHECK (
+    auth.uid() = user_id AND integrity_version = 0 AND session_item_id IS NULL
+  );
+DROP POLICY IF EXISTS "attempts_delete_own" ON public.attempts;
+CREATE POLICY "attempts_delete_own" ON public.attempts
+  FOR DELETE USING (
+    auth.uid() = user_id AND integrity_version = 0 AND session_item_id IS NULL
+  );
+DROP POLICY IF EXISTS "user_achievements_insert_own" ON public.user_achievements;

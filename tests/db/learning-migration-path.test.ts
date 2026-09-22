@@ -22,21 +22,10 @@ function testTargetEnv() {
 
 async function resetTo(version?: string): Promise<void> {
   assertSafeDbTestTarget(testTargetEnv());
-  const args = ['db', 'reset', '--local', '--no-seed', ...(version ? ['--version', version] : [])];
-  let lastError: unknown;
-  // `db reset` restarts the Docker gateway. On slower local Docker starts the
-  // CLI can report a transient non-zero result while that restart finishes.
-  // Retry once; this test suite never points beyond the loopback guard above.
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    try {
-      await execFileAsync(supabaseCli, args, { cwd: process.cwd() });
-      return;
-    } catch (error) {
-      lastError = error;
-      if (attempt === 0) await new Promise<void>((resolve) => setTimeout(resolve, 5_000));
-    }
-  }
-  throw lastError;
+  await execFileAsync(supabaseCli, [
+    'db', 'reset', '--local', '--no-seed',
+    ...(version ? ['--version', version] : []),
+  ], { cwd: process.cwd() });
 }
 
 async function applyL01(db: DbHarness): Promise<void> {
@@ -219,12 +208,6 @@ describe('0024 learning integrity migration path', () => {
         `SELECT has_function_privilege('authenticated', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
       )).toBe(false);
       expect(await db.scalar<boolean>(
-        `SELECT has_function_privilege('authenticated', 'public.commit_learning_v1_l02a(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
-      )).toBe(false);
-      expect(await db.scalar<boolean>(
-        `SELECT has_function_privilege('service_role', 'public.commit_learning_v1_l02a(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
-      )).toBe(true);
-      expect(await db.scalar<boolean>(
         `SELECT has_function_privilege('service_role', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
       )).toBe(true);
     } finally {
@@ -397,6 +380,16 @@ describe('0024 learning integrity migration path', () => {
       const activeSession = (activeStart.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
 
       await applyMigration(db, l02bRewardsMigrationPath);
+
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('authenticated', 'public.commit_learning_v1_l02a(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('anon', 'public.commit_learning_v1_l02a(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('service_role', 'public.commit_learning_v1_l02a(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(true);
 
       const receiptReplay = await db.rpc('service', 'commit_learning_v1', acceptedSubmitArgs);
       expect(receiptReplay.status, JSON.stringify(receiptReplay.data)).toBe(200);

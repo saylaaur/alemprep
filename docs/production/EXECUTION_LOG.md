@@ -1,5 +1,12 @@
 # Журнал исполнения production-плана
 
+## 21.09.2026 — Astra L02b working-tree review: CHANGES REQUIRED
+
+- Объект: 4f771c0 плюс uncommitted SQL/test corrections; SHA-256 в [review packet](reviews/2026-09-21-l02b.md).
+- Воспроизведены browser DELETE accepted v1 attempt (HTTP 200) и повторная profile mutation при concurrent replay (3 UPDATE вместо 2). Review probes сохранены для L02b-R.
+- Typecheck/lint exit 0; existing DB suite 55 PASS/1 timeout, exit 1. Полный migration-path результат — в review packet. Production SQL в review не менялась; hosted/push/merge отсутствуют.
+- Next: L02b-R по R1–R4. L02c не открыт.
+
 ## 21.09.2026 — L02a-R CI PASS и merge, следующий L02b
 
 - [PR #28](https://github.com/saylaaur/alemprep/pull/28), exact head `eec0650155c2918c44a317120bce39b815ad1471`: required `verify`, `gitleaks`, `Vercel` SUCCESS. [Verify run](https://github.com/saylaaur/alemprep/actions/runs/35573506855) завершился за 5m49s: typecheck/lint/unit, standard Turbopack build, local DB, isolated migration-path и 4 Playwright Chromium сценария PASS. Локальный запрет порта не воспроизвёлся в CI.
@@ -206,3 +213,9 @@
 - Числовая проверка имеет mutation control в откатываемой транзакции local PostgreSQL: при временном удалении guards over-limit duration принимается, после ROLLBACK исходная функция и факты восстанавливаются. Это доказывает, что regression действительно защищает numeric branch, а не только форму JSON. Другие evidence включают A1/A2/B1 substitution, сдачу обоих mock blocks, changed-payload conflict и accepted retry после quarantine.
 - Свежие local проверки: `npm run typecheck` PASS; `npm run lint` PASS; `npm test` — 56 files / 575 tests PASS; targeted RPC DB — 3 files / 33 tests PASS; `npm run test:db:migration` — 1 file / 4 tests PASS за 137.43s; затем `npm run test:db` — 6 files / 49 tests PASS за 61.43s. Миграционные и DB-прогоны выполнялись последовательно на Docker local synthetic Supabase; hosted/staging/production не читались и не менялись.
 - `npm run build` получил normal dependency tree, но не прошёл из-за недоступности `fonts.googleapis.com` при fetch Inter и JetBrains Mono. Это external network failure после запуска Turbopack, не TypeScript/source regression; CI build остаётся обязательным evidence. Независимый Astra review не завершён в этом проходе, поэтому L02b не открыт и candidate не считать принятым.
+## 22.09.2026 — L02b-R candidate: trusted rewards and replay corrections
+
+- В `0028` browser RLS теперь не позволяет удалить/создать trusted (`integrity_version=1`) facts; wrapper берёт тот же advisory lock до receipt lookup. Legacy server actions больше не пытаются молча mint achievements: до L03 badges выдаёт только trusted RPC.
+- Добавлены постоянные probes: authenticated/anon DELETE, concurrent same-operation replay, retry после сдвига accepted session на другой Almaty day, concurrent daily cap. Rewards suite покрывает одну RU/KK family, Asia/Almaty ISO-week boundary, 7 последовательных trusted days, scattered days, diagnostic history и rollback audit/achievement facts.
+- Local evidence: reset 0001–0028 PASS; `learning-rewards` 13/13, `l02b-review-probes` 4/4, `learning-atomic` 17/17, `learning-rpc-locking` 5/5, `learning-rpc-validation` 11/11, focused 0027→0028 migration test PASS; `npm test` 576/576; typecheck/lint PASS. The unfiltered DB runner produced no final Vitest report in this environment and is deliberately not recorded as PASS.
+- Hosted Supabase, Vercel, GitHub/CI, paid APIs, push and merge were not changed. Next: commit this candidate, then exact-SHA Astra review; L02c remains closed.
