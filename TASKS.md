@@ -1,6 +1,6 @@
 # AlemPrep — Бэклог задач
 
-**L02b-R2 candidate 22.09 — повторный Astra gate pending:** исходный [review CHANGES REQUIRED](docs/production/reviews/2026-09-21-l02b.md) закрыт изменениями, локальными probes и полными DB/migration gates; exact-SHA review обязателен до L02c. L02c закрыт.
+**L02b accepted 22.09:** [Astra review](docs/production/reviews/2026-09-22-l02br.md) приняло exact code SHA `0e1be82` после local DB/migration gates. L02c открыт; 0028 всё ещё не применять hosted без отдельного rollout.
 
 > Приоритизированный список реальных задач. Контекст проекта — в `CLAUDE.md`, стратегия — в `ROADMAP.md`.
 >
@@ -33,7 +33,7 @@
 Основной вход исполнителя: [сверка 14.09 и карточки Terra High](docs/superpowers/plans/2026-09-14-execution-rebaseline.md), [промпт Terra](docs/production/IMPLEMENTER_PROMPT.md), [журнал](docs/production/EXECUTION_LOG.md). **Следующая ready задача — L02a-R (review 15.09).** E02 и L01 в main; L02 смержен частично и требует исправлений/доведения L02a–d до Astra gate. Затем L03a–d и L04; остальные блоки — по [production-плану](docs/production/README.md). C00b технически подготовлен: деньги нужны для реального перевода, а не для продолжения разработки на synthetic RU/KK. Применение hosted 0024/0025 не подтверждено. Новые номера будущих миграций — в сверке 14.09; старые SQL не менять.
 
 - [ ] **L02a → L02a-R:** candidate `a502299` получил CHANGES REQUIRED 15.09: [4 воспроизведённых дефекта и карточка исправлений](docs/production/reviews/2026-09-15-l02a.md). Корректировки 0027 не менялись; расширенное DB evidence подготовлено в `codex/l02ar-evidence-completion`; повторный Astra gate ещё нужен. 0026 применена по сообщению владельца; не менять. L02b ещё не открыт.
-- [ ] **L02b:** атомарные reward/streak/achievement invariants; 0028 rewards migration. Astra gate.
+- [x] **L02b:** атомарные reward/streak/achievement invariants; 0028 rewards migration. Astra accepted `0e1be82`; hosted rollout отдельно.
 - [ ] **L02c/L02d:** production server start/state/submit/review и полная приёмка L02.
 - [ ] **L03a–d/L04:** перевести все пользовательские режимы, закрыть обходы; совместимая выкладка и revoke 0029.
 - [ ] **Контент отдельно:** после бюджета выполнить sample→human review→C00c/C01, без автопубликации. Synthetic C/S/R код может продолжаться до оплаты.

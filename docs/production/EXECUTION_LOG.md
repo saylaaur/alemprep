@@ -225,3 +225,8 @@
 - Добавлены постоянные probes: authenticated/anon DELETE, concurrent same-operation replay, retry после сдвига accepted session на другой Almaty day, concurrent daily cap. Rewards suite покрывает одну RU/KK family, Asia/Almaty ISO-week boundary, 7 последовательных trusted days, scattered days, diagnostic history и rollback audit/achievement facts.
 - Local evidence at this intermediate candidate: reset 0001–0028 PASS; `learning-rewards` 13/13, `l02b-review-probes` 4/4, `learning-atomic` 17/17, `learning-rpc-locking` 5/5, `learning-rpc-validation` 11/11, focused 0027→0028 migration test PASS; `npm test` 576/576; typecheck/lint PASS. The later R2 entry records the final complete DB/migration gates.
 - Hosted Supabase, Vercel, GitHub/CI, paid APIs, push and merge were not changed. Next: commit this candidate, then exact-SHA Astra review; L02c remains closed.
+## 22.09.2026 — Astra L02b exact-SHA review: ACCEPT
+
+- Независимый review принял code SHA `0e1be82dd606289426246a4c60f10d06409a6494`: R1 browser trusted-fact RLS, R2 replay lock, R3 migration-path privilege placement и R4 evidence matrix закрыты.
+- Evidence: `npm run test:db` **8/68 PASS, 72.48s**; `npm run test:db:migration` **1/5 PASS, 166.49s**; `npm test` **56/576 PASS**; typecheck/lint/diff check clean. Test-only weekly clock trigger scoped and cleaned in `finally`.
+- L02c is now ready. This gate does not authorize hosted migration, Vercel deployment, paid APIs, or a pilot release.
