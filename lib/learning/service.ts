@@ -3,9 +3,9 @@ import 'server-only';
 import { createHash, randomUUID } from 'node:crypto';
 import { ZodError } from 'zod';
 import type { QuestionVersion } from '@/lib/content/versions';
-import type { Answer, LearningError, Receipt, Result, SubmitInput } from './contracts';
+import type { Answer, LearningError, Receipt, Result, StartedLearning, StartInput, SubmitInput } from './contracts';
 import { gradeVersionAnswer } from './grading';
-import { validateSubmit } from './validation';
+import { validateStart, validateSubmit } from './validation';
 
 export type IssuedLearningSession = {
   id: string;
@@ -24,6 +24,12 @@ export type ServerGradedItem = {
 
 export type LearningServiceDependencies = {
   actorId: () => Promise<string | null>;
+  start: (input: {
+    actorId: string;
+    operationId: string;
+    payloadHash: string;
+    request: Omit<StartInput, 'operationId'>;
+  }) => Promise<StartedLearning | { error: Exclude<LearningError, 'unauthenticated' | 'invalid-input'> }>;
   loadIssuedSession: (actorId: string, sessionId: string) => Promise<IssuedLearningSession | null>;
   commit: (input: {
     actorId: string;
@@ -58,6 +64,23 @@ export function submitPayloadHash(input: SubmitInput): string {
   return createHash('sha256').update(stableJson(canonical)).digest('hex');
 }
 
+/**
+ * The idempotency operation identifies a delivery attempt; the hash identifies
+ * the intended learning request. Keeping them separate lets the RPC reject a
+ * changed request under the same operation ID without making retries random.
+ */
+export function startPayloadHash(input: StartInput): string {
+  const canonical = {
+    kind: 'learning.start',
+    locale: input.locale,
+    mode: input.mode,
+    ...(input.topicSlug ? { topicSlug: input.topicSlug } : {}),
+    ...(input.second ? { second: input.second } : {}),
+    ...(input.assignmentId ? { assignmentId: input.assignmentId } : {}),
+  };
+  return createHash('sha256').update(stableJson(canonical)).digest('hex');
+}
+
 function failure(error: LearningError): Result<never> {
   return { ok: false, error, requestId: randomUUID() };
 }
@@ -69,6 +92,35 @@ function failure(error: LearningError): Result<never> {
  */
 export function createLearningService(dependencies: LearningServiceDependencies) {
   return {
+    async start(raw: unknown): Promise<Result<StartedLearning>> {
+      let input: StartInput;
+      try {
+        input = validateStart(raw);
+      } catch (error) {
+        if (error instanceof ZodError) return failure('invalid-input');
+        throw error;
+      }
+      const actorId = await dependencies.actorId();
+      if (!actorId) return failure('unauthenticated');
+      // School assignments are introduced only with S02; accepting the UUID
+      // earlier would let a browser claim an access scope that does not exist.
+      if (input.assignmentId) return failure('forbidden');
+
+      const started = await dependencies.start({
+        actorId,
+        operationId: input.operationId,
+        payloadHash: startPayloadHash(input),
+        request: {
+          locale: input.locale,
+          mode: input.mode,
+          ...(input.topicSlug ? { topicSlug: input.topicSlug } : {}),
+          ...(input.second ? { second: input.second } : {}),
+        },
+      });
+      if ('error' in started) return failure(started.error);
+      return { ok: true, value: started };
+    },
+
     async submit(raw: unknown): Promise<Result<Receipt>> {
       let input: SubmitInput;
       try {

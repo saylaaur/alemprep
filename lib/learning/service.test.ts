@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { QuestionVersion } from '@/lib/content/versions';
-import { createLearningService, submitPayloadHash } from './service';
+import { createLearningService, startPayloadHash, submitPayloadHash } from './service';
 
 const firstItemId = '17111111-1111-4111-8111-111111111111';
 const secondItemId = '27222222-2222-4222-8222-222222222222';
@@ -24,6 +24,24 @@ function version(id: string, questionId: string): QuestionVersion {
 }
 
 describe('learning service', () => {
+  it('hashes the validated start request without its idempotency operation ID', () => {
+    const request = {
+      operationId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      locale: 'kk' as const,
+      mode: 'practice' as const,
+      topicSlug: 'radicals-and-expressions',
+    };
+
+    expect(startPayloadHash(request)).toBe(startPayloadHash({
+      ...request,
+      operationId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+    }));
+    expect(startPayloadHash(request)).not.toBe(startPayloadHash({
+      ...request,
+      topicSlug: 'logarithms',
+    }));
+  });
+
   it('hashes equivalent multi-select answer order canonically', () => {
     const base = {
       operationId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
@@ -37,10 +55,45 @@ describe('learning service', () => {
     }));
   });
 
+  it('starts only a server-owned request and rejects assignments before school scopes exist', async () => {
+    const starts: unknown[] = [];
+    const service = createLearningService({
+      actorId: async () => '57555555-5555-4555-8555-555555555555',
+      start: async (input) => {
+        starts.push(input);
+        return { sessions: [] };
+      },
+      loadIssuedSession: async () => null,
+      commit: async () => ({ error: 'temporarily-unavailable' }),
+    });
+
+    const result = await service.start({
+      operationId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      locale: 'kk', mode: 'practice', topicSlug: 'radicals-and-expressions',
+    });
+    expect(result).toEqual({ ok: true, value: { sessions: [] } });
+    expect(starts).toEqual([expect.objectContaining({
+      actorId: '57555555-5555-4555-8555-555555555555',
+      payloadHash: startPayloadHash({
+        operationId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        locale: 'kk', mode: 'practice', topicSlug: 'radicals-and-expressions',
+      }),
+    })]);
+
+    const assigned = await service.start({
+      operationId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      locale: 'kk', mode: 'practice',
+      assignmentId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+    });
+    expect(assigned).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(starts).toHaveLength(1);
+  });
+
   it('normalizes omitted issued items before passing server grades to the repository', async () => {
     const committed: unknown[] = [];
     const service = createLearningService({
       actorId: async () => '57555555-5555-4555-8555-555555555555',
+      start: async () => ({ sessions: [] }),
       loadIssuedSession: async () => ({
         id: sessionId,
         scoringVersion: 'ent-v1',
