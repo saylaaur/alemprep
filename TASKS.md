@@ -1,5 +1,7 @@
 # AlemPrep — Бэклог задач
 
+**Текущий gate 23.09 — L02c-R candidate:** четыре дефекта из [review f0492b6](docs/production/reviews/2026-09-23-l02c.md) исправлены и покрыты регулярным local DB suite. Нужен повторный независимый review exact SHA; затем L02d и общий L02 gate. Ветка пока не принята и не смержена.
+
 **L02b accepted 22.09:** [Astra review](docs/production/reviews/2026-09-22-l02br.md) приняло exact code SHA `0e1be82` после local DB/migration gates. L02c открыт; 0028 всё ещё не применять hosted без отдельного rollout.
 
 > Приоритизированный список реальных задач. Контекст проекта — в `CLAUDE.md`, стратегия — в `ROADMAP.md`.

@@ -51,6 +51,11 @@ function byVersionId(left: ApprovedLearningVersion, right: ApprovedLearningVersi
   return left.version.id.localeCompare(right.version.id);
 }
 
+function selectionOffset(selectionKey: string, size: number): number {
+  const digest = createHash('sha256').update(selectionKey).digest();
+  return digest.readUInt32BE(0) % size;
+}
+
 function pickBalancedDeterministically(
   candidates: readonly ApprovedLearningVersion[],
   blueprint: readonly BlueprintPart[],
@@ -112,12 +117,15 @@ function toSessionPlan(input: {
 export function selectPracticeSession(input: {
   locale: 'ru' | 'kk';
   topicSlug: string;
+  selectionKey: string;
   candidates: readonly ApprovedLearningVersion[];
   now: Date;
 }): SelectedLearningSession | null {
-  const candidate = input.candidates
+  const candidates = input.candidates
     .filter((entry) => isApprovedForLocale(entry, input.locale) && entry.topicSlug === input.topicSlug)
-    .sort(byVersionId)[0];
+    .sort(byVersionId);
+  if (candidates.length === 0) return null;
+  const candidate = candidates[selectionOffset(input.selectionKey, candidates.length)];
   if (!candidate) return null;
   const versions = [candidate.version];
   return {
@@ -136,6 +144,7 @@ export function selectPracticeSession(input: {
 export function buildPracticeSessionPlan(input: {
   locale: 'ru' | 'kk';
   topicSlug: string;
+  selectionKey: string;
   candidates: readonly ApprovedLearningVersion[];
   now: Date;
 }): LearningSessionPlan | null {

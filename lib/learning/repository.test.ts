@@ -164,6 +164,25 @@ describe('approved immutable version reader', () => {
 
     await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' })).resolves.toEqual({ error: 'content-unavailable' });
   });
+
+  it('uses independent bounded reads for each assessment question type', async () => {
+    const calls: unknown[] = [];
+    const client: LearningContentClient = {
+      readApprovedVersions: async (locale, selection) => {
+        calls.push({ locale, selection });
+        return { data: [], error: null };
+      },
+    };
+
+    await expect(loadApprovedLearningVersions(client, 'kk', {
+      subjectSlugs: ['math'], types: ['single', 'multi', 'matching'],
+    })).resolves.toEqual([]);
+    expect(calls).toEqual([
+      { locale: 'kk', selection: { subjectSlugs: ['math'], type: 'single' } },
+      { locale: 'kk', selection: { subjectSlugs: ['math'], type: 'multi' } },
+      { locale: 'kk', selection: { subjectSlugs: ['math'], type: 'matching' } },
+    ]);
+  });
 });
 
 describe('learning state reader', () => {
@@ -180,7 +199,7 @@ describe('learning state reader', () => {
       }, error: null }),
     };
 
-    const state = await loadLearningState(client, actorId, sessionId);
+    const state = await loadLearningState(client, actorId, sessionId, new Date('2026-09-22T10:00:00.000Z'));
     expect(state).toMatchObject({ status: 'active', session: { id: sessionId, items: [{ id: itemId, question: { id: versionId } }] } });
     expect(JSON.stringify(state)).not.toContain('correct');
   });

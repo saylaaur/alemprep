@@ -46,6 +46,7 @@ describe('learning catalog planning', () => {
     const plan = buildPracticeSessionPlan({
       locale: 'kk',
       topicSlug: 'radicals-and-expressions',
+      selectionKey: 'actor:operation',
       candidates: [
         { ...approved, approvalStatus: 'draft' },
         { ...approved, topicSlug: 'other-topic' },

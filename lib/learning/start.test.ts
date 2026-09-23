@@ -79,12 +79,27 @@ describe('learning start service', () => {
   it('uses a bounded topic catalog, an atomic RPC, and a public DTO for a new start', async () => {
     const contentCalls: unknown[] = [];
     const rpcCalls: unknown[] = [];
+    let replayCalls = 0;
     const service = createLearningStartService({
       actorId: async () => actorId,
       content: contentClient(contentCalls),
       rpc: rpcClient(rpcCalls),
       now: () => new Date('2026-09-22T10:00:00.000Z'),
-      findReplay: async () => null,
+      findReplay: async () => {
+        replayCalls += 1;
+        return replayCalls === 1 ? null : {
+          sessions: [{
+            id: sessionId,
+            mode: 'practice' as const,
+            expiresAt: '2026-09-22T12:00:00.000Z',
+            items: [{ id: itemId, position: 0, question: {
+              id: versionId, locale: 'kk' as const, type: 'single' as const,
+              body: { stem: 'Сұрақ', options: [{ id: 'A', content: '1' }] }, context: null,
+              topicLabel: 'radicals-and-expressions',
+            } }],
+          }],
+        };
+      },
     });
 
     const result = await service.startLearning({ operationId, locale: 'kk', mode: 'practice', topicSlug: 'radicals-and-expressions' });
@@ -92,6 +107,7 @@ describe('learning start service', () => {
     expect(JSON.stringify(result)).not.toContain('correct');
     expect(contentCalls).toEqual([{ locale: 'kk', selection: { topicSlug: 'radicals-and-expressions' } }]);
     expect(rpcCalls).toEqual([expect.objectContaining({ name: 'start_learning_v1' })]);
+    expect(replayCalls).toBe(2);
   });
 
   it('recovers a matching receipt after a concurrent RPC wait times out without issuing twice', async () => {
@@ -135,8 +151,12 @@ describe('learning start service', () => {
     await expect(service.startLearning({ operationId, locale: 'kk', mode: 'mock_exam', second: 'physics' }))
       .resolves.toMatchObject({ ok: false, error: 'content-unavailable' });
     expect(contentCalls).toEqual([
-      { locale: 'kk', selection: { subjectSlugs: ['math'] } },
-      { locale: 'kk', selection: { subjectSlugs: ['physics'] } },
+      { locale: 'kk', selection: { subjectSlugs: ['math'], type: 'single' } },
+      { locale: 'kk', selection: { subjectSlugs: ['math'], type: 'multi' } },
+      { locale: 'kk', selection: { subjectSlugs: ['math'], type: 'matching' } },
+      { locale: 'kk', selection: { subjectSlugs: ['physics'], type: 'single' } },
+      { locale: 'kk', selection: { subjectSlugs: ['physics'], type: 'multi' } },
+      { locale: 'kk', selection: { subjectSlugs: ['physics'], type: 'matching' } },
     ]);
   });
 });

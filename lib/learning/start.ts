@@ -11,6 +11,7 @@ import {
 } from '@/lib/content/learning-catalog';
 import { DIAGNOSTIC_BLUEPRINT, EXAM_BLUEPRINT } from '@/lib/exam';
 import { WEEKLY_BLUEPRINT } from '@/lib/weekly';
+import type { QuestionType } from '@/types/db';
 import type { LearningError, StartedLearning, StartInput } from './contracts';
 import {
   createSupabaseLearningContentClient,
@@ -21,10 +22,26 @@ import {
   type LearningContentClient,
   type LearningRpcClient,
 } from './repository';
-import { createLearningService, materializeStartedLearning, startPayloadHash } from './service';
+import { createLearningService, startPayloadHash } from './service';
 
 type StartFailure = Exclude<LearningError, 'unauthenticated' | 'invalid-input'>;
 type StartRequest = Omit<StartInput, 'operationId'>;
+
+function blueprintTypes(blueprint: readonly { type: QuestionType }[]): QuestionType[] {
+  return [...new Set(blueprint.map((part) => part.type))];
+}
+
+async function loadAssessmentSubject(
+  content: LearningContentClient,
+  locale: 'ru' | 'kk',
+  subjectSlug: 'math' | 'physics' | 'informatics',
+  blueprint: readonly { type: QuestionType }[],
+): Promise<ApprovedLearningVersion[] | { error: StartFailure }> {
+  return loadApprovedLearningVersions(content, locale, {
+    subjectSlugs: [subjectSlug],
+    types: blueprintTypes(blueprint),
+  });
+}
 
 export type LearningStartDependencies = {
   actorId: () => Promise<string | null>;
@@ -54,6 +71,7 @@ function isFailure(value: unknown): value is { error: StartFailure } {
 async function selectSessions(
   content: LearningContentClient,
   request: StartRequest,
+  selectionKey: string,
   now: Date,
 ): Promise<SelectedLearningSession[] | { error: StartFailure }> {
   let candidates: ApprovedLearningVersion[];
@@ -62,9 +80,14 @@ async function selectSessions(
     if (isFailure(result)) return result;
     candidates = result;
   } else if (request.second) {
+    const blueprint = request.mode === 'mock_exam'
+      ? EXAM_BLUEPRINT
+      : request.mode === 'diagnostic'
+        ? DIAGNOSTIC_BLUEPRINT
+        : WEEKLY_BLUEPRINT;
     const [math, second] = await Promise.all([
-      loadApprovedLearningVersions(content, request.locale, { subjectSlugs: ['math'] }),
-      loadApprovedLearningVersions(content, request.locale, { subjectSlugs: [request.second] }),
+      loadAssessmentSubject(content, request.locale, 'math', blueprint),
+      loadAssessmentSubject(content, request.locale, request.second, blueprint),
     ]);
     if (isFailure(math)) return math;
     if (isFailure(second)) return second;
@@ -75,7 +98,7 @@ async function selectSessions(
 
   if (request.mode === 'practice') {
     const selected = request.topicSlug ? selectPracticeSession({
-      locale: request.locale, topicSlug: request.topicSlug, candidates, now,
+      locale: request.locale, topicSlug: request.topicSlug, selectionKey, candidates, now,
     }) : null;
     return selected ? [selected] : { error: 'content-unavailable' };
   }
@@ -114,7 +137,7 @@ export function createLearningStartService(dependencies: LearningStartDependenci
       if (isFailure(replay)) return replay;
       if (replay) return replay;
 
-      const selected = await selectSessions(dependencies.content, request, dependencies.now());
+      const selected = await selectSessions(dependencies.content, request, `${actorId}:${operationId}`, dependencies.now());
       if (isFailure(selected)) return selected;
       const issued = await startLearningRpc(dependencies.rpc, {
         actorId,
@@ -139,12 +162,10 @@ export function createLearningStartService(dependencies: LearningStartDependenci
         }
         return issued;
       }
-      const materialized = materializeStartedLearning({ selected, issued });
-      if (materialized) return materialized;
-      // The RPC may have replayed a winning concurrent request. Its session
-      // expiry belongs to the original receipt, so rebuild the public DTO from
-      // stored immutable rows instead of comparing it to this request's fresh
-      // clock-derived plan.
+      // Read the issued immutable rows even on the winner path. The RPC can
+      // replay a concurrent winner with an identical expiry but different
+      // version IDs; only the stored session is authoritative for the public
+      // DTO.
       const replayedIssue = await dependencies.findReplay({ actorId, operationId, payloadHash });
       if (isFailure(replayedIssue)) return replayedIssue;
       return replayedIssue ?? { error: 'temporarily-unavailable' };

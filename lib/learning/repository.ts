@@ -5,6 +5,7 @@ import { z } from 'zod';
 import type { ApprovedLearningVersion, LearningSessionPlan } from '@/lib/content/learning-catalog';
 import { toPublicQuestion } from '@/lib/content/public-question';
 import type { ContentBlock, ContextContent, Explanation, QuestionBody } from '@/types/db';
+import type { QuestionType } from '@/types/db';
 import type { PublicQuestionBody } from '@/lib/content/versions';
 import type { LearningError, LearningState, PublicSessionItem, Receipt, StartedLearning, StartedSession } from './contracts';
 import type { ServerGradedItem } from './service';
@@ -20,7 +21,16 @@ type ContentResponse = { data: unknown; error: unknown | null };
 export type ApprovedVersionSelection = {
   topicSlug?: string;
   subjectSlugs?: readonly string[];
+  type?: QuestionType;
+  /** Each type gets its own bound so early single-choice rows cannot hide it. */
+  types?: readonly QuestionType[];
 };
+
+type LearningCatalogResult = ApprovedLearningVersion[] | { error: 'content-unavailable' | 'temporarily-unavailable' };
+
+function isCatalogFailure(value: LearningCatalogResult): value is { error: 'content-unavailable' | 'temporarily-unavailable' } {
+  return 'error' in value;
+}
 
 /** Narrow read port so tests can exercise decoders without a live Supabase client. */
 export type LearningContentClient = {
@@ -228,7 +238,20 @@ export async function loadApprovedLearningVersions(
   client: LearningContentClient,
   locale: 'ru' | 'kk',
   selection: ApprovedVersionSelection,
-): Promise<ApprovedLearningVersion[] | { error: 'content-unavailable' | 'temporarily-unavailable' }> {
+): Promise<LearningCatalogResult> {
+  if (selection.types && selection.types.length > 0) {
+    const { types, ...baseSelection } = selection;
+    const results = await Promise.all(types.map((type) => loadApprovedLearningVersions(client, locale, {
+      ...baseSelection,
+      type,
+    })));
+    const versions: ApprovedLearningVersion[] = [];
+    for (const result of results) {
+      if (isCatalogFailure(result)) return result;
+      versions.push(...result);
+    }
+    return versions;
+  }
   const response = await client.readApprovedVersions(locale, selection);
   if (response.error) return { error: 'temporarily-unavailable' };
   if (!Array.isArray(response.data)) return { error: 'content-unavailable' };
@@ -264,6 +287,7 @@ export function createSupabaseLearningContentClient(client: SupabaseClient): Lea
       } else if (selection.subjectSlugs && selection.subjectSlugs.length > 0) {
         query = query.in('questions.topics.subjects.slug', [...selection.subjectSlugs]);
       }
+      if (selection.type) query = query.eq('type', selection.type);
       const { data, error } = await query;
       return { data, error };
     },
@@ -320,7 +344,12 @@ function decodeIssuedSession(raw: unknown, actorId: string, sessionId: string): 
   return { id: sessionId, mode: raw.mode, expiresAt: raw.expires_at, items };
 }
 
-function decodeLearningState(raw: unknown, actorId: string, sessionId: string): LearningState | { error: 'not-found' | 'temporarily-unavailable' } {
+function decodeLearningState(
+  raw: unknown,
+  actorId: string,
+  sessionId: string,
+  now: Date,
+): LearningState | { error: 'not-found' | 'temporarily-unavailable' } {
   if (!isRecord(raw) || raw.id !== sessionId || raw.user_id !== actorId) return { error: 'not-found' };
   if (raw.status === 'submitted') {
     return isReceipt(raw.receipt) && raw.receipt.sessionId === sessionId
@@ -331,6 +360,10 @@ function decodeLearningState(raw: unknown, actorId: string, sessionId: string): 
     return { status: raw.status, sessionId };
   }
   if (raw.status !== 'active') return { error: 'temporarily-unavailable' };
+  if (typeof raw.expires_at !== 'string' || Number.isNaN(Date.parse(raw.expires_at))) {
+    return { error: 'temporarily-unavailable' };
+  }
+  if (new Date(raw.expires_at).getTime() <= now.getTime()) return { status: 'expired', sessionId };
   const session = decodeIssuedSession(raw, actorId, sessionId);
   return 'error' in session ? session : { status: 'active', session };
 }
@@ -340,11 +373,12 @@ export async function loadLearningState(
   client: LearningStateClient,
   actorId: string,
   sessionId: string,
+  now = new Date(),
 ): Promise<LearningState | { error: 'not-found' | 'temporarily-unavailable' }> {
   const response = await client.readSession(actorId, sessionId);
   if (response.error) return { error: 'temporarily-unavailable' };
   if (response.data === null) return { error: 'not-found' };
-  return decodeLearningState(response.data, actorId, sessionId);
+  return decodeLearningState(response.data, actorId, sessionId, now);
 }
 
 /**

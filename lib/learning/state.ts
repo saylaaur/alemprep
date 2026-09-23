@@ -8,6 +8,7 @@ import { createSupabaseLearningStateClient, loadLearningState, type LearningStat
 export type LearningStateDependencies = {
   actorId: () => Promise<string | null>;
   state: LearningStateClient;
+  now?: () => Date;
 };
 
 /** Server-only reload/retry state boundary; ownership is enforced twice. */
@@ -15,7 +16,7 @@ export function createLearningStateService(dependencies: LearningStateDependenci
   const service = createLearningService({
     actorId: dependencies.actorId,
     start: async () => ({ error: 'temporarily-unavailable' }),
-    getState: async ({ actorId, sessionId }) => loadLearningState(dependencies.state, actorId, sessionId),
+    getState: async ({ actorId, sessionId }) => loadLearningState(dependencies.state, actorId, sessionId, dependencies.now?.()),
     loadIssuedSession: async () => null,
     commit: async () => ({ error: 'temporarily-unavailable' }),
   });
@@ -28,6 +29,7 @@ export function createProductionLearningStateService() {
   return createLearningStateService({
     actorId: async () => (await getActor())?.id ?? null,
     state: createSupabaseLearningStateClient(admin),
+    now: () => new Date(),
   });
 }
 

@@ -1,5 +1,20 @@
 # Журнал исполнения production-плана
 
+## 23.09.2026 — L02c-R candidate: authoritative issuance, expiry and bounded catalogs
+
+- Исправлены R1–R4 из [L02c review](reviews/2026-09-23-l02c.md). После любого успешного `start_learning_v1` public DTO читается из owner-scoped immutable session rows, поэтому concurrent receipt replay не может подставить stale question body под чужой item ID. Practice выбирает детерминированно по validated actor+operation, а retry всегда получает исходный receipt. Активный row с `expires_at <= trusted now` отдаётся state API как expired. Assessment catalog читает каждый нужный question type отдельной bounded query, поэтому первые 160 single больше не вытесняют multi/matching.
+- Четыре synthetic DB regression scenarios теперь включены в обычный `test:db`: same-clock catalog race, effective expiry, independent practice starts и complete catalog over 160 rows. Ранее отдельная review probe переименована в `L02c server regressions`; immutable synthetic rows остаются до local reset по тому же правилу, что и прежние DB fixtures.
+- Fresh local evidence: `npm test` — 59 files / 605 PASS; `npm run test:db` — 10 files / 74 PASS, 61.78s; `npm run typecheck` and `npm run lint` exit 0; `npx next build --webpack` exit 0, 25 routes. DB suite работала только против synthetic local Docker Supabase, без hosted/staging/production. SQL migrations, Vercel, GitHub, paid APIs, push и merge не менялись.
+- Next: повторный Astra review exact candidate SHA. L02d, L03 и pilot release остаются закрыты до ACCEPT; standard Turbopack/CI build остаётся отдельным внешним gate.
+
+## 23.09.2026 — Astra L02c review: CHANGES REQUIRED
+
+- Проверен code SHA `f0492b66abf1fdc6adc8e5e2509d3c5a70db89ac` относительно `9035732`: [отчёт и карточка исправлений](reviews/2026-09-23-l02c.md). R1 P1: same-operation/equal-clock replay может вернуть другой question body под сохранённым item ID. R3 P1: все новые practice operations выбирают первый UUID. R2 P2: deadline не меняет возвращаемое active state. R4 P2: limit 160 отрезает необходимые blueprint types.
+- Все четыре дефекта воспроизведены real local DB probes с expected-behavior assertions; final run — 4 failures, exit 1, как и ожидается до исправления. Probes и отдельный Vitest config находятся в `tests/review/`; штатные suites их не включают. SQL/runtime-код в этом review не изменялся.
+- Fresh verification: typecheck/lint exit 0; unit 59 files / 604 PASS; полный DB suite 9 files / 70 PASS (58.35s); отдельный полный migration suite 1 file / 5 PASS (164.46s) с возвратом на current 0028; webpack production build exit 0. DB, probes и migration выполнялись последовательно, процессы завершены с получением exit code. Standard Turbopack/CI этим review не подтверждены.
+- Исправлено объяснение предыдущего прохода: доказательств лимита времени среды не было. Ранее выводился только `exec_command.output`, терялся возвращённый `session_id`; нужно дожидаться shell через `write_stdin`, не запускать следующий reset поверх незавершённого. В этом review оба полных suite завершились штатно.
+- Next ready: **L02c-R R1–R4**, затем L02d и общий L02 acceptance. Review сам не создавал commits/push/merge; hosted БД, платные API и deployment не менялись. Исходный пользовательский workspace не изменён; evidence лежит в текущем worktree.
+
 ## 21.09.2026 — Astra L02b working-tree review: CHANGES REQUIRED
 
 - Объект: 4f771c0 плюс uncommitted SQL/test corrections; SHA-256 в [review packet](reviews/2026-09-21-l02b.md).
