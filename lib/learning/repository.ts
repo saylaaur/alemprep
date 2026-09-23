@@ -3,9 +3,10 @@ import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import type { ApprovedLearningVersion, LearningSessionPlan } from '@/lib/content/learning-catalog';
+import { toPublicQuestion } from '@/lib/content/public-question';
 import type { ContentBlock, ContextContent, Explanation, QuestionBody } from '@/types/db';
 import type { PublicQuestionBody } from '@/lib/content/versions';
-import type { LearningError, Receipt } from './contracts';
+import type { LearningError, LearningState, PublicSessionItem, Receipt } from './contracts';
 import type { ServerGradedItem } from './service';
 
 type RpcResponse = { data: unknown; error: { message?: string } | null };
@@ -24,6 +25,10 @@ export type ApprovedVersionSelection = {
 /** Narrow read port so tests can exercise decoders without a live Supabase client. */
 export type LearningContentClient = {
   readApprovedVersions: (locale: 'ru' | 'kk', selection: ApprovedVersionSelection) => Promise<ContentResponse>;
+};
+
+export type LearningStateClient = {
+  readSession: (actorId: string, sessionId: string) => Promise<ContentResponse>;
 };
 
 export type CommitRpcInput = {
@@ -67,13 +72,21 @@ function isUuid(value: unknown): value is string {
   return typeof value === 'string' && uuidPattern.test(value);
 }
 
+function isLearningMode(value: unknown): value is StartedSessionReference['mode'] {
+  return typeof value === 'string' && modes.has(value as StartedSessionReference['mode']);
+}
+
+function isBoundedInteger(value: unknown, minimum: number, maximum: number): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= minimum && value <= maximum;
+}
+
 function isStartedReferences(value: unknown): value is StartedLearningReferences {
   if (!isRecord(value) || !Array.isArray(value.sessions) || value.sessions.length < 1 || value.sessions.length > 2) {
     return false;
   }
   return value.sessions.every((session) => isRecord(session)
     && isUuid(session.id)
-    && typeof session.mode === 'string' && modes.has(session.mode as StartedSessionReference['mode'])
+    && isLearningMode(session.mode)
     && typeof session.expiresAt === 'string' && !Number.isNaN(Date.parse(session.expiresAt))
     && Array.isArray(session.itemIds) && session.itemIds.length > 0 && session.itemIds.every(isUuid));
 }
@@ -111,7 +124,7 @@ const rowSchema = z.object({
   explanation: contextSchema.nullable(),
   context_snapshot: contextSchema.nullable(),
   content_hash: z.string().min(1).max(200),
-  question_publications: z.object({ status: z.literal('approved') }).strict(),
+  question_publications: z.object({ status: z.enum(['approved', 'quarantined']) }).strict(),
   questions: z.object({
     topic_id: z.uuid(),
     topics: z.object({
@@ -136,7 +149,7 @@ function copyOptionalBlocks(blocks: z.output<typeof blocksSchema> | undefined): 
 
 function versionBase(data: z.output<typeof rowSchema>) {
   return {
-    approvalStatus: 'approved' as const,
+    approvalStatus: data.question_publications.status,
     topicId: data.questions.topic_id,
     topicSlug: data.questions.topics.slug,
     subjectId: data.questions.topics.subject_id,
@@ -165,7 +178,7 @@ function withBodies(
   return { ...base, version: { ...base.version, publicBody, gradingBody } };
 }
 
-function decodeApprovedLearningVersion(raw: unknown): ApprovedLearningVersion | null {
+export function decodeImmutableLearningVersion(raw: unknown): ApprovedLearningVersion | null {
   const row = rowSchema.safeParse(raw);
   if (!row.success) return null;
   const { data } = row;
@@ -217,8 +230,8 @@ export async function loadApprovedLearningVersions(
   if (!Array.isArray(response.data)) return { error: 'content-unavailable' };
   const versions: ApprovedLearningVersion[] = [];
   for (const raw of response.data) {
-    const version = decodeApprovedLearningVersion(raw);
-    if (!version) return { error: 'content-unavailable' };
+    const version = decodeImmutableLearningVersion(raw);
+    if (!version || version.approvalStatus !== 'approved') return { error: 'content-unavailable' };
     versions.push(version);
   }
   return versions;
@@ -254,16 +267,103 @@ export function createSupabaseLearningContentClient(client: SupabaseClient): Lea
 }
 
 function isReceipt(value: unknown): value is Receipt {
+  if (!isRecord(value)) return false;
+  const score = value.score;
+  const maxScore = value.maxScore;
+  const correctCount = value.correctCount;
+  const totalQuestions = value.totalQuestions;
+  const xpAwarded = value.xpAwarded;
   return isRecord(value)
-    && typeof value.sessionId === 'string'
-    && typeof value.acceptedAt === 'string'
-    && typeof value.score === 'number'
-    && typeof value.maxScore === 'number'
-    && typeof value.correctCount === 'number'
-    && typeof value.totalQuestions === 'number'
-    && typeof value.xpAwarded === 'number'
+    && isUuid(value.sessionId)
+    && typeof value.acceptedAt === 'string' && !Number.isNaN(Date.parse(value.acceptedAt))
+    && isBoundedInteger(score, 0, 160)
+    && isBoundedInteger(maxScore, 0, 160)
+    && score <= maxScore
+    && isBoundedInteger(correctCount, 0, 80)
+    && isBoundedInteger(totalQuestions, 1, 80)
+    && correctCount <= totalQuestions
+    && isBoundedInteger(xpAwarded, 0, 300)
     && value.integrityVersion === 1
     && value.scoringVersion === 'ent-v1';
+}
+
+function decodeLearningState(raw: unknown, actorId: string, sessionId: string): LearningState | { error: 'not-found' | 'temporarily-unavailable' } {
+  if (!isRecord(raw) || raw.id !== sessionId || raw.user_id !== actorId) return { error: 'not-found' };
+  if (raw.status === 'submitted') {
+    return isReceipt(raw.receipt) && raw.receipt.sessionId === sessionId
+      ? { status: 'submitted', receipt: raw.receipt }
+      : { error: 'temporarily-unavailable' };
+  }
+  if (raw.status === 'expired' || raw.status === 'cancelled') {
+    return { status: raw.status, sessionId };
+  }
+  if (raw.status !== 'active'
+    || !isLearningMode(raw.mode)
+    || typeof raw.expires_at !== 'string' || Number.isNaN(Date.parse(raw.expires_at))
+    || !Array.isArray(raw.session_items) || raw.session_items.length < 1 || raw.session_items.length > 80) {
+    return { error: 'temporarily-unavailable' };
+  }
+  const itemIds = new Set<string>();
+  const positions = new Set<number>();
+  const items: PublicSessionItem[] = [];
+  for (const rawItem of raw.session_items) {
+    if (!isRecord(rawItem)) return { error: 'temporarily-unavailable' };
+    const itemId = rawItem.id;
+    const position = rawItem.position;
+    if (!isUuid(itemId) || !isBoundedInteger(position, 0, 79)
+      || itemIds.has(itemId) || positions.has(position)) {
+      return { error: 'temporarily-unavailable' };
+    }
+    const version = decodeImmutableLearningVersion(rawItem.question_versions);
+    if (!version) return { error: 'temporarily-unavailable' };
+    itemIds.add(itemId);
+    positions.add(position);
+    items.push({ id: itemId, position, question: toPublicQuestion(version.version) });
+  }
+  items.sort((left, right) => left.position - right.position);
+  if (items.some((item, index) => item.position !== index)) return { error: 'temporarily-unavailable' };
+  return { status: 'active', session: { id: sessionId, mode: raw.mode, expiresAt: raw.expires_at, items } };
+}
+
+/** Owner-scoped state reader used for reload/retry recovery. */
+export async function loadLearningState(
+  client: LearningStateClient,
+  actorId: string,
+  sessionId: string,
+): Promise<LearningState | { error: 'not-found' | 'temporarily-unavailable' }> {
+  const response = await client.readSession(actorId, sessionId);
+  if (response.error) return { error: 'temporarily-unavailable' };
+  if (response.data === null) return { error: 'not-found' };
+  return decodeLearningState(response.data, actorId, sessionId);
+}
+
+const learningStateSelect = `
+  id, user_id, status, mode, expires_at, receipt,
+  session_items!inner(
+    id, position,
+    question_versions!inner(
+      id, question_id, family_id, revision, locale, type, public_body, grading_body,
+      explanation, context_snapshot, content_hash,
+      question_publications!inner(status),
+      questions!inner(topic_id, topics!inner(slug, subject_id, subjects!inner(slug)))
+    )
+  )
+`;
+
+/** Production owner-scoped reader for reload/retry state. */
+export function createSupabaseLearningStateClient(client: SupabaseClient): LearningStateClient {
+  return {
+    async readSession(actorId, sessionId) {
+      const { data, error } = await client
+        .from('sessions')
+        .select(learningStateSelect)
+        .eq('id', sessionId)
+        .eq('user_id', actorId)
+        .eq('integrity_version', 1)
+        .maybeSingle();
+      return { data, error };
+    },
+  };
 }
 
 function rpcError(value: unknown): CommitError | null {

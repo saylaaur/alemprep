@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   commitLearningRpc,
+  loadLearningState,
   loadApprovedLearningVersions,
   startLearningRpc,
   type LearningContentClient,
   type LearningRpcClient,
+  type LearningStateClient,
 } from './repository';
 
 const actorId = '11111111-1111-4111-8111-111111111111';
@@ -159,5 +161,65 @@ describe('approved immutable version reader', () => {
     };
 
     await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' })).resolves.toEqual({ error: 'content-unavailable' });
+  });
+});
+
+describe('learning state reader', () => {
+  it('returns an owner active session through the public question allowlist', async () => {
+    const client: LearningStateClient = {
+      readSession: async () => ({ data: {
+        id: sessionId,
+        user_id: actorId,
+        status: 'active',
+        mode: 'practice',
+        expires_at: '2026-09-22T12:00:00.000Z',
+        receipt: null,
+        session_items: [{ id: itemId, position: 0, question_versions: approvedVersionRow() }],
+      }, error: null }),
+    };
+
+    const state = await loadLearningState(client, actorId, sessionId);
+    expect(state).toMatchObject({ status: 'active', session: { id: sessionId, items: [{ id: itemId, question: { id: versionId } }] } });
+    expect(JSON.stringify(state)).not.toContain('correct');
+  });
+
+  it('does not distinguish a foreign session from an absent session', async () => {
+    const client: LearningStateClient = {
+      readSession: async () => ({ data: {
+        id: sessionId,
+        user_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        status: 'active',
+        mode: 'practice',
+        expires_at: '2026-09-22T12:00:00.000Z',
+        receipt: null,
+        session_items: [],
+      }, error: null }),
+    };
+
+    await expect(loadLearningState(client, actorId, sessionId)).resolves.toEqual({ error: 'not-found' });
+  });
+
+  it('returns only a strict receipt after an owner session is submitted', async () => {
+    const client: LearningStateClient = {
+      readSession: async () => ({ data: {
+        id: sessionId,
+        user_id: actorId,
+        status: 'submitted',
+        mode: 'practice',
+        expires_at: '2026-09-22T12:00:00.000Z',
+        session_items: [],
+        receipt: {
+          sessionId,
+          acceptedAt: '2026-09-22T10:05:00.000Z',
+          score: 1, maxScore: 1, correctCount: 1, totalQuestions: 1,
+          xpAwarded: 10, integrityVersion: 1, scoringVersion: 'ent-v1',
+        },
+      }, error: null }),
+    };
+
+    await expect(loadLearningState(client, actorId, sessionId)).resolves.toEqual({
+      status: 'submitted',
+      receipt: expect.objectContaining({ sessionId, score: 1 }),
+    });
   });
 });
