@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { getActor } from '@/lib/server/actor';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
   selectMockExamSessions,
   selectPairedAssessmentSession,
@@ -10,7 +12,15 @@ import {
 import { DIAGNOSTIC_BLUEPRINT, EXAM_BLUEPRINT } from '@/lib/exam';
 import { WEEKLY_BLUEPRINT } from '@/lib/weekly';
 import type { LearningError, StartedLearning, StartInput } from './contracts';
-import { loadApprovedLearningVersions, startLearningRpc, type LearningContentClient, type LearningRpcClient } from './repository';
+import {
+  createSupabaseLearningContentClient,
+  createSupabaseLearningReplayClient,
+  loadApprovedLearningVersions,
+  loadStartReplay,
+  startLearningRpc,
+  type LearningContentClient,
+  type LearningRpcClient,
+} from './repository';
 import { createLearningService, materializeStartedLearning, startPayloadHash } from './service';
 
 type StartFailure = Exclude<LearningError, 'unauthenticated' | 'invalid-input'>;
@@ -112,6 +122,23 @@ export function createLearningStartService(dependencies: LearningStartDependenci
     commit: async () => ({ error: 'temporarily-unavailable' }),
   });
   return { startLearning: service.start };
+}
+
+/** Production factory with Auth-derived actor and service-only database access. */
+export function createProductionLearningStartService() {
+  const admin = createAdminClient();
+  const replay = createSupabaseLearningReplayClient(admin);
+  return createLearningStartService({
+    actorId: async () => (await getActor())?.id ?? null,
+    content: createSupabaseLearningContentClient(admin),
+    rpc: admin,
+    now: () => new Date(),
+    findReplay: ({ actorId, operationId, payloadHash }) => loadStartReplay(replay, actorId, operationId, payloadHash),
+  });
+}
+
+export async function startLearning(raw: unknown) {
+  return createProductionLearningStartService().startLearning(raw);
 }
 
 /** Exposed for repository tests that assert canonical replay lookup parameters. */

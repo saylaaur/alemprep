@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   commitLearningRpc,
+  loadStartReplay,
   loadLearningState,
   loadApprovedLearningVersions,
   startLearningRpc,
   type LearningContentClient,
+  type LearningReplayClient,
   type LearningRpcClient,
   type LearningStateClient,
 } from './repository';
@@ -221,5 +223,42 @@ describe('learning state reader', () => {
       status: 'submitted',
       receipt: expect.objectContaining({ sessionId, score: 1 }),
     });
+  });
+});
+
+describe('learning start replay reader', () => {
+  it('restores the original issued session before a changed publication is consulted', async () => {
+    const client: LearningReplayClient = {
+      readStartReceipt: async () => ({ data: {
+        kind: 'learning.start',
+        payload_hash: 'same-request',
+        result: { sessions: [{ id: sessionId, mode: 'practice', expiresAt: '2026-09-22T12:00:00.000Z', itemIds: [itemId] }] },
+      }, error: null }),
+      readSession: async () => ({ data: {
+        id: sessionId, user_id: actorId, status: 'active', mode: 'practice',
+        expires_at: '2026-09-22T12:00:00.000Z', receipt: null,
+        session_items: [{ id: itemId, position: 0, question_versions: approvedVersionRow({
+          question_publications: { status: 'quarantined' },
+        }) }],
+      }, error: null }),
+    };
+
+    await expect(loadStartReplay(client, actorId, operationId, 'same-request')).resolves.toMatchObject({
+      sessions: [{ id: sessionId, items: [{ id: itemId, question: { id: versionId } }] }],
+    });
+  });
+
+  it('returns an operation conflict without reading issued sessions when the hash changed', async () => {
+    const calls: unknown[] = [];
+    const client: LearningReplayClient = {
+      readStartReceipt: async () => ({ data: { kind: 'learning.start', payload_hash: 'original', result: {} }, error: null }),
+      readSession: async () => {
+        calls.push('session');
+        return { data: null, error: null };
+      },
+    };
+
+    await expect(loadStartReplay(client, actorId, operationId, 'changed')).resolves.toEqual({ error: 'operation-conflict' });
+    expect(calls).toEqual([]);
   });
 });

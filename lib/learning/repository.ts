@@ -6,14 +6,14 @@ import type { ApprovedLearningVersion, LearningSessionPlan } from '@/lib/content
 import { toPublicQuestion } from '@/lib/content/public-question';
 import type { ContentBlock, ContextContent, Explanation, QuestionBody } from '@/types/db';
 import type { PublicQuestionBody } from '@/lib/content/versions';
-import type { LearningError, LearningState, PublicSessionItem, Receipt } from './contracts';
+import type { LearningError, LearningState, PublicSessionItem, Receipt, StartedLearning, StartedSession } from './contracts';
 import type { ServerGradedItem } from './service';
 
 type RpcResponse = { data: unknown; error: { message?: string } | null };
 type CommitError = Exclude<LearningError, 'unauthenticated' | 'invalid-input'>;
 
 export type LearningRpcClient = {
-  rpc: (name: string, args: Record<string, unknown>) => Promise<RpcResponse>;
+  rpc: (name: string, args: Record<string, unknown>) => PromiseLike<RpcResponse>;
 };
 
 type ContentResponse = { data: unknown; error: unknown | null };
@@ -29,6 +29,10 @@ export type LearningContentClient = {
 
 export type LearningStateClient = {
   readSession: (actorId: string, sessionId: string) => Promise<ContentResponse>;
+};
+
+export type LearningReplayClient = LearningStateClient & {
+  readStartReceipt: (actorId: string, operationId: string) => Promise<ContentResponse>;
 };
 
 export type CommitRpcInput = {
@@ -287,18 +291,9 @@ function isReceipt(value: unknown): value is Receipt {
     && value.scoringVersion === 'ent-v1';
 }
 
-function decodeLearningState(raw: unknown, actorId: string, sessionId: string): LearningState | { error: 'not-found' | 'temporarily-unavailable' } {
+function decodeIssuedSession(raw: unknown, actorId: string, sessionId: string): StartedSession | { error: 'not-found' | 'temporarily-unavailable' } {
   if (!isRecord(raw) || raw.id !== sessionId || raw.user_id !== actorId) return { error: 'not-found' };
-  if (raw.status === 'submitted') {
-    return isReceipt(raw.receipt) && raw.receipt.sessionId === sessionId
-      ? { status: 'submitted', receipt: raw.receipt }
-      : { error: 'temporarily-unavailable' };
-  }
-  if (raw.status === 'expired' || raw.status === 'cancelled') {
-    return { status: raw.status, sessionId };
-  }
-  if (raw.status !== 'active'
-    || !isLearningMode(raw.mode)
+  if (!isLearningMode(raw.mode)
     || typeof raw.expires_at !== 'string' || Number.isNaN(Date.parse(raw.expires_at))
     || !Array.isArray(raw.session_items) || raw.session_items.length < 1 || raw.session_items.length > 80) {
     return { error: 'temporarily-unavailable' };
@@ -322,7 +317,22 @@ function decodeLearningState(raw: unknown, actorId: string, sessionId: string): 
   }
   items.sort((left, right) => left.position - right.position);
   if (items.some((item, index) => item.position !== index)) return { error: 'temporarily-unavailable' };
-  return { status: 'active', session: { id: sessionId, mode: raw.mode, expiresAt: raw.expires_at, items } };
+  return { id: sessionId, mode: raw.mode, expiresAt: raw.expires_at, items };
+}
+
+function decodeLearningState(raw: unknown, actorId: string, sessionId: string): LearningState | { error: 'not-found' | 'temporarily-unavailable' } {
+  if (!isRecord(raw) || raw.id !== sessionId || raw.user_id !== actorId) return { error: 'not-found' };
+  if (raw.status === 'submitted') {
+    return isReceipt(raw.receipt) && raw.receipt.sessionId === sessionId
+      ? { status: 'submitted', receipt: raw.receipt }
+      : { error: 'temporarily-unavailable' };
+  }
+  if (raw.status === 'expired' || raw.status === 'cancelled') {
+    return { status: raw.status, sessionId };
+  }
+  if (raw.status !== 'active') return { error: 'temporarily-unavailable' };
+  const session = decodeIssuedSession(raw, actorId, sessionId);
+  return 'error' in session ? session : { status: 'active', session };
 }
 
 /** Owner-scoped state reader used for reload/retry recovery. */
@@ -335,6 +345,46 @@ export async function loadLearningState(
   if (response.error) return { error: 'temporarily-unavailable' };
   if (response.data === null) return { error: 'not-found' };
   return decodeLearningState(response.data, actorId, sessionId);
+}
+
+/**
+ * Restores an existing start result before planning new content. The immutable
+ * session rows remain readable for the owner even when their publication was
+ * quarantined after issue, so a retry never resamples or leaks another item.
+ */
+export async function loadStartReplay(
+  client: LearningReplayClient,
+  actorId: string,
+  operationId: string,
+  payloadHash: string,
+): Promise<StartedLearning | null | { error: 'operation-conflict' | 'temporarily-unavailable' }> {
+  const receiptResponse = await client.readStartReceipt(actorId, operationId);
+  if (receiptResponse.error) return { error: 'temporarily-unavailable' };
+  if (receiptResponse.data === null) return null;
+  if (!isRecord(receiptResponse.data)
+    || receiptResponse.data.kind !== 'learning.start'
+    || typeof receiptResponse.data.payload_hash !== 'string') {
+    return { error: 'temporarily-unavailable' };
+  }
+  if (receiptResponse.data.payload_hash !== payloadHash) return { error: 'operation-conflict' };
+  if (!isStartedReferences(receiptResponse.data.result)) return { error: 'temporarily-unavailable' };
+  const references = receiptResponse.data.result.sessions;
+  const responses = await Promise.all(references.map((reference) => client.readSession(actorId, reference.id)));
+  const sessions: StartedSession[] = [];
+  for (const [index, response] of responses.entries()) {
+    const reference = references[index]!;
+    if (response.error || response.data === null) return { error: 'temporarily-unavailable' };
+    const session = decodeIssuedSession(response.data, actorId, reference.id);
+    if ('error' in session
+      || session.mode !== reference.mode
+      || new Date(session.expiresAt).getTime() !== new Date(reference.expiresAt).getTime()
+      || session.items.length !== reference.itemIds.length
+      || session.items.some((item, itemIndex) => item.id !== reference.itemIds[itemIndex])) {
+      return { error: 'temporarily-unavailable' };
+    }
+    sessions.push(session);
+  }
+  return { sessions };
 }
 
 const learningStateSelect = `
@@ -360,6 +410,23 @@ export function createSupabaseLearningStateClient(client: SupabaseClient): Learn
         .eq('id', sessionId)
         .eq('user_id', actorId)
         .eq('integrity_version', 1)
+        .maybeSingle();
+      return { data, error };
+    },
+  };
+}
+
+/** Production receipt + issued-session reader for idempotent start replay. */
+export function createSupabaseLearningReplayClient(client: SupabaseClient): LearningReplayClient {
+  const state = createSupabaseLearningStateClient(client);
+  return {
+    ...state,
+    async readStartReceipt(actorId, operationId) {
+      const { data, error } = await client
+        .from('operation_receipts')
+        .select('kind, payload_hash, result')
+        .eq('actor_id', actorId)
+        .eq('operation_id', operationId)
         .maybeSingle();
       return { data, error };
     },
