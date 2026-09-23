@@ -9,11 +9,13 @@ import {
   loadStartReplay,
 } from '@/lib/learning/repository';
 
+type Locale = 'ru' | 'kk';
+
 type Seeded = {
   topicSlug: string;
 };
 
-async function seedApprovedPractice(db: DbHarness): Promise<Seeded> {
+async function seedApprovedPractice(db: DbHarness, locale: Locale): Promise<Seeded> {
   const suffix = crypto.randomUUID();
   const subjectId = await db.scalar<string>(
     `INSERT INTO public.subjects (slug, name_ru, name_kk, is_active)
@@ -30,17 +32,18 @@ async function seedApprovedPractice(db: DbHarness): Promise<Seeded> {
   );
   const questionId = await db.scalar<string>(
     `INSERT INTO public.questions (topic_id, language, type, body, is_published)
-     VALUES ($1, 'kk', 'single', $2::jsonb, true)
+     VALUES ($1, $2, 'single', $3::jsonb, true)
      RETURNING id`,
-    [topicId, JSON.stringify({ stem: 'private', options: [{ id: 'A', content: 'A' }], correct: 'A' })],
+    [topicId, locale, JSON.stringify({ stem: 'private', options: [{ id: 'A', content: 'A' }], correct: 'A' })],
   );
   const versionId = await db.scalar<string>(
     `INSERT INTO public.question_versions
        (question_id, family_id, revision, locale, type, public_body, grading_body, content_hash)
-     VALUES ($1, gen_random_uuid(), 1, 'kk', 'single', $2::jsonb, $3::jsonb, $4)
+     VALUES ($1, gen_random_uuid(), 1, $2, 'single', $3::jsonb, $4::jsonb, $5)
      RETURNING id`,
     [
       questionId,
+      locale,
       JSON.stringify({ stem: 'public', options: [{ id: 'A', content: 'A' }] }),
       JSON.stringify({ stem: 'private', options: [{ id: 'A', content: 'A' }], correct: 'A' }),
       `sha256:${suffix}`,
@@ -72,7 +75,7 @@ describe('L02c service integration', () => {
     const owner = await db.actor('l02c-owner');
     const other = await db.actor('l02c-other');
     actors = [owner, other];
-    const seeded = await seedApprovedPractice(db);
+    const seeded = await seedApprovedPractice(db, 'kk');
     const admin = db.adminClient();
     const replay = createSupabaseLearningReplayClient(admin);
     const start = createLearningStartService({
@@ -85,7 +88,8 @@ describe('L02c service integration', () => {
     const operationId = crypto.randomUUID();
     const input = { operationId, locale: 'kk' as const, mode: 'practice' as const, topicSlug: seeded.topicSlug };
 
-    const first = await start.startLearning(input);
+    const [first, concurrent] = await Promise.all([start.startLearning(input), start.startLearning(input)]);
+    expect(concurrent).toEqual(first);
     expect(first).toMatchObject({ ok: true, value: { sessions: [{ items: [{ question: { body: { stem: 'public' } } }] }] } });
     expect(JSON.stringify(first)).not.toContain('correct');
     if (!first.ok) throw new Error('start did not issue a session');
@@ -114,5 +118,28 @@ describe('L02c service integration', () => {
       state: createSupabaseLearningStateClient(admin),
     });
     await expect(state.getLearningState(sessionId)).resolves.toMatchObject({ ok: false, error: 'not-found' });
+  });
+
+  it('issues a Russian session from the approved immutable catalog', async () => {
+    db = await createDbHarness();
+    const owner = await db.actor('l02c-owner-ru');
+    actors = [owner];
+    const seeded = await seedApprovedPractice(db, 'ru');
+    const admin = db.adminClient();
+    const replay = createSupabaseLearningReplayClient(admin);
+    const start = createLearningStartService({
+      actorId: async () => owner.id,
+      content: createSupabaseLearningContentClient(admin),
+      rpc: admin,
+      now: () => new Date(),
+      findReplay: ({ actorId, operationId, payloadHash }) => loadStartReplay(replay, actorId, operationId, payloadHash),
+    });
+
+    await expect(start.startLearning({
+      operationId: crypto.randomUUID(), locale: 'ru', mode: 'practice', topicSlug: seeded.topicSlug,
+    })).resolves.toMatchObject({
+      ok: true,
+      value: { sessions: [{ items: [{ question: { locale: 'ru', body: { stem: 'public' } } }] }] },
+    });
   });
 });

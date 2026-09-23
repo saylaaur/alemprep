@@ -31,6 +31,8 @@ export type LearningStartDependencies = {
   content: LearningContentClient;
   rpc: LearningRpcClient;
   now: () => Date;
+  /** Injectable only to keep the bounded concurrent-replay test deterministic. */
+  retryPause?: (milliseconds: number) => Promise<void>;
   /** Must read the server-owned receipt/session rows before new catalog selection. */
   findReplay: (input: {
     actorId: string;
@@ -38,6 +40,12 @@ export type LearningStartDependencies = {
     payloadHash: string;
   }) => Promise<StartedLearning | null | { error: StartFailure }>;
 };
+
+const concurrentReplayDelaysMs = [100, 250, 500, 1_000] as const;
+
+function pause(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
 
 function isFailure(value: unknown): value is { error: StartFailure } {
   return value !== null && typeof value === 'object' && 'error' in value;
@@ -114,8 +122,32 @@ export function createLearningStartService(dependencies: LearningStartDependenci
         payloadHash,
         plan: { sessions: selected.map((session) => session.plan) },
       });
-      if (isFailure(issued)) return issued;
-      return materializeStartedLearning({ selected, issued }) ?? { error: 'temporarily-unavailable' };
+      if (isFailure(issued)) {
+        if (issued.error !== 'temporarily-unavailable') return issued;
+        // A duplicate request can time out behind the RPC's per-operation DB
+        // lock while the winner is still writing its receipt. Poll only that
+        // receipt for a short, bounded window; never resample content or call
+        // the start RPC a second time.
+        for (const delay of concurrentReplayDelaysMs) {
+          await (dependencies.retryPause ?? pause)(delay);
+          const concurrentReplay = await dependencies.findReplay({ actorId, operationId, payloadHash });
+          if (isFailure(concurrentReplay)) {
+            if (concurrentReplay.error !== 'temporarily-unavailable') return concurrentReplay;
+            continue;
+          }
+          if (concurrentReplay) return concurrentReplay;
+        }
+        return issued;
+      }
+      const materialized = materializeStartedLearning({ selected, issued });
+      if (materialized) return materialized;
+      // The RPC may have replayed a winning concurrent request. Its session
+      // expiry belongs to the original receipt, so rebuild the public DTO from
+      // stored immutable rows instead of comparing it to this request's fresh
+      // clock-derived plan.
+      const replayedIssue = await dependencies.findReplay({ actorId, operationId, payloadHash });
+      if (isFailure(replayedIssue)) return replayedIssue;
+      return replayedIssue ?? { error: 'temporarily-unavailable' };
     },
     getState: async () => ({ error: 'temporarily-unavailable' }),
     loadIssuedSession: async () => null,

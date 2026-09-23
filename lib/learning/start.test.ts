@@ -94,6 +94,34 @@ describe('learning start service', () => {
     expect(rpcCalls).toEqual([expect.objectContaining({ name: 'start_learning_v1' })]);
   });
 
+  it('recovers a matching receipt after a concurrent RPC wait times out without issuing twice', async () => {
+    const contentCalls: unknown[] = [];
+    const rpcCalls: unknown[] = [];
+    let replayCalls = 0;
+    const service = createLearningStartService({
+      actorId: async () => actorId,
+      content: contentClient(contentCalls),
+      rpc: {
+        rpc: async (name, args) => {
+          rpcCalls.push({ name, args });
+          return { data: null, error: { message: 'lock timeout' } };
+        },
+      },
+      now: () => new Date('2026-09-22T10:00:00.000Z'),
+      retryPause: async () => undefined,
+      findReplay: async () => {
+        replayCalls += 1;
+        return replayCalls === 1 ? null : { sessions: [] };
+      },
+    });
+
+    await expect(service.startLearning({ operationId, locale: 'kk', mode: 'practice', topicSlug: 'radicals-and-expressions' }))
+      .resolves.toEqual({ ok: true, value: { sessions: [] } });
+    expect(replayCalls).toBe(2);
+    expect(contentCalls).toHaveLength(1);
+    expect(rpcCalls).toHaveLength(1);
+  });
+
   it('reads each assessment subject through its own bounded catalog query', async () => {
     const contentCalls: unknown[] = [];
     const service = createLearningStartService({
