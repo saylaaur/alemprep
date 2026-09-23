@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { Pool, type PoolClient } from 'pg';
 import { assertSafeDbConnectionString, assertSafeDbTestTarget } from './test-target';
 
@@ -35,6 +35,7 @@ export type DbConnection = {
 };
 
 export type DbHarness = {
+  adminClient(): SupabaseClient;
   actor(label: string): Promise<TestActor>;
   rest(actor: TestActor | null, path: string, init?: RequestInit): Promise<DbResponse>;
   rpc(actor: TestActor | 'service' | 'anon', name: string, args: Record<string, unknown>): Promise<DbResponse>;
@@ -115,6 +116,10 @@ export async function createDbHarness(): Promise<DbHarness> {
   let closed = false;
 
   return {
+    adminClient() {
+      return admin;
+    },
+
     async actor(label) {
       if (!/^[a-z0-9-]+$/i.test(label)) throw new Error('test actor label must be alphanumeric or hyphenated');
       const id = randomUUID();
