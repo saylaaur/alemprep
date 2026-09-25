@@ -56,9 +56,15 @@ function selectionOffset(selectionKey: string, size: number): number {
   return digest.readUInt32BE(0) % size;
 }
 
+function rotate<T>(entries: readonly T[], offset: number): T[] {
+  if (entries.length === 0) return [];
+  return entries.map((_, index) => entries[(index + offset) % entries.length]!);
+}
+
 function pickBalancedDeterministically(
   candidates: readonly ApprovedLearningVersion[],
   blueprint: readonly BlueprintPart[],
+  selectionKey: string,
 ): ApprovedLearningVersion[] | null {
   const picked: ApprovedLearningVersion[] = [];
   for (const part of blueprint) {
@@ -71,12 +77,15 @@ function pickBalancedDeterministically(
     }
     const groups = [...byTopic.entries()]
       .sort(([left], [right]) => left.localeCompare(right))
-      .map(([, group]) => group.sort(byVersionId));
+      .map(([topicId, group]) => ({ topicId, versions: group.sort(byVersionId) }));
+    const rotatedGroups = rotate(groups, selectionOffset(`${selectionKey}:${part.type}:topics`, groups.length));
     const selected: ApprovedLearningVersion[] = [];
     for (let round = 0; selected.length < part.count; round += 1) {
       let added = false;
-      for (const group of groups) {
-        const candidate = group[round];
+      for (const group of rotatedGroups) {
+        if (round >= group.versions.length) continue;
+        const offset = selectionOffset(`${selectionKey}:${part.type}:${group.topicId}`, group.versions.length);
+        const candidate = group.versions[(round + offset) % group.versions.length];
         if (!candidate || selected.length >= part.count) continue;
         selected.push(candidate);
         added = true;
@@ -155,6 +164,7 @@ export function selectAssessmentSession(input: {
   locale: 'ru' | 'kk';
   mode: Exclude<LearningMode, 'practice'>;
   subjectSlug: string;
+  selectionKey: string;
   candidates: readonly ApprovedLearningVersion[];
   blueprint: readonly BlueprintPart[];
   now: Date;
@@ -162,7 +172,7 @@ export function selectAssessmentSession(input: {
   const candidates = input.candidates.filter((entry) =>
     isApprovedForLocale(entry, input.locale) && entry.subjectSlug === input.subjectSlug,
   );
-  const picked = pickBalancedDeterministically(candidates, input.blueprint);
+  const picked = pickBalancedDeterministically(candidates, input.blueprint, `${input.selectionKey}:${input.subjectSlug}`);
   if (!picked || picked.length === 0) return null;
   const subjectId = picked[0]?.subjectId;
   if (!subjectId || picked.some((entry) => entry.subjectId !== subjectId)) return null;
@@ -184,6 +194,7 @@ export function buildAssessmentSessionPlan(input: {
   locale: 'ru' | 'kk';
   mode: Exclude<LearningMode, 'practice'>;
   subjectSlug: string;
+  selectionKey: string;
   candidates: readonly ApprovedLearningVersion[];
   blueprint: readonly BlueprintPart[];
   now: Date;
@@ -195,6 +206,7 @@ export function buildAssessmentSessionPlan(input: {
 export function selectMockExamSessions(input: {
   locale: 'ru' | 'kk';
   secondSubjectSlug: 'physics' | 'informatics';
+  selectionKey: string;
   candidates: readonly ApprovedLearningVersion[];
   blueprint: readonly BlueprintPart[];
   now: Date;
@@ -218,6 +230,7 @@ export function selectPairedAssessmentSession(input: {
   locale: 'ru' | 'kk';
   mode: 'diagnostic' | 'weekly';
   secondSubjectSlug: 'physics' | 'informatics';
+  selectionKey: string;
   candidates: readonly ApprovedLearningVersion[];
   blueprint: readonly BlueprintPart[];
   now: Date;

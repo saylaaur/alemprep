@@ -107,6 +107,7 @@ async function selectSessions(
     const selected = selectMockExamSessions({
       locale: request.locale,
       secondSubjectSlug: request.second,
+      selectionKey,
       candidates,
       blueprint: EXAM_BLUEPRINT,
       now,
@@ -117,6 +118,7 @@ async function selectSessions(
     locale: request.locale,
     mode: request.mode,
     secondSubjectSlug: request.second,
+    selectionKey,
     candidates,
     blueprint: request.mode === 'diagnostic' ? DIAGNOSTIC_BLUEPRINT : WEEKLY_BLUEPRINT,
     now,
