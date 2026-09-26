@@ -2,9 +2,12 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { createDbHarness, type DbHarness, type TestActor } from './helpers';
 import { createLearningStartService } from '@/lib/learning/start';
 import { createLearningStateService } from '@/lib/learning/state';
+import { createLearningSubmitService } from '@/lib/learning/submit';
+import { createLearningReviewService } from '@/lib/learning/review';
 import {
   createSupabaseLearningContentClient,
   createSupabaseLearningReplayClient,
+  createSupabaseLearningReviewClient,
   createSupabaseLearningStateClient,
   loadStartReplay,
 } from '@/lib/learning/repository';
@@ -34,7 +37,7 @@ async function seedApprovedPractice(db: DbHarness, locale: Locale): Promise<Seed
     `INSERT INTO public.questions (topic_id, language, type, body, is_published)
      VALUES ($1, $2, 'single', $3::jsonb, true)
      RETURNING id`,
-    [topicId, locale, JSON.stringify({ stem: 'private', options: [{ id: 'A', content: 'A' }], correct: 'A' })],
+    [topicId, locale, JSON.stringify({ stem: 'private', options: [{ id: 'A', content: 'A' }, { id: 'B', content: 'B' }], correct: 'A' })],
   );
   const versionId = await db.scalar<string>(
     `INSERT INTO public.question_versions
@@ -44,8 +47,8 @@ async function seedApprovedPractice(db: DbHarness, locale: Locale): Promise<Seed
     [
       questionId,
       locale,
-      JSON.stringify({ stem: 'public', options: [{ id: 'A', content: 'A' }] }),
-      JSON.stringify({ stem: 'private', options: [{ id: 'A', content: 'A' }], correct: 'A' }),
+      JSON.stringify({ stem: 'public', options: [{ id: 'A', content: 'A' }, { id: 'B', content: 'B' }] }),
+      JSON.stringify({ stem: 'private', options: [{ id: 'A', content: 'A' }, { id: 'B', content: 'B' }], correct: 'A' }),
       `sha256:${suffix}`,
     ],
   );
@@ -141,5 +144,116 @@ describe('L02c service integration', () => {
       ok: true,
       value: { sessions: [{ items: [{ question: { locale: 'ru', body: { stem: 'public' } } }] }] },
     });
+  });
+
+  it('submits, restores and reviews a server-issued item through the closed RPC', async () => {
+    db = await createDbHarness();
+    const owner = await db.actor('l02d-owner');
+    const other = await db.actor('l02d-other');
+    actors = [owner, other];
+    const seeded = await seedApprovedPractice(db, 'kk');
+    const admin = db.adminClient();
+    const replay = createSupabaseLearningReplayClient(admin);
+    const start = createLearningStartService({
+      actorId: async () => owner.id,
+      content: createSupabaseLearningContentClient(admin),
+      rpc: admin,
+      now: () => new Date(),
+      findReplay: ({ actorId, operationId, payloadHash }) => loadStartReplay(replay, actorId, operationId, payloadHash),
+    });
+    const started = await start.startLearning({
+      operationId: crypto.randomUUID(), locale: 'kk', mode: 'practice', topicSlug: seeded.topicSlug,
+    });
+    if (!started.ok) throw new Error('start did not issue a session');
+    const session = started.value.sessions[0];
+    const item = session?.items[0];
+    if (!session || !item) throw new Error('issued session did not contain its expected item');
+
+    const submit = createLearningSubmitService({
+      actorId: async () => owner.id,
+      issued: createSupabaseLearningStateClient(admin),
+      rpc: admin,
+    });
+    const operationId = crypto.randomUUID();
+    const input = { operationId, sessionId: session.id, answers: [{ itemId: item.id, answer: 'A', timeSpentMs: 100 }] };
+    const accepted = await submit.submitLearning(input);
+    expect(accepted).toMatchObject({ ok: true, value: { sessionId: session.id, score: 1, maxScore: 1, integrityVersion: 1 } });
+    await expect(submit.submitLearning(input)).resolves.toEqual(accepted);
+    await expect(submit.submitLearning({
+      ...input,
+      answers: [{ itemId: item.id, answer: 'B', timeSpentMs: 100 }],
+    })).resolves.toMatchObject({ ok: false, error: 'operation-conflict' });
+
+    const state = createLearningStateService({
+      actorId: async () => owner.id,
+      state: createSupabaseLearningStateClient(admin),
+    });
+    await expect(state.getLearningState(session.id)).resolves.toMatchObject({
+      ok: true, value: { status: 'submitted', receipt: { sessionId: session.id, score: 1 } },
+    });
+
+    const review = createLearningReviewService({
+      actorId: async () => owner.id,
+      review: createSupabaseLearningReviewClient(admin),
+    });
+    await expect(review.getLearningReview(session.id)).resolves.toMatchObject({
+      ok: true,
+      value: { items: [{ itemId: item.id, answer: 'A', points: 1, gradingBody: { correct: 'A' } }] },
+    });
+
+    const foreignSubmit = createLearningSubmitService({
+      actorId: async () => other.id,
+      issued: createSupabaseLearningStateClient(admin),
+      rpc: admin,
+    });
+    await expect(foreignSubmit.submitLearning({ ...input, operationId: crypto.randomUUID() }))
+      .resolves.toMatchObject({ ok: false, error: 'not-found' });
+  });
+
+  it('keeps expired and quarantined issued sessions as permanent submit outcomes', async () => {
+    db = await createDbHarness();
+    const owner = await db.actor('l02d-permanent-outcomes');
+    actors = [owner];
+    const seeded = await seedApprovedPractice(db, 'kk');
+    const admin = db.adminClient();
+    const replay = createSupabaseLearningReplayClient(admin);
+    const start = createLearningStartService({
+      actorId: async () => owner.id,
+      content: createSupabaseLearningContentClient(admin),
+      rpc: admin,
+      now: () => new Date(),
+      findReplay: ({ actorId, operationId, payloadHash }) => loadStartReplay(replay, actorId, operationId, payloadHash),
+    });
+    const submit = createLearningSubmitService({
+      actorId: async () => owner.id,
+      issued: createSupabaseLearningStateClient(admin),
+      rpc: admin,
+    });
+    const startOne = async () => {
+      const result = await start.startLearning({
+        operationId: crypto.randomUUID(), locale: 'kk', mode: 'practice', topicSlug: seeded.topicSlug,
+      });
+      if (!result.ok) throw new Error('start did not issue a session');
+      const session = result.value.sessions[0];
+      const item = session?.items[0];
+      if (!session || !item) throw new Error('issued session did not contain its expected item');
+      return { session, item };
+    };
+
+    const expired = await startOne();
+    await db.execute(`UPDATE public.sessions SET expires_at = now() - interval '1 minute' WHERE id = $1`, [expired.session.id]);
+    await expect(submit.submitLearning({
+      operationId: crypto.randomUUID(), sessionId: expired.session.id, answers: [{ itemId: expired.item.id, answer: 'A', timeSpentMs: 1 }],
+    })).resolves.toMatchObject({ ok: false, error: 'expired' });
+
+    const quarantined = await startOne();
+    await db.execute(
+      `UPDATE public.question_publications SET status = 'quarantined'
+       WHERE question_version_id = (SELECT question_version_id FROM public.session_items WHERE id = $1)`,
+      [quarantined.item.id],
+    );
+    await expect(submit.submitLearning({
+      operationId: crypto.randomUUID(), sessionId: quarantined.session.id, answers: [{ itemId: quarantined.item.id, answer: 'A', timeSpentMs: 1 }],
+    })).resolves.toMatchObject({ ok: false, error: 'content-unavailable' });
   });
 });

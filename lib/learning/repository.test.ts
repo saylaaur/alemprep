@@ -112,6 +112,16 @@ describe('commitLearningRpc', () => {
       graded_items: [],
     }) })]);
   });
+
+  it('preserves a known permanent PostgreSQL domain failure instead of marking it retryable', async () => {
+    const expired: LearningRpcClient = {
+      rpc: async () => ({ data: null, error: { code: '22023', message: 'expired' } }),
+    };
+
+    await expect(commitLearningRpc(expired, {
+      actorId, operationId, payloadHash: 'abc', sessionId, scoringVersion: 'ent-v1', gradedItems: [],
+    })).resolves.toEqual({ error: 'expired' });
+  });
 });
 
 function approvedVersionRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
@@ -163,6 +173,19 @@ describe('approved immutable version reader', () => {
     };
 
     await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' })).resolves.toEqual({ error: 'content-unavailable' });
+  });
+
+  it('rejects a matching version whose grading pairs omit an issued left option', async () => {
+    const client: LearningContentClient = {
+      readApprovedVersions: async () => ({ data: [approvedVersionRow({
+        type: 'matching',
+        public_body: { stem: 'Сәйкестендір', left: [{ id: 'A', content: 'A' }], right: ['1'] },
+        grading_body: { stem: 'Сәйкестендір', left: [{ id: 'A', content: 'A' }], right: ['1'], correct: {} },
+      })], error: null }),
+    };
+
+    await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' }))
+      .resolves.toEqual({ error: 'content-unavailable' });
   });
 
   it('uses independent bounded reads for each assessment question type', async () => {

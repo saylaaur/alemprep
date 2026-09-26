@@ -159,6 +159,22 @@ describe('learning service', () => {
     })]);
   });
 
+  it('returns a repository availability failure instead of treating it as an issued session', async () => {
+    const service = createLearningService({
+      actorId: async () => '57555555-5555-4555-8555-555555555555',
+      start: async () => ({ sessions: [] }),
+      getState: async () => ({ error: 'not-found' }),
+      loadIssuedSession: async () => ({ error: 'temporarily-unavailable' }),
+      commit: async () => ({ error: 'temporarily-unavailable' }),
+    });
+
+    await expect(service.submit({
+      operationId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      sessionId,
+      answers: [],
+    })).resolves.toMatchObject({ ok: false, error: 'temporarily-unavailable' });
+  });
+
   it('reads state only through the authenticated owner boundary', async () => {
     const reads: unknown[] = [];
     const service = createLearningService({

@@ -37,7 +37,9 @@ export type LearningServiceDependencies = {
     actorId: string;
     sessionId: string;
   }) => Promise<LearningState | { error: Exclude<LearningError, 'unauthenticated' | 'invalid-input'> }>;
-  loadIssuedSession: (actorId: string, sessionId: string) => Promise<IssuedLearningSession | null>;
+  loadIssuedSession: (actorId: string, sessionId: string) => Promise<IssuedLearningSession | null | {
+    error: Exclude<LearningError, 'unauthenticated' | 'invalid-input'>;
+  }>;
   commit: (input: {
     actorId: string;
     operationId: string;
@@ -45,7 +47,7 @@ export type LearningServiceDependencies = {
     sessionId: string;
     scoringVersion: 'ent-v1';
     gradedItems: ServerGradedItem[];
-  }) => Promise<Receipt | { error: Exclude<LearningError, 'unauthenticated' | 'invalid-input'> }>;
+  }) => Promise<Receipt | { error: Exclude<LearningError, 'unauthenticated'> }>;
 };
 
 function stableJson(value: unknown): string {
@@ -193,6 +195,7 @@ export function createLearningService(dependencies: LearningServiceDependencies)
       const actorId = await dependencies.actorId();
       if (!actorId) return failure('unauthenticated');
       const issued = await dependencies.loadIssuedSession(actorId, input.sessionId);
+      if (issued && 'error' in issued) return failure(issued.error);
       if (!issued) return failure('not-found');
 
       const answersByItem = new Map(input.answers.map((entry) => [entry.itemId, entry]));
