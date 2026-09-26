@@ -193,8 +193,7 @@ function isCompleteMatchingGrading(
   const leftIds = new Set(publicBody.left.map((option) => option.id));
   const pairs = Object.entries(gradingBody.correct);
   return pairs.length === leftIds.size
-    && pairs.every(([left, right]) => leftIds.has(left) && publicBody.right.includes(right))
-    && new Set(pairs.map(([, right]) => right)).size === pairs.length;
+    && pairs.every(([left, right]) => leftIds.has(left) && publicBody.right.includes(right));
 }
 
 function versionBase(data: z.output<typeof rowSchema>) {

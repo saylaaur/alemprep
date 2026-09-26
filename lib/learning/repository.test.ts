@@ -188,6 +188,28 @@ describe('approved immutable version reader', () => {
       .resolves.toEqual({ error: 'content-unavailable' });
   });
 
+  it('accepts a complete matching version when two left items share a right answer', async () => {
+    const client: LearningContentClient = {
+      readApprovedVersions: async () => ({ data: [approvedVersionRow({
+        type: 'matching',
+        public_body: {
+          stem: 'Сәйкестендір',
+          left: [{ id: 'A', content: '2 + 2' }, { id: 'B', content: '2 × 2' }],
+          right: ['4', '5'],
+        },
+        grading_body: {
+          stem: 'Сәйкестендір',
+          left: [{ id: 'A', content: '2 + 2' }, { id: 'B', content: '2 × 2' }],
+          right: ['4', '5'],
+          correct: { A: '4', B: '4' },
+        },
+      })], error: null }),
+    };
+
+    await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' }))
+      .resolves.toEqual([expect.objectContaining({ version: expect.objectContaining({ type: 'matching' }) })]);
+  });
+
   it('uses independent bounded reads for each assessment question type', async () => {
     const calls: unknown[] = [];
     const client: LearningContentClient = {
