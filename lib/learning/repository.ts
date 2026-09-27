@@ -700,6 +700,18 @@ function commitTransportError(error: RpcResponse['error']): CommitError {
   return 'temporarily-unavailable';
 }
 
+/** Maps only the explicit SQLSTATE/domain-code pairs raised by the start RPC. */
+function startTransportError(error: RpcResponse['error']): StartRpcError {
+  if (!error || typeof error.message !== 'string' || typeof error.code !== 'string') {
+    return 'temporarily-unavailable';
+  }
+  if (error.code === '22023' && knownStartErrors.has(error.message as StartRpcError)) {
+    return error.message as StartRpcError;
+  }
+  if (error.code === '42501' && error.message === 'forbidden') return 'forbidden';
+  return 'temporarily-unavailable';
+}
+
 /** Strict transport adapter for the service-only, atomic start RPC. */
 export async function startLearningRpc(
   client: LearningRpcClient,
@@ -711,7 +723,7 @@ export async function startLearningRpc(
     payload_hash: input.payloadHash,
     plan: input.plan,
   });
-  if (response.error) return { error: 'temporarily-unavailable' };
+  if (response.error) return { error: startTransportError(response.error) };
   if (isStartedReferences(response.data)) return response.data;
   const error = rpcError(response.data, knownStartErrors);
   if (error) return { error };

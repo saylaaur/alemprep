@@ -81,6 +81,15 @@ describe('start learning RPC adapter', () => {
     await expect(startLearningRpc(rawFailure, { actorId, operationId, payloadHash: 'hash', plan }))
       .resolves.toEqual({ error: 'temporarily-unavailable' });
   });
+
+  it('preserves known SQLSTATE domain errors from the start RPC transport', async () => {
+    const unavailable: LearningRpcClient = {
+      rpc: async () => ({ data: null, error: { code: '22023', message: 'content-unavailable' } }),
+    };
+
+    await expect(startLearningRpc(unavailable, { actorId, operationId, payloadHash: 'hash', plan }))
+      .resolves.toEqual({ error: 'content-unavailable' });
+  });
 });
 
 describe('commitLearningRpc', () => {
