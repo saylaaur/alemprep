@@ -1,5 +1,96 @@
 import { describe, expect, it } from 'vitest';
-import { commitLearningRpc } from './repository';
+import {
+  commitLearningRpc,
+  loadStartReplay,
+  loadLearningState,
+  loadApprovedLearningVersions,
+  startLearningRpc,
+  type LearningContentClient,
+  type LearningReplayClient,
+  type LearningRpcClient,
+  type LearningStateClient,
+} from './repository';
+
+const actorId = '11111111-1111-4111-8111-111111111111';
+const operationId = '22222222-2222-4222-8222-222222222222';
+const versionId = '33333333-3333-4333-8333-333333333333';
+const sessionId = '44444444-4444-4444-8444-444444444444';
+const itemId = '55555555-5555-4555-8555-555555555555';
+
+function client(response: unknown): LearningRpcClient & { calls: unknown[] } {
+  const calls: unknown[] = [];
+  return {
+    calls,
+    rpc: async (name, args) => {
+      calls.push({ name, args });
+      return { data: response, error: null };
+    },
+  };
+}
+
+const plan = {
+  sessions: [{
+    mode: 'practice' as const,
+    locale: 'kk' as const,
+    topicId: '66666666-6666-4666-8666-666666666666',
+    subjectId: '77777777-7777-4777-8777-777777777777',
+    expiresAt: '2026-09-22T12:00:00.000Z',
+    scoringVersion: 'ent-v1' as const,
+    manifestHash: 'sha256:abc',
+    items: [{ versionId }],
+  }],
+};
+
+describe('start learning RPC adapter', () => {
+  it('sends only the server plan and strictly decodes issued session references', async () => {
+    const rpc = client({ sessions: [{
+      id: sessionId,
+      mode: 'practice',
+      expiresAt: '2026-09-22T12:00:00.000Z',
+      itemIds: [itemId],
+    }] });
+
+    await expect(startLearningRpc(rpc, {
+      actorId,
+      operationId,
+      payloadHash: 'a'.repeat(64),
+      plan,
+    })).resolves.toEqual({
+      sessions: [{ id: sessionId, mode: 'practice', expiresAt: '2026-09-22T12:00:00.000Z', itemIds: [itemId] }],
+    });
+    expect(rpc.calls).toEqual([{
+      name: 'start_learning_v1',
+      args: { actor_id: actorId, operation_id: operationId, payload_hash: 'a'.repeat(64), plan },
+    }]);
+  });
+
+  it('does not accept a malformed RPC result as a learning session', async () => {
+    const rpc = client({ sessions: [{ id: sessionId, mode: 'practice', itemIds: [itemId] }] });
+    await expect(startLearningRpc(rpc, { actorId, operationId, payloadHash: 'hash', plan }))
+      .resolves.toEqual({ error: 'temporarily-unavailable' });
+  });
+
+  it('maps only known domain errors and hides raw database failures', async () => {
+    const unavailable = client({ error: 'content-unavailable' });
+    await expect(startLearningRpc(unavailable, { actorId, operationId, payloadHash: 'hash', plan }))
+      .resolves.toEqual({ error: 'content-unavailable' });
+
+    const rawFailure: LearningRpcClient = {
+      rpc: async () => ({ data: null, error: { message: 'relation internal_secret does not exist' } }),
+    };
+    await expect(startLearningRpc(rawFailure, { actorId, operationId, payloadHash: 'hash', plan }))
+      .resolves.toEqual({ error: 'temporarily-unavailable' });
+  });
+
+  it('preserves known SQLSTATE domain errors from the start RPC transport', async () => {
+    const unavailable: LearningRpcClient = {
+      rpc: async () => ({ data: null, error: { code: '22023', message: 'content-unavailable' } }),
+    };
+
+    await expect(startLearningRpc(unavailable, { actorId, operationId, payloadHash: 'hash', plan }))
+      .resolves.toEqual({ error: 'content-unavailable' });
+  });
+});
 
 describe('commitLearningRpc', () => {
   it('uses the closed RPC contract and maps a receipt without exposing the service client', async () => {
@@ -29,5 +120,218 @@ describe('commitLearningRpc', () => {
       actor_id: '22222222-2222-4222-8222-222222222222',
       graded_items: [],
     }) })]);
+  });
+
+  it('preserves a known permanent PostgreSQL domain failure instead of marking it retryable', async () => {
+    const expired: LearningRpcClient = {
+      rpc: async () => ({ data: null, error: { code: '22023', message: 'expired' } }),
+    };
+
+    await expect(commitLearningRpc(expired, {
+      actorId, operationId, payloadHash: 'abc', sessionId, scoringVersion: 'ent-v1', gradedItems: [],
+    })).resolves.toEqual({ error: 'expired' });
+  });
+});
+
+function approvedVersionRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: versionId,
+    question_id: '88888888-8888-4888-8888-888888888888',
+    family_id: '99999999-9999-4999-8999-999999999999',
+    revision: 1,
+    locale: 'kk',
+    type: 'single',
+    public_body: { stem: 'Сұрақ', options: [{ id: 'A', content: '1' }] },
+    grading_body: { stem: 'Сұрақ', options: [{ id: 'A', content: '1' }], correct: 'A' },
+    explanation: null,
+    context_snapshot: null,
+    content_hash: 'sha256:version',
+    question_publications: { status: 'approved' },
+    questions: {
+      topic_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      topics: {
+        slug: 'radicals-and-expressions',
+        subject_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+        subjects: { slug: 'math' },
+      },
+    },
+    ...overrides,
+  };
+}
+
+describe('approved immutable version reader', () => {
+  it('decodes only complete approved immutable rows', async () => {
+    const client: LearningContentClient = {
+      readApprovedVersions: async () => ({ data: [approvedVersionRow()], error: null }),
+    };
+
+    await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' })).resolves.toEqual([expect.objectContaining({
+      approvalStatus: 'approved',
+      topicSlug: 'radicals-and-expressions',
+      subjectSlug: 'math',
+      version: expect.objectContaining({ id: versionId, locale: 'kk', type: 'single' }),
+    })]);
+  });
+
+  it('fails closed when an approved row carries malformed JSON instead of casting it', async () => {
+    const client: LearningContentClient = {
+      readApprovedVersions: async () => ({
+        data: [approvedVersionRow({ public_body: { stem: 'Сұрақ', options: [{ id: 'A', content: '1' }], correct: 'A' } })],
+        error: null,
+      }),
+    };
+
+    await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' })).resolves.toEqual({ error: 'content-unavailable' });
+  });
+
+  it('rejects a matching version whose grading pairs omit an issued left option', async () => {
+    const client: LearningContentClient = {
+      readApprovedVersions: async () => ({ data: [approvedVersionRow({
+        type: 'matching',
+        public_body: { stem: 'Сәйкестендір', left: [{ id: 'A', content: 'A' }], right: ['1'] },
+        grading_body: { stem: 'Сәйкестендір', left: [{ id: 'A', content: 'A' }], right: ['1'], correct: {} },
+      })], error: null }),
+    };
+
+    await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' }))
+      .resolves.toEqual({ error: 'content-unavailable' });
+  });
+
+  it('accepts a complete matching version when two left items share a right answer', async () => {
+    const client: LearningContentClient = {
+      readApprovedVersions: async () => ({ data: [approvedVersionRow({
+        type: 'matching',
+        public_body: {
+          stem: 'Сәйкестендір',
+          left: [{ id: 'A', content: '2 + 2' }, { id: 'B', content: '2 × 2' }],
+          right: ['4', '5'],
+        },
+        grading_body: {
+          stem: 'Сәйкестендір',
+          left: [{ id: 'A', content: '2 + 2' }, { id: 'B', content: '2 × 2' }],
+          right: ['4', '5'],
+          correct: { A: '4', B: '4' },
+        },
+      })], error: null }),
+    };
+
+    await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' }))
+      .resolves.toEqual([expect.objectContaining({ version: expect.objectContaining({ type: 'matching' }) })]);
+  });
+
+  it('uses independent bounded reads for each assessment question type', async () => {
+    const calls: unknown[] = [];
+    const client: LearningContentClient = {
+      readApprovedVersions: async (locale, selection) => {
+        calls.push({ locale, selection });
+        return { data: [], error: null };
+      },
+    };
+
+    await expect(loadApprovedLearningVersions(client, 'kk', {
+      subjectSlugs: ['math'], types: ['single', 'multi', 'matching'],
+    })).resolves.toEqual([]);
+    expect(calls).toEqual([
+      { locale: 'kk', selection: { subjectSlugs: ['math'], type: 'single' } },
+      { locale: 'kk', selection: { subjectSlugs: ['math'], type: 'multi' } },
+      { locale: 'kk', selection: { subjectSlugs: ['math'], type: 'matching' } },
+    ]);
+  });
+});
+
+describe('learning state reader', () => {
+  it('returns an owner active session through the public question allowlist', async () => {
+    const client: LearningStateClient = {
+      readSession: async () => ({ data: {
+        id: sessionId,
+        user_id: actorId,
+        status: 'active',
+        mode: 'practice',
+        expires_at: '2026-09-22T12:00:00.000Z',
+        receipt: null,
+        session_items: [{ id: itemId, position: 0, question_versions: approvedVersionRow() }],
+      }, error: null }),
+    };
+
+    const state = await loadLearningState(client, actorId, sessionId, new Date('2026-09-22T10:00:00.000Z'));
+    expect(state).toMatchObject({ status: 'active', session: { id: sessionId, items: [{ id: itemId, question: { id: versionId } }] } });
+    expect(JSON.stringify(state)).not.toContain('correct');
+  });
+
+  it('does not distinguish a foreign session from an absent session', async () => {
+    const client: LearningStateClient = {
+      readSession: async () => ({ data: {
+        id: sessionId,
+        user_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        status: 'active',
+        mode: 'practice',
+        expires_at: '2026-09-22T12:00:00.000Z',
+        receipt: null,
+        session_items: [],
+      }, error: null }),
+    };
+
+    await expect(loadLearningState(client, actorId, sessionId)).resolves.toEqual({ error: 'not-found' });
+  });
+
+  it('returns only a strict receipt after an owner session is submitted', async () => {
+    const client: LearningStateClient = {
+      readSession: async () => ({ data: {
+        id: sessionId,
+        user_id: actorId,
+        status: 'submitted',
+        mode: 'practice',
+        expires_at: '2026-09-22T12:00:00.000Z',
+        session_items: [],
+        receipt: {
+          sessionId,
+          acceptedAt: '2026-09-22T10:05:00.000Z',
+          score: 1, maxScore: 1, correctCount: 1, totalQuestions: 1,
+          xpAwarded: 10, integrityVersion: 1, scoringVersion: 'ent-v1',
+        },
+      }, error: null }),
+    };
+
+    await expect(loadLearningState(client, actorId, sessionId)).resolves.toEqual({
+      status: 'submitted',
+      receipt: expect.objectContaining({ sessionId, score: 1 }),
+    });
+  });
+});
+
+describe('learning start replay reader', () => {
+  it('restores the original issued session before a changed publication is consulted', async () => {
+    const client: LearningReplayClient = {
+      readStartReceipt: async () => ({ data: {
+        kind: 'learning.start',
+        payload_hash: 'same-request',
+        result: { sessions: [{ id: sessionId, mode: 'practice', expiresAt: '2026-09-22T12:00:00.000Z', itemIds: [itemId] }] },
+      }, error: null }),
+      readSession: async () => ({ data: {
+        id: sessionId, user_id: actorId, status: 'active', mode: 'practice',
+        expires_at: '2026-09-22T12:00:00.000Z', receipt: null,
+        session_items: [{ id: itemId, position: 0, question_versions: approvedVersionRow({
+          question_publications: { status: 'quarantined' },
+        }) }],
+      }, error: null }),
+    };
+
+    await expect(loadStartReplay(client, actorId, operationId, 'same-request')).resolves.toMatchObject({
+      sessions: [{ id: sessionId, items: [{ id: itemId, question: { id: versionId } }] }],
+    });
+  });
+
+  it('returns an operation conflict without reading issued sessions when the hash changed', async () => {
+    const calls: unknown[] = [];
+    const client: LearningReplayClient = {
+      readStartReceipt: async () => ({ data: { kind: 'learning.start', payload_hash: 'original', result: {} }, error: null }),
+      readSession: async () => {
+        calls.push('session');
+        return { data: null, error: null };
+      },
+    };
+
+    await expect(loadStartReplay(client, actorId, operationId, 'changed')).resolves.toEqual({ error: 'operation-conflict' });
+    expect(calls).toEqual([]);
   });
 });

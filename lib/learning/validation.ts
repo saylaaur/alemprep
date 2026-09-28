@@ -76,7 +76,36 @@ const startSchema = z.object({
   topicSlug: z.string().trim().min(1).max(160).optional(),
   second: z.enum(['physics', 'informatics']).optional(),
   assignmentId: uuid.optional(),
-}).strict();
+}).strict().superRefine((input, context) => {
+  if (input.mode === 'practice' && !input.topicSlug) {
+    context.addIssue({
+      code: 'custom',
+      path: ['topicSlug'],
+      message: 'practice requires a topic selector',
+    });
+  }
+  if (input.mode === 'practice' && input.second) {
+    context.addIssue({
+      code: 'custom',
+      path: ['second'],
+      message: 'practice does not accept a second subject selector',
+    });
+  }
+  if (input.mode !== 'practice' && !input.second) {
+    context.addIssue({
+      code: 'custom',
+      path: ['second'],
+      message: 'assessment modes require a second subject selector',
+    });
+  }
+  if (input.mode !== 'practice' && input.topicSlug) {
+    context.addIssue({
+      code: 'custom',
+      path: ['topicSlug'],
+      message: 'assessment modes do not accept a topic selector',
+    });
+  }
+});
 
 const submitSchema = z.object({
   operationId: uuid,
@@ -100,6 +129,10 @@ export function validateStart(raw: unknown): StartInput {
   assertSafeObjectKeys(raw);
   assertPayloadSize(raw);
   return startSchema.parse(raw);
+}
+
+export function validateSessionId(raw: unknown): string {
+  return uuid.parse(raw);
 }
 
 export function validateSubmit(raw: unknown): SubmitInput {

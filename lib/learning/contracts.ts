@@ -53,6 +53,10 @@ export type Receipt = {
 export type PublicSessionItem = { id: string; position: number; question: PublicQuestion };
 export type StartedSession = { id: string; mode: LearningMode; expiresAt: string; items: PublicSessionItem[] };
 export type StartedLearning = { sessions: StartedSession[] };
+export type LearningState =
+  | { status: 'active'; session: StartedSession }
+  | { status: 'submitted'; receipt: Receipt }
+  | { status: 'expired' | 'cancelled'; sessionId: string };
 export type LearningReview = {
   receipt: Receipt;
   items: {
