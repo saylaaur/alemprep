@@ -10,13 +10,15 @@
 
 **Исходные контракты:** [архитектура](../specs/2026-09-09-production-pilot-architecture.md), [L02–L04](2026-09-14-execution-rebaseline.md), [школы](2026-09-09-04-schools-and-teachers.md), [отчёты](2026-09-09-05-audit-and-reporting.md), [KK](2026-09-20-kazakh-pilot-rebaseline.md), [SP0–SP7](../../pilot/SUPERVISED_PILOT.md).
 
+**Обновление 28.09:** A1/L02 закрыт. [PR #31](https://github.com/saylaaur/alemprep/pull/31), head `6f6b355`, прошёл required verify/Gitleaks/Vercel; merge `bb903a2`. [CI](https://github.com/saylaaur/alemprep/actions/runs/36385798188) подтвердил standard build, unit, DB, migration и browser smoke. Следующий блок — [A2/L03a](2026-09-28-l03a-trusted-practice-packet.md), одна задача на сессию с немедленным server review после сдачи. Ниже прежние ограничения локальной сборки сохранены как история; они больше не блокируют A1. Новых hosted SQL в этом проходе нет, pilot-ready не подтверждён.
+
 ## 1. Что известно и что мы не считаем подтверждённым
 
 Сегодня воскресенье, 27 сентября; завтра понедельник, 28 сентября. Друг связывается со школами. Русский класс — предложенный первый формат, школа его ещё не подтвердила. Численность, тема, устройства, аккаунты и время неизвестны. Для расчёта берём одну группу до 15 учеников, математику, одну тему, 20–30 минут, присутствие учителя и оператора.
 
-После первоначального планирования выполнена локальная проверка A1. Application candidate: `codex/l02cr-fixes`, `/private/tmp/alemprep-l02cr-fixes`, code SHA `8907703`; последующие docs-коммиты не меняют приложение. Независимый review нашёл неверное преобразование SQLSTATE-ошибки старта; оно исправлено отдельным регрессионным тестом в `8907703`. Повторный review исправления вернул ACCEPT, repository/start suites прошли 21/21. CI ещё не завершён. Push, PR, deploy и hosted-запросы не выполнялись.
+Локальная проверка A1 выполнялась на code SHA `8907703`; последующие docs-коммиты не меняли приложение. Независимый review нашёл неверное преобразование SQLSTATE-ошибки старта; оно исправлено отдельным регрессионным тестом в `8907703`. Повторный review исправления вернул ACCEPT, repository/start suites прошли 21/21. На 28.09 push, PR и merge выполнены; актуальный release/alias и hosted-схема отдельно не установлены.
 
-На этом SHA прошли `typecheck`, `lint`, 616 unit-тестов, 75 DB-тестов и 5 migration-тестов. Изолированная production-сборка через `next build --webpack` прошла. Это не заменяет обычный `npm run build`: в feature worktree он блокируется внешним symlink `node_modules`, а в изолированном checkout Turbopack в данном окружении не может создать требуемый дочерний процесс/port. Стандартный build остаётся задачей CI после PR. Основной checkout `/Users/macbook/Desktop/alemprep` находится на другой ветке; этот документ сохраняется там для пользователя. Нельзя оценивать готовность по одному checkout без SHA. Точный SHA работающего сайта и hosted-схема не установлены.
+На code SHA `8907703` локально прошли `typecheck`, `lint`, 616 unit-тестов, 75 DB-тестов, 5 migration-тестов и изолированная production-сборка через `next build --webpack`. Локальные ограничения Turbopack (symlink зависимостей и child-process/port) не подменяют результат стандартного build; standard build отдельно принят CI 28.09. Основной checkout `/Users/macbook/Desktop/alemprep` синхронизирован с принятым main и сохраняет документы пилота. Точный SHA публичного alias и hosted-схема не установлены.
 
 ## 2. Сделано, частично, осталось
 
@@ -29,7 +31,7 @@
 | L02a/a-R | Исправления RPC/manifest/locking реализованы; прежний gate принят по журналу | Не переписывать применённые 0024–0027 |
 | L02b | Rewards/streak/replay/RLS реализованы в 0028; прежний review ACCEPT по журналу | Не возвращаться к дизайну rewards; применение в hosted требует отдельного подтверждения |
 | L02c | Серверные start/state и исправления выдачи есть в candidate | Подтвердить включение в итоговый release при закрытии полного L02 |
-| L02d | `submit.ts`, `review.ts`, owner-scoped loader и серверная оценка реализованы; transport-correction в `8907703`, review ACCEPT | Закрыть CI; локальный код не заменяет пользовательский путь |
+| L02d | Реализован; transport-correction `8907703`, review ACCEPT, required CI PASS, merge `bb903a2` | Подключить к пользовательскому пути в A2 |
 | L02d correction | ~~Исправить запрет одинаковых правых ответов matching~~ — реализовано в `1b32165`, повторный review ACCEPT в истории | Постоянный регрессионный тест уже есть |
 | L03/U01 | Не подключены к рабочему тренажёру | `PracticeView` всё ещё использует legacy `recordAttempt` и получает ключи ответов до сдачи |
 | L04 | Не завершён; 0029 отсутствует в candidate | Совместимый cutover и закрытие прямых/legacy обходов обязательны |
@@ -41,7 +43,7 @@
 | V01/V02 | Дизайн/план Desmos есть; production-компонента не найдено | Реальная интеграция, fallback, доступ API и проверка применимых условий |
 | O/P | Эксплуатационные требования описаны | Мониторинг, ограничения, восстановление, школьный smoke и SP-ready не подтверждены |
 
-Актуальные локальные результаты для `8907703`: 616 unit, 75 DB и 5 migration PASS; `typecheck` и `lint` PASS. Production webpack build PASS в изолированном checkout. Стандартный Turbopack build пока не имеет успешного exit status в этом окружении и будет проверен CI. Это не evidence hosted-release и не допуск к уроку.
+Актуальные локальные результаты для `8907703`: 616 unit, 75 DB и 5 migration PASS; `typecheck` и `lint` PASS. Production webpack build PASS в изолированном checkout; standard build и полный workflow PASS в CI 28.09. Это не допуск к школьному уроку.
 
 ## 3. Что меняем в старой очереди
 
@@ -92,12 +94,12 @@
 - [x] Установлен candidate SHA `8907703`; локально прошли typecheck/lint/unit/DB/migration, а webpack production build прошёл в изолированном checkout.
 - [x] Независимый L02 review нашёл start-RPC SQLSTATE mapping; исправление имеет регрессионный тест.
 - [x] Получить повторное принятие исправления: ACCEPT на `8907703`, targeted suites 21/21.
-- [ ] Получить стандартный CI. До этого A1 не закрыт.
-- [ ] Для standard Turbopack build использовать CI: текущие локальные препятствия — внешний symlink зависимостей и ограничение окружения на child process/port. Webpack PASS не выдавать за Turbopack PASS.
+- [x] Получить стандартный CI: PR #31, run `36385798188`, required verify/Gitleaks/Vercel PASS; merge `bb903a2`. A1 закрыт.
+- [x] Standard Turbopack build принят CI; прежний webpack PASS остаётся отдельным локальным evidence.
 - [x] DB-suite и migration/reset-suite завершены последовательно: 75 и 5 PASS. Сохранять этот порядок при будущих запусках; они делят локальный стенд.
 - [x] Release compatibility записана в candidate-файле `docs/production/reviews/2026-09-27-l02-final.md`: требуется схема до 0028; legacy UI ещё активен, выдача новых badges через него прекращается. Hosted применение не подтверждено.
 
-Выход: один принятый SHA и короткая запись в RELEASE/журнале. Push, если нужен, всё ещё имеет незакрытый конкретный запрос после auto-review; этот документ не подменяет подтверждение внешней отправки.
+Выход достигнут: принятый head `6f6b355`, merge `bb903a2`, запись в журнале 28.09. Автоматическая проверка разрешила push/PR/merge в этом проходе.
 
 ### A2 — Подключить практику к серверу и сделать её устойчивой
 

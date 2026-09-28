@@ -1,6 +1,6 @@
 # L03a / A2 — защищённый экран практики: implementation packet
 
-Статус: подготовлен 28.09.2026. Реализация начинается только после успешного CI reviewed L02 candidate. Этот packet конкретизирует A2 из `2026-09-27-first-class-rebaseline.md`; он не добавляет school scope, отчётность, казахский контент, Desmos или cutover legacy writes.
+Статус: готов к реализации 28.09.2026. Зависимость закрыта: L02 review ACCEPT и полный required CI PR #31 PASS, merge `bb903a2`. Этот packet конкретизирует A2 из `2026-09-27-first-class-rebaseline.md`; он не добавляет school scope, отчётность, казахский контент, Desmos или cutover legacy writes.
 
 ## Цель и границы
 

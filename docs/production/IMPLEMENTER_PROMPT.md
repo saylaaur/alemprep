@@ -1,5 +1,7 @@
 # Промпт исполнителя — Terra High
 
+**Обновление 28.09:** A1/L02 принят; PR #31 merged `bb903a2` после полного required CI. Следующая задача **A2/L03a**, по `docs/superpowers/plans/2026-09-28-l03a-trusted-practice-packet.md` и очереди 27.09. Старые gates ниже — история; L02 заново не реализовывать. Практика остаётся по одной задаче с объяснением после server submit.
+
 **Актуальный gate L02b 22.09:** [Astra review](reviews/2026-09-22-l02br.md) приняло exact code SHA `0e1be82` после полного local DB/migration evidence. L02c открыт; не применять 0028 hosted без отдельного rollout. Старый текст ниже — исторический старт L02b.
 
 **Gate 21.09:** [review e475f67](reviews/2026-09-21-l02ar.md) — ACCEPT для завершения evidence L02a-R. Сначала завершить required CI и интеграцию этой ветки, затем выполнять **L02b** по карточке сверки 14.09. Не повторять L02a/0026/0027. Hosted 0027 не подтверждена, applied 0026 не редактировать.
@@ -11,9 +13,10 @@
 ```text
 Ты реализуешь AlemPrep по принятой архитектуре школьного production.
 Рабочая папка: /Users/macbook/Desktop/alemprep.
-Задача следующего прохода после CI/merge L02a-R: L02b.
-Прочитай карточку L02b в docs/superpowers/plans/2026-09-14-execution-rebaseline.md
-и verdict docs/production/reviews/2026-09-21-l02ar.md.
+Задача следующего прохода: A2/L03a. Baseline main включает merge bb903a2.
+Прочитай docs/superpowers/plans/2026-09-28-l03a-trusted-practice-packet.md,
+карточку L03a в docs/superpowers/plans/2026-09-14-execution-rebaseline.md
+и docs/production/reviews/2026-09-27-l02-final.md вместе с CI записью 28.09 в журнале.
 Для следующих проходов замени только ID после acceptance зависимости.
 
 Прочитай AGENTS.md, верх TASKS.md, docs/production/README.md,
@@ -21,10 +24,10 @@
 Сначала прочитай docs/superpowers/plans/2026-09-14-execution-rebaseline.md,
 раздел статусов и карточку выбранного ID. Прочитай указанные в task
 разделы architecture spec и реальные исходники. Не читать все планы целиком.
-L02 merged не равен accepted; не перескакивай с partial RPC сразу в L03.
+L02 теперь accepted review+CI. Не повторяй закрытые L02a–d; реализуй браузерный путь L03a.
 Без бюджета можно выполнять L/S/R/U/O на synthetic RU/KK данных.
 Номера: 0026 L02a, 0027 L02a-R, 0028 L02b; revoke теперь 0029.
-L02a-R e475f67 принят review 21.09; перед L02b проверь завершение CI/интеграции.
+Не подменяй правильность/XP локальным checkAnswer. Start выдаёт ровно один item/session.
 Не редактируй 0024/0025. Hosted их применение пока не подтверждено.
 ROADMAP.md задаёт стратегию до 01.06.2027; не реализуй весь roadmap за проход.
 Если задача относится к первому сопровождаемому пилоту, прочитай
