@@ -10,6 +10,7 @@ const execFileAsync = promisify(execFile);
 const l01MigrationPath = `${process.cwd()}/supabase/migrations/0024_learning_integrity_schema.sql`;
 const l02MigrationPath = `${process.cwd()}/supabase/migrations/0025_learning_integrity_rpc.sql`;
 const l02aCorrectionMigrationPath = `${process.cwd()}/supabase/migrations/0027_learning_rpc_validation.sql`;
+const l02bRewardsMigrationPath = `${process.cwd()}/supabase/migrations/0028_learning_rewards.sql`;
 const supabaseCli = `${process.cwd()}/node_modules/.bin/supabase`;
 
 function testTargetEnv() {
@@ -325,6 +326,98 @@ describe('0024 learning integrity migration path', () => {
       )).toBe(true);
     } finally {
       if (actor) {
+        await db.execute('DELETE FROM public.attempts WHERE user_id = $1', [actor.id]);
+        await db.execute(
+          `DELETE FROM public.session_items
+           WHERE session_id IN (SELECT id FROM public.sessions WHERE user_id = $1)`,
+          [actor.id]
+        );
+        await db.execute('DELETE FROM public.reward_ledger WHERE user_id = $1', [actor.id]);
+        await db.execute('DELETE FROM public.operation_receipts WHERE actor_id = $1', [actor.id]);
+        await db.execute('DELETE FROM public.audit_events WHERE actor_id = $1', [actor.id]);
+        await db.execute('DELETE FROM public.sessions WHERE user_id = $1', [actor.id]);
+      }
+      await db.close();
+    }
+  }, 90_000);
+
+  it('preserves an accepted 0027 receipt and applies L02b rewards to an active issued session', async () => {
+    await resetTo('0027');
+    const db = await createDbHarness();
+    let actor: TestActor | undefined;
+    try {
+      actor = await db.actor('migration-l02b');
+      const seeded = await seedApprovedVersion(db);
+      const acceptedStart = await db.rpc('service', 'start_learning_v1', {
+        actor_id: actor.id,
+        operation_id: crypto.randomUUID(),
+        payload_hash: 'start:before-0028:accepted',
+        plan: trustedPlan(seeded),
+      });
+      expect(acceptedStart.status, JSON.stringify(acceptedStart.data)).toBe(200);
+      const acceptedSession = (acceptedStart.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+      const acceptedSubmitArgs = {
+        actor_id: actor.id,
+        operation_id: crypto.randomUUID(),
+        payload_hash: 'submit:before-0028:accepted',
+        session_id: acceptedSession.id,
+        scoring_version: 'ent-v1',
+        graded_items: [{
+          itemId: acceptedSession.itemIds[0], questionVersionId: seeded.versionId,
+          answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1_000,
+        }],
+      };
+      const acceptedBeforeUpgrade = await db.rpc('service', 'commit_learning_v1', acceptedSubmitArgs);
+      expect(acceptedBeforeUpgrade.status, JSON.stringify(acceptedBeforeUpgrade.data)).toBe(200);
+
+      const activeStart = await db.rpc('service', 'start_learning_v1', {
+        actor_id: actor.id,
+        operation_id: crypto.randomUUID(),
+        payload_hash: 'start:before-0028:active',
+        plan: trustedPlan(seeded),
+      });
+      expect(activeStart.status, JSON.stringify(activeStart.data)).toBe(200);
+      const activeSession = (activeStart.data as { sessions: { id: string; itemIds: string[] }[] }).sessions[0]!;
+
+      await applyMigration(db, l02bRewardsMigrationPath);
+
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('authenticated', 'public.commit_learning_v1_l02a(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('anon', 'public.commit_learning_v1_l02a(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(false);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('service_role', 'public.commit_learning_v1_l02a(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(true);
+
+      const receiptReplay = await db.rpc('service', 'commit_learning_v1', acceptedSubmitArgs);
+      expect(receiptReplay.status, JSON.stringify(receiptReplay.data)).toBe(200);
+      expect(receiptReplay.data).toEqual(acceptedBeforeUpgrade.data);
+
+      const activeSubmit = await db.rpc('service', 'commit_learning_v1', {
+        actor_id: actor.id,
+        operation_id: crypto.randomUUID(),
+        payload_hash: 'submit:after-0028:issued-before-upgrade',
+        session_id: activeSession.id,
+        scoring_version: 'ent-v1',
+        graded_items: [{
+          itemId: activeSession.itemIds[0], questionVersionId: seeded.versionId,
+          answer: 'A', points: 1, maxPoints: 1, timeSpentMs: 1_000,
+        }],
+      });
+      expect(activeSubmit.status, JSON.stringify(activeSubmit.data)).toBe(200);
+      expect(await db.scalar<number>('SELECT current_streak FROM public.profiles WHERE id = $1', [actor.id])).toBe(1);
+      expect(await db.scalar<number>(
+        `SELECT count(*)::int FROM public.user_achievements
+         WHERE user_id = $1 AND achievement_key = 'first-question'`, [actor.id]
+      )).toBe(1);
+      expect(await db.scalar<boolean>(
+        `SELECT has_function_privilege('authenticated', 'public.commit_learning_v1(uuid,uuid,text,uuid,jsonb,text)', 'EXECUTE')`
+      )).toBe(false);
+    } finally {
+      if (actor) {
+        await db.execute('DELETE FROM public.user_achievements WHERE user_id = $1', [actor.id]);
         await db.execute('DELETE FROM public.attempts WHERE user_id = $1', [actor.id]);
         await db.execute(
           `DELETE FROM public.session_items

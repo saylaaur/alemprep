@@ -9,7 +9,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['tests/db/**/*.test.ts'],
+    include: ['tests/db/**/*.test.ts', 'tests/review/l02c-review.probe.ts'],
     exclude: ['tests/db/learning-migration-path.test.ts'],
     testTimeout: 30_000,
     hookTimeout: 30_000,

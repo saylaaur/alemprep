@@ -1,5 +1,7 @@
 # Промпт исполнителя — Terra High
 
+**Актуальный gate L02b 22.09:** [Astra review](reviews/2026-09-22-l02br.md) приняло exact code SHA `0e1be82` после полного local DB/migration evidence. L02c открыт; не применять 0028 hosted без отдельного rollout. Старый текст ниже — исторический старт L02b.
+
 **Gate 21.09:** [review e475f67](reviews/2026-09-21-l02ar.md) — ACCEPT для завершения evidence L02a-R. Сначала завершить required CI и интеграцию этой ветки, затем выполнять **L02b** по карточке сверки 14.09. Не повторять L02a/0026/0027. Hosted 0027 не подтверждена, applied 0026 не редактировать.
 
 **Контентный приоритет:** сначала читать `docs/superpowers/plans/2026-09-20-kazakh-pilot-rebaseline.md`. K00–K03 допускает native-KK без фиктивного RU source. Не запускать gen:all/legacy publish; не ждать оплаты Google для технических задач. Проверять review и integration раздельно.

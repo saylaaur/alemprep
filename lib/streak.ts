@@ -1,15 +1,16 @@
 /**
  * Логика дневного стрика и заморозок (как в Duolingo). Чистые функции — тестируются без БД.
- * Даты везде — строки YYYY-MM-DD в локальном времени сервера,
- * тот же базис, что у getTodayAttemptsCount (локальная полночь).
+ * Даты везде — строки YYYY-MM-DD в Asia/Almaty. Это совпадает с server-side
+ * reward policy и не зависит от timezone процесса Vercel/Node.
  */
 
-/** YYYY-MM-DD в локальном времени (toISOString давал бы UTC-сдвиг). */
+/** YYYY-MM-DD в Asia/Almaty (toISOString и Date#get* зависят от timezone процесса). */
 export function localDateStr(d: Date = new Date()): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Almaty', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(d);
+  const values = new Map(parts.map((part) => [part.type, part.value]));
+  return `${values.get('year')}-${values.get('month')}-${values.get('day')}`;
 }
 
 /** День перед date (YYYY-MM-DD), без влияния таймзоны. */

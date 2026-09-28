@@ -80,6 +80,11 @@ describe('finishExamSession — идемпотентность', () => {
     expect((h.store.profiles[0].xp as number)).toBeGreaterThan(0);
   });
 
+  it('legacy пробник не создаёт недоверенные достижения после L02b', async () => {
+    expect(await finishExamSession(input)).toMatchObject({ ok: true });
+    expect(h.store.user_achievements).toHaveLength(0);
+  });
+
   it('завершение пробника считается активностью дня и продлевает стрик', async () => {
     const res = await finishExamSession(input);
 
@@ -360,6 +365,7 @@ describe('recordAttempt — сохранение прогресса', () => {
       question_id: 'Q1',
       is_correct: true,
     });
+    expect(h.store.user_achievements).toHaveLength(0);
   });
 
   it('неверный ответ не начисляет XP, но попытка сохраняется', async () => {

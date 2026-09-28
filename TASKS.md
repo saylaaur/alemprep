@@ -1,6 +1,10 @@
 # AlemPrep — Бэклог задач
 
-> **Актуальный порядок 27.09.2026:** [первый класс и пересмотр очереди](docs/superpowers/plans/2026-09-27-first-class-rebaseline.md). L02c/d и matching correction реализованы в candidate `1b32165`, полный L02/build/deploy ещё не принят. Далее: A1 интеграция → A2 защищённая практика → A3 участники/программа → A4 закрытие обходов → A5 сводка → A6 выпуск. Сначала согласованный RU-класс, затем KK/кабинет/Desmos. Нижние «следующая задача L02a/L02b» — исторические статусы; не начинать выполненную работу заново. 27.09 тесты не запускались; подробные границы evidence — в новом документе.
+> **Актуальный порядок 28.09.2026:** A1/L02 принят review и полным CI; [PR #31](https://github.com/saylaaur/alemprep/pull/31) merged как `bb903a2`. Следующая задача — **A2/L03a**, [packet тренажёра](docs/superpowers/plans/2026-09-28-l03a-trusted-practice-packet.md): одна задача → серверная проверка → объяснение. Затем A3 участники/программа → A4 закрытие обходов → A5 сводка → A6 выпуск по [очереди первого класса](docs/superpowers/plans/2026-09-27-first-class-rebaseline.md). Нижние «следующая задача L02a/L02b» — исторические статусы, не повторять выполненную работу. Hosted schema и допуск учеников этим merge не подтверждены.
+
+**Исторический gate 23.09 — L02c-R:** четыре дефекта из [review f0492b6](docs/production/reviews/2026-09-23-l02c.md) исправлены; повторный review и общая приёмка L02 закрыты в PR #31.
+
+**L02b accepted 22.09:** [Astra review](docs/production/reviews/2026-09-22-l02br.md) приняло exact code SHA `0e1be82` после local DB/migration gates. L02c открыт; 0028 всё ещё не применять hosted без отдельного rollout.
 
 > Приоритизированный список реальных задач. Контекст проекта — в `CLAUDE.md`, стратегия — в `ROADMAP.md`.
 >
@@ -33,7 +37,7 @@
 Основной вход исполнителя: [сверка 14.09 и карточки Terra High](docs/superpowers/plans/2026-09-14-execution-rebaseline.md), [промпт Terra](docs/production/IMPLEMENTER_PROMPT.md), [журнал](docs/production/EXECUTION_LOG.md). **Следующая ready задача — L02a-R (review 15.09).** E02 и L01 в main; L02 смержен частично и требует исправлений/доведения L02a–d до Astra gate. Затем L03a–d и L04; остальные блоки — по [production-плану](docs/production/README.md). C00b технически подготовлен: деньги нужны для реального перевода, а не для продолжения разработки на synthetic RU/KK. Применение hosted 0024/0025 не подтверждено. Новые номера будущих миграций — в сверке 14.09; старые SQL не менять.
 
 - [ ] **L02a → L02a-R:** candidate `a502299` получил CHANGES REQUIRED 15.09: [4 воспроизведённых дефекта и карточка исправлений](docs/production/reviews/2026-09-15-l02a.md). Корректировки 0027 не менялись; расширенное DB evidence подготовлено в `codex/l02ar-evidence-completion`; повторный Astra gate ещё нужен. 0026 применена по сообщению владельца; не менять. L02b ещё не открыт.
-- [ ] **L02b:** атомарные reward/streak/achievement invariants; 0028 rewards migration. Astra gate.
+- [x] **L02b:** атомарные reward/streak/achievement invariants; 0028 rewards migration. Astra accepted `0e1be82`; hosted rollout отдельно.
 - [ ] **L02c/L02d:** production server start/state/submit/review и полная приёмка L02.
 - [ ] **L03a–d/L04:** перевести все пользовательские режимы, закрыть обходы; совместимая выкладка и revoke 0029.
 - [ ] **Контент отдельно:** после бюджета выполнить sample→human review→C00c/C01, без автопубликации. Synthetic C/S/R код может продолжаться до оплаты.
