@@ -7,6 +7,7 @@ const inputSchema = z.object({
   operatorId: z.uuid(),
   coordinatorId: z.uuid(),
   schoolId: z.uuid(),
+  operationId: z.uuid(),
   dryRun: z.boolean(),
 }).strict();
 
@@ -41,37 +42,21 @@ export async function provisionSchool(input: ProvisionSchoolInput): Promise<{ sc
   if (input.dryRun) return { schoolId: input.schoolId, created: false };
 
   const supabase = getServiceClient();
-  const existing = await supabase.from('schools').select('id, name').eq('id', input.schoolId).maybeSingle();
-  if (existing.error) throw new Error(`Could not inspect school: ${existing.error.message}`);
-  if (existing.data) {
-    if (existing.data.name !== input.schoolName) throw new Error('Refusing to reuse a school id with a different name');
-    return { schoolId: input.schoolId, created: false };
+  const response = await supabase.rpc('pilot_provision_school_v1', {
+    operation_id: input.operationId,
+    requested_school_id: input.schoolId,
+    school_name: input.schoolName,
+    coordinator_id: input.coordinatorId,
+    operator_id: input.operatorId,
+  });
+  if (response.error || !response.data || typeof response.data !== 'object' || Array.isArray(response.data)) {
+    throw new Error(`Could not provision school: ${response.error?.message ?? 'empty result'}`);
   }
-
-  const school = await supabase.from('schools').insert({
-    id: input.schoolId,
-    name: input.schoolName,
-    status: 'active',
-    timezone: 'Asia/Almaty',
-  }).select('id').single();
-  if (school.error || !school.data) throw new Error(`Could not create school: ${school.error?.message ?? 'empty result'}`);
-
-  try {
-    const membership = await supabase.from('school_memberships').insert({
-      school_id: input.schoolId,
-      user_id: input.coordinatorId,
-      role: 'coordinator',
-    });
-    if (membership.error) throw new Error(`Could not assign coordinator: ${membership.error.message}`);
-  } catch (error) {
-    await supabase.from('schools').delete().eq('id', input.schoolId);
-    throw error;
+  const result = response.data as { schoolId?: unknown; created?: unknown; error?: unknown };
+  if (result.error || result.schoolId !== input.schoolId || typeof result.created !== 'boolean') {
+    throw new Error(`Could not provision school: ${typeof result.error === 'string' ? result.error : 'invalid result'}`);
   }
-
-  // operatorId is intentionally accepted for the audit handoff, but is not
-  // inserted as a browser-visible school role. Provisioning remains service-only.
-  void input.operatorId;
-  return { schoolId: input.schoolId, created: true };
+  return { schoolId: input.schoolId, created: result.created };
 }
 
 async function main(): Promise<void> {
@@ -81,10 +66,11 @@ async function main(): Promise<void> {
     operatorId: arg('operator-id'),
     coordinatorId: arg('coordinator-id'),
     schoolId,
+    operationId: arg('operation-id') ?? randomUUID(),
     dryRun: !process.argv.includes('--apply'),
   });
   if (!input) {
-    throw new Error('Usage: tsx scripts/pilot/provision-school.ts --school-name=<name> --operator-id=<uuid> --coordinator-id=<uuid> [--school-id=<uuid>] [--apply]');
+    throw new Error('Usage: tsx scripts/pilot/provision-school.ts --school-name=<name> --operator-id=<uuid> --coordinator-id=<uuid> [--school-id=<uuid>] [--operation-id=<uuid>] [--apply]');
   }
   const result = await provisionSchool(input);
   console.log(JSON.stringify(result));

@@ -383,6 +383,15 @@ export type PilotAssignmentReceipt = {
   created_at: string;
 };
 
+/** Service-only idempotency receipt for an atomic school provisioning operation. */
+export type PilotProvisionReceipt = {
+  operator_id: string;
+  operation_id: string;
+  payload_hash: string;
+  result: unknown;
+  created_at: string;
+};
+
 /** ai_usage — дневной счётчик запросов к ИИ-ассистенту (Слой 2), PK (user_id, usage_date) */
 export type AiUsage = {
   user_id: string;

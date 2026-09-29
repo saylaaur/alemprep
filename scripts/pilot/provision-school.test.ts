@@ -7,6 +7,7 @@ describe('pilot provisioning input', () => {
     operatorId: crypto.randomUUID(),
     coordinatorId: crypto.randomUUID(),
     schoolId: crypto.randomUUID(),
+    operationId: crypto.randomUUID(),
     dryRun: true,
   };
 

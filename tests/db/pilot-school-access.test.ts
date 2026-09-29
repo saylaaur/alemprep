@@ -124,4 +124,121 @@ describe('pilot group invitations', () => {
     });
     expect(response.status).toBeGreaterThanOrEqual(400);
   });
+
+  it('does not let an unassigned teacher manage a group in their own school', async () => {
+    db = await createDbHarness();
+    fixture = await seedPilotSchoolPair(db);
+    const unassignedTeacher = await db.actor('pilot-unassigned-teacher');
+    await db.execute(
+      `INSERT INTO public.school_memberships (school_id, user_id, role)
+       VALUES ($1, $2, 'teacher')`,
+      [fixture.schoolA, unassignedTeacher.id],
+    );
+
+    const invite = await db.rpc(unassignedTeacher, 'pilot_create_group_invite_v1', {
+      operation_id: crypto.randomUUID(), group_id: fixture.groupA, expires_in_hours: 24, max_uses: 1,
+    });
+
+    expect(invite.status).toBe(200);
+    expect(rpcRecord(invite.data)).toMatchObject({ error: 'not-found' });
+  });
+
+  it.each([
+    ['school', `UPDATE public.schools SET status = 'paused' WHERE id = $1`],
+    ['group', `UPDATE public.school_groups SET status = 'archived' WHERE id = $1`],
+  ])('does not join an invite after its %s is deactivated', async (_scope, deactivateSql) => {
+    db = await createDbHarness();
+    fixture = await seedPilotSchoolPair(db);
+    const invitation = rpcRecord((await db.rpc(fixture.teacherA, 'pilot_create_group_invite_v1', {
+      operation_id: crypto.randomUUID(), group_id: fixture.groupA, expires_in_hours: 24, max_uses: 1,
+    })).data);
+    await db.execute(deactivateSql, [_scope === 'school' ? fixture.schoolA : fixture.groupA]);
+    const joiner = await db.actor(`pilot-${_scope}-closed-joiner`);
+
+    const joined = await db.rpc(joiner, 'pilot_join_group_v1', {
+      operation_id: crypto.randomUUID(), token: invitation.token,
+    });
+
+    expect(joined.status).toBe(200);
+    expect(rpcRecord(joined.data)).toMatchObject({ error: 'expired' });
+    expect(await db.scalar<number>('SELECT uses FROM public.group_invites WHERE id = $1', [invitation.inviteId])).toBe(0);
+  });
+
+  it('does not join a link after the issuing teacher is removed from that group', async () => {
+    db = await createDbHarness();
+    fixture = await seedPilotSchoolPair(db);
+    const invitation = rpcRecord((await db.rpc(fixture.teacherA, 'pilot_create_group_invite_v1', {
+      operation_id: crypto.randomUUID(), group_id: fixture.groupA, expires_in_hours: 24, max_uses: 1,
+    })).data);
+    await db.execute(
+      `UPDATE public.group_teachers SET ended_at = clock_timestamp()
+       WHERE group_id = $1 AND school_membership_id = (
+         SELECT id FROM public.school_memberships WHERE school_id = $2 AND user_id = $3
+       )`,
+      [fixture.groupA, fixture.schoolA, fixture.teacherA.id],
+    );
+    const joiner = await db.actor('pilot-revoked-teacher-joiner');
+
+    const joined = await db.rpc(joiner, 'pilot_join_group_v1', {
+      operation_id: crypto.randomUUID(), token: invitation.token,
+    });
+
+    expect(joined.status).toBe(200);
+    expect(rpcRecord(joined.data)).toMatchObject({ error: 'expired' });
+    expect(await db.scalar<number>('SELECT uses FROM public.group_invites WHERE id = $1', [invitation.inviteId])).toBe(0);
+  });
+
+  it('creates a 72-hour invite using one captured creation timestamp', async () => {
+    db = await createDbHarness();
+    fixture = await seedPilotSchoolPair(db);
+    const invitation = rpcRecord((await db.rpc(fixture.teacherA, 'pilot_create_group_invite_v1', {
+      operation_id: crypto.randomUUID(), group_id: fixture.groupA, expires_in_hours: 72, max_uses: 1,
+    })).data);
+
+    const duration = await db.scalar<number>(
+      `SELECT EXTRACT(EPOCH FROM expires_at - created_at)::integer FROM public.group_invites WHERE id = $1`, [invitation.inviteId],
+    );
+    expect(duration).toBe(72 * 60 * 60);
+  });
+
+  it('serializes competing joins so one student cannot become active in two schools', async () => {
+    db = await createDbHarness();
+    fixture = await seedPilotSchoolPair(db);
+    const inviteA = rpcRecord((await db.rpc(fixture.teacherA, 'pilot_create_group_invite_v1', {
+      operation_id: crypto.randomUUID(), group_id: fixture.groupA, expires_in_hours: 24, max_uses: 1,
+    })).data);
+    const inviteB = rpcRecord((await db.rpc(fixture.teacherB, 'pilot_create_group_invite_v1', {
+      operation_id: crypto.randomUUID(), group_id: fixture.groupB, expires_in_hours: 24, max_uses: 1,
+    })).data);
+    const joiner = await db.actor('pilot-racing-joiner');
+    const first = await db.connection();
+    const second = await db.connection();
+    try {
+      await first.execute('BEGIN');
+      await second.execute('BEGIN');
+      await first.execute(`SELECT set_config('request.jwt.claim.sub', $1, true)`, [joiner.id]);
+      await second.execute(`SELECT set_config('request.jwt.claim.sub', $1, true)`, [joiner.id]);
+      const joinedA = await first.scalar<string>(
+        `SELECT public.pilot_join_group_v1($1::uuid, $2::text)->>'groupId'`, [crypto.randomUUID(), inviteA.token],
+      );
+      expect(joinedA).toBe(fixture.groupA);
+
+      let secondSettled = false;
+      const joinedB = second.scalar<string>(
+        `SELECT public.pilot_join_group_v1($1::uuid, $2::text)->>'groupId'`, [crypto.randomUUID(), inviteB.token],
+      ).then((value) => {
+        secondSettled = true;
+        return value;
+      });
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(secondSettled).toBe(false);
+      await first.execute('COMMIT');
+      expect(await joinedB).toBeNull();
+      await second.execute('COMMIT');
+    } finally {
+      await Promise.allSettled([first.execute('ROLLBACK'), second.execute('ROLLBACK')]);
+      first.release();
+      second.release();
+    }
+  });
 });

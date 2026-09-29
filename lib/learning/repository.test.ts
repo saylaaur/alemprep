@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   commitLearningRpc,
+  decodeImmutableLearningVersion,
   loadStartReplay,
   loadLearningState,
   loadApprovedLearningVersions,
@@ -217,6 +218,15 @@ describe('approved immutable version reader', () => {
 
     await expect(loadApprovedLearningVersions(client, 'kk', { topicSlug: 'radicals-and-expressions' }))
       .resolves.toEqual([expect.objectContaining({ version: expect.objectContaining({ type: 'matching' }) })]);
+  });
+
+  it('keeps a valid long matching label instead of silently dropping the version', () => {
+    const longRight = 'x'.repeat(512);
+    expect(decodeImmutableLearningVersion(approvedVersionRow({
+      type: 'matching',
+      public_body: { stem: 'Сәйкестендір', left: [{ id: 'A', content: 'A' }], right: [longRight] },
+      grading_body: { stem: 'Сәйкестендір', left: [{ id: 'A', content: 'A' }], right: [longRight], correct: { A: longRight } },
+    }))).toEqual(expect.objectContaining({ version: expect.objectContaining({ type: 'matching' }) }));
   });
 
   it('uses independent bounded reads for each assessment question type', async () => {

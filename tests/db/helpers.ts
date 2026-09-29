@@ -206,6 +206,46 @@ export async function createDbHarness(): Promise<DbHarness> {
       if (closed) return;
       closed = true;
       try {
+        // Pilot assignments deliberately retain their history in production,
+        // so the local harness removes only synthetic rows before deleting its
+        // throwaway auth users. session_replication_role is limited to this
+        // direct local PostgreSQL connection; browser paths never receive it.
+        if (createdUserIds.length > 0) {
+          const tables = await pool.query<{ table_name: string }>(
+            `SELECT table_name FROM information_schema.tables
+             WHERE table_schema = 'public' AND table_name = ANY($1::text[])`,
+            [['pilot_provision_receipts', 'assignment_participants', 'assignments', 'school_memberships']],
+          );
+          const existingTables = new Set(tables.rows.map((row) => row.table_name));
+          await pool.query(`SET session_replication_role = 'replica'`);
+          try {
+            if (existingTables.has('pilot_provision_receipts')) {
+              await pool.query(
+                `DELETE FROM public.pilot_provision_receipts WHERE operator_id = ANY($1::uuid[])`, [createdUserIds],
+              );
+            }
+            if (existingTables.has('assignment_participants')) {
+              await pool.query(
+                `DELETE FROM public.assignment_participants WHERE user_id = ANY($1::uuid[])`, [createdUserIds],
+              );
+            }
+            if (existingTables.has('assignments') && existingTables.has('school_memberships')) {
+              await pool.query(
+                `DELETE FROM public.assignments
+                 WHERE created_by_membership_id IN (
+                   SELECT id FROM public.school_memberships WHERE user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
+              );
+            }
+            if (existingTables.has('school_memberships')) {
+              await pool.query(
+                `DELETE FROM public.school_memberships WHERE user_id = ANY($1::uuid[])`, [createdUserIds],
+              );
+            }
+          } finally {
+            await pool.query(`SET session_replication_role = 'origin'`);
+          }
+        }
         for (const id of createdUserIds) {
           const { error } = await admin.auth.admin.deleteUser(id);
           if (error) throw new Error(`failed to delete local synthetic user: ${error.message}`);

@@ -123,10 +123,10 @@ const tableBlockSchema = z.object({
 const contentBlockSchema = z.union([textBlockSchema, imageBlockSchema, tableBlockSchema]);
 const blocksSchema = z.array(contentBlockSchema).max(100);
 const publicSingleSchema = z.object({ stem: z.string(), stem_blocks: blocksSchema.optional(), options: z.array(optionSchema).min(1).max(10) }).strict();
-const publicMatchingSchema = z.object({ stem: z.string(), stem_blocks: blocksSchema.optional(), left: z.array(optionSchema).min(1).max(10), right: z.array(z.string()).min(1).max(10) }).strict();
+const publicMatchingSchema = z.object({ stem: z.string(), stem_blocks: blocksSchema.optional(), left: z.array(optionSchema).min(1).max(10), right: z.array(z.string().min(1).max(512)).min(1).max(10) }).strict();
 const gradingSingleSchema = publicSingleSchema.extend({ correct: z.string().min(1).max(80) }).strict();
 const gradingMultiSchema = publicSingleSchema.extend({ correct: z.array(z.string().min(1).max(80)).min(1).max(10) }).strict();
-const matchingCorrectSchema = z.record(z.string().min(1).max(80), z.string().min(1).max(80)).superRefine((value, context) => {
+const matchingCorrectSchema = z.record(z.string().min(1).max(80), z.string().min(1).max(512)).superRefine((value, context) => {
   if (Object.keys(value).length > 10) {
     context.addIssue({ code: 'too_big', maximum: 10, origin: 'object', inclusive: true, message: 'too many pairs' });
   }
