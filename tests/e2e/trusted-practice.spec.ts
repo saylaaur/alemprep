@@ -89,6 +89,30 @@ test('lost delivery freezes the answer and retries the identical submit', async 
   expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE user_id = $1', [actor.id])).toBe(1);
 });
 
+test('a confirmed submit reports review-read failure separately from delivery loss', async ({ page }) => {
+  const { actor, slug } = await lesson();
+  await loginAs(page, actor);
+  await page.goto(`/ru/practice/topic/${slug}`);
+  await page.getByRole('radio', { name: 'A four' }).click();
+  let submitted = false;
+  let reviewAborted = false;
+  await page.route(`**/ru/practice/topic/${slug}`, async (route) => {
+    const body = route.request().postData() ?? '';
+    if (route.request().method() === 'POST' && body.includes('timeSpentMs')) submitted = true;
+    if (route.request().method() === 'POST' && submitted && !body.includes('timeSpentMs') && !reviewAborted) {
+      reviewAborted = true;
+      await route.abort();
+      return;
+    }
+    await route.continue();
+  });
+  await page.getByRole('button', { name: 'Проверить', exact: true }).click();
+  await expect(page.getByText('Не удалось связаться с сервером. Повторите попытку.')).toBeVisible();
+  await expect(page.getByText('Подтверждение не получено. Ответ сохранён для повторной отправки.')).toHaveCount(0);
+  expect(reviewAborted).toBe(true);
+  expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE user_id = $1', [actor.id])).toBe(1);
+});
+
 test('account switch clears the old draft before rendering and logout removes it', async ({ page }) => {
   const { actor, slug } = await lesson();
   const other = await db.actor('trusted-other');

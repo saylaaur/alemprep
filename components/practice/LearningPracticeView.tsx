@@ -29,6 +29,7 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
   const [review, setReview] = useState<LearningReview | null>(null);
   const pending = useRef<PendingLearning | null>(null);
   const busy = useRef(false);
+  const reviewReadInProgress = useRef(false);
   const generation = useRef(0);
   const run = useRef<(intent: 'resume' | 'submit' | 'skip' | 'next') => Promise<void>>(async () => {});
 
@@ -56,9 +57,11 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
     };
     const fail = (error: Fault) => {
       if (!live()) return;
+      const reviewFailed = reviewReadInProgress.current;
+      reviewReadInProgress.current = false;
       if (terminal.includes(error)) { clear(); setSession(null); setReview(null); setAnswer(null); }
       setFault(error);
-      setPhase(pending.current?.submit && !terminal.includes(error) ? 'unknown' : 'error');
+      setPhase(reviewFailed ? 'error' : pending.current?.submit && !terminal.includes(error) ? 'unknown' : 'error');
     };
     const unwrap = <T,>(result: Result<T>): T => {
       if (!result.ok) throw new Error(result.error);
@@ -72,11 +75,13 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
       setAnswer(pending.current!.submit?.answers[0].answer ?? pending.current!.answer);
     };
     const loadReview = async () => {
+      reviewReadInProgress.current = true;
       setPhase('review-loading');
       const current = pending.current!;
       const value = unwrap(await readLearningReview(current.sessionId));
       if (!live()) return;
       if (value.receipt.sessionId !== current.sessionId || value.items.length !== 1 || value.items[0].itemId !== current.itemId) throw new Error('invalid-input');
+      reviewReadInProgress.current = false;
       setReview(value); setPhase('review'); setFault(null);
     };
     const restore = async () => {
@@ -114,6 +119,7 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
       if (!live() || busy.current) return;
       busy.current = true;
       try {
+        reviewReadInProgress.current = false;
         // A server prop scopes local storage; Auth is rechecked on every delivery.
         const { data, error } = await auth.auth.getUser();
         if (!live()) return;

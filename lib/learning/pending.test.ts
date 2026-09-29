@@ -49,3 +49,9 @@ it('stores no question data and permits partial matching drafts', () => {
   expect(Object.keys(pending).sort()).toEqual(['answer', 'itemId', 'locale', 'owner', 'sessionId', 'shownAt', 'start', 'submit', 'topicSlug', 'version']);
   expect(() => bindSession(pending, op, itemId, 2000)).toThrow();
 });
+
+it('keeps a long matching label in the frozen draft', () => {
+  const label = 'ұзын жауап '.repeat(12);
+  const pending = updateDraft(draft(), { left: label });
+  expect(restorePending(JSON.stringify(pending), scope)?.answer).toEqual({ left: label });
+});

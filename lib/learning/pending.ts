@@ -7,7 +7,8 @@ export const PENDING_KEY = 'alemprep.learning.pending.v1';
 export type PendingScope = { owner: string; locale: Locale; topicSlug: string };
 const id = z.uuid();
 const text = z.string().max(80);
-const draftAnswer = z.union([z.null(), text, z.array(text).max(10), z.record(text, text)]).superRefine((value, ctx) => {
+const matchingText = z.string().max(512);
+const draftAnswer = z.union([z.null(), text, z.array(text).max(10), z.record(text, matchingText)]).superRefine((value, ctx) => {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     const keys = Object.keys(value);
     if (keys.length > 10 || keys.some((key) => ['__proto__', 'constructor', 'prototype'].includes(key))) {
