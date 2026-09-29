@@ -1,0 +1,19 @@
+import { afterEach, expect, it } from 'vitest';
+import { isLearningEnabled } from './feature-flag';
+
+const original = process.env.LEARNING_V1_ENABLED;
+afterEach(() => {
+  if (original === undefined) delete process.env.LEARNING_V1_ENABLED;
+  else process.env.LEARNING_V1_ENABLED = original;
+});
+
+it.each([undefined, '', 'false', 'TRUE', '1', ' true '])('disables trusted rollout for %s', (value) => {
+  if (value === undefined) delete process.env.LEARNING_V1_ENABLED;
+  else process.env.LEARNING_V1_ENABLED = value;
+  expect(isLearningEnabled()).toBe(false);
+});
+
+it('enables only the explicit server flag', () => {
+  process.env.LEARNING_V1_ENABLED = 'true';
+  expect(isLearningEnabled()).toBe(true);
+});

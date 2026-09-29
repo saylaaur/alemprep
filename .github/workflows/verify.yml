@@ -38,6 +38,12 @@ jobs:
       - run: npm run test:db:migration
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+        env:
+          LEARNING_V1_ENABLED: 'false'
+      - name: Trusted practice browser scenarios
+        run: npm run test:e2e -- tests/e2e/trusted-practice.spec.ts
+        env:
+          LEARNING_V1_ENABLED: 'true'
       - name: Stop isolated Supabase test stack
         if: always()
         run: npx supabase stop

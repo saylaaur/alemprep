@@ -53,3 +53,5 @@ scripts/prepared-photos/
 **/prepared-photos/
 scripts/photos/
 scripts/photos-*/
+# Agent execution notes remain local to this checkout.
+/.superpowers/

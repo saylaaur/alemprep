@@ -14,7 +14,7 @@ export default defineConfig({
     command: 'node scripts/start-local-e2e-server.mjs',
     url: 'http://127.0.0.1:3001/ru/login',
     timeout: 120_000,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
   },
   projects: [
     {

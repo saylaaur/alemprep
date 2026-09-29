@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { signOut } from '@/lib/supabase/auth-actions';
 import { clearAllSavedExams } from '@/lib/exam-storage';
+import { clearPendingLearning } from '@/lib/learning/browser-storage';
 import { updateProfileSettings } from '@/lib/supabase/profile-actions';
 import { MIN_DAILY_GOAL, MAX_DAILY_GOAL, MIN_TARGET_SCORE, MAX_TARGET_SCORE } from '@/lib/settings';
 import { EXAM_SECOND_SUBJECTS, type ExamSecondSubject } from '@/lib/exam';
@@ -132,7 +133,7 @@ export function SettingsView({
         </div>
         {/* Прогресс пробника в localStorage — чистим при выходе, чтобы он
             не достался следующему аккаунту на этом устройстве. */}
-        <form action={signOut} onSubmit={() => clearAllSavedExams()} className="mt-5">
+        <form action={signOut} onSubmit={() => { clearPendingLearning(); clearAllSavedExams(); }} className="mt-5">
           <Button type="submit" variant="outline" className="w-full sm:w-auto">
             <LogOut className="h-4 w-4" />
             {t('signOut')}
