@@ -329,6 +329,60 @@ export type PilotOperationReceipt = {
   created_at: string;
 };
 
+export type PilotProgram = {
+  id: string;
+  version: number;
+  title_ru: string;
+  title_kk: string | null;
+  status: 'draft' | 'approved' | 'retired';
+  review_ref: string | null;
+  created_at: string;
+};
+
+export type PilotProgramItem = {
+  id: string;
+  program_id: string;
+  position: number;
+  question_version_id: string;
+  locale: Locale;
+  purpose: 'practice' | 'baseline' | 'endline';
+  created_at: string;
+};
+
+export type PilotAssignment = {
+  id: string;
+  school_id: string;
+  group_id: string;
+  program_id: string;
+  purpose: 'practice';
+  comparison_baseline_id: string | null;
+  opens_at: string;
+  due_at: string;
+  closes_at: string;
+  created_by_membership_id: string;
+  status: 'draft' | 'published' | 'cancelled';
+  revision: number;
+  created_at: string;
+};
+
+export type PilotAssignmentParticipant = {
+  id: string;
+  assignment_id: string;
+  school_id: string;
+  user_id: string;
+  school_membership_id: string;
+  eligible_from: string;
+  withdrawn_at: string | null;
+};
+
+export type PilotAssignmentReceipt = {
+  actor_id: string;
+  operation_id: string;
+  payload_hash: string;
+  result: unknown;
+  created_at: string;
+};
+
 /** ai_usage — дневной счётчик запросов к ИИ-ассистенту (Слой 2), PK (user_id, usage_date) */
 export type AiUsage = {
   user_id: string;
