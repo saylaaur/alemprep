@@ -261,6 +261,74 @@ export type AuditEvent = {
   metadata: unknown;
 };
 
+/** A scoped school participating in the supervised pilot. */
+export type School = {
+  id: string;
+  name: string;
+  status: 'active' | 'paused' | 'archived';
+  timezone: 'Asia/Almaty';
+  created_at: string;
+};
+
+export type SchoolMembership = {
+  id: string;
+  school_id: string;
+  user_id: string;
+  role: 'student' | 'teacher' | 'coordinator';
+  joined_at: string;
+  ended_at: string | null;
+};
+
+export type SchoolGroup = {
+  id: string;
+  school_id: string;
+  name: string;
+  locale: Locale;
+  status: 'active' | 'paused' | 'archived';
+  created_at: string;
+};
+
+export type GroupMembership = {
+  id: string;
+  school_id: string;
+  group_id: string;
+  school_membership_id: string;
+  joined_at: string;
+  ended_at: string | null;
+};
+
+export type GroupTeacher = {
+  id: string;
+  school_id: string;
+  group_id: string;
+  school_membership_id: string;
+  assigned_at: string;
+  ended_at: string | null;
+};
+
+/** The plaintext invite secret is deliberately absent from this DB shape. */
+export type GroupInvite = {
+  id: string;
+  school_id: string;
+  group_id: string;
+  token_hash: string;
+  expires_at: string;
+  max_uses: number;
+  uses: number;
+  revoked_at: string | null;
+  created_by_membership_id: string;
+  created_at: string;
+};
+
+export type PilotOperationReceipt = {
+  actor_id: string;
+  operation_id: string;
+  kind: 'pilot.invite' | 'pilot.join';
+  payload_hash: string;
+  result: unknown;
+  created_at: string;
+};
+
 /** ai_usage — дневной счётчик запросов к ИИ-ассистенту (Слой 2), PK (user_id, usage_date) */
 export type AiUsage = {
   user_id: string;

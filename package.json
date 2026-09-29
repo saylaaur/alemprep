@@ -29,6 +29,7 @@
     "gen:verify": "tsx --tsconfig tsconfig.scripts.json scripts/verify-questions.ts",
     "gen:verify-translation": "tsx --tsconfig tsconfig.scripts.json scripts/verify-translation.ts",
     "gen:insert": "tsx --tsconfig tsconfig.scripts.json scripts/insert-to-db.ts",
+    "pilot:provision": "tsx --tsconfig tsconfig.scripts.json scripts/pilot/provision-school.ts",
     "gen:reclassify": "tsx --tsconfig tsconfig.scripts.json scripts/reclassify-topics.ts",
     "gen:prune-topics": "tsx --tsconfig tsconfig.scripts.json scripts/prune-empty-topics.ts",
     "gen:all": "tsx --tsconfig tsconfig.scripts.json scripts/gen-all.ts",

@@ -23,12 +23,12 @@ export async function seedPilotSchoolPair(db: DbHarness): Promise<PilotSchoolPai
   ]);
   const schoolA = await db.scalar<string>(
     `INSERT INTO public.schools (name, status, timezone)
-     VALUES ($1, 'Synthetic school A', 'active', 'Asia/Almaty') RETURNING id`,
+     VALUES ($1, 'active', 'Asia/Almaty') RETURNING id`,
     [`Synthetic school A ${suffix}`],
   );
   const schoolB = await db.scalar<string>(
     `INSERT INTO public.schools (name, status, timezone)
-     VALUES ($1, 'Synthetic school B', 'active', 'Asia/Almaty') RETURNING id`,
+     VALUES ($1, 'active', 'Asia/Almaty') RETURNING id`,
     [`Synthetic school B ${suffix}`],
   );
   const teacherMembershipA = await db.scalar<string>(
