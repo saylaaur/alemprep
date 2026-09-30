@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createDbHarness, type DbHarness } from './helpers';
-import { seedApprovedPilotProgram, type PilotProgram } from '../fixtures/pilot-program';
+import { seedApprovedPilotProgram, seedDraftPilotProgram, type PilotProgram } from '../fixtures/pilot-program';
 import { seedPilotSchoolPair, type PilotSchoolPair } from '../fixtures/pilot-school';
 
 function rpcRecord(value: unknown): Record<string, unknown> {
@@ -125,5 +125,125 @@ describe('pilot assignments', () => {
     expect(cancelled.status).toBe(200);
     expect(rpcRecord(cancelled.data)).toMatchObject({ assignmentId, status: 'cancelled' });
     expect(await prepared.db.scalar<string>(`SELECT status FROM public.assignments WHERE id = $1`, [assignmentId])).toBe('cancelled');
+  });
+
+  it('rejects a cancellation that changes immutable assignment fields', async () => {
+    const prepared = await setUp();
+    const publish = await prepared.db.rpc(prepared.school.teacherA, 'pilot_publish_assignment_v1', {
+      operation_id: crypto.randomUUID(), group_id: prepared.school.groupA, program_id: prepared.program.id, ...assignmentWindow(),
+    });
+    const assignmentId = rpcRecord(publish.data).assignmentId as string;
+
+    await expect(prepared.db.execute(
+      `UPDATE public.assignments
+       SET status = 'cancelled', revision = revision + 1, due_at = opens_at, closes_at = opens_at
+       WHERE id = $1`, [assignmentId],
+    )).rejects.toThrow(/immutable/i);
+    expect(await prepared.db.scalar<string>(`SELECT status FROM public.assignments WHERE id = $1`, [assignmentId])).toBe('published');
+  });
+
+  it('serializes programme approval behind an in-flight item edit', async () => {
+    db = await createDbHarness();
+    school = await seedPilotSchoolPair(db);
+    program = await seedDraftPilotProgram(db);
+    const editor = await db.connection();
+    const approver = await db.connection();
+    try {
+      await editor.execute('BEGIN');
+      await editor.execute(`UPDATE public.pilot_program_items SET position = 1 WHERE id = $1`, [program.itemId]);
+      await approver.execute('BEGIN');
+      let approvalSettled = false;
+      const approval = approver.execute(`UPDATE public.pilot_programs SET status = 'approved' WHERE id = $1`, [program.id])
+        .then(() => { approvalSettled = true; });
+
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(approvalSettled).toBe(false);
+      await editor.execute('COMMIT');
+      await approval;
+      await approver.execute('COMMIT');
+      expect(await db.scalar<number>(`SELECT position FROM public.pilot_program_items WHERE id = $1`, [program.itemId])).toBe(1);
+    } finally {
+      await Promise.allSettled([editor.execute('ROLLBACK'), approver.execute('ROLLBACK')]);
+      editor.release();
+      approver.release();
+    }
+  });
+
+  it('rejects a pending item edit after a programme becomes approved', async () => {
+    db = await createDbHarness();
+    const draftProgram = await seedDraftPilotProgram(db);
+    const approver = await db.connection();
+    const editor = await db.connection();
+    try {
+      await approver.execute('BEGIN');
+      await approver.execute(`UPDATE public.pilot_programs SET status = 'approved' WHERE id = $1`, [draftProgram.id]);
+      await editor.execute('BEGIN');
+      let editSettled = false;
+      const edit = editor.execute(`UPDATE public.pilot_program_items SET position = 1 WHERE id = $1`, [draftProgram.itemId])
+        .finally(() => { editSettled = true; });
+
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(editSettled).toBe(false);
+      await approver.execute('COMMIT');
+      await expect(edit).rejects.toThrow(/immutable/i);
+    } finally {
+      await Promise.allSettled([approver.execute('ROLLBACK'), editor.execute('ROLLBACK')]);
+      approver.release();
+      editor.release();
+    }
+  });
+
+  it('does not freeze an empty or unpublished programme as approved', async () => {
+    db = await createDbHarness();
+    const emptyProgramId = await db.scalar<string>(
+      `INSERT INTO public.pilot_programs (title_ru, status, review_ref)
+       VALUES ('Пустая программа', 'draft', 'TEST-REVIEW') RETURNING id`,
+    );
+    await expect(db.execute(
+      `UPDATE public.pilot_programs SET status = 'approved' WHERE id = $1`, [emptyProgramId],
+    )).rejects.toThrow(/content|approved/i);
+
+    const invalidProgram = await seedDraftPilotProgram(db);
+    await db.execute(
+      `UPDATE public.question_publications SET status = 'quarantined' WHERE question_version_id = $1`, [invalidProgram.questionVersionId],
+    );
+    await expect(db.execute(
+      `UPDATE public.pilot_programs SET status = 'approved' WHERE id = $1`, [invalidProgram.id],
+    )).rejects.toThrow(/content|approved/i);
+  });
+
+  it('holds participant membership through the assignment snapshot', async () => {
+    const prepared = await setUp();
+    const membershipId = prepared.school.membershipA;
+    const blocker = await prepared.db.connection();
+    const publisher = await prepared.db.connection();
+    try {
+      await blocker.execute('BEGIN');
+      await blocker.execute(`LOCK TABLE public.assignments IN SHARE MODE`);
+      await publisher.execute('BEGIN');
+      await publisher.execute(`SELECT set_config('request.jwt.claim.sub', $1, true)`, [prepared.school.teacherA.id]);
+      const started = publisher.scalar<string>(
+        `SELECT public.pilot_publish_assignment_v1($1::uuid, $2::uuid, $3::uuid, now(), now() + interval '1 hour', now() + interval '2 hours')::text`,
+        [crypto.randomUUID(), prepared.school.groupA, prepared.program.id],
+      );
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      let revocationSettled = false;
+      const revoke = prepared.db.execute(
+        `UPDATE public.school_memberships SET ended_at = clock_timestamp() WHERE id = $1`, [membershipId],
+      ).then(() => { revocationSettled = true; });
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(revocationSettled).toBe(false);
+      await blocker.execute('COMMIT');
+      const result = rpcRecord(JSON.parse(await started));
+      await publisher.execute('COMMIT');
+      await revoke;
+      expect(await prepared.db.scalar<number>(
+        `SELECT count(*)::integer FROM public.assignment_participants WHERE assignment_id = $1`, [result.assignmentId],
+      )).toBe(1);
+    } finally {
+      await Promise.allSettled([blocker.execute('ROLLBACK'), publisher.execute('ROLLBACK')]);
+      blocker.release();
+      publisher.release();
+    }
   });
 });

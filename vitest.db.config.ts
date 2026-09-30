@@ -13,6 +13,10 @@ export default defineConfig({
     exclude: ['tests/db/learning-migration-path.test.ts'],
     testTimeout: 30_000,
     hookTimeout: 30_000,
+    // These tests share one local Supabase database and deliberately exercise
+    // row locks. A single worker prevents separate test processes from
+    // overlapping fixture setup and teardown.
+    maxWorkers: 1,
     fileParallelism: false,
   },
 });

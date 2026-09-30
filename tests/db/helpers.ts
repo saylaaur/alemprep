@@ -206,10 +206,11 @@ export async function createDbHarness(): Promise<DbHarness> {
       if (closed) return;
       closed = true;
       try {
-        // Pilot assignments deliberately retain their history in production,
-        // so the local harness removes only synthetic rows before deleting its
-        // throwaway auth users. session_replication_role is limited to this
-        // direct local PostgreSQL connection; browser paths never receive it.
+        // Pilot assignments deliberately retain history in production. The
+        // harness deletes only its synthetic dependency graph in FK order.
+        // A dedicated transaction uses replica mode solely for this teardown:
+        // production immutability triggers correctly prohibit deleting a
+        // published assignment, while test accounts must not accumulate.
         if (createdUserIds.length > 0) {
           const tables = await pool.query<{ table_name: string }>(
             `SELECT table_name FROM information_schema.tables
@@ -217,20 +218,27 @@ export async function createDbHarness(): Promise<DbHarness> {
             [['pilot_provision_receipts', 'assignment_participants', 'assignments', 'school_memberships']],
           );
           const existingTables = new Set(tables.rows.map((row) => row.table_name));
-          await pool.query(`SET session_replication_role = 'replica'`);
+          const cleanup = await pool.connect();
           try {
+            await cleanup.query('BEGIN');
+            await cleanup.query("SET LOCAL session_replication_role = 'replica'");
             if (existingTables.has('pilot_provision_receipts')) {
-              await pool.query(
+              await cleanup.query(
                 `DELETE FROM public.pilot_provision_receipts WHERE operator_id = ANY($1::uuid[])`, [createdUserIds],
               );
             }
-            if (existingTables.has('assignment_participants')) {
-              await pool.query(
-                `DELETE FROM public.assignment_participants WHERE user_id = ANY($1::uuid[])`, [createdUserIds],
+            if (existingTables.has('assignment_participants') && existingTables.has('assignments') && existingTables.has('school_memberships')) {
+              await cleanup.query(
+                `DELETE FROM public.assignment_participants
+                 WHERE user_id = ANY($1::uuid[]) OR assignment_id IN (
+                   SELECT assignment.id FROM public.assignments AS assignment
+                   JOIN public.school_memberships AS membership ON membership.id = assignment.created_by_membership_id
+                   WHERE membership.user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
               );
             }
             if (existingTables.has('assignments') && existingTables.has('school_memberships')) {
-              await pool.query(
+              await cleanup.query(
                 `DELETE FROM public.assignments
                  WHERE created_by_membership_id IN (
                    SELECT id FROM public.school_memberships WHERE user_id = ANY($1::uuid[])
@@ -238,12 +246,31 @@ export async function createDbHarness(): Promise<DbHarness> {
               );
             }
             if (existingTables.has('school_memberships')) {
-              await pool.query(
+              await cleanup.query(
+                `DELETE FROM public.group_memberships WHERE school_membership_id IN (
+                   SELECT id FROM public.school_memberships WHERE user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
+              );
+              await cleanup.query(
+                `DELETE FROM public.group_teachers WHERE school_membership_id IN (
+                   SELECT id FROM public.school_memberships WHERE user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
+              );
+              await cleanup.query(
+                `DELETE FROM public.group_invites WHERE created_by_membership_id IN (
+                   SELECT id FROM public.school_memberships WHERE user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
+              );
+              await cleanup.query(
                 `DELETE FROM public.school_memberships WHERE user_id = ANY($1::uuid[])`, [createdUserIds],
               );
             }
+            await cleanup.query('COMMIT');
+          } catch (error) {
+            await cleanup.query('ROLLBACK');
+            throw error;
           } finally {
-            await pool.query(`SET session_replication_role = 'origin'`);
+            cleanup.release();
           }
         }
         for (const id of createdUserIds) {

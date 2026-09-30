@@ -18,9 +18,25 @@ export function parseProvisionSchoolInput(raw: unknown): ProvisionSchoolInput | 
   return parsed.success ? parsed.data : null;
 }
 
-function arg(name: string): string | undefined {
+function arg(name: string, values = process.argv): string | undefined {
   const prefix = `--${name}=`;
-  return process.argv.find((value) => value.startsWith(prefix))?.slice(prefix.length);
+  return values.find((value) => value.startsWith(prefix))?.slice(prefix.length);
+}
+
+/** Apply runs must be replayable after a lost response, so their identifiers
+ * are never generated implicitly. Dry-runs may generate IDs for planning. */
+export function parseProvisionCommand(values: string[], generateId = randomUUID): ProvisionSchoolInput | null {
+  const apply = values.includes('--apply');
+  const schoolId = arg('school-id', values) ?? (apply ? undefined : generateId());
+  const operationId = arg('operation-id', values) ?? (apply ? undefined : generateId());
+  return parseProvisionSchoolInput({
+    schoolName: arg('school-name', values),
+    operatorId: arg('operator-id', values),
+    coordinatorId: arg('coordinator-id', values),
+    schoolId,
+    operationId,
+    dryRun: !apply,
+  });
 }
 
 function localUrl(value: string | undefined): boolean {
@@ -33,13 +49,13 @@ function localUrl(value: string | undefined): boolean {
   }
 }
 
-export async function provisionSchool(input: ProvisionSchoolInput): Promise<{ schoolId: string; created: boolean }> {
+export async function provisionSchool(input: ProvisionSchoolInput): Promise<{ schoolId: string; operationId: string; created: boolean }> {
   loadEnv();
   const isLocal = localUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   if (!isLocal && process.env.PILOT_PROVISION_CONFIRM !== input.schoolId) {
     throw new Error('Refusing non-local provisioning without PILOT_PROVISION_CONFIRM=<school id>');
   }
-  if (input.dryRun) return { schoolId: input.schoolId, created: false };
+  if (input.dryRun) return { schoolId: input.schoolId, operationId: input.operationId, created: false };
 
   const supabase = getServiceClient();
   const response = await supabase.rpc('pilot_provision_school_v1', {
@@ -56,21 +72,13 @@ export async function provisionSchool(input: ProvisionSchoolInput): Promise<{ sc
   if (result.error || result.schoolId !== input.schoolId || typeof result.created !== 'boolean') {
     throw new Error(`Could not provision school: ${typeof result.error === 'string' ? result.error : 'invalid result'}`);
   }
-  return { schoolId: input.schoolId, created: result.created };
+  return { schoolId: input.schoolId, operationId: input.operationId, created: result.created };
 }
 
 async function main(): Promise<void> {
-  const schoolId = arg('school-id') ?? randomUUID();
-  const input = parseProvisionSchoolInput({
-    schoolName: arg('school-name'),
-    operatorId: arg('operator-id'),
-    coordinatorId: arg('coordinator-id'),
-    schoolId,
-    operationId: arg('operation-id') ?? randomUUID(),
-    dryRun: !process.argv.includes('--apply'),
-  });
+  const input = parseProvisionCommand(process.argv);
   if (!input) {
-    throw new Error('Usage: tsx scripts/pilot/provision-school.ts --school-name=<name> --operator-id=<uuid> --coordinator-id=<uuid> [--school-id=<uuid>] [--operation-id=<uuid>] [--apply]');
+    throw new Error('Usage: tsx scripts/pilot/provision-school.ts --school-name=<name> --operator-id=<uuid> --coordinator-id=<uuid> [--school-id=<uuid>] [--operation-id=<uuid>] [--apply; requires both IDs]');
   }
   const result = await provisionSchool(input);
   console.log(JSON.stringify(result));
