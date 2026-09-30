@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { createDbHarness, type DbHarness } from './helpers';
 import { seedApprovedPilotProgram, seedDraftPilotProgram, type PilotProgram } from '../fixtures/pilot-program';
 import { seedPilotSchoolPair, type PilotSchoolPair } from '../fixtures/pilot-school';
+import { waitForWaitingRelationLock, waitForWaitingRowLock } from './lock-barrier';
 
 function rpcRecord(value: unknown): Record<string, unknown> {
   expect(value).toBeTypeOf('object');
@@ -210,6 +211,33 @@ describe('pilot assignments', () => {
     await expect(db.execute(
       `UPDATE public.pilot_programs SET status = 'approved' WHERE id = $1`, [invalidProgram.id],
     )).rejects.toThrow(/content|approved/i);
+
+    const localeMismatchProgram = await seedDraftPilotProgram(db);
+    await db.execute(
+      `UPDATE public.pilot_program_items SET locale = 'kk' WHERE id = $1`, [localeMismatchProgram.itemId],
+    );
+    await expect(db.execute(
+      `UPDATE public.pilot_programs SET status = 'approved' WHERE id = $1`, [localeMismatchProgram.id],
+    )).rejects.toThrow(/content|approved/i);
+  });
+
+  it('requires pilot programmes to be created as drafts before approval', async () => {
+    db = await createDbHarness();
+
+    await expect(db.execute(
+      `INSERT INTO public.pilot_programs (title_ru, status, review_ref)
+       VALUES ('Нельзя создать утверждённой', 'approved', 'TEST-REVIEW')`,
+    )).rejects.toThrow(/draft|approval/i);
+    await expect(db.execute(
+      `INSERT INTO public.pilot_programs (title_ru, status, review_ref)
+       VALUES ('Нельзя создать архивной', 'retired', 'TEST-REVIEW')`,
+    )).rejects.toThrow(/draft|approval/i);
+
+    const draftId = await db.scalar<string>(
+      `INSERT INTO public.pilot_programs (title_ru, status, review_ref)
+       VALUES ('Разрешённый черновик', 'draft', 'TEST-REVIEW') RETURNING id`,
+    );
+    expect(typeof draftId).toBe('string');
   });
 
   it('holds participant membership through the assignment snapshot', async () => {
@@ -244,6 +272,78 @@ describe('pilot assignments', () => {
       await Promise.allSettled([blocker.execute('ROLLBACK'), publisher.execute('ROLLBACK')]);
       blocker.release();
       publisher.release();
+    }
+  });
+
+  it('serializes teacher-group revocation with an in-flight assignment publication', async () => {
+    const prepared = await setUp();
+    const blocker = await prepared.db.connection();
+    const publisher = await prepared.db.connection();
+    const revoker = await prepared.db.connection();
+    const observer = await prepared.db.connection();
+    try {
+      await blocker.execute('BEGIN');
+      await blocker.execute('LOCK TABLE public.assignments IN SHARE MODE');
+      await publisher.execute('BEGIN');
+      await publisher.execute(`SELECT set_config('request.jwt.claim.sub', $1, true)`, [prepared.school.teacherA.id]);
+      const publication = publisher.scalar<string>(
+        `SELECT public.pilot_publish_assignment_v1(
+           $1::uuid, $2::uuid, $3::uuid, now(), now() + interval '1 hour', now() + interval '2 hours'
+         )::text`,
+        [crypto.randomUUID(), prepared.school.groupA, prepared.program.id],
+      );
+      await waitForWaitingRelationLock(observer, publisher.backendPid, 'assignments');
+
+      const revocation = revoker.execute(
+        `UPDATE public.group_teachers SET ended_at = clock_timestamp()
+         WHERE group_id = $1 AND school_membership_id = $2`,
+        [prepared.school.groupA, prepared.school.teacherMembershipA],
+      );
+
+      await waitForWaitingRowLock(observer, revoker.backendPid);
+      await blocker.execute('COMMIT');
+      expect(rpcRecord(JSON.parse(await publication))).toHaveProperty('assignmentId');
+      await publisher.execute('COMMIT');
+      await revocation;
+    } finally {
+      await Promise.allSettled([blocker.execute('ROLLBACK'), publisher.execute('ROLLBACK')]);
+      blocker.release();
+      publisher.release();
+      revoker.release();
+      observer.release();
+    }
+  });
+
+  it('refuses publication when teacher-group revocation commits first', async () => {
+    const prepared = await setUp();
+    const revoker = await prepared.db.connection();
+    const publisher = await prepared.db.connection();
+    const observer = await prepared.db.connection();
+    try {
+      await revoker.execute('BEGIN');
+      await revoker.execute(
+        `UPDATE public.group_teachers SET ended_at = clock_timestamp()
+         WHERE group_id = $1 AND school_membership_id = $2`,
+        [prepared.school.groupA, prepared.school.teacherMembershipA],
+      );
+      await publisher.execute('BEGIN');
+      await publisher.execute(`SELECT set_config('request.jwt.claim.sub', $1, true)`, [prepared.school.teacherA.id]);
+      const publication = publisher.scalar<string>(
+        `SELECT public.pilot_publish_assignment_v1(
+           $1::uuid, $2::uuid, $3::uuid, now(), now() + interval '1 hour', now() + interval '2 hours'
+         )::text`,
+        [crypto.randomUUID(), prepared.school.groupA, prepared.program.id],
+      );
+
+      await waitForWaitingRowLock(observer, publisher.backendPid);
+      await revoker.execute('COMMIT');
+      expect(rpcRecord(JSON.parse(await publication))).toMatchObject({ error: 'not-found' });
+      await publisher.execute('COMMIT');
+    } finally {
+      await Promise.allSettled([revoker.execute('ROLLBACK'), publisher.execute('ROLLBACK')]);
+      revoker.release();
+      publisher.release();
+      observer.release();
     }
   });
 });

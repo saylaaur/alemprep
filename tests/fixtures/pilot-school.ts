@@ -9,6 +9,8 @@ export type PilotSchoolPair = {
   studentB: TestActor;
   groupA: string;
   groupB: string;
+  teacherMembershipA: string;
+  teacherMembershipB: string;
   membershipA: string;
   membershipB: string;
 };
@@ -65,5 +67,18 @@ export async function seedPilotSchoolPair(db: DbHarness): Promise<PilotSchoolPai
      VALUES ($1, $2, $3), ($4, $5, $6)`,
     [schoolA, groupA, teacherMembershipA, schoolB, groupB, teacherMembershipB],
   );
-  return { schoolA, schoolB, teacherA, teacherB, studentA, studentB, groupA, groupB, membershipA, membershipB };
+  return {
+    schoolA,
+    schoolB,
+    teacherA,
+    teacherB,
+    studentA,
+    studentB,
+    groupA,
+    groupB,
+    teacherMembershipA,
+    teacherMembershipB,
+    membershipA,
+    membershipB,
+  };
 }
