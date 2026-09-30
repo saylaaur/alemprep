@@ -1,5 +1,7 @@
 # AlemPrep — Бэклог задач
 
+> **Актуальная очередь 30.09.2026: A3-R2 → A3-B → A3-C → A4 → A5 → A6.** [Проверка c47385b](docs/production/reviews/2026-09-30-c47385b.md) и [подробный handoff](docs/superpowers/plans/2026-09-30-pilot-next-steps.md) имеют приоритет над историческими статусами ниже. A1 принят; A2 и основа A3 написаны в `codex/trusted-practice`, но полный школьный путь ещё не принят. Выбранные hosted каталоги через 0032 совпали с локальными; повторять применённые SQL не нужно. Следующее: два узких исправления A3-R2 новой миграцией 0033. Работать в `/Users/macbook/.codex/worktrees/trusted-practice/alemprep`; сохранить материалы презентации в основном checkout.
+
 > **Актуальный порядок 28.09.2026:** A1/L02 принят review и полным CI; [PR #31](https://github.com/saylaaur/alemprep/pull/31) merged как `bb903a2`. Следующая задача — **A2/L03a**, [packet тренажёра](docs/superpowers/plans/2026-09-28-l03a-trusted-practice-packet.md): одна задача → серверная проверка → объяснение. Затем A3 участники/программа → A4 закрытие обходов → A5 сводка → A6 выпуск по [очереди первого класса](docs/superpowers/plans/2026-09-27-first-class-rebaseline.md). Нижние «следующая задача L02a/L02b» — исторические статусы, не повторять выполненную работу. Hosted schema и допуск учеников этим merge не подтверждены.
 
 **Исторический gate 23.09 — L02c-R:** четыре дефекта из [review f0492b6](docs/production/reviews/2026-09-23-l02c.md) исправлены; повторный review и общая приёмка L02 закрыты в PR #31.

@@ -1,5 +1,7 @@
 # A3 — First Class Scope Implementation Plan
 
+**Уточнение 30.09:** основа Tasks 1–3 реализована до 0032, целевые исправления проверены; дополнительный review оставил два узких случая A3-R2. Привязка learning sessions и ученический вход ещё нужны. Исполнять [новый handoff](2026-09-30-pilot-next-steps.md): 0033 — authorization boundary, 0034 — session binding. Упоминание session links в прежнем описании 0030 ниже — планировавшаяся работа, фактически 0030 этих связей не добавляет. [Review](../../production/reviews/2026-09-30-c47385b.md) отделяет код, hosted schema и школьный допуск.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give one Russian pilot class a server-enforced school, group, fixed approved program and participant scope, so every trusted session has a durable classroom attribution.

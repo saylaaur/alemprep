@@ -1,5 +1,13 @@
 # Журнал исполнения production-плана
 
+## 30.09.2026 — Astra c47385b review и актуальная очередь
+
+- [Review](reviews/2026-09-30-c47385b.md): исходные исправления 0032 подтверждены; два узких follow-up — прямое privileged создание approved-программы и сериализация отзыва teacher→group при публикации. Они не являются произвольным student bypass.
+- Fresh: 23 focused DB tests, 10 focused unit tests, typecheck и lint PASS. Локальные rollback/synthetic probes воспроизвели оба случая. Полные suites/build из предыдущего прохода не выдаются за свежую проверку.
+- Hosted через SQL Editor: selected function count 15 и function/permission fingerprint, 13 pilot tables/RLS/browser-access fingerprint и non-internal trigger fingerprint совпали с local 0032. Только read-only catalog SQL; business data и схема не менялись. Полная schema/constraints/alias/release smoke ещё нужны.
+- Remote main `bb903a2`, рабочий code HEAD `c47385b`; PR для `codex/trusted-practice` отсутствует. Push/merge/deploy в этом проходе не выполнялись.
+- [Новый handoff](../superpowers/plans/2026-09-30-pilot-next-steps.md): A3-R2 (0033) → binding (0034) → student entry → A4 bypass closure → A5 summary → A6 admission. Синхронизированы верхние указатели и промпт исполнителя; прошлые записи сохраняются как история.
+
 ## 23.09.2026 — L02c-R candidate: authoritative issuance, expiry and bounded catalogs
 
 - Исправлены R1–R4 из [L02c review](reviews/2026-09-23-l02c.md). После любого успешного `start_learning_v1` public DTO читается из owner-scoped immutable session rows, поэтому concurrent receipt replay не может подставить stale question body под чужой item ID. Practice выбирает детерминированно по validated actor+operation, а retry всегда получает исходный receipt. Активный row с `expires_at <= trusted now` отдаётся state API как expired. Assessment catalog читает каждый нужный question type отдельной bounded query, поэтому первые 160 single больше не вытесняют multi/matching.
