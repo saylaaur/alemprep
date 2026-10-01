@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDbHarness } from './helpers';
+import { seedApprovedPilotProgram } from '../fixtures/pilot-program';
 import { seedPilotSchoolPair } from '../fixtures/pilot-school';
 
 describe('pilot DB harness cleanup', () => {
@@ -31,6 +32,36 @@ describe('pilot DB harness cleanup', () => {
       )).toBe(0);
       expect(await inspector.scalar<number>(
         `SELECT count(*)::integer FROM public.school_memberships WHERE id = ANY($1::uuid[])`, [membershipIds],
+      )).toBe(0);
+    } finally {
+      await inspector.close();
+    }
+  });
+
+  it('removes assigned sessions and start receipts before deleting synthetic users', async () => {
+    const fixtureDb = await createDbHarness();
+    const fixture = await seedPilotSchoolPair(fixtureDb);
+    const program = await seedApprovedPilotProgram(fixtureDb);
+    const published = await fixtureDb.rpc(fixture.teacherA, 'pilot_publish_assignment_v1', {
+      operation_id: crypto.randomUUID(), group_id: fixture.groupA, program_id: program.id,
+      opens_at: new Date(Date.now() - 60_000).toISOString(),
+      due_at: new Date(Date.now() + 3_600_000).toISOString(),
+      closes_at: new Date(Date.now() + 7_200_000).toISOString(),
+    });
+    const assignmentId = (published.data as { assignmentId: string }).assignmentId;
+    const operationId = crypto.randomUUID();
+    const started = await fixtureDb.rpc('service', 'pilot_start_assigned_learning_v1', {
+      actor_id: fixture.studentA.id, operation_id: operationId, payload_hash: 'a'.repeat(64), assignment_id: assignmentId,
+    });
+    const sessionId = (started.data as { sessionId: string }).sessionId;
+    await fixtureDb.close();
+
+    const inspector = await createDbHarness();
+    try {
+      expect(await inspector.scalar<number>('SELECT count(*)::integer FROM public.sessions WHERE id = $1', [sessionId])).toBe(0);
+      expect(await inspector.scalar<number>(
+        'SELECT count(*)::integer FROM public.pilot_learning_receipts WHERE actor_id = $1 AND operation_id = $2',
+        [fixture.studentA.id, operationId],
       )).toBe(0);
     } finally {
       await inspector.close();

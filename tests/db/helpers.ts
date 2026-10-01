@@ -215,7 +215,10 @@ export async function createDbHarness(): Promise<DbHarness> {
           const tables = await pool.query<{ table_name: string }>(
             `SELECT table_name FROM information_schema.tables
              WHERE table_schema = 'public' AND table_name = ANY($1::text[])`,
-            [['pilot_provision_receipts', 'assignment_participants', 'assignments', 'school_memberships']],
+            [[
+              'attempts', 'reward_ledger', 'operation_receipts', 'pilot_learning_receipts', 'session_items', 'sessions',
+              'pilot_provision_receipts', 'assignment_participants', 'assignments', 'school_memberships',
+            ]],
           );
           const existingTables = new Set(tables.rows.map((row) => row.table_name));
           const cleanup = await pool.connect();
@@ -226,6 +229,28 @@ export async function createDbHarness(): Promise<DbHarness> {
               await cleanup.query(
                 `DELETE FROM public.pilot_provision_receipts WHERE operator_id = ANY($1::uuid[])`, [createdUserIds],
               );
+            }
+            if (existingTables.has('attempts')) {
+              await cleanup.query(`DELETE FROM public.attempts WHERE user_id = ANY($1::uuid[])`, [createdUserIds]);
+            }
+            if (existingTables.has('reward_ledger')) {
+              await cleanup.query(`DELETE FROM public.reward_ledger WHERE user_id = ANY($1::uuid[])`, [createdUserIds]);
+            }
+            if (existingTables.has('operation_receipts')) {
+              await cleanup.query(`DELETE FROM public.operation_receipts WHERE actor_id = ANY($1::uuid[])`, [createdUserIds]);
+            }
+            if (existingTables.has('pilot_learning_receipts')) {
+              await cleanup.query(`DELETE FROM public.pilot_learning_receipts WHERE actor_id = ANY($1::uuid[])`, [createdUserIds]);
+            }
+            if (existingTables.has('session_items') && existingTables.has('sessions')) {
+              await cleanup.query(
+                `DELETE FROM public.session_items WHERE session_id IN (
+                   SELECT id FROM public.sessions WHERE user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
+              );
+            }
+            if (existingTables.has('sessions')) {
+              await cleanup.query(`DELETE FROM public.sessions WHERE user_id = ANY($1::uuid[])`, [createdUserIds]);
             }
             if (existingTables.has('assignment_participants') && existingTables.has('assignments') && existingTables.has('school_memberships')) {
               await cleanup.query(
