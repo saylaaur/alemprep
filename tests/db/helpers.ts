@@ -216,7 +216,7 @@ export async function createDbHarness(): Promise<DbHarness> {
             `SELECT table_name FROM information_schema.tables
              WHERE table_schema = 'public' AND table_name = ANY($1::text[])`,
             [[
-              'attempts', 'reward_ledger', 'operation_receipts', 'pilot_learning_receipts', 'session_items', 'sessions',
+              'attempts', 'reward_ledger', 'operation_receipts', 'pilot_learning_receipts', 'session_items', 'sessions', 'audit_events',
               'pilot_provision_receipts', 'assignment_participants', 'assignments', 'school_memberships',
             ]],
           );
@@ -241,6 +241,25 @@ export async function createDbHarness(): Promise<DbHarness> {
             }
             if (existingTables.has('pilot_learning_receipts')) {
               await cleanup.query(`DELETE FROM public.pilot_learning_receipts WHERE actor_id = ANY($1::uuid[])`, [createdUserIds]);
+            }
+            if (existingTables.has('audit_events')) {
+              const auditPredicates = ['actor_id = ANY($1::uuid[])'];
+              if (existingTables.has('sessions')) {
+                auditPredicates.push(`entity_type = 'session' AND entity_id IN (
+                  SELECT id FROM public.sessions WHERE user_id = ANY($1::uuid[])
+                )`);
+              }
+              if (existingTables.has('assignments') && existingTables.has('school_memberships')) {
+                auditPredicates.push(`entity_type = 'assignment' AND entity_id IN (
+                  SELECT assignment.id FROM public.assignments AS assignment
+                  JOIN public.school_memberships AS membership ON membership.id = assignment.created_by_membership_id
+                  WHERE membership.user_id = ANY($1::uuid[])
+                )`);
+              }
+              await cleanup.query(
+                `DELETE FROM public.audit_events WHERE ${auditPredicates.map((predicate) => `(${predicate})`).join(' OR ')}`,
+                [createdUserIds],
+              );
             }
             if (existingTables.has('session_items') && existingTables.has('sessions')) {
               await cleanup.query(
