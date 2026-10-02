@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { LearningError, Result } from '@/lib/learning/contracts';
+import type { LearningError, Result, StartedLearning } from '@/lib/learning/contracts';
 
 export type JoinGroupInput = {
   operationId: string;
@@ -21,6 +21,15 @@ export type PublishAssignmentInput = {
 
 export type PublishAssignmentResult = { assignmentId: string; participants: number };
 
+export type AssignedStartInput = {
+  operationId: string;
+  assignmentId: string;
+};
+
+export type AssignedStart =
+  | { status: 'active'; learning: StartedLearning; totalSteps: number; completedSteps: number }
+  | { status: 'completed'; totalSteps: number; completedSteps: number };
+
 const joinGroupSchema = z.object({
   operationId: z.uuid(),
   token: z.string().regex(/^[A-Za-z0-9_-]{22,128}$/),
@@ -29,6 +38,17 @@ const joinGroupSchema = z.object({
 /** Parse only the browser-owned fields; actor and school scope come from Auth/DB. */
 export function parseJoinInput(raw: unknown): JoinGroupInput | null {
   const parsed = joinGroupSchema.safeParse(raw);
+  return parsed.success ? parsed.data : null;
+}
+
+const assignedStartSchema = z.object({
+  operationId: z.uuid(),
+  assignmentId: z.uuid(),
+}).strict();
+
+/** Assignment ownership, language and item selection are server-owned. */
+export function parseAssignedStartInput(raw: unknown): AssignedStartInput | null {
+  const parsed = assignedStartSchema.safeParse(raw);
   return parsed.success ? parsed.data : null;
 }
 
