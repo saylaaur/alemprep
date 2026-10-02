@@ -1,5 +1,9 @@
 # Pilot Next Steps Implementation Plan
 
+> **02.10 scope update:** ближайшая очередь и ограничение объёма — [план к 05.10](2026-10-02-monday-pilot-delivery.md). Узкий teacher UI, принятый KK-урок и одна визуализация теперь входят в целевой первый выпуск. Старые формулировки «после первого урока» ниже исторические; security/grading/replay contracts сохраняются.
+
+> **1 October update:** A3-R2 implemented as `c5d176b`; A3-B remains incomplete. Owner reports applying draft 0034, so freeze it and correct with new 0035. Execute [A3-B correction handoff](2026-10-01-a3b-correction-handoff.md) B1–B3 next. Its verified findings and next-executor prompt supersede the stale Task 1 prompt/status below. A3-C/A4/A5/A6 remain in the order recorded here.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Execute one card, report its evidence, then continue in this order.
 
 **Goal:** Complete one supervised RU lesson with fixed assignments, server-owned results and a reproducible class summary; prepare accepted KK content alongside it.
