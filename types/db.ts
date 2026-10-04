@@ -8,6 +8,7 @@
 //   npx supabase gen types typescript --project-id <id> > types/db.ts
 
 import type { AssistantMode } from '@/lib/assistant';
+import type { TeacherGroup, TeacherRoster } from '@/lib/teacher/contracts';
 
 export type Locale = 'ru' | 'kk';
 
@@ -423,7 +424,13 @@ export type Database = {
   public: {
     Tables: Record<string, never>;
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      /** 0036: Auth-scoped self-study report; does not grant table access. */
+      pilot_teacher_dashboard_v1: {
+        Args: { target_group_id?: string | null };
+        Returns: { groups: TeacherGroup[] } | TeacherRoster | { error: 'unauthenticated' | 'not-found' };
+      };
+    };
     Enums: Record<string, never>;
   };
 };

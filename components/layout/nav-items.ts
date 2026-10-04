@@ -3,6 +3,9 @@ import {
   BookOpen,
   Timer,
   LineChart,
+  Users,
+  UserPlus,
+  FunctionSquare,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -18,3 +21,9 @@ export const navItems: NavItem[] = [
   { href: '/full-practice', labelKey: 'fullPractice', icon: Timer },
   { href: '/progress', labelKey: 'progress', icon: LineChart },
 ];
+
+export const extraNavItems = [
+  { href: '/visualization', labelKey: 'visualization', icon: FunctionSquare },
+  { href: '/join-class', labelKey: 'joinClass', icon: UserPlus },
+  { href: '/teacher', labelKey: 'teacher', icon: Users },
+] as const;
