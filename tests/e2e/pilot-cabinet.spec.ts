@@ -41,6 +41,43 @@ test('teacher creates invite, pupil joins, roster refreshes and foreign class st
   await expect(page.locator('tbody tr')).toHaveCount(2);
 });
 
+test('accepted self-study answer survives reload and appears once in the teacher report', async ({ page }) => {
+  test.skip(process.env.LEARNING_V1_ENABLED !== 'true', 'requires a dedicated trusted server');
+  const school = await seedPilotSchoolPair(db);
+  await db.execute("UPDATE public.profiles SET second_subject='physics', full_name='E2E pupil' WHERE id=$1", [school.studentA.id]);
+  const slug = `cabinet-report-${crypto.randomUUID()}`;
+  const versionId = await db.scalar<string>(`WITH subject AS (
+    INSERT INTO public.subjects(slug,name_ru,name_kk,is_active) VALUES($1,'Test','Test',true) RETURNING id
+  ), topic AS (
+    INSERT INTO public.topics(subject_id,slug,name_ru,name_kk) SELECT id,$1,'Test','Test' FROM subject RETURNING id
+  ), question AS (
+    INSERT INTO public.questions(topic_id,language,type,body,is_published)
+    SELECT id,'ru','single','{"stem":"TEACHER_REPORT_PUBLIC","options":[{"id":"A","content":"4"},{"id":"B","content":"5"}],"correct":"A"}',true FROM topic RETURNING id,body
+  ) INSERT INTO public.question_versions(question_id,family_id,revision,locale,type,public_body,grading_body,content_hash)
+  SELECT id,gen_random_uuid(),1,'ru','single',body-'correct',body,$1 FROM question RETURNING id`, [slug]);
+  await db.execute("INSERT INTO public.question_publications(question_version_id,status) VALUES($1,'approved')", [versionId]);
+
+  await loginAs(page, school.studentA);
+  await page.goto(`/ru/practice/topic/${slug}`);
+  await expect(page.getByText('TEACHER_REPORT_PUBLIC')).toBeVisible();
+  await page.getByRole('radio', { name: 'A 4', exact: true }).click();
+  await page.getByRole('button', { name: 'Проверить', exact: true }).click();
+  await expect(page.getByTestId('learning-score')).toHaveText('1 / 1');
+  await page.reload();
+  await expect(page.getByTestId('learning-score')).toHaveText('1 / 1');
+
+  await loginAs(page, school.teacherA);
+  await page.goto(`/ru/teacher/groups/${school.groupA}`);
+  const row = page.locator('tbody tr').filter({ has: page.getByRole('rowheader', { name: 'E2E pupil', exact: true }) });
+  for (let reload = 0; reload < 2; reload++) {
+    await expect(row.getByRole('cell').nth(0)).toHaveText('1');
+    await expect(row.getByRole('cell').nth(1)).toHaveText('1');
+    await expect(row.getByRole('cell').nth(2)).toHaveText('1 / 1');
+    if (reload === 0) await page.reload();
+  }
+  expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE user_id=$1 AND integrity_version=1', [school.studentA.id])).toBe(1);
+});
+
 test('Kazakh graph sliders update the table offline and reset on a small screen', async ({ page }) => {
   const pupil = await db.actor('graph-pupil');
   await db.execute("UPDATE public.profiles SET second_subject='physics' WHERE id=$1", [pupil.id]);
@@ -61,7 +98,7 @@ test('Kazakh graph sliders update the table offline and reset on a small screen'
   await expect(page.locator('tbody tr').first()).toHaveText('-2-4');
   expect(desmosRequests).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.screenshot({ path: '/private/tmp/alemprep-graph-mobile.png', fullPage: true });
+  await page.screenshot({ path: '/private/tmp/alemprep-graph-mobile.png', fullPage: true, animations: 'disabled' });
 });
 
 test('optional Desmos failure leaves local controls usable; retry and close clean up', async ({ page }) => {

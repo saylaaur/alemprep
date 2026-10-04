@@ -30,6 +30,18 @@ describe('teacher self-study dashboard', () => {
     expect((await db.rpc(school.teacherB, 'pilot_teacher_dashboard_v1', { target_group_id: school.groupB })).data).toEqual({ error: 'not-found' });
   });
 
+  it('requires current school membership and group status even for a coordinator', async () => {
+    db = await createDbHarness();
+    const school = await seedPilotSchoolPair(db);
+    await db.execute('UPDATE public.school_memberships SET ended_at=now() WHERE user_id=$1', [school.teacherA.id]);
+    expect((await db.rpc(school.teacherA, 'pilot_teacher_dashboard_v1', { target_group_id: school.groupA })).data).toEqual({ error: 'not-found' });
+    await db.execute("UPDATE public.school_memberships SET role='coordinator' WHERE user_id=$1 AND ended_at IS NULL", [school.teacherB.id]);
+    expect((await db.rpc(school.teacherB, 'pilot_teacher_dashboard_v1', { target_group_id: school.groupB })).data).toMatchObject({ group: { id: school.groupB } });
+    expect((await db.rpc(school.teacherB, 'pilot_teacher_dashboard_v1', { target_group_id: school.groupA })).data).toEqual({ error: 'not-found' });
+    await db.execute("UPDATE public.school_groups SET status='paused' WHERE id=$1", [school.groupB]);
+    expect((await db.rpc(school.teacherB, 'pilot_teacher_dashboard_v1', { target_group_id: school.groupB })).data).toEqual({ error: 'not-found' });
+  });
+
   it('reports real accepted practice, excludes replay/legacy and keeps first-family score', async () => {
     db = await createDbHarness();
     const school = await seedPilotSchoolPair(db);
