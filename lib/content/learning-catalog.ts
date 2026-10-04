@@ -40,7 +40,10 @@ function expiresAt(mode: LearningMode, now: Date): string {
     diagnostic: 30 * 60 * 1000,
     weekly: 45 * 60 * 1000,
   };
-  return new Date(now.getTime() + durationMs[mode]).toISOString();
+  // The database enforces the same strict duration from its own clock.
+  // Leave a small reserve so ordinary server/DB clock differences do not
+  // reject a fresh plan as expired. Never extend the database time limit.
+  return new Date(now.getTime() + durationMs[mode] - 5_000).toISOString();
 }
 
 function isApprovedForLocale(candidate: ApprovedLearningVersion, locale: 'ru' | 'kk'): boolean {

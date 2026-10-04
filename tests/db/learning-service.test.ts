@@ -73,6 +73,28 @@ describe('L02c service integration', () => {
     actors = [];
   });
 
+  it('issues fresh practice with a server clock two seconds ahead without extending the DB time limit', async () => {
+    db = await createDbHarness();
+    const owner = await db.actor('l02c-clock-skew');
+    actors = [owner];
+    const seeded = await seedApprovedPractice(db, 'ru');
+    const databaseNow = await db.scalar<string>('SELECT clock_timestamp()::text');
+    const admin = db.adminClient();
+    const replay = createSupabaseLearningReplayClient(admin);
+    const start = createLearningStartService({
+      actorId: async () => owner.id,
+      content: createSupabaseLearningContentClient(admin), rpc: admin,
+      now: () => new Date(Date.parse(databaseNow) + 2_000),
+      findReplay: ({ actorId, operationId, payloadHash }) => loadStartReplay(replay, actorId, operationId, payloadHash),
+    });
+    const input = { operationId: crypto.randomUUID(), locale: 'ru' as const, mode: 'practice' as const, topicSlug: seeded.topicSlug };
+    const first = await start.startLearning(input);
+    expect(first, JSON.stringify(first)).toMatchObject({ ok: true });
+    expect(await start.startLearning(input)).toEqual(first);
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id=$1', [owner.id])).toBe(1);
+    expect(await db.scalar<boolean>("SELECT expires_at <= started_at + interval '2 hours' FROM public.sessions WHERE user_id=$1", [owner.id])).toBe(true);
+  });
+
   it('starts once, denies active replay after quarantine, and hides foreign state', async () => {
     db = await createDbHarness();
     const owner = await db.actor('l02c-owner');

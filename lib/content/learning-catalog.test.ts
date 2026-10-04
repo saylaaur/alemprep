@@ -60,10 +60,21 @@ describe('learning catalog planning', () => {
       locale: 'kk',
       topicId: approved.topicId,
       subjectId: approved.subjectId,
-      expiresAt: '2026-09-22T12:00:00.000Z',
+      expiresAt: '2026-09-22T11:59:55.000Z',
       items: [{ versionId: approved.version.id }],
     });
     expect(plan?.manifestHash).toBe(contentManifestHash([approved.version]));
+  });
+
+  it('reserves five seconds for the diagnostic DB time boundary', () => {
+    const plan = buildAssessmentSessionPlan({
+      mode: 'diagnostic', locale: 'kk', subjectSlug: 'math',
+      selectionKey: 'clock-boundary',
+      candidates: [candidate('10000000-0000-4000-8000-000000000011', 'single')],
+      blueprint: [{ type: 'single', count: 1 }],
+      now: new Date('2026-09-22T10:00:00.000Z'),
+    });
+    expect(plan?.expiresAt).toBe('2026-09-22T10:29:55.000Z');
   });
 
   it('rotates a new practice operation while keeping one operation stable', () => {
@@ -122,7 +133,7 @@ describe('learning catalog planning', () => {
     expect(retry?.items).toEqual(first?.items);
     expect(next?.items).not.toEqual(first?.items);
     expect(new Set(first?.items.map((item) => item.versionId)).size).toBe(2);
-    expect(first?.expiresAt).toBe('2026-09-22T10:45:00.000Z');
+    expect(first?.expiresAt).toBe('2026-09-22T10:44:55.000Z');
   });
 
   it('preserves assessment type and topic balance after catalog rotation', () => {
@@ -178,8 +189,8 @@ describe('learning catalog planning', () => {
       expiresAt: plan.expiresAt,
       items: plan.items,
     }))).toEqual([
-      { subjectId: math.subjectId, expiresAt: '2026-09-22T12:40:00.000Z', items: [{ versionId: math.version.id }] },
-      { subjectId: physics.subjectId, expiresAt: '2026-09-22T12:40:00.000Z', items: [{ versionId: physics.version.id }] },
+      { subjectId: math.subjectId, expiresAt: '2026-09-22T12:39:55.000Z', items: [{ versionId: math.version.id }] },
+      { subjectId: physics.subjectId, expiresAt: '2026-09-22T12:39:55.000Z', items: [{ versionId: physics.version.id }] },
     ]);
   });
 
