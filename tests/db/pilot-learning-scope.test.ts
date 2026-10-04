@@ -430,12 +430,18 @@ describe('pilot assigned learning scope', () => {
     await expect(db.execute(
       "UPDATE public.sessions SET status = 'submitted' WHERE id = $1", [sessionId],
     )).rejects.toThrow('pilot completion requires accepted facts');
+    // An expired/cancelled row must not bypass the completion guard either.
+    await db.execute("UPDATE public.sessions SET status = 'expired' WHERE id = $1", [sessionId]);
+    await expect(db.execute(
+      "UPDATE public.sessions SET status = 'submitted' WHERE id = $1", [sessionId],
+    )).rejects.toThrow('pilot completion requires accepted facts');
     const next = await db.rpc('service', 'pilot_start_assigned_learning_v1', {
       actor_id: school.studentA.id, operation_id: crypto.randomUUID(),
       payload_hash: '1'.repeat(64), assignment_id: assignmentId,
     });
     expect(next.status, JSON.stringify(next.data)).toBe(200);
-    expect(next.data).toMatchObject({ status: 'active', sessionId, totalSteps: 1, completedSteps: 0 });
+    expect(next.data).toMatchObject({ status: 'active', totalSteps: 1, completedSteps: 0 });
+    expect(record(next.data).sessionId).not.toBe(sessionId);
     expect(await db.scalar<number>('SELECT count(*)::integer FROM public.attempts WHERE session_id = $1', [sessionId])).toBe(0);
   });
 
@@ -496,6 +502,43 @@ describe('pilot assigned learning scope', () => {
       publisher.release();
       learner.release();
       await pendingStart?.catch(() => undefined);
+    }
+  });
+
+  it('takes the operation lock before assignment authority locks', async () => {
+    db = await createDbHarness();
+    const school = await seedPilotSchoolPair(db);
+    const program = await seedApprovedPilotProgram(db);
+    const published = await db.rpc(school.teacherA, 'pilot_publish_assignment_v1', {
+      operation_id: crypto.randomUUID(), group_id: school.groupA, program_id: program.id,
+      opens_at: new Date(Date.now() - 60_000).toISOString(), due_at: new Date(Date.now() + 3_600_000).toISOString(),
+      closes_at: new Date(Date.now() + 7_200_000).toISOString(),
+    });
+    expect(published.status).toBe(200);
+    const assignmentId = record(published.data).assignmentId as string;
+    const operationId = crypto.randomUUID();
+    const locker = await db.connection();
+    const authority = await db.connection();
+    let started: Promise<Awaited<ReturnType<DbHarness['rpc']>>> | undefined;
+    try {
+      await locker.execute('BEGIN');
+      await locker.execute('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`${school.studentA.id}:${operationId}`]);
+      started = db.rpc('service', 'pilot_start_assigned_learning_v1', {
+        actor_id: school.studentA.id, operation_id: operationId, payload_hash: 'a'.repeat(64), assignment_id: assignmentId,
+      });
+      await waitForBlockedRpc(db, 'pilot_start_assigned_learning_v1', locker.backendPid);
+      await authority.execute('BEGIN');
+      await authority.execute("SET LOCAL lock_timeout='300ms'");
+      // A start waiting for its operation must not hold assignment authority.
+      await authority.execute("UPDATE public.assignments SET status='cancelled' WHERE id=$1", [assignmentId]);
+      await authority.execute('COMMIT');
+      await locker.execute('COMMIT');
+      expect((await started).data).toEqual({ error: 'not-found' });
+    } finally {
+      await authority.execute('ROLLBACK');
+      await locker.execute('ROLLBACK');
+      await started;
+      authority.release(); locker.release();
     }
   });
 });

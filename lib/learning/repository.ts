@@ -568,8 +568,8 @@ export async function loadLearningReview(
 
 /**
  * Restores an existing start result before planning new content. The immutable
- * session rows remain readable for the owner even when their publication was
- * quarantined after issue, so a retry never resamples or leaks another item.
+ * session rows remain readable for historical accepted recovery. Active public
+ * replay uses the same access guard as reload, and never resamples on denial.
  */
 export async function loadStartReplay(
   client: LearningReplayClient,
@@ -634,16 +634,34 @@ const learningReviewSelect = `
 `;
 
 /** Production owner-scoped reader for reload/retry state. */
-export function createSupabaseLearningStateClient(client: SupabaseClient): LearningStateClient {
+export function createSupabaseLearningStateClient(
+  client: SupabaseClient,
+  purpose: 'issued' | 'reload' = 'issued',
+): LearningStateClient {
   return {
     async readSession(actorId, sessionId) {
-      const { data, error } = await client
+      const readOwned = () => client
         .from('sessions')
         .select(learningStateSelect)
         .eq('id', sessionId)
         .eq('user_id', actorId)
         .eq('integrity_version', 1)
         .maybeSingle();
+      const { data, error } = await readOwned();
+      if (!error && purpose === 'reload' && isRecord(data) && data.status === 'active'
+        && typeof data.expires_at === 'string' && Date.parse(data.expires_at) > Date.now()) {
+        const access = await client.rpc('learning_active_session_access_v1', {
+          actor_id: actorId, session_id: sessionId,
+        });
+        if (access.error) return { data: null, error: access.error };
+        if (access.data !== true) {
+          // A concurrent submit/expiry can win between the read and guard.
+          // Recover its terminal state, but never return denied active content.
+          const recovered = await readOwned();
+          return { data: isRecord(recovered.data) && recovered.data.status !== 'active' ? recovered.data : null,
+            error: recovered.error };
+        }
+      }
       return { data, error };
     },
   };
@@ -668,7 +686,7 @@ export function createSupabaseLearningReviewClient(client: SupabaseClient): Lear
 
 /** Production receipt + issued-session reader for idempotent start replay. */
 export function createSupabaseLearningReplayClient(client: SupabaseClient): LearningReplayClient {
-  const state = createSupabaseLearningStateClient(client);
+  const state = createSupabaseLearningStateClient(client, 'reload');
   return {
     ...state,
     async readStartReceipt(actorId, operationId) {

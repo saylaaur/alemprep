@@ -1,4 +1,6 @@
 -- A3-B corrections for the already applied 0034 boundary.
+-- Recovery-safe after a partial SQL Editor run. Always run this whole file.
+BEGIN;
 -- Authority locks follow publication's school/group prefix before locking the
 -- programme. A publisher needs a programme FK lock after its school/group
 -- lock; taking programme first here creates a deadlock cycle.
@@ -199,14 +201,20 @@ CREATE TRIGGER session_items_validate_pilot_attribution
 
 -- An expired session may be replaced, but a participant can never have two
 -- usable or accepted facts for the same programme item.
-CREATE UNIQUE INDEX sessions_assignment_participant_item_live_unique
+CREATE UNIQUE INDEX IF NOT EXISTS sessions_assignment_participant_item_live_unique
   ON public.sessions (assignment_participant_id, pilot_program_item_id)
   WHERE assignment_participant_id IS NOT NULL
     AND pilot_program_item_id IS NOT NULL
     AND status IN ('active', 'submitted');
 
-ALTER FUNCTION public.pilot_start_assigned_learning_v1(UUID, UUID, TEXT, UUID)
-  RENAME TO pilot_start_assigned_learning_v1_0034;
+DO $$
+BEGIN
+  IF pg_catalog.to_regprocedure('public.pilot_start_assigned_learning_v1_0034(uuid,uuid,text,uuid)') IS NULL THEN
+    ALTER FUNCTION public.pilot_start_assigned_learning_v1(UUID, UUID, TEXT, UUID)
+      RENAME TO pilot_start_assigned_learning_v1_0034;
+  END IF;
+END;
+$$;
 
 -- Renaming a PL/pgSQL function does not rewrite the implicit parameter block
 -- label used in its stored body. Preserve the original implementation while
@@ -243,8 +251,14 @@ BEGIN
 END;
 $$;
 
-ALTER FUNCTION public.commit_learning_v1(UUID, UUID, TEXT, UUID, JSONB, TEXT)
-  RENAME TO commit_learning_v1_pre_pilot_binding;
+DO $$
+BEGIN
+  IF pg_catalog.to_regprocedure('public.commit_learning_v1_pre_pilot_binding(uuid,uuid,text,uuid,jsonb,text)') IS NULL THEN
+    ALTER FUNCTION public.commit_learning_v1(UUID, UUID, TEXT, UUID, JSONB, TEXT)
+      RENAME TO commit_learning_v1_pre_pilot_binding;
+  END IF;
+END;
+$$;
 
 DO $$
 DECLARE original_definition TEXT;
@@ -342,6 +356,7 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+DROP TRIGGER IF EXISTS sessions_audit_assigned_learning_start ON public.sessions;
 CREATE TRIGGER sessions_audit_assigned_learning_start AFTER INSERT ON public.sessions
   FOR EACH ROW EXECUTE FUNCTION public.pilot_audit_assigned_learning_start_v1();
 
@@ -350,3 +365,4 @@ REVOKE ALL ON FUNCTION public.pilot_start_assigned_learning_v1_0034(UUID, UUID, 
 REVOKE ALL ON FUNCTION public.pilot_start_assigned_learning_v1(UUID, UUID, TEXT, UUID), public.commit_learning_v1(UUID, UUID, TEXT, UUID, JSONB, TEXT) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.pilot_start_assigned_learning_v1(UUID, UUID, TEXT, UUID), public.commit_learning_v1(UUID, UUID, TEXT, UUID, JSONB, TEXT) TO service_role;
 NOTIFY pgrst, 'reload schema';
+COMMIT;

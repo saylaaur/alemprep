@@ -98,6 +98,26 @@ describe('assigned practice server service', () => {
     expect(result).toEqual({ ok: true, value: { status: 'completed', totalSteps: 3, completedSteps: 3 } });
   });
 
+  it('recovers a repeated start as already submitted without issuing the next item', async () => {
+    const receipt = { sessionId, acceptedAt: '2026-10-05T11:00:00.000Z', score: 1, maxScore: 1,
+      correctCount: 1, totalQuestions: 1, xpAwarded: 0, integrityVersion: 1, scoringVersion: 'ent-v1' };
+    const calls: unknown[] = [];
+    const result = await service({
+      rpcResponse: { status: 'active', sessionId, totalSteps: 3, completedSteps: 0 },
+      stateResponse: { ...activeSessionRow(), status: 'submitted', receipt }, calls,
+    }).startAssignedPractice({ operationId, assignmentId });
+    expect(result).toMatchObject({ ok: false, error: 'already-submitted' });
+    expect(calls).toHaveLength(1);
+  });
+
+  it('recovers an expired start receipt without replacing its original session', async () => {
+    const result = await service({
+      rpcResponse: { status: 'active', sessionId, totalSteps: 3, completedSteps: 0 },
+      stateResponse: { ...activeSessionRow(), status: 'expired' },
+    }).startAssignedPractice({ operationId, assignmentId });
+    expect(result).toMatchObject({ ok: false, error: 'expired' });
+  });
+
   it('treats malformed transport data and unavailable hydrated work as temporarily unavailable', async () => {
     await expect(service({ rpcResponse: { status: 'active', sessionId, totalSteps: 1, completedSteps: 1 } })
       .startAssignedPractice({ operationId, assignmentId }))

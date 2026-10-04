@@ -478,6 +478,13 @@ describe('0024 learning integrity migration path', () => {
       const activeSessionId = (activeBeforeUpgrade.data as { sessionId: string }).sessionId;
 
       await applyMigration(db, pilotBindingCorrectionMigrationPath);
+      // SQL Editor recovery may restart a fully applied file. Saved original
+      // functions must not be overwritten by wrappers on the second run.
+      await applyMigration(db, pilotBindingCorrectionMigrationPath);
+      await applyMigration(db, `${process.cwd()}/supabase/migrations/0036_teacher_self_study_dashboard.sql`);
+      await applyMigration(db, `${process.cwd()}/supabase/migrations/0036_teacher_self_study_dashboard.sql`);
+      await applyMigration(db, `${process.cwd()}/supabase/migrations/0037_pilot_recovery_boundary.sql`);
+      await applyMigration(db, `${process.cwd()}/supabase/migrations/0037_pilot_recovery_boundary.sql`);
 
       expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [acceptedSessionId])).toBe('submitted');
       expect(await db.scalar<string>('SELECT status FROM public.sessions WHERE id = $1', [activeSessionId])).toBe('active');

@@ -425,6 +425,8 @@ export type Database = {
     Tables: Record<string, never>;
     Views: Record<string, never>;
     Functions: {
+      learning_active_session_access_v1: { Args: { actor_id: string; session_id: string }; Returns: boolean };
+      pilot_session_has_accepted_completion_v1: { Args: { target_session: string }; Returns: boolean };
       /** 0036: Auth-scoped self-study report; does not grant table access. */
       pilot_teacher_dashboard_v1: {
         Args: { target_group_id?: string | null };

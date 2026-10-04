@@ -58,9 +58,12 @@ export function createAssignedPracticeService(dependencies: AssignedPracticeDepe
       }
 
       const state = await loadLearningState(dependencies.state, actorId, started.sessionId, dependencies.now?.());
-      if (isFailure(state) || state.status !== 'active' || state.session.id !== started.sessionId) {
-        return failure(isFailure(state) ? state.error : 'temporarily-unavailable');
-      }
+      if (isFailure(state)) return failure(state.error);
+      // A stored start receipt always refers to its original item. Recovery
+      // must never silently advance to the next question using the same op.
+      if (state.status === 'submitted') return failure('already-submitted');
+      if (state.status !== 'active') return failure(state.status === 'expired' ? 'expired' : 'not-found');
+      if (state.session.id !== started.sessionId) return failure('temporarily-unavailable');
       return {
         ok: true,
         value: {
@@ -78,7 +81,7 @@ export function createProductionAssignedPracticeService() {
   return createAssignedPracticeService({
     actorId: async () => (await getActor())?.id ?? null,
     rpc: admin,
-    state: createSupabaseLearningStateClient(admin),
+    state: createSupabaseLearningStateClient(admin, 'reload'),
     now: () => new Date(),
   });
 }

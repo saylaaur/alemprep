@@ -73,7 +73,7 @@ describe('L02c service integration', () => {
     actors = [];
   });
 
-  it('starts, restores after quarantine, and hides state from another owner', async () => {
+  it('starts once, denies active replay after quarantine, and hides foreign state', async () => {
     db = await createDbHarness();
     const owner = await db.actor('l02c-owner');
     const other = await db.actor('l02c-other');
@@ -105,16 +105,14 @@ describe('L02c service integration', () => {
       [sessionId],
     );
     const replayed = await start.startLearning(input);
-    expect(replayed).toEqual(first);
+    expect(replayed).toMatchObject({ ok: false, error: 'temporarily-unavailable' });
+    expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id=$1', [owner.id])).toBe(1);
 
     const ownerState = createLearningStateService({
       actorId: async () => owner.id,
-      state: createSupabaseLearningStateClient(admin),
+      state: createSupabaseLearningStateClient(admin, 'reload'),
     });
-    await expect(ownerState.getLearningState(sessionId)).resolves.toMatchObject({
-      ok: true,
-      value: { status: 'active', session: { id: sessionId, items: [{ question: { body: { stem: 'public' } } }] } },
-    });
+    await expect(ownerState.getLearningState(sessionId)).resolves.toMatchObject({ ok: false, error: 'not-found' });
 
     const state = createLearningStateService({
       actorId: async () => other.id,
