@@ -20,6 +20,7 @@
     "audit:kk": "tsx --tsconfig tsconfig.scripts.json scripts/audit-kazakh-coverage.ts",
     "content:translate-google": "tsx --tsconfig tsconfig.scripts.json scripts/translate-google.ts",
     "content:reviewed": "tsx --tsconfig tsconfig.scripts.json scripts/import-reviewed-content.ts",
+    "content:export-sources": "tsx --tsconfig tsconfig.scripts.json scripts/export-translation-sources.ts",
     "preflight:production": "tsx --tsconfig tsconfig.scripts.json scripts/preflight-production.ts",
     "repair:quarantine": "tsx --tsconfig tsconfig.scripts.json scripts/repair-quarantined-questions.ts",
     "gen:glossary": "tsx --tsconfig tsconfig.scripts.json scripts/build-glossary.ts",
