@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { MathText } from '@/components/math/MathText';
-import { autoViewport, formatIntervals, formatNumber, formatPoint, integrate, keyPoints, solveRelation, type Interval, type KeyPoint } from '@/lib/graph/analyze';
+import { autoViewport, formatIntervals, formatNumber, formatPoint, integrate, keyPoints, settlesBeyond, solveRelation, type Interval, type KeyPoint } from '@/lib/graph/analyze';
 import { extractTaskGraph } from '@/lib/graph/extract';
 import { GRAPH_COLORS } from '@/lib/graph/topics';
 import { GraphCanvas, type PlotMarker } from './GraphCanvas';
@@ -27,11 +27,14 @@ export function TaskGraph({ stem, stemBlocks }: { stem: string; stemBlocks?: unk
   const t = useTranslations('graph');
   const [open, setOpen] = useState(true);
   const [selected, setSelected] = useState<number | null>(null);
-  const model = useMemo(() => {
+  const model = useMemo(() => { try {
     const graph = extractTaskGraph(stem, stemBlocks);
     if (!graph) return null;
     const fns = graph.curves.flatMap((curve) => curve.branches);
     const view = autoViewport(fns, { trig: graph.trig, equalAspect: graph.equalAspect, focus: graph.focus });
+    // Nothing to draw ($y = 1/0$, $\log_0 x$): no empty graph block.
+    const drawable = fns.some((fn) => Array.from({ length: 65 }, (_, index) => fn(view.xmin + (index / 64) * (view.xmax - view.xmin))).some(Number.isFinite));
+    if (!drawable) return null;
     const owner = graph.curves.flatMap((curve, index) => curve.branches.map(() => index));
     let points: KeyPoint[] = keyPoints(fns, view)
       // Two branches of one circle meet at its edge; that is not an intersection.
@@ -44,14 +47,17 @@ export function TaskGraph({ stem, stemBlocks }: { stem: string; stemBlocks?: unk
     if (relation) {
       const left = graph.curves[relation.left].branches[0];
       const right = relation.right === null ? () => 0 : graph.curves[relation.right].branches[0];
-      if (relation.relation !== '=') {
-        shade = solveRelation(left, relation.relation, right, view);
-        const wide = solveRelation(left, relation.relation, right, SOLUTION_WINDOW);
-        // Periodic answers (trigonometry) never settle; show only the picture then.
-        if (!graph.trig && sameIntervals(wide, solveRelation(left, relation.relation, right, WIDE_WINDOW), SOLUTION_WINDOW)) solution = formatIntervals(wide, SOLUTION_WINDOW);
-      } else {
-        const roots = solveRelation(left, '=', right, SOLUTION_WINDOW).map((interval) => interval.from);
-        if (!graph.trig && roots.length <= 6) solution = roots.length ? roots.map((x) => formatNumber(x)).join('; ') : '∅';
+      if (relation.relation !== '=') shade = solveRelation(left, relation.relation, right, view);
+      // Periodic answers (trigonometry) never settle, and an answer that still changes
+      // beyond the window (√x = 9 → 81, log₂ x ≤ 7 → 128) would be wrong: show only the picture then.
+      if (!graph.trig && settlesBeyond((x) => left(x) - right(x), SOLUTION_WINDOW.xmax)) {
+        if (relation.relation !== '=') {
+          const wide = solveRelation(left, relation.relation, right, SOLUTION_WINDOW);
+          if (sameIntervals(wide, solveRelation(left, relation.relation, right, WIDE_WINDOW), SOLUTION_WINDOW)) solution = formatIntervals(wide, SOLUTION_WINDOW);
+        } else {
+          const roots = solveRelation(left, '=', right, SOLUTION_WINDOW).map((interval) => interval.from);
+          if (roots.length <= 6) solution = roots.length ? roots.map((x) => formatNumber(x)).join('; ') : '∅';
+        }
       }
     }
     const asymptotes = points.filter((point) => point.kind === 'asymptote').map((point) => point.x);
@@ -59,7 +65,10 @@ export function TaskGraph({ stem, stemBlocks }: { stem: string; stemBlocks?: unk
       .sort((a, b) => Math.abs(a.x) - Math.abs(b.x)).slice(0, MAX_MARKERS).sort((a, b) => a.x - b.x);
     const integral = graph.area ? integrate(graph.curves[graph.area.curve].branches[0], graph.area.from, graph.area.to) : NaN;
     return { graph, view, visible, asymptotes, shade, solution, integral, owner };
-  }, [stem, stemBlocks]);
+  } catch {
+    // A stem the engine cannot handle must never break the review screen.
+    return null;
+  } }, [stem, stemBlocks]);
 
   if (!model) return null;
   const { graph, view, visible, asymptotes, shade, solution, integral, owner } = model;

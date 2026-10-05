@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { compile, parseExpression } from './parse';
 import {
   analyze, autoViewport, formatIntervals, formatNumber, formatPoint, integrate, keyPoints,
-  niceStep, piStep, sampleSegments, snap, solveRelation, type Interval, type Relation,
+  niceStep, piStep, sampleSegments, settlesBeyond, snap, solveRelation, type Interval, type Relation,
 } from './analyze';
 
 function fn(input: string): (x: number) => number {
@@ -388,5 +388,25 @@ describe('grid steps', () => {
     expect(piStep(4 * PI, 500)).toBeCloseTo(PI / 2, 12);
     expect(piStep(PI, 600)).toBeCloseTo(PI / 6, 12);
     expect(piStep(1000, 500)).toBeNull();
+  });
+});
+
+describe('settlesBeyond', () => {
+  const diff = (left: string, right: string) => { const l = fn(left); const r = fn(right); return (x: number) => l(x) - r(x); };
+  it('rejects answers that change outside a ±60 window', () => {
+    expect(settlesBeyond(diff('sqrt(x)', '9'), 60)).toBe(false);
+    expect(settlesBeyond(diff('log_2(x)', '7'), 60)).toBe(false);
+    expect(settlesBeyond(diff('2x', '140'), 60)).toBe(false);
+    expect(settlesBeyond(diff('x^3', '1000000'), 60)).toBe(false);
+    expect(settlesBeyond(diff('(x-100)(x+100)', '0'), 60)).toBe(false);
+    expect(settlesBeyond(diff('1/x', '0.001'), 60)).toBe(false);
+    expect(settlesBeyond(diff('x^2', '3600'), 60)).toBe(false);
+  });
+  it('accepts answers that are complete inside the window', () => {
+    expect(settlesBeyond(diff('x^2-4x+3', '0'), 60)).toBe(true);
+    expect(settlesBeyond(diff('log_2(x)', '3'), 60)).toBe(true);
+    expect(settlesBeyond(diff('x^2+1', '0'), 60)).toBe(true);
+    expect(settlesBeyond(diff('2^x', '8'), 60)).toBe(true);
+    expect(settlesBeyond(diff('1/x', '2'), 60)).toBe(true);
   });
 });

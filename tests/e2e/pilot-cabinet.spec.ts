@@ -85,7 +85,7 @@ test('accepted self-study answer survives reload and appears once in the teacher
   expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE user_id=$1 AND integrity_version=1', [school.studentA.id])).toBe(1);
 });
 
-test('Kazakh graph sliders update the table offline and reset on a small screen', async ({ page }) => {
+test('Kazakh graph tool works offline: sliders, presets and typing on a small screen', async ({ page }) => {
   const pupil = await db.actor('graph-pupil');
   await db.execute("UPDATE public.profiles SET second_subject='physics' WHERE id=$1", [pupil.id]);
   await loginAs(page, pupil);
@@ -94,15 +94,21 @@ test('Kazakh graph sliders update the table offline and reset on a small screen'
   page.on('request', (request) => { if (request.url().includes('desmos.com')) desmosRequests.push(request.url()); });
   await page.goto('/kk/visualization');
   await expect(page.getByRole('heading', { name: 'Графиктерді зерттейік' })).toBeVisible();
-  await expect(page.getByRole('img', { name: /Таңдалған функцияның графигі/ })).toBeVisible();
-  await expect(page.locator('tbody tr').first()).toHaveText('-25');
-  await page.getByRole('slider', { name: 'a коэффициенті' }).focus();
+  const graph = page.getByRole('img', { name: /^График: / });
+  await expect(graph).toBeVisible();
+  const slider = page.getByRole('slider', { name: 'a параметрі' });
+  await expect(slider).toHaveValue('1');
+  await slider.focus();
   await page.keyboard.press('ArrowLeft');
-  await expect(page.locator('tbody tr').first()).toHaveText('-23');
-  await page.getByRole('button', { name: 'Параметрлерді қалпына келтіру' }).click();
-  await expect(page.locator('tbody tr').first()).toHaveText('-25');
-  await page.getByRole('button', { name: 'Сызықтық функция', exact: true }).click();
-  await expect(page.locator('tbody tr').first()).toHaveText('-2-4');
+  await expect(slider).toHaveValue('0.5');
+  await expect(page.getByRole('group', { name: 'Негізгі нүктелер' }).or(page.getByRole('list', { name: 'Негізгі нүктелер' }))).toBeVisible();
+  await page.getByRole('button', { name: 'Сызықтық', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '1-функция' })).toHaveValue('a x + b');
+  await page.getByRole('textbox', { name: '1-функция' }).fill('x^2-20x+96');
+  await expect(graph).toHaveAttribute('aria-label', /x\^\{?2/);
+  // The view refits to the typed function, so both zeros are listed as key points.
+  await expect(page.getByRole('button', { name: /Функцияның нөлі \(8; 0\)/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Функцияның нөлі \(12; 0\)/ })).toBeVisible();
   expect(desmosRequests).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: test.info().outputPath('graph-mobile.png'), fullPage: true, animations: 'disabled' });

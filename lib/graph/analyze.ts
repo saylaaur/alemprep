@@ -232,6 +232,33 @@ function isConstant(fn: RealFn, window: { xmin: number; xmax: number }): boolean
   return defined.length > 2 && defined.every((value) => Math.abs(value - defined[0]) < 1e-9 * Math.max(1, Math.abs(defined[0])));
 }
 
+/**
+ * Whether `fn` keeps one sign (or stays undefined) beyond ±limit, probed out to
+ * ±1e6. A solution read off a finite window is complete only then: √x = 9 or
+ * log₂ x ≤ 7 change sign far outside a ±60 window.
+ */
+export function settlesBeyond(fn: RealFn, limit: number, far = 1e6): boolean {
+  const state = (x: number) => {
+    const value = fn(x);
+    // Overflow (2^x → ∞) keeps its sign; only NaN is outside the domain.
+    if (Number.isNaN(value)) return 'u';
+    if (Math.abs(value) < 1e-9 * Math.max(1, Math.abs(x))) return '0';
+    return value > 0 ? '+' : '-';
+  };
+  const start = limit * 0.99;
+  const steps = 400;
+  const ratio = Math.pow(far / start, 1 / steps);
+  for (const side of [1, -1]) {
+    const first = state(side * start);
+    let x = start;
+    for (let index = 0; index < steps; index++) {
+      x *= ratio;
+      if (state(side * x) !== first) return false;
+    }
+  }
+  return true;
+}
+
 /** Where `left(x) relation right(x)` holds inside the window, as intervals. */
 export function solveRelation(left: RealFn, relation: Relation, right: RealFn, window: { xmin: number; xmax: number }): Interval[] {
   const difference = (x: number) => left(x) - right(x);

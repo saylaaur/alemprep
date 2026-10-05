@@ -55,6 +55,8 @@ export async function getUnpublishedQuestions(): Promise<UnpublishedQuestion[]> 
     .from('questions')
     .select('*')
     .eq('is_published', false)
+    // Reviewed KK drafts are accepted through content:reviewed, never published here.
+    .neq('source', 'reviewed_kk_translation')
     .order('created_at', { ascending: false });
 
   if (!questions || questions.length === 0) return [];
@@ -120,6 +122,26 @@ export async function getProfile(): Promise<Profile | null> {
   }
 }
 
+const attemptTopicSchema=z.array(z.object({question_id:z.string().min(1),topic_id:z.string().min(1)}));
+/**
+ * Topic of each attempted question. KK rows from the reviewed import are unpublished and
+ * hidden by questions RLS, so their topics come from my_attempted_question_topics_v1
+ * (only the caller's own attempted questions, id and topic only).
+ */
+async function attemptedQuestionTopics(supabase:Awaited<ReturnType<typeof createClient>>,questionIds:string[]) {
+  const map=new Map<string,string>();
+  if(questionIds.length===0) return map;
+  const {data}=await supabase.from('questions').select('id, topic_id').in('id',questionIds);
+  for(const q of (data??[]) as {id:string;topic_id:string}[]) map.set(q.id,q.topic_id);
+  const missing=questionIds.filter((id)=>!map.has(id));
+  if(missing.length>0) {
+    const {data:extra,error}=await supabase.rpc('my_attempted_question_topics_v1',{question_ids:missing});
+    const parsed=attemptTopicSchema.safeParse(extra);
+    // Before 0039 is applied the RPC is missing; keep the old behaviour (topic unknown).
+    if(!error&&parsed.success) for(const row of parsed.data) map.set(row.question_id,row.topic_id);
+  }
+  return map;
+}
 const countGroupSchema=z.array(z.object({topic_id:z.string().min(1),type:z.enum(['single','multi','matching']),question_count:z.number().int().nonnegative()}));
 async function getContentCountGroups(supabase:Awaited<ReturnType<typeof createClient>>,locale:Locale) {
   if(isLearningEnabled()) {
@@ -315,15 +337,7 @@ export async function getProgressData(): Promise<ProgressData | null> {
   }
 
   const questionIds = Array.from(new Set(allAttempts.map((a) => a.question_id)));
-  const { data: questionsRaw } = await supabase
-    .from('questions')
-    .select('id, topic_id')
-    .in('id', questionIds);
-
-  const questionToTopic = new Map<string, string>();
-  for (const q of (questionsRaw ?? []) as { id: string; topic_id: string }[]) {
-    questionToTopic.set(q.id, q.topic_id);
-  }
+  const questionToTopic = await attemptedQuestionTopics(supabase, questionIds);
 
   const topicMap = new Map<string, { id: string; name_ru: string; name_kk: string }>();
   for (const topic of (topicsRes.data ?? []) as {
@@ -499,16 +513,7 @@ export async function getGamification(userId: string): Promise<Gamification | nu
   }
 
   const questionIds = Array.from(new Set(attempts.map((a) => a.question_id)));
-  const questionToTopic = new Map<string, string>();
-  if (questionIds.length > 0) {
-    const { data: questions } = await supabase
-      .from('questions')
-      .select('id, topic_id')
-      .in('id', questionIds);
-    for (const q of (questions ?? []) as { id: string; topic_id: string }[]) {
-      questionToTopic.set(q.id, q.topic_id);
-    }
-  }
+  const questionToTopic = await attemptedQuestionTopics(supabase, questionIds);
 
   const byTopic = new Map<string, { total: number; correct: number }>();
   for (const a of attempts) {
@@ -801,13 +806,7 @@ export async function getDiagnosticBaseline(userId: string): Promise<DiagnosticB
 
   const topicStats: BaselineTopicStat[] = [];
   if (questionIds.length > 0) {
-    const { data: questionsRaw } = await supabase
-      .from('questions')
-      .select('id, topic_id')
-      .in('id', questionIds);
-    const questionToTopic = new Map(
-      ((questionsRaw ?? []) as { id: string; topic_id: string }[]).map((q) => [q.id, q.topic_id])
-    );
+    const questionToTopic = await attemptedQuestionTopics(supabase, questionIds);
 
     const topicIds = Array.from(new Set(Array.from(questionToTopic.values())));
     const { data: topicsRaw } = topicIds.length > 0

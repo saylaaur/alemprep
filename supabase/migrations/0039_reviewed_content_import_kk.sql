@@ -270,6 +270,14 @@ BEGIN
     IF p.math_review_ref IS DISTINCT FROM math_review_ref OR p.language_review_ref IS DISTINCT FROM language_review_ref
       OR p.source_rights_ref IS DISTINCT FROM source_rights_ref THEN RETURN jsonb_build_object('error','operation-conflict'); END IF;
   ELSE
+    -- One approved KK version per family: serving does not dedupe by family, so a second
+    -- approved revision would be served next to the first. Quarantine the old one first.
+    PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('content-family:kk:'||v.family_id::text,0));
+    IF EXISTS(SELECT 1 FROM public.question_versions x
+        JOIN public.question_publications xp ON xp.question_version_id=x.id AND xp.status='approved'
+        WHERE x.family_id=v.family_id AND x.locale='kk' AND x.id<>v.id) THEN
+      RETURN jsonb_build_object('error','kk-already-approved');
+    END IF;
     UPDATE public.question_publications SET status='approved',math_review_ref=content_accept_version_kk_v1.math_review_ref,
       language_review_ref=content_accept_version_kk_v1.language_review_ref,source_rights_ref=content_accept_version_kk_v1.source_rights_ref,
       updated_at=clock_timestamp() WHERE question_version_id=version_id;
@@ -285,5 +293,18 @@ REVOKE ALL ON FUNCTION public.content_sha256_v1(TEXT),
 GRANT EXECUTE ON FUNCTION public.content_sha256_v1(TEXT),
   public.content_import_reviewed_kk_v1(UUID,TEXT,TEXT,JSONB),
   public.content_accept_version_kk_v1(UUID,TEXT,TEXT,TEXT,TEXT) TO service_role;
+
+-- A pupil's own attempts on KK rows (is_published=false, hidden by questions RLS) still need
+-- their topic in progress, gamification and the diagnostic baseline. Returns only
+-- (id, topic_id) of questions the caller has attempted; no content, no answers.
+CREATE OR REPLACE FUNCTION public.my_attempted_question_topics_v1(question_ids UUID[])
+RETURNS TABLE(question_id UUID, topic_id UUID)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $$
+  SELECT q.id, q.topic_id FROM public.questions q
+  WHERE q.id = ANY(question_ids)
+    AND EXISTS(SELECT 1 FROM public.attempts a WHERE a.user_id=(SELECT auth.uid()) AND a.question_id=q.id);
+$$;
+REVOKE ALL ON FUNCTION public.my_attempted_question_topics_v1(UUID[]) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.my_attempted_question_topics_v1(UUID[]) TO authenticated;
 NOTIFY pgrst,'reload schema';
 COMMIT;

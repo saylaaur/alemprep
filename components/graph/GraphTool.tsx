@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Plus, X } from 'lucide-react';
 import { MathText } from '@/components/math/MathText';
@@ -43,8 +43,12 @@ export function GraphTool({ initial = [''], presets, defaults = {}, hint, idPref
   const [selected, setSelected] = useState<number | null>(null);
   const inputs = useRef(new Map<number, HTMLInputElement>());
 
+  // Typing and sliders stay responsive on slow phones: the maths follows a deferred copy.
+  const deferredLines = useDeferredValue(lines);
+  const deferredValues = useDeferredValue(values);
   // Letters other than x and y become sliders; an untouched slider starts at 1.
   const { built, params, scope } = useMemo(() => {
+    const lines = deferredLines; const values = deferredValues;
     const first = lines.map((line) => (line.text.trim() ? buildUserCurve(line.text, values) : null));
     const names = [...new Set(first.flatMap((curve) => (curve?.ok ? curve.params : [])))].sort();
     const effective = { ...Object.fromEntries(names.map((name) => [name, 1])), ...values };
@@ -52,16 +56,16 @@ export function GraphTool({ initial = [''], presets, defaults = {}, hint, idPref
       ? lines.map((line) => (line.text.trim() ? buildUserCurve(line.text, effective) : null))
       : first;
     return { built: final, params: names, scope: effective };
-  }, [lines, values]);
+  }, [deferredLines, deferredValues]);
   const ready = built.map((curve, index) => ({ curve, index })).filter((entry): entry is { curve: Extract<UserCurve, { ok: true }>; index: number } => Boolean(entry.curve?.ok));
-  const primary = lines[0]?.text ?? '';
+  const primary = deferredLines[0]?.text ?? '';
   const primaryLatex = built[0]?.ok ? latexWithValues(primary, scope) : null;
   useEffect(() => { onPrimaryChange?.(primaryLatex); }, [primaryLatex, onPrimaryChange]);
 
   const fns = ready.flatMap((entry) => entry.curve.branches);
   const trig = ready.some((entry) => entry.curve.trig);
   const equalAspect = ready.some((entry) => entry.curve.implicit);
-  const signature = ready.map((entry) => lines[entry.index].text).join('|') + JSON.stringify(params.map((name) => scope[name]));
+  const signature = ready.map((entry) => deferredLines[entry.index].text).join('|') + JSON.stringify(params.map((name) => scope[name]));
   // eslint-disable-next-line react-hooks/exhaustive-deps -- the signature captures every input of the fit
   const view = useMemo(() => (fns.length ? autoViewport(fns, { trig, equalAspect }) : { xmin: -6, xmax: 6, ymin: -5, ymax: 5 }), [signature]);
   const owner = ready.flatMap((entry) => entry.curve.branches.map(() => entry.index));
@@ -152,7 +156,8 @@ export function GraphTool({ initial = [''], presets, defaults = {}, hint, idPref
       overlay={{ asymptotes: visible.filter((point) => point.kind === 'asymptote').map((point) => point.x) }}
       initial={view}
       trig={trig}
-      resetKey={`${resetKey}:${ready.length > 0}`}
+      // Refit when the typed functions change (not on slider moves), so x^2-20x+96 is fitted, not just its first x.
+      resetKey={`${resetKey}:${ready.map((entry) => deferredLines[entry.index].text).join('|')}`}
       selected={selected}
       onSelect={setSelected}
       ariaLabel={ready.length ? t('aria', { functions: ready.map((entry) => entry.curve.latex).join('; ') }) : t('emptyAria')}

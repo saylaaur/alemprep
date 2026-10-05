@@ -232,7 +232,7 @@ describe('reviewed KK translation import (0039)', () => {
     const replay = createSupabaseLearningReplayClient(admin);
     const start = createLearningStartService({ actorId: async () => school.studentA.id, content: createSupabaseLearningContentClient(admin), rpc: admin, now: () => new Date(), findReplay: ({ actorId, operationId, payloadHash }) => loadStartReplay(replay, actorId, operationId, payloadHash) });
     const submit = createLearningSubmitService({ actorId: async () => school.studentA.id, issued: createSupabaseLearningStateClient(admin), rpc: admin });
-    for (const [locale, answer] of [['ru', 'A'], ['kk', 'B']] as const) {
+    for (const [locale, answer] of [['ru', 'A'], ['kk', 'A']] as const) {
       const issued = await start.startLearning({ operationId: crypto.randomUUID(), locale, mode: 'practice', topicSlug: t.slug });
       expect(issued.ok, JSON.stringify(issued)).toBe(true);
       if (!issued.ok) throw new Error('start rejected');
@@ -244,6 +244,33 @@ describe('reviewed KK translation import (0039)', () => {
     const report = await db.rpc(school.teacherA, 'pilot_teacher_dashboard_v1', { target_group_id: school.groupA });
     expect(report.status).toBe(200);
     expect(report.data).toMatchObject({ students: [{ id: school.studentA.id, attempts: 2, uniqueQuestions: 1, firstPoints: 1, firstMaxPoints: 1 }] });
+    // Both answers are correct, but XP for the family is paid once.
+    expect(await db.scalar<number>("SELECT coalesce(sum(amount),0)::int FROM public.reward_ledger WHERE user_id=$1 AND reward_key LIKE 'correct-family:%'", [school.studentA.id])).toBe(10);
+    // The pupil's own progress still finds the topic of the hidden (unpublished) KK row.
+    const questionIds = JSON.parse(await db.scalar<string>("SELECT jsonb_agg(DISTINCT question_id)::text FROM public.attempts WHERE user_id=$1", [school.studentA.id])) as string[];
+    expect(questionIds).toHaveLength(2);
+    const visible = await db.rest(school.studentA, `/questions?select=id&id=in.(${questionIds.join(',')})`);
+    expect((visible.data as unknown[]).length).toBe(1);
+    const topics = await db.rpc(school.studentA, 'my_attempted_question_topics_v1', { question_ids: questionIds });
+    expect(topics.status, JSON.stringify(topics.data)).toBe(200);
+    expect((topics.data as { topic_id: string }[]).map((row) => row.topic_id)).toEqual([t.id, t.id]);
+    // Another pupil learns nothing about questions they never attempted; anon cannot call it.
+    expect((await db.rpc(school.studentB, 'my_attempted_question_topics_v1', { question_ids: questionIds })).data).toEqual([]);
+    expect((await db.rpc('anon', 'my_attempted_question_topics_v1', { question_ids: questionIds })).status).toBeGreaterThanOrEqual(400);
+  });
+
+  it('approves at most one KK version per family until the old one is quarantined', async () => {
+    db = await createDbHarness();
+    const source = await ruSource();
+    const first = (await db.rpc('service', 'content_import_reviewed_kk_v1', kkInput([kkEntry(source.sourceId)]))).data as Imported;
+    expect((await accept(first.versions[0])).status).toBe(200);
+    const fixed = (await db.rpc('service', 'content_import_reviewed_kk_v1', kkInput([kkEntry(source.sourceId, { body: { ...kkBody, stem: '2+2 нешеге тең?' } })]))).data as Imported;
+    expect((await accept(fixed.versions[0])).data).toEqual({ error: 'kk-already-approved' });
+    expect(await db.scalar<string>('SELECT status FROM public.question_publications WHERE question_version_id=$1', [fixed.versions[0].versionId])).toBe('draft');
+    // Re-accepting the already approved version stays idempotent.
+    expect((await accept(first.versions[0])).status).toBe(200);
+    await db.execute("UPDATE public.question_publications SET status='quarantined' WHERE question_version_id=$1", [first.versions[0].versionId]);
+    expect((await accept(fixed.versions[0])).data).toMatchObject({ status: 'approved', locale: 'kk' });
   });
 
   it('can reapply the whole 0039 without changing imported versions or receipts', async () => {

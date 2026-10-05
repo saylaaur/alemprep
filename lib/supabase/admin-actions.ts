@@ -36,10 +36,11 @@ export async function publishQuestion(formData: FormData) {
   const supabase = await requireAdmin();
   const { data: question, error: questionError } = await supabase
     .from('questions')
-    .select('type, body, explanation')
+    .select('type, body, explanation, source')
     .eq('id', id)
     .maybeSingle();
   if (questionError || !question) throw new Error(questionError?.message ?? 'question not found');
+  if (question.source === 'reviewed_kk_translation') throw new Error('reviewed KK drafts are accepted with content:reviewed, not published here');
   if (!question.explanation) throw new Error('question has no explanation and cannot be published');
 
   const eligibility = isEligibleForPublication({

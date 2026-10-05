@@ -80,6 +80,10 @@ function walk(a: unknown, b: unknown, path: string, blockType: string | undefine
       return;
     }
     if (path.includes('/correct/')) return; // checked by key rules below
+    if (blockType === 'image' && path.endsWith('/value')) {
+      if (a !== b) fail('image changed'); // an image URL is never translated
+      return;
+    }
     if (blockType === 'latex' && path.endsWith('/value')) {
       if (stripText(a) !== stripText(b)) fail('latex changed');
     } else if (!sameCounter(maths(a), maths(b))) fail('math segments differ');

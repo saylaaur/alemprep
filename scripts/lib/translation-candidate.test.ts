@@ -151,3 +151,21 @@ describe('KK import command', () => {
     expect(calls).toHaveLength(1);
   });
 });
+
+describe('KK candidate validator: images', () => {
+  const image = { type: 'image', value: 'https://example.test/q/1.png' };
+  const snapshot = structuredClone(ruSnapshots.single);
+  snapshot.explanation.blocks.push(image);
+  const source = parseRuImportArtifact({ schema: 'alemprep-reviewed-ru-content-v1', batchId: '20000000-0000-4000-8000-000000000003',
+    entries: [{ sourceId: ids.single, sourceHash: sourceHash(snapshot), sourceSnapshot: snapshot }] });
+  const candidate = (value: string) => {
+    const translatedSingle = structuredClone(translated.single);
+    translatedSingle.explanation.blocks.push({ type: 'image', value });
+    return { schema: 'alemprep-kk-candidates-v1', method: 'claude-manual', humanReviewed: false,
+      sources: [{ sourceId: ids.single, sourceHash: sourceHash(snapshot), translated: translatedSingle, issues: [], machineChecked: true }] };
+  };
+  it('keeps the image URL and rejects a swapped one', () => {
+    expect(() => validateKkCandidates(candidate(image.value), source)).not.toThrow();
+    expect(() => validateKkCandidates(candidate('https://other.test/q/1.png'), source)).toThrow(/KK candidates rejected/);
+  });
+});

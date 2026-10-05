@@ -58,7 +58,7 @@ export function GraphCanvas({ curves, markers = [], overlay = {}, initial, trig 
   useEffect(() => {
     const element = box.current;
     if (!element || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(([entry]) => setWidth(Math.max(240, Math.round(entry.contentRect.width))));
+    const observer = new ResizeObserver(([entry]) => setWidth(Math.max(200, Math.round(entry.contentRect.width))));
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
@@ -79,7 +79,8 @@ export function GraphCanvas({ curves, markers = [], overlay = {}, initial, trig 
       ymin: cy - (cy - current.ymin) * factor, ymax: cy + (current.ymax - cy) * factor,
     };
     const span = next.xmax - next.xmin;
-    if (span < MIN_SPAN || span > MAX_SPAN) return;
+    // Block only zooming further past a limit, so a very wide or narrow start view can still be zoomed back.
+    if ((span < MIN_SPAN && factor < 1) || (span > MAX_SPAN && factor > 1)) return;
     commit(next);
   }, [commit]);
 
