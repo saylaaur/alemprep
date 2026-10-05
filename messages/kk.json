@@ -189,6 +189,8 @@
     "loading": "Жүктелуде…"
   },
   "onboarding": {
+    "calendarPrevMonth": "Алдыңғы ай",
+    "calendarNextMonth": "Келесі ай",
     "title": "Дайындық жоспарын баптайық",
     "stepOf": "{step}/{total} қадам",
     "next": "Келесі",
@@ -361,6 +363,7 @@
     "otherTopics": "Басқа"
   },
   "practice": {
+    "imageAlt": "Тапсырма материалы",
     "title": "Жаттығу",
     "question": "{current} / {total} сұрақ",
     "checkAnswer": "Тексеру",

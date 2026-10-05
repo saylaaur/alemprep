@@ -189,6 +189,8 @@
     "loading": "Загрузка…"
   },
   "onboarding": {
+    "calendarPrevMonth": "Предыдущий месяц",
+    "calendarNextMonth": "Следующий месяц",
     "title": "Настроим план подготовки",
     "stepOf": "Шаг {step} из {total}",
     "next": "Далее",
@@ -361,6 +363,7 @@
     "otherTopics": "Другое"
   },
   "practice": {
+    "imageAlt": "Материал задания",
     "title": "Тренировка",
     "question": "Вопрос {current} из {total}",
     "checkAnswer": "Проверить",

@@ -8,7 +8,7 @@ import {
   ASSISTANT_MAX_QUESTION_LENGTH,
   ASSISTANT_MAX_TURNS_PER_QUESTION,
   ASSISTANT_MODES,
-  ASSISTANT_SYSTEM_PROMPT,
+  assistantSystemPrompt,
   buildAssistantContext,
   isGlobalBudgetExhausted,
   resolveModel,
@@ -98,6 +98,7 @@ export async function askAssistant(input: {
   mode: AssistantMode;
   userAnswer?: unknown;
   userQuestion?: string;
+  locale?: unknown;
 }): Promise<AskAssistantResult> {
   const supabase = await createClient();
   const {
@@ -221,7 +222,8 @@ export async function askAssistant(input: {
     const response = await client.messages.create({
       model,
       max_tokens: ASSISTANT_MAX_TOKENS,
-      system: ASSISTANT_SYSTEM_PROMPT,
+      // Локаль только выбирает язык ответа; любое другое значение — русский по умолчанию.
+      system: assistantSystemPrompt(input.locale === 'kk' ? 'kk' : 'ru'),
       messages: [{ role: 'user', content: context }],
     });
     const answer = response.content

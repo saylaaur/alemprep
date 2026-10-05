@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { MathText } from '@/components/math/MathText';
 import { ContentBlocks } from '@/components/content/ContentBlocks';
 import { QuestionStem } from '@/components/content/QuestionStem';
@@ -49,6 +49,7 @@ type Props = {
 
 export function PracticeView({ questions, contexts, topicName }: Props) {
   const t = useTranslations('practice');
+  const locale = useLocale();
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerState>>({});
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
@@ -164,7 +165,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
       ...prev,
       [qId]: { loading: true, error: false, history: prev[qId]?.history ?? [] },
     }));
-    void askAssistant({ questionId: qId, mode, userAnswer: answer, userQuestion })
+    void askAssistant({ questionId: qId, mode, userAnswer: answer, userQuestion, locale })
       .then((res) => {
         if (res.ok) {
           setAssistantState((prev) => ({ ...prev, [qId]: { loading: false, error: false, history: res.history } }));
