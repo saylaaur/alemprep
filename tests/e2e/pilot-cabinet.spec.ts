@@ -105,7 +105,7 @@ test('Kazakh graph sliders update the table offline and reset on a small screen'
   await expect(page.locator('tbody tr').first()).toHaveText('-2-4');
   expect(desmosRequests).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.screenshot({ path: '/private/tmp/alemprep-graph-mobile.png', fullPage: true, animations: 'disabled' });
+  await page.screenshot({ path: test.info().outputPath('graph-mobile.png'), fullPage: true, animations: 'disabled' });
 });
 
 test('optional Desmos failure leaves local controls usable; retry and close clean up', async ({ page }) => {
