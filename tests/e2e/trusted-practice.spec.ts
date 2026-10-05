@@ -135,6 +135,9 @@ test('expired sessions clear the draft and do not expose review', async ({ page 
   await loginAs(page, actor);
   await page.goto(`/ru/practice/topic/${slug}`);
   await expect(page.getByText('TRUSTED_PUBLIC_STEM')).toBeVisible();
+  // The stem renders before the initial state read settles. Mutate the fixture
+  // only after restore is active, otherwise it can clear storage before reload.
+  await expect(page.getByRole('button', { name: 'Пропустить', exact: true })).toBeEnabled();
   await db.execute("UPDATE public.sessions SET expires_at = now() - interval '1 minute' WHERE user_id = $1", [actor.id]);
   await page.reload();
   await expect(page.getByText('Время задания истекло. Начните новое задание.')).toBeVisible();
@@ -147,6 +150,8 @@ test('a local draft with a different issued item is discarded', async ({ page })
   await loginAs(page, actor);
   await page.goto(`/ru/practice/topic/${slug}`);
   await expect(page.getByText('TRUSTED_PUBLIC_STEM')).toBeVisible();
+  // A still-running initial restore would persist over our corrupted draft.
+  await expect(page.getByRole('button', { name: 'Пропустить', exact: true })).toBeEnabled();
   await page.evaluate(() => {
     const key = 'alemprep.learning.pending.v1';
     const saved = JSON.parse(sessionStorage.getItem(key)!);

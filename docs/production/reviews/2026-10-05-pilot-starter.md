@@ -85,9 +85,33 @@ code review без замечаний. Hosted redirect allowlist и настоя
 Нужна включённая экспозиция системных Vercel env (VERCEL_ENV/URL/BRANCH_URL).
 При отсутствии preview metadata чужой Origin остаётся запрещённым.
 
-Chrome отдаёт элементы управления браузером, но без содержимого Google и
-Supabase; native screenshot серый даже после Raise. По невидимым элементам
-не нажимали; вход не объявляется успешным. Новых миграций нет.
+После открытия свежих вкладок Chrome отдаёт и AX, и screenshot. Hosted URL
+Configuration прочитана: Site URL https://alemprep.vercel.app, единственный
+redirect https://alemprep.vercel.app/auth/callback. Callback stable preview
+ветки заполнен в форме, **не сохранён**: требуется отдельное подтверждение
+владельца для расширения списка адресов авторизации. Новых миграций нет.
+
+OAuth fix опубликован как `048500c`; Vercel и Gitleaks PASS. Verify
+[37312668271](https://github.com/saylaaur/alemprep/actions/runs/37312668271)
+завершился FAIL: 19 trusted browser passed / 1 skip / 2 failed — expiry и
+corrupted item после reload. Кабинет, отчёт, графики и остальные границы PASS.
+В тестах обнаружена гонка: stem появляется до завершения readLearningState,
+который ещё может очистить/перезаписать storage. Обе мутации теперь ждут active
+кнопки skip; все прежние terminal/storage/private review assertions сохранены.
+Независимый reviewer подтвердил гонку по коду. Без отсутствующих CI snapshots
+не утверждается, что это единственная причина конкретного падения. Добавлен
+вывод error-context локальных тестов в CI при failure для последующей диагностики.
+После правки полный trusted browser: **21 PASS / 1 intentional skip**,
+включая кабинет/отчёт и optional SDK fixture; typecheck/lint exit 0.
+Runtime source после `048500c` не менялся; standard build и 675 unit уже PASS.
+
+До правки targeted повтор 8/8 PASS, но первый cold локальный запуск отдельно
+дал PGRST303 при чтении metadata до загрузки задания. Причина JWT сбоя этим
+изменением не исправлена; повтор зелёного запуска не заменяет расследование.
+
+Владелец сообщил о переводе и Desmos в Claude. Их исходники в рабочем checkout
+и основном checkout не обнаружены. Объединять после получения ветки/файлов;
+не переписывать готовую работу и не заявлять KK импорт выполненным без receipts.
 
 Следующее: выпустить исправление входа в preview → проверить allowlist и callback → inventory принятой темы →
 реальные school/class/teacher bindings → ученический ответ/reload/

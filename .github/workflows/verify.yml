@@ -46,6 +46,14 @@ jobs:
           LEARNING_V1_ENABLED: 'true'
           DESMOS_ENABLED: 'true'
           NEXT_PUBLIC_DESMOS_API_KEY: LOCAL_E2E_KEY
+      - name: Show failed local browser page snapshots
+        if: failure()
+        run: |
+          if [ -d test-results ]; then
+            rg --files test-results -g error-context.md | while IFS= read -r snapshot; do
+              cat "$snapshot"
+            done
+          fi
       - name: Stop isolated Supabase test stack
         if: always()
         run: npx supabase stop

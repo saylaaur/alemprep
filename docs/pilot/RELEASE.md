@@ -9,8 +9,11 @@ Hosted: **17 RU approved по прогрессиям / 4 smoke drafts**, KK appr
 условий/ключей/объяснений. [Доказательства и следующие действия](../production/reviews/2026-10-05-pilot-starter.md).
 Точное разрешение Google-входа получено. Исправлен callback preview, который
 возвращал на production: 675 unit, typecheck/lint/build PASS, независимый review
-без замечаний. Allowlist hosted и успешный Auth smoke ещё не подтверждены;
-Chrome пока не отдаёт содержимое страницы для управления.
+без замечаний. Hosted allowlist содержит только production callback: точный
+callback preview подготовлен, сохранение ждёт отдельного подтверждения.
+Chrome восстановлен через свежие вкладки; успешный Auth smoke ещё не выполнен.
+Последний Verify `048500c` FAIL на двух reload-тестах; исправлена синхронизация
+их setup, требуется новый CI. Перевод/Desmos из Claude пока не переданы в checkout.
 Production остаётся на старом SHA; графики/teacher cabinet есть в preview ветки.
 
 ## Текущий шаг 05.10: RU content → preview → школьная репетиция
