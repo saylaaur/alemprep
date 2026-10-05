@@ -1,5 +1,17 @@
 # Паспорт выпуска: блок 0
 
+## Текущий шаг 05.10: RU content → preview → школьная репетиция
+
+Владелец сообщил о применении 0035–0037. Новая 0038 добавляет атомарный RU draft
+import, отдельную приёмку точного hash и approved-only availability.
+[Пошаговые команды](translation-handoff/OPERATOR_GUIDE.md),
+[актуальный план](../superpowers/plans/2026-10-05-content-and-release.md).
+Код и локальные проверки не подтверждают hosted миграцию, настоящий accepted
+банк, deployment SHA или реальных teacher/group привязок. До открытия группы:
+0038 → draft import → human acceptance → inventory → CI/preview → pupil answer
+и reload → teacher report → небольшая поддерживаемая группа. Не включать
+LEARNING_V1_ENABLED на пустом approved каталоге.
+
 **Актуальное обновление 05.10.2026:** [полный quality review](../production/reviews/2026-10-05-full-quality-review.md) и [порядок KT3 RU → KT4 → KT2/KT3 KK](../superpowers/plans/2026-10-05-content-and-release.md) имеют приоритет над историческими статусами ниже. Самостоятельная подготовка, кабинет учителя и RU/KK графики реализованы в trusted-practice. 0034 неизменна; recovery-safe 0035 → 0036 → новая 0037 проверены локально, hosted применение отдельно. Полные unit/DB/migration/typecheck/lint/обычный build и serial browser проверки прошли. Production versions/approved bank пока **0 RU/KK**: требуется принятый контент, настройка реальных учителей/классов, exact-SHA preview и rehearsal перед ученическим включением. Это не подтверждение production deploy или готовности полного пилота.
 
 **Обновление 30.09.2026:** владелец применил миграции через 0032; read-only сравнение выбранных функций, прав, RLS-флагов и триггеров совпало с local 0032. [Доказательства и границы проверки](../production/reviews/2026-09-30-c47385b.md). Это не полная проверка схемы и не допуск учеников. Reviewed code `c47385b` находится в `codex/trusted-practice`; remote main при проверке — `bb903a2`, PR ветки отсутствует, alias→SHA не проверен. Следовать [очереди A3-R2–A6](../superpowers/plans/2026-09-30-pilot-next-steps.md); не повторять 0026–0032. Нижние статусы — история.

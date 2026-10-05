@@ -425,6 +425,10 @@ export type Database = {
     Tables: Record<string, never>;
     Views: Record<string, never>;
     Functions: {
+      content_source_snapshot_v1: { Args: { source_id: string }; Returns: unknown };
+      content_topic_counts_v1: { Args: { content_locale: Locale }; Returns: { topic_id: string; type: QuestionType; question_count: number }[] };
+      content_import_reviewed_v1: { Args: { batch_id: string; batch_hash: string; locale: 'ru'; entries: unknown }; Returns: unknown };
+      content_accept_version_v1: { Args: { version_id: string; content_hash: string; math_review_ref: string; language_review_ref: string; source_rights_ref: string }; Returns: unknown };
       learning_active_session_access_v1: { Args: { actor_id: string; session_id: string }; Returns: boolean };
       pilot_session_has_accepted_completion_v1: { Args: { target_session: string }; Returns: boolean };
       /** 0036: Auth-scoped self-study report; does not grant table access. */

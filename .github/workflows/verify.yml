@@ -40,10 +40,12 @@ jobs:
       - run: npm run test:e2e
         env:
           LEARNING_V1_ENABLED: 'false'
-      - name: Trusted practice browser scenarios
-        run: npm run test:e2e -- tests/e2e/trusted-practice.spec.ts
+      - name: Trusted practice and teacher browser scenarios
+        run: npm run test:e2e
         env:
           LEARNING_V1_ENABLED: 'true'
+          DESMOS_ENABLED: 'true'
+          NEXT_PUBLIC_DESMOS_API_KEY: LOCAL_E2E_KEY
       - name: Stop isolated Supabase test stack
         if: always()
         run: npx supabase stop

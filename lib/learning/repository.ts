@@ -10,6 +10,7 @@ import type { PublicQuestionBody } from '@/lib/content/versions';
 import type { Answer, LearningError, LearningReview, LearningState, PublicSessionItem, Receipt, StartedLearning, StartedSession } from './contracts';
 import type { IssuedLearningSession, ServerGradedItem } from './service';
 import { gradeVersionAnswer } from './grading';
+import { blocksSchema, publicSingleSchema, publicMatchingSchema, gradingSingleSchema, gradingMultiSchema, gradingMatchingSchema, contextSchema } from '@/lib/content/immutable-content-schemas';
 
 type RpcResponse = { data: unknown; error: { code?: string; message?: string } | null };
 type StartRpcError = Exclude<LearningError, 'unauthenticated' | 'invalid-input'>;
@@ -112,27 +113,6 @@ function isStartedReferences(value: unknown): value is StartedLearningReferences
     && Array.isArray(session.itemIds) && session.itemIds.length > 0 && session.itemIds.every(isUuid));
 }
 
-const optionSchema = z.object({ id: z.string().min(1).max(80), content: z.string() }).strict();
-const textBlockSchema = z.object({ type: z.enum(['text', 'latex']).optional(), value: z.string() }).strict();
-const imageBlockSchema = z.object({ type: z.literal('image'), value: z.string() }).strict();
-const tableBlockSchema = z.object({
-  type: z.literal('table'),
-  columns: z.array(z.string()).max(30),
-  rows: z.array(z.array(z.string()).max(30)).max(100),
-}).strict();
-const contentBlockSchema = z.union([textBlockSchema, imageBlockSchema, tableBlockSchema]);
-const blocksSchema = z.array(contentBlockSchema).max(100);
-const publicSingleSchema = z.object({ stem: z.string(), stem_blocks: blocksSchema.optional(), options: z.array(optionSchema).min(1).max(10) }).strict();
-const publicMatchingSchema = z.object({ stem: z.string(), stem_blocks: blocksSchema.optional(), left: z.array(optionSchema).min(1).max(10), right: z.array(z.string().min(1).max(512)).min(1).max(10) }).strict();
-const gradingSingleSchema = publicSingleSchema.extend({ correct: z.string().min(1).max(80) }).strict();
-const gradingMultiSchema = publicSingleSchema.extend({ correct: z.array(z.string().min(1).max(80)).min(1).max(10) }).strict();
-const matchingCorrectSchema = z.record(z.string().min(1).max(80), z.string().min(1).max(512)).superRefine((value, context) => {
-  if (Object.keys(value).length > 10) {
-    context.addIssue({ code: 'too_big', maximum: 10, origin: 'object', inclusive: true, message: 'too many pairs' });
-  }
-});
-const gradingMatchingSchema = publicMatchingSchema.extend({ correct: matchingCorrectSchema }).strict();
-const contextSchema = z.object({ blocks: blocksSchema }).strict();
 const rowSchema = z.object({
   id: z.uuid(),
   question_id: z.uuid(),

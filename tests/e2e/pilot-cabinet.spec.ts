@@ -46,18 +46,25 @@ test('accepted self-study answer survives reload and appears once in the teacher
   const school = await seedPilotSchoolPair(db);
   await db.execute("UPDATE public.profiles SET second_subject='physics', full_name='E2E pupil' WHERE id=$1", [school.studentA.id]);
   const slug = `cabinet-report-${crypto.randomUUID()}`;
-  const versionId = await db.scalar<string>(`WITH subject AS (
+  const questionId = await db.scalar<string>(`WITH subject AS (
     INSERT INTO public.subjects(slug,name_ru,name_kk,is_active) VALUES($1,'Test','Test',true) RETURNING id
   ), topic AS (
     INSERT INTO public.topics(subject_id,slug,name_ru,name_kk) SELECT id,$1,'Test','Test' FROM subject RETURNING id
-  ), question AS (
-    INSERT INTO public.questions(topic_id,language,type,body,is_published)
-    SELECT id,'ru','single','{"stem":"TEACHER_REPORT_PUBLIC","options":[{"id":"A","content":"4"},{"id":"B","content":"5"}],"correct":"A"}',true FROM topic RETURNING id,body
-  ) INSERT INTO public.question_versions(question_id,family_id,revision,locale,type,public_body,grading_body,content_hash)
-  SELECT id,gen_random_uuid(),1,'ru','single',body-'correct',body,$1 FROM question RETURNING id`, [slug]);
-  await db.execute("INSERT INTO public.question_publications(question_version_id,status) VALUES($1,'approved')", [versionId]);
+  ) INSERT INTO public.questions(topic_id,language,type,body,explanation,is_published)
+    SELECT id,'ru','single','{"stem":"TEACHER_REPORT_PUBLIC","options":[{"id":"A","content":"4"},{"id":"B","content":"5"}],"correct":"A"}',
+    '{"blocks":[{"value":"2+2=4"}]}',true FROM topic RETURNING id`, [slug]);
+  const snapshot=JSON.parse(await db.scalar<string>('SELECT public.content_source_snapshot_v1($1)::text',[questionId]));
+  const imported=await db.rpc('service','content_import_reviewed_v1',{batch_id:crypto.randomUUID(),batch_hash:'b'.repeat(64),locale:'ru',
+    entries:[{sourceId:questionId,sourceHash:'a'.repeat(64),sourceSnapshot:snapshot}]});
+  expect(imported.status,JSON.stringify(imported.data)).toBe(200);
+  const version=(imported.data as {versions:{versionId:string;contentHash:string}[]}).versions[0];
+  const accepted=await db.rpc('service','content_accept_version_v1',{version_id:version.versionId,content_hash:version.contentHash,
+    math_review_ref:'synthetic:e2e-math',language_review_ref:'synthetic:e2e-language',source_rights_ref:'synthetic:e2e-rights'});
+  expect(accepted.status,JSON.stringify(accepted.data)).toBe(200);
 
   await loginAs(page, school.studentA);
+  await page.goto('/ru/subjects/'+slug);
+  await expect(page.locator('a[href="/ru/practice/topic/'+slug+'"]')).toHaveCount(1);
   await page.goto(`/ru/practice/topic/${slug}`);
   await expect(page.getByText('TEACHER_REPORT_PUBLIC')).toBeVisible();
   await page.getByRole('radio', { name: 'A 4', exact: true }).click();

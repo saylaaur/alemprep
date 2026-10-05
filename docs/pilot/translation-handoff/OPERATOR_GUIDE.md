@@ -13,9 +13,10 @@
 | Формулы/JSON/таблицы/checkpoint | Есть технические защиты | Проверить ручные исключения и смысл |
 | Приватная выгрузка 30 задач другу | Подготовлена 05.10 | В архиве, без credentials/учеников |
 | Поддерживаемый full-bank export/batch driver | Ещё нет | Следующая задача KT1; не выдумывать --all |
-| Импорт Google/Claude artifacts в versions | Ещё нет | KT2–KT3; не запускать legacy insert |
+| Небольшой RU source → immutable drafts → точная приёмка | Реализован, новая 0038 | Команды ниже; без автоматической публикации |
+| Импорт Google/Claude KK artifacts в versions | Ещё нет | KT2–KK часть KT3; не запускать legacy insert |
 | Приёмка конкретной KK-партии человеком | Не выполнена | Друг/проверяющий возвращает review |
-| Production immutable RU/KK банк | Пока пуст | Сначала RU-подборка, затем KK; до rollout |
+| Production immutable RU/KK банк | По последнему read-only audit пуст | Пересчитать после фактического импорта и приёмки |
 
 Все команды ниже запускать из текущего trusted-practice checkout с зависимостями:
 
@@ -27,6 +28,94 @@ cd /Users/macbook/.codex/worktrees/trusted-practice/alemprep
 NEXT_PUBLIC_SUPABASE_URL и SUPABASE_SERVICE_ROLE_KEY. Не выдавать service-role
 другу. Не менять .env.local ради перевода и не копировать секреты в архив/чат.
 Read-only скрипты не меняют БД; --execute ниже вызывает только Google, не импорт.
+
+## 1а. Поддерживаемый RU import: черновик отдельно от публикации
+
+Владелец сообщил, что 0035–0037 применены. Следующая **новая** миграция —
+[0038_reviewed_content_import.sql](../../../supabase/migrations/0038_reviewed_content_import.sql).
+Выполнить полный файл в SQL Editor собственного проекта. Он добавляет importer,
+отдельную приёмку и безопасные счётчики тем; его повторное выполнение проверено
+на локальной БД. Не повторять старые миграции ради этого шага.
+
+Экспорт использует доставленный приватный source bundle; это ещё не review.
+Файл сохраняет полный context с id/language и старый sourceHash. Не удалять
+эти поля и не пересчитывать hashes вручную для маскировки изменения исходника.
+
+~~~sh
+npm run content:reviewed -- --mode export \
+  --file /private/tmp/AlemPrep-RU-source-pilot4-2026-10-05.json \
+  --output /private/tmp/ru-drafts.json --limit 4
+npm run content:reviewed -- --file /private/tmp/ru-drafts.json
+npm run content:reviewed -- --file /private/tmp/ru-drafts.json \
+  --apply --confirm-project euypaocjzcqlapfilrak \
+  --output /private/tmp/ru-import-receipt.json
+~~~
+
+Два первых шага не требуют credentials и не пишут в БД. Последний требует
+server-side URL/service-role и установленной 0038; ключ никогда не передавать
+другу или браузеру. Output пути должны быть приватными, вне checkout, и **новыми**:
+существующий файл не перезаписывается. Перед --apply проверить, что output ещё
+нет. При ошибке сохранения output после успешного RPC повторить **тот же input**
+с новым output: batchId и payload дают тот же receipt без дублирования versions.
+Повтор export создаёт новый batchId, поэтому не использовать его для retry.
+
+Формат RU input: schema `alemprep-reviewed-ru-content-v1`, batchId UUID,
+entries[{sourceId,sourceHash,sourceSnapshot}]. Snapshot содержит topic_id, type,
+difficulty, body, explanation, context_id и полный context либо null.
+CLI сверяет sourceHash, структуру/ключи и ограничения trusted reader; SQL под
+блокировкой повторно сверяет точный живой source/context. Изменившийся исходник
+отклоняет всю партию атомарно. Старые questions.body/is_published не изменяются.
+Результат содержит versionId/contentHash; новые publications остаются **draft**.
+
+### Человеческая приёмка точных версий
+
+После проверки исходника, решения, языка, предмета/темы и допустимости источника
+составить отдельный приватный файл. ID/hash взять из import receipt; записать
+реального проверяющего и ссылки на сохранённую приёмку, а не ответ модели.
+Пример структуры с placeholders (их обязательно заменить):
+
+~~~json
+{
+  "schema": "alemprep-content-acceptance-v1",
+  "versions": [{
+    "versionId": "UUID_FROM_RECEIPT",
+    "contentHash": "sha256:HASH_FROM_RECEIPT",
+    "review": {
+      "reviewer": "Имя проверяющего",
+      "reviewedAt": "2026-10-05T10:00:00Z",
+      "status": "accepted",
+      "mathRef": "private-review/row-1/math",
+      "languageRef": "private-review/row-1/ru",
+      "sourceRef": "private-review/row-1/source"
+    }
+  }]
+}
+~~~
+
+~~~sh
+npm run content:reviewed -- --mode accept --file /private/tmp/ru-acceptance.json
+npm run content:reviewed -- --mode accept --file /private/tmp/ru-acceptance.json \
+  --apply --confirm-project euypaocjzcqlapfilrak \
+  --output /private/tmp/ru-acceptance-receipt.json
+~~~
+
+CLI требует полную запись review; RPC сохраняет три refs в publication и codes-only
+audit. Имя/дата остаются в приватном review artifact: хранить его с receipts вне Git,
+с резервной копией. Это декларация оператора, не автоматическое доказательство
+квалификации проверяющего. Приёмка идёт по версии последовательно; при ошибке
+часть предыдущих версий уже может быть approved. Повтор того же файла безопасен;
+не делать вид, что acceptance всей партии является одной транзакцией.
+
+Неправильный hash, изменившийся источник/контекст, пустые refs и карантин не дают
+approval. После приёмки пересчитать audit:production и counts выбранной локали.
+При LEARNING_V1_ENABLED=true темы/предметы/доступность пробников читают только
+approved семьи через content_topic_counts_v1; отсутствующий RPC — ошибка,
+**без перехода на старый банк**. Не включать flag на пустом accepted каталоге.
+
+Техническая стартовая выборка содержит четыре задачи, а не полный курс ЕНТ.
+Из первоначальных пяти исключена физическая задача в математической теме;
+у multi-задачи все шесть вариантов верны — дополнительно проверить методическую
+пригодность. Весь legacy банк автоматически принятым не считается.
 
 ## 2. Сначала инвентаризация и сухой запуск
 

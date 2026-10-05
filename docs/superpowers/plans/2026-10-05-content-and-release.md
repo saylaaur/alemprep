@@ -62,6 +62,27 @@ docs/pilot/SELF_STUDY_CABINET.md.
 - Hosted SQL применение 0035–0037, точный production deploy и real-school
   rehearsal не подтверждены этим локальным audit.
 
+## Обновление после продолжения 05.10
+
+Владелец сообщил: 0035–0037 применены, ZIP передан другу. KT3 **RU часть**
+реализована локально: приватный export/dry-run/import, атомарные drafts,
+idempotent receipts, отдельная exact-hash приёмка и provenance. Новая 0038
+ещё требует hosted применения. Общие схемы importer/trusted reader исключают
+структурно нечитаемые версии. Приёмка реального RU банка пока не выполнена.
+
+KT4 approved availability реализована: счётчики тем, предметов и наличие
+blueprint используют approved семьи выбранного языка, без legacy fallback.
+Browser test теперь создаёт draft через importer, принимает synthetic fixture,
+выбирает тему в каталоге и проверяет ответ ученика в отчёте учителя.
+Реальный школьный rehearsal/preview и deployment всё ещё отдельные gates.
+KT2 и KK часть KT3 ждут переведённого/проверенного файла; KT1 после первого subset.
+Точные команды: [OPERATOR_GUIDE](../../pilot/translation-handoff/OPERATOR_GUIDE.md).
+
+**Дальше без повторного планирования:** hosted 0038 → RU drafts из фиксированного
+private файла → реальные review refs → exact acceptance → inventory/counts →
+CI/preview на конкретном SHA → школа/учитель/ученик rehearsal → ограниченный rollout.
+Не объявлять четыре технические задачи готовым банком самостоятельной подготовки.
+
 ## Порядок работы
 
 **Утро:** recovery SQL → KT3 для небольшой RU подборки → KT4 rehearsal.
@@ -206,14 +227,14 @@ KK: использовать accepted RU family; создать/найти sourc
 в новой служебной таблице с RLS. Нельзя UPDATE уже созданной immutable version.
 Изменённый перевод — следующая revision. Не перезаписывать чужие ручные drafts.
 
-- [ ] Unit тест: dry-run без write/RPC; unspecified file/project не запускается.
-- [ ] DB тест: RU import twice → одна version/family/draft; два concurrent
+- [x] Unit тест: dry-run без write/RPC; unspecified file/project не запускается.
+- [x] DB тест: RU import twice → одна version/family/draft; два concurrent
   вызова → один результат, different batchHash → conflict.
 - [ ] DB тест: KK import → отдельный locale/context, **тот же** RU family;
   повтор/ручной existing draft не перезаписывается.
 - [ ] DB тест: stale source/context и отсутствующий RU accepted family
   отклоняются атомарно, без orphan context/question/publication.
-- [ ] DB тест: anon/pupil не могут import/accept/read receipt; mismatched
+- [x] DB тест: anon/pupil не могут import/accept/read receipt; mismatched
   version contentHash или отсутствующие review refs не дают approved.
 - [ ] DB/service тест: RU ответ → KK той же family → нет второго first-family
   reward; teacher report не считает повтор новой уникальной задачей.
@@ -241,7 +262,7 @@ tests/e2e/pilot-cabinet.spec.ts уже проверяет accepted answer → re
 - [x] Локальный standard build зелёный после последнего clock-boundary fix.
 - [ ] Required CI зелёные. Выпустить reviewed SHA, сначала
   preview smoke. Не включать LEARNING_V1_ENABLED на пустом approved каталоге.
-- [ ] В trusted UI счётчики/доступность тем отражают approved versions выбранной
+- [x] В trusted UI счётчики/доступность тем отражают approved versions выбранной
   локали, а не тысячи legacy published. На ограниченном наборе показывать
   принятые темы; недоступные режимы полного пробника/диагностики/weekly явно
   обозначить как недоступные до заполнения blueprint, без legacy fallback.

@@ -1,11 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeClient, type InMemoryState } from './testing/in-memory-db';
 
 const state = vi.hoisted((): InMemoryState => ({ store: {}, failOnce: null }));
-vi.mock('./server', () => ({ createClient: async () => makeClient(state) }));
+const trusted = vi.hoisted((): { data: unknown; error: unknown } => ({data:[],error:null}));
+vi.mock('./server', () => ({ createClient: async () => ({...makeClient(state),rpc:async()=>trusted}) }));
 import { getSubjectsWithCounts, getTopicsForSubject, getQuestionsForTopic, getExamAvailability, getPairExamBlocks } from './queries';
 
 beforeEach(() => {
+  delete process.env.LEARNING_V1_ENABLED;
+  trusted.data=[];trusted.error=null;
   state.failOnce = null;
   state.store = {
     subjects: [{ id: 'S1', slug: 'math', name_ru: 'Математика' }, { id: 'S2', slug: 'physics' }],
@@ -14,8 +17,18 @@ beforeEach(() => {
     contexts: [],
   };
 });
+afterEach(()=>{delete process.env.LEARNING_V1_ENABLED;});
 
 describe('published content queries', () => {
+  it('uses approved counts in trusted topics, subjects and assessment availability without legacy fallback', async () => {
+    process.env.LEARNING_V1_ENABLED='true';
+    trusted.data=[{topic_id:'T1',type:'single',question_count:1}];
+    expect((await getSubjectsWithCounts('ru')).map(s=>s.question_count)).toEqual([1,0]);
+    expect((await getTopicsForSubject('math','ru'))[0].question_count).toBe(1);
+    expect(await getExamAvailability('ru')).toEqual({math:{single:1}});
+    trusted.error={message:'offline'};
+    await expect(getSubjectsWithCounts('ru')).rejects.toThrow();
+  });
   it('counts questions after the first PostgREST page for both subjects and topics', async () => {
     expect((await getSubjectsWithCounts('ru')).map(s => s.question_count)).toEqual([1100, 103]);
     expect((await getTopicsForSubject('math', 'ru'))[0].question_count).toBe(1100);
