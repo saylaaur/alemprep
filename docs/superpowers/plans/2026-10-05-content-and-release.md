@@ -64,6 +64,16 @@ docs/pilot/SELF_STUDY_CABINET.md.
 
 ## Обновление после продолжения 05.10
 
+**Hosted продолжение:** новая 0038 подтверждена; importer создал RU4 drafts,
+approved=0, никакой массовой публикации. Verify/Security/Vercel зелёные на `96bdf3b`;
+исправлено CI сохранение screenshot в macOS-only /private/tmp. Preview login
+доступен с текущей Vercel-сессией; Google Auth smoke требует разрешения владельца
+на конкретный аккаунт, автоматическая проверка заблокировала действие.
+Школ/классов/привязок по hosted inventory пока 0. KT4 дополнен узким атомарным
+[data bootstrap](../../pilot/bootstrap-first-class.sql) и [порядком запуска](../../pilot/START_FIRST_CLASS.md).
+Это SQL оператора без DDL/публичного API; текущие миграции не меняются.
+Настоящая human acceptance и school/teacher параметры остаются внешними gates.
+
 Владелец сообщил: 0035–0037 применены, ZIP передан другу. KT3 **RU часть**
 реализована локально: приватный export/dry-run/import, атомарные drafts,
 idempotent receipts, отдельная exact-hash приёмка и provenance. Новая 0038
