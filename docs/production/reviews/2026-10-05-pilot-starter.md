@@ -69,13 +69,27 @@ Backup/receipt: `/private/tmp/AlemPrep-invalid-questions-{backup,receipt}-2026-1
 
 ## Внешние шаги
 
-Preview ветки открылся через существующую Vercel-сессию Chrome. В другой вкладке
-наблюдался production `/ru/login?error=auth`: причина не установлена, полноценного
-Google smoke не было. Повторное нажатие Google login автоматический reviewer
-отклонил: ему нужно точное подтверждение аккаунта ajgaraevz@gmail.com, а не общее
-разрешение. Задан отдельный вопрос. Обхода или отключения защиты не было.
+Владелец явно разрешил вход через ajgaraevz@gmail.com. Google login начат;
+выбор аккаунта и успешный callback пока не подтверждены. В реальном OAuth URL
+preview наблюдался production redirect_to: PKCE verifier остаётся на другом
+домене. Исправление выбирает Origin запроса только из configured site URL и
+точных deployment/branch hostnames платформы Vercel в preview. Остальные origins
+отклоняются до вызова SDK; destination проверяется существующим валидатором.
+Production callback и локаль сохраняются. Защита Server Actions не ослаблена.
 
-Следующее: разрешённый реальный вход/preview → inventory принятой темы →
+Регрессии до исправления: 11 failed / 2 passed. После: 18 targeted PASS;
+полный unit **675 PASS**, typecheck/lint/standard build exit 0. Независимый
+code review без замечаний. Hosted redirect allowlist и настоящий callback
+этими тестами не подтверждены. В Supabase разрешённый callback должен совпадать
+с фактическим preview origin; не разрешать все Vercel проекты wildcard-правилом.
+Нужна включённая экспозиция системных Vercel env (VERCEL_ENV/URL/BRANCH_URL).
+При отсутствии preview metadata чужой Origin остаётся запрещённым.
+
+Chrome отдаёт элементы управления браузером, но без содержимого Google и
+Supabase; native screenshot серый даже после Raise. По невидимым элементам
+не нажимали; вход не объявляется успешным. Новых миграций нет.
+
+Следующее: выпустить исправление входа в preview → проверить allowlist и callback → inventory принятой темы →
 реальные school/class/teacher bindings → ученический ответ/reload/
 teacher report → production rollout. До accepted bank trusted флаг не включать.
 Названия школ/учителей не выдумывать. KK банк/оплата перевода остаются отдельно.
