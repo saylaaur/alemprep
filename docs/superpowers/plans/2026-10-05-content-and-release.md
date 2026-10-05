@@ -21,6 +21,11 @@ docs/pilot/SELF_STUDY_CABINET.md.
 
 ## Global Constraints
 
+- **Уточнение владельца 05.10:** для одной стартовой RU темы операторская
+  приёмка делегирована Codex. 17 задач по прогрессиям после двух независимых
+  AI проверок приняты по exact hashes; вид reviewer записан как AI, не учитель.
+  Это узкое исключение к human-review gate ниже: не весь RU банк и не KK.
+  [Решение и фактические receipts](../../production/reviews/2026-10-05-pilot-starter.md).
 - Применённая 0034 неизменна; recovery порядок 0035 → 0036 → 0037.
 - Не менять .env.local, согласованные design tokens, старые applied миграции.
 - Казахский — полноценные принятые пары; не browser translate/RU fallback.
