@@ -14,7 +14,7 @@
 | Приватная выгрузка 30 задач другу | Подготовлена 05.10 | В архиве, без credentials/учеников |
 | Поддерживаемый full-bank export/batch driver | Ещё нет | Следующая задача KT1; не выдумывать --all |
 | Небольшой RU source → immutable drafts → точная приёмка | Реализован, новая 0038 | Команды ниже; без автоматической публикации |
-| Импорт Google/Claude KK artifacts в versions | Ещё нет | KT2–KK часть KT3; не запускать legacy insert |
+| Импорт Claude/друга KK candidates в versions | Реализован, новая 0039 | Раздел 1б; только для approved RU; не запускать legacy insert |
 | Приёмка конкретной KK-партии человеком | Не выполнена | Друг/проверяющий возвращает review |
 | Production immutable RU/KK банк | По последнему read-only audit пуст | Пересчитать после фактического импорта и приёмки |
 
@@ -122,6 +122,39 @@ approved семьи через content_topic_counts_v1; отсутствующи
 Из первоначальных пяти исключена физическая задача в математической теме;
 у multi-задачи все шесть вариантов верны — дополнительно проверить методическую
 пригодность. Весь legacy банк автоматически принятым не считается.
+
+## 1б. KK import: перевод уже принятых RU задач
+
+Новая миграция [0039_reviewed_content_import_kk.sql](../../../supabase/migrations/0039_reviewed_content_import_kk.sql)
+(0038 не меняется). Выполнить полный файл в SQL Editor после 0038; повтор безопасен.
+
+Вход: файл друга/Claude `alemprep-kk-candidates-v1` и RU файл, из которого
+делался RU import (`alemprep-reviewed-ru-content-v1` или исходный bundle
+`alemprep-ru-kk-review-source-v1`). В candidates должны быть **только** задачи с
+approved RU версией: иначе БД отклонит всю партию (`source-not-approved`).
+`humanReviewed` в файле игнорируется; `--review-ref` обязателен (путь к review файлу).
+
+~~~sh
+npm run content:reviewed -- --mode import-kk --file /private/tmp/kk-candidates.json \
+  --source /private/tmp/ru-drafts.json --review-ref private-review/kk-review-001.md
+npm run content:reviewed -- --mode import-kk --file /private/tmp/kk-candidates.json \
+  --source /private/tmp/ru-drafts.json --review-ref private-review/kk-review-001.md \
+  --apply --confirm-project euypaocjzcqlapfilrak --output /private/tmp/kk-import-receipt.json
+~~~
+
+Dry-run не пишет в БД: проверяет ID вариантов, `correct`, связи matching по индексу,
+числа, `$…$`/latex (кроме текста в `\text{}`), типы блоков и размеры таблиц, один
+контекст на `sourceContextId`; выводит batchId, предупреждения языка и задачи с issues.
+batchId детерминирован (hash содержимого + review ref): повтор того же файла даёт тот
+же receipt. SQL повторно сверяет живой RU source с одобренной RU версией и её sourceHash,
+ключи и структуру; KK версия попадает в **ту же family**, что RU, как draft. Отдельная
+KK строка questions (`source_question_id`, `language='kk'`, `is_published=false`) и
+один KK context на общий RU context создаются без UPDATE существующих строк.
+
+Приёмка: тот же `--mode accept`, но в каждой версии `"locale": "kk"`; вызывается
+`content_accept_version_kk_v1` (точный contentHash, три непустых refs, RU источник
+не изменился и всё ещё approved). `languageRef` — запись реального человека, проверявшего
+казахский текст.
 
 ## 2. Сначала инвентаризация и сухой запуск
 
