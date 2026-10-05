@@ -12,6 +12,9 @@ import { ContentBlocks } from '@/components/content/ContentBlocks';
 import { MathText } from '@/components/math/MathText';
 import { Button } from '@/components/ui/button';
 import { SaveStatus } from './SaveStatus';
+import { GraphTool } from '@/components/graph/GraphTool';
+import { TaskGraph } from '@/components/graph/TaskGraph';
+import { GRAPH_TOOL_TOPICS } from '@/lib/graph/topics';
 
 type Phase = 'loading' | 'active' | 'submitting' | 'unknown' | 'review-loading' | 'review' | 'error';
 type Fault = LearningError | 'storage-unavailable';
@@ -22,6 +25,8 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
 }) {
   const t = useTranslations('trustedPractice');
   const inputLabels = useTranslations('practice');
+  const graphText = useTranslations('graph');
+  const [graphFor, setGraphFor] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>('loading');
   const [fault, setFault] = useState<Fault | null>(null);
   const [session, setSession] = useState<StartedSession | null>(null);
@@ -181,6 +186,10 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
     {phase === 'active' && item && <div className="flex flex-wrap gap-3">
       <Button disabled={!hasCompleteAnswer(item.question, answer)} onClick={() => void run.current('submit')}>{t('submit')}</Button>
       <Button variant="outline" onClick={() => void run.current('skip')}>{t('skip')}</Button>
+      {GRAPH_TOOL_TOPICS.has(topicSlug) && <Button variant="outline" aria-expanded={graphFor === item.id} onClick={() => setGraphFor(graphFor === item.id ? null : item.id)}>{graphText(graphFor === item.id ? 'closeTool' : 'openTool')}</Button>}
+    </div>}
+    {phase === 'active' && item && graphFor === item.id && <div className="rounded-2xl border bg-card p-4 sm:p-5">
+      <GraphTool key={item.id} idPrefix={`graph-${item.id}`} hint={graphText('practiceHint')} />
     </div>}
     {['loading', 'submitting', 'review-loading'].includes(phase) && <SaveStatus>{t(phase === 'loading' ? 'loading' : phase === 'submitting' ? 'saving' : 'loadingReview')}</SaveStatus>}
     {phase === 'unknown' && <div className="space-y-3"><SaveStatus>{t('unknown')}</SaveStatus><Button onClick={() => void run.current('resume')}>{t('retry')}</Button></div>}
@@ -193,6 +202,7 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
       <p data-testid="learning-score" className="text-2xl font-semibold">{reviewed.points} / {reviewed.maxPoints}</p>
       <p>{t('correctAnswer')} <MathText text={correctText} /></p>
       {reviewed.explanation && <ContentBlocks blocks={reviewed.explanation.blocks} />}
+      {item && <TaskGraph key={item.id} stem={item.question.body.stem} stemBlocks={item.question.body.stem_blocks} />}
       <Button onClick={() => void run.current('next')}>{t('next')}</Button>
     </div>}
   </section>;
