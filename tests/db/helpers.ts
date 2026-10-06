@@ -206,6 +206,117 @@ export async function createDbHarness(): Promise<DbHarness> {
       if (closed) return;
       closed = true;
       try {
+        // Pilot assignments deliberately retain history in production. The
+        // harness deletes only its synthetic dependency graph in FK order.
+        // A dedicated transaction uses replica mode solely for this teardown:
+        // production immutability triggers correctly prohibit deleting a
+        // published assignment, while test accounts must not accumulate.
+        if (createdUserIds.length > 0) {
+          const tables = await pool.query<{ table_name: string }>(
+            `SELECT table_name FROM information_schema.tables
+             WHERE table_schema = 'public' AND table_name = ANY($1::text[])`,
+            [[
+              'attempts', 'reward_ledger', 'operation_receipts', 'pilot_learning_receipts', 'session_items', 'sessions', 'audit_events',
+              'pilot_provision_receipts', 'assignment_participants', 'assignments', 'school_memberships',
+            ]],
+          );
+          const existingTables = new Set(tables.rows.map((row) => row.table_name));
+          const cleanup = await pool.connect();
+          try {
+            await cleanup.query('BEGIN');
+            await cleanup.query("SET LOCAL session_replication_role = 'replica'");
+            if (existingTables.has('pilot_provision_receipts')) {
+              await cleanup.query(
+                `DELETE FROM public.pilot_provision_receipts WHERE operator_id = ANY($1::uuid[])`, [createdUserIds],
+              );
+            }
+            if (existingTables.has('attempts')) {
+              await cleanup.query(`DELETE FROM public.attempts WHERE user_id = ANY($1::uuid[])`, [createdUserIds]);
+            }
+            if (existingTables.has('reward_ledger')) {
+              await cleanup.query(`DELETE FROM public.reward_ledger WHERE user_id = ANY($1::uuid[])`, [createdUserIds]);
+            }
+            if (existingTables.has('operation_receipts')) {
+              await cleanup.query(`DELETE FROM public.operation_receipts WHERE actor_id = ANY($1::uuid[])`, [createdUserIds]);
+            }
+            if (existingTables.has('pilot_learning_receipts')) {
+              await cleanup.query(`DELETE FROM public.pilot_learning_receipts WHERE actor_id = ANY($1::uuid[])`, [createdUserIds]);
+            }
+            if (existingTables.has('audit_events')) {
+              const auditPredicates = ['actor_id = ANY($1::uuid[])'];
+              if (existingTables.has('sessions')) {
+                auditPredicates.push(`entity_type = 'session' AND entity_id IN (
+                  SELECT id FROM public.sessions WHERE user_id = ANY($1::uuid[])
+                )`);
+              }
+              if (existingTables.has('assignments') && existingTables.has('school_memberships')) {
+                auditPredicates.push(`entity_type = 'assignment' AND entity_id IN (
+                  SELECT assignment.id FROM public.assignments AS assignment
+                  JOIN public.school_memberships AS membership ON membership.id = assignment.created_by_membership_id
+                  WHERE membership.user_id = ANY($1::uuid[])
+                )`);
+              }
+              await cleanup.query(
+                `DELETE FROM public.audit_events WHERE ${auditPredicates.map((predicate) => `(${predicate})`).join(' OR ')}`,
+                [createdUserIds],
+              );
+            }
+            if (existingTables.has('session_items') && existingTables.has('sessions')) {
+              await cleanup.query(
+                `DELETE FROM public.session_items WHERE session_id IN (
+                   SELECT id FROM public.sessions WHERE user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
+              );
+            }
+            if (existingTables.has('sessions')) {
+              await cleanup.query(`DELETE FROM public.sessions WHERE user_id = ANY($1::uuid[])`, [createdUserIds]);
+            }
+            if (existingTables.has('assignment_participants') && existingTables.has('assignments') && existingTables.has('school_memberships')) {
+              await cleanup.query(
+                `DELETE FROM public.assignment_participants
+                 WHERE user_id = ANY($1::uuid[]) OR assignment_id IN (
+                   SELECT assignment.id FROM public.assignments AS assignment
+                   JOIN public.school_memberships AS membership ON membership.id = assignment.created_by_membership_id
+                   WHERE membership.user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
+              );
+            }
+            if (existingTables.has('assignments') && existingTables.has('school_memberships')) {
+              await cleanup.query(
+                `DELETE FROM public.assignments
+                 WHERE created_by_membership_id IN (
+                   SELECT id FROM public.school_memberships WHERE user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
+              );
+            }
+            if (existingTables.has('school_memberships')) {
+              await cleanup.query(
+                `DELETE FROM public.group_memberships WHERE school_membership_id IN (
+                   SELECT id FROM public.school_memberships WHERE user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
+              );
+              await cleanup.query(
+                `DELETE FROM public.group_teachers WHERE school_membership_id IN (
+                   SELECT id FROM public.school_memberships WHERE user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
+              );
+              await cleanup.query(
+                `DELETE FROM public.group_invites WHERE created_by_membership_id IN (
+                   SELECT id FROM public.school_memberships WHERE user_id = ANY($1::uuid[])
+                 )`, [createdUserIds],
+              );
+              await cleanup.query(
+                `DELETE FROM public.school_memberships WHERE user_id = ANY($1::uuid[])`, [createdUserIds],
+              );
+            }
+            await cleanup.query('COMMIT');
+          } catch (error) {
+            await cleanup.query('ROLLBACK');
+            throw error;
+          } finally {
+            cleanup.release();
+          }
+        }
         for (const id of createdUserIds) {
           const { error } = await admin.auth.admin.deleteUser(id);
           if (error) throw new Error(`failed to delete local synthetic user: ${error.message}`);

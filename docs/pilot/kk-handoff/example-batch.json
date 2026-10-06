@@ -1,0 +1,154 @@
+{
+  "schema_version": "alemprep-kk-handoff-v1",
+  "batch_id": "example-only-not-approved",
+  "revision": 1,
+  "questions": [
+    {
+      "revision": 1,
+      "locale": "kk",
+      "subject": "math",
+      "topic_slug": "linear-quadratic-rational-equations",
+      "type": "single",
+      "difficulty": 2,
+      "provenance": {
+        "origin": "authored",
+        "source_ref": null,
+        "source_locator": null,
+        "rights_evidence_ref": null,
+        "parent_id": null,
+        "rationale": "Synthetic AI-assisted example for the handoff format; not accepted for publication."
+      },
+      "issues": [
+        "Example only: human Kazakh and maths review has not been performed."
+      ],
+      "id": "kk-eq-001",
+      "family_key": "example-linear-01",
+      "skill": "Решение линейного уравнения",
+      "body": {
+        "stem": "$3x+5=17$ теңдеуін шешіңіз.",
+        "options": [
+          {
+            "id": "A",
+            "content": "$3$"
+          },
+          {
+            "id": "B",
+            "content": "$4$"
+          },
+          {
+            "id": "C",
+            "content": "$6$"
+          },
+          {
+            "id": "D",
+            "content": "$8$"
+          }
+        ],
+        "correct": "B"
+      },
+      "explanation": {
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Екі жақтан да 5-ті азайтамыз: $3x=12$."
+          },
+          {
+            "type": "text",
+            "value": "Екі жағын 3-ке бөлеміз: $x=4$."
+          },
+          {
+            "type": "text",
+            "value": "Тексеру: $3\\cdot4+5=17$. Жауабы: $4$."
+          }
+        ]
+      }
+    },
+    {
+      "revision": 1,
+      "locale": "kk",
+      "subject": "math",
+      "topic_slug": "linear-quadratic-rational-equations",
+      "type": "single",
+      "difficulty": 2,
+      "provenance": {
+        "origin": "authored",
+        "source_ref": null,
+        "source_locator": null,
+        "rights_evidence_ref": null,
+        "parent_id": null,
+        "rationale": "Synthetic AI-assisted example for the handoff format; not accepted for publication."
+      },
+      "issues": [
+        "Example only: human Kazakh and maths review has not been performed."
+      ],
+      "id": "kk-eq-002",
+      "family_key": "example-quadratic-01",
+      "skill": "Квадрат двучлена и корень уравнения",
+      "body": {
+        "stem": "Кестеде $f(x)=x^2-2x+1$ функциясының мәндері берілген. $f(x)=0$ теңдеуін шешіңіз.",
+        "stem_blocks": [
+          {
+            "type": "text",
+            "value": "Кестеде $f(x)=x^2-2x+1$ функциясының мәндері берілген. $f(x)=0$ теңдеуін шешіңіз."
+          },
+          {
+            "type": "table",
+            "columns": [
+              "$x$",
+              "$f(x)$"
+            ],
+            "rows": [
+              [
+                "$-1$",
+                "$4$"
+              ],
+              [
+                "$0$",
+                "$1$"
+              ],
+              [
+                "$1$",
+                "$0$"
+              ]
+            ]
+          }
+        ],
+        "options": [
+          {
+            "id": "A",
+            "content": "$0$"
+          },
+          {
+            "id": "B",
+            "content": "$1$"
+          },
+          {
+            "id": "C",
+            "content": "$2$"
+          },
+          {
+            "id": "D",
+            "content": "$-1$"
+          }
+        ],
+        "correct": "B"
+      },
+      "explanation": {
+        "blocks": [
+          {
+            "type": "text",
+            "value": "$x^2-2x+1=(x-1)^2$, сондықтан $(x-1)^2=0$."
+          },
+          {
+            "type": "text",
+            "value": "Осыдан $x-1=0$, яғни $x=1$."
+          },
+          {
+            "type": "text",
+            "value": "Тексеру: $1^2-2\\cdot1+1=0$. Жауабы: $1$."
+          }
+        ]
+      }
+    }
+  ]
+}

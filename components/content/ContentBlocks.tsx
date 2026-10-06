@@ -1,9 +1,11 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { MathText } from '@/components/math/MathText';
 import { normalizeExplanationBlocks } from '@/lib/explanation';
 
 export function ContentBlocks({ blocks }: { blocks: unknown }) {
+  const t = useTranslations('practice');
   const content = normalizeExplanationBlocks({ blocks });
 
   return (
@@ -41,7 +43,7 @@ export function ContentBlocks({ blocks }: { blocks: unknown }) {
         if (block.type === 'image') {
           // Dynamic assets can be Supabase Storage or a project-relative path.
           // eslint-disable-next-line @next/next/no-img-element
-          return <img key={index} src={block.value} alt="Материал задания" className="max-w-full rounded-lg border" />;
+          return <img key={index} src={block.value} alt={t('imageAlt')} className="max-w-full rounded-lg border" />;
         }
 
         return (

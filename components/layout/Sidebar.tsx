@@ -5,18 +5,23 @@ import { Link, usePathname } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 import { signOut } from '@/lib/supabase/auth-actions';
 import { clearAllSavedExams } from '@/lib/exam-storage';
+import { clearPendingLearning } from '@/lib/learning/browser-storage';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import type { Profile } from '@/types/db';
-import { navItems } from './nav-items';
+import { visibleNavItems, extraNavItems } from './nav-items';
 import { GraduationCap, LogOut } from 'lucide-react';
 
 export function Sidebar({
   profile,
   email,
+  isTeacher = false,
+  topicsOnly = false,
 }: {
   profile: Profile | null;
   email: string | null;
+  isTeacher?: boolean;
+  topicsOnly?: boolean;
 }) {
   const tNav = useTranslations('nav');
   const tBrand = useTranslations('brand');
@@ -37,7 +42,7 @@ export function Sidebar({
       </div>
 
       <nav className="flex-1 space-y-1 p-3">
-        {navItems.map((item) => {
+        {[...visibleNavItems(topicsOnly), ...extraNavItems.filter((item) => item.href !== '/teacher' || isTeacher)].map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
@@ -96,7 +101,7 @@ export function Sidebar({
 
         {/* Прогресс пробника в localStorage — чистим при выходе, чтобы он
             не достался следующему аккаунту на этом устройстве. */}
-        <form action={signOut} onSubmit={() => clearAllSavedExams()}>
+        <form action={signOut} onSubmit={() => { clearPendingLearning(); clearAllSavedExams(); }}>
           <button
             type="submit"
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"

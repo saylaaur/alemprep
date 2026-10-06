@@ -10,7 +10,7 @@ import {
   subjectName,
   topicName,
 } from '@/lib/supabase/queries';
-import { groupTopicsBySection } from '@/lib/topics';
+import { availableTopicsFirst, groupTopicsBySection } from '@/lib/topics';
 import type { Locale } from '@/types/db';
 
 function sectionTitle(
@@ -38,7 +38,7 @@ export default async function SubjectTopicsPage({
     getTopicsForSubject(subjectSlug, locale as Locale),
   ]);
 
-  const sections = groupTopicsBySection(topics);
+  const sections = availableTopicsFirst(groupTopicsBySection(topics));
   const availabilityText = await getTranslations('contentAvailability');
 
   return (

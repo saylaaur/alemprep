@@ -56,3 +56,22 @@ export function groupTopicsBySection<T extends SectionedTopic>(topics: T[]): Gro
     };
   });
 }
+
+/**
+ * Разделы и темы, где уже есть задачи, — первыми (стабильно, официальный порядок
+ * внутри групп сохраняется). На пилоте одобрено мало тем, и ученик не должен
+ * пролистывать пустые карточки, чтобы найти «Прогрессии».
+ */
+export function availableTopicsFirst<T extends SectionedTopic & { question_count: number }>(
+  sections: GroupedSection<T>[],
+): GroupedSection<T>[] {
+  const hasTasks = (topic: T) => topic.question_count > 0;
+  const ordered = sections.map((section) => ({
+    ...section,
+    topics: [...section.topics.filter(hasTasks), ...section.topics.filter((topic) => !hasTasks(topic))],
+  }));
+  return [
+    ...ordered.filter((section) => section.topics.some(hasTasks)),
+    ...ordered.filter((section) => !section.topics.some(hasTasks)),
+  ];
+}

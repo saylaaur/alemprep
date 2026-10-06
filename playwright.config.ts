@@ -4,6 +4,9 @@ export default defineConfig({
   testDir: './tests/e2e',
   timeout: 60_000,
   fullyParallel: false,
+  // Files share one local Supabase harness. Serial workers also avoid the
+  // observed Chrome worker shutdown hang during the full local suite.
+  workers: 1,
   reporter: 'list',
   use: {
     baseURL: 'http://127.0.0.1:3001',
@@ -14,7 +17,7 @@ export default defineConfig({
     command: 'node scripts/start-local-e2e-server.mjs',
     url: 'http://127.0.0.1:3001/ru/login',
     timeout: 120_000,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
   },
   projects: [
     {

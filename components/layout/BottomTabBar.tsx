@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
-import { navItems } from './nav-items';
+import { navItems, visibleNavItems } from './nav-items';
 
 /** Короткие подписи для таб-бара (полные — в сайдбаре/дровере). */
 const TAB_LABEL: Record<(typeof navItems)[number]['href'], string> = {
@@ -20,7 +20,7 @@ const IMMERSIVE = ['/practice', '/full-practice'];
  * Нижний таб-бар (только моб.). 4 основных раздела, тач-таргеты ≥44px.
  * Прячется на иммерсивных экранах и в фокус-режиме (data-hide-in-focus).
  */
-export function BottomTabBar() {
+export function BottomTabBar({ topicsOnly = false }: { topicsOnly?: boolean }) {
   const tNav = useTranslations('nav');
   const pathname = usePathname();
 
@@ -28,14 +28,16 @@ export function BottomTabBar() {
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
   if (immersive) return null;
+  const items = visibleNavItems(topicsOnly);
 
   return (
     <nav
       data-hide-in-focus
       aria-label={tNav('menu')}
-      className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t bg-card/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
+      style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+      className="fixed inset-x-0 bottom-0 z-30 grid border-t bg-card/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
     >
-      {navItems.map((item) => {
+      {items.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;

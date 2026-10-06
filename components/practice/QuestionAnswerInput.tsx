@@ -2,7 +2,7 @@
 
 import { MathText } from '@/components/math/MathText';
 import { cn } from '@/lib/utils';
-import type { Question, QuestionBody } from '@/types/db';
+import type { PublicQuestion } from '@/lib/content/public-question';
 import type { AnswerState } from '@/lib/practice';
 
 export type QuestionAnswerLabels = {
@@ -12,7 +12,7 @@ export type QuestionAnswerLabels = {
 };
 
 type Props = {
-  question: Question;
+  question: Pick<PublicQuestion, 'type' | 'body'>;
   answer: AnswerState;
   onChange: (next: AnswerState) => void;
   labels: QuestionAnswerLabels;
@@ -24,7 +24,7 @@ type Props = {
  * переиспользовать в DiagnosticView без дублирования разметки.
  */
 export function QuestionAnswerInput({ question, answer, onChange, labels }: Props) {
-  const body = question.body as QuestionBody;
+  const body = question.body;
 
   if (question.type === 'single' && 'options' in body) {
     return (

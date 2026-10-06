@@ -19,6 +19,11 @@ export const routing = defineRouting({
     '/weekly': '/weekly',
     '/progress': '/progress',
     '/settings': '/settings',
+    '/teacher': '/teacher',
+    '/teacher/groups/[groupId]': '/teacher/groups/[groupId]',
+    '/join-class': '/join-class',
+    '/join': '/join',
+    '/visualization': '/visualization',
   },
 });
 

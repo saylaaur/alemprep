@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
+import { isPilotTopicsOnly } from '@/lib/learning/feature-flag';
 import { createClient } from '@/lib/supabase/server';
 import { getProfile, getExamAvailability } from '@/lib/supabase/queries';
 import { hasAssessmentContent } from '@/lib/content-availability';
@@ -15,6 +16,8 @@ export default async function DiagnosticPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  // Пилот «только темы»: эти попытки не видны учителю, ведём ученика в темы.
+  if (isPilotTopicsOnly()) redirect(`/${locale}/subjects`);
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

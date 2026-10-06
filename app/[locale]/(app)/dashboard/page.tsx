@@ -18,6 +18,7 @@ import { ProgressRing } from '@/components/gamification/ProgressRing';
 import { MasteryBar, type MasteryTone } from '@/components/gamification/MasteryBar';
 import { ACHIEVEMENT_META } from '@/components/gamification/achievement-meta';
 import { PlanSection } from '@/components/dashboard/PlanSection';
+import { isPilotTopicsOnly } from '@/lib/learning/feature-flag';
 import type { Locale } from '@/types/db';
 
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
@@ -39,6 +40,7 @@ export default async function DashboardPage({
 
   const profile = await getProfile();
   const userId = profile?.id;
+  const topicsOnly = isPilotTopicsOnly();
 
   const [t, tSubjects, tAch, g, subjects, weeklyTest] = await Promise.all([
     getTranslations('dashboard'),
@@ -46,7 +48,7 @@ export default async function DashboardPage({
     getTranslations('achievements'),
     userId ? getGamification(userId) : Promise.resolve(null),
     getSubjectsWithCounts(locale as Locale),
-    userId && profile?.second_subject ? getWeeklyTestSummary(userId) : Promise.resolve(null),
+    userId && profile?.second_subject && !topicsOnly ? getWeeklyTestSummary(userId) : Promise.resolve(null),
   ]);
 
   const name = displayName(profile) ?? t('defaultName');
@@ -233,8 +235,8 @@ export default async function DashboardPage({
           </Card>
         </section>
 
-        {/* ── Персональный план (только когда онбординг пройден) ── */}
-        {profile && profile.second_subject && (
+        {/* ── Персональный план (только когда онбординг пройден; на пилоте «только темы» его нет: он строится по диагностике) ── */}
+        {profile && profile.second_subject && !topicsOnly && (
           <PlanSection profile={profile} topicMastery={g?.topicMastery ?? []} locale={locale as Locale} />
         )}
 

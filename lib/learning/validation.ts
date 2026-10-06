@@ -4,9 +4,11 @@ import type { StartInput, SubmitInput } from './contracts';
 const MAX_PAYLOAD_BYTES = 64 * 1024;
 const MAX_ITEM_COUNT = 80;
 const MAX_OPTION_ID_LENGTH = 80;
+const MAX_MATCHING_VALUE_LENGTH = 512;
 
 const uuid = z.uuid();
 const optionId = z.string().min(1).max(MAX_OPTION_ID_LENGTH);
+const matchingValue = z.string().min(1).max(MAX_MATCHING_VALUE_LENGTH);
 
 function invalidInput(message: string): never {
   throw new z.ZodError([{ code: 'custom', path: [], message }]);
@@ -48,7 +50,7 @@ function assertSafeObjectKeys(value: unknown, seen = new WeakSet<object>()): voi
   }
 }
 
-const matchingAnswer = z.record(optionId, optionId).superRefine((answer, context) => {
+const matchingAnswer = z.record(optionId, matchingValue).superRefine((answer, context) => {
   const unsafeKeys = ['__proto__', 'prototype', 'constructor'];
   if (Object.keys(answer).some((key) => unsafeKeys.includes(key))) {
     context.addIssue({ code: 'custom', message: 'matching answer has an unsafe key' });

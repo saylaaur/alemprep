@@ -2,8 +2,8 @@
 
 import { ContentBlocks } from '@/components/content/ContentBlocks';
 import { MathText } from '@/components/math/MathText';
-import type { QuestionBody } from '@/types/db';
+import type { PublicQuestionBody } from '@/lib/content/versions';
 
-export function QuestionStem({ body }: { body: QuestionBody }) {
+export function QuestionStem({ body }: { body: PublicQuestionBody }) {
   return body.stem_blocks?.length ? <ContentBlocks blocks={body.stem_blocks} /> : <MathText text={body.stem} />;
 }

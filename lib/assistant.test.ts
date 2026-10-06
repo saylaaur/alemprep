@@ -4,6 +4,7 @@ import {
   AI_GLOBAL_DAILY_REQUEST_LIMIT,
   buildAssistantContext,
   ASSISTANT_SYSTEM_PROMPT,
+  assistantSystemPrompt,
   isGlobalBudgetExhausted,
   splitAssistantAnswer,
   ASSISTANT_MODES,
@@ -126,6 +127,12 @@ describe('buildAssistantContext', () => {
 
   it('на постороннюю тему системный промпт задаёт границу школьной программы ЕНТ', () => {
     expect(ASSISTANT_SYSTEM_PROMPT).toContain('ЕНТ');
+  });
+
+  it('на казахском интерфейсе промпт требует ответ на казахском и сохраняет все правила', () => {
+    expect(assistantSystemPrompt('ru')).toBe(ASSISTANT_SYSTEM_PROMPT);
+    expect(assistantSystemPrompt('kk').startsWith(ASSISTANT_SYSTEM_PROMPT)).toBe(true);
+    expect(assistantSystemPrompt('kk')).toContain('на казахском');
   });
 
   it('системный промпт запрещает markdown-разметку (#, **, списки)', () => {

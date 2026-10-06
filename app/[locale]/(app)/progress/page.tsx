@@ -17,6 +17,7 @@ import { TrajectoryChart } from '@/components/progress/TrajectoryChart';
 import { localDateStr } from '@/lib/streak';
 import { EXAM_PAIR_MAX_SCORE } from '@/lib/exam';
 import { cn } from '@/lib/utils';
+import { isPilotTopicsOnly } from '@/lib/learning/feature-flag';
 import type { Locale } from '@/types/db';
 
 export default async function ProgressPage({
@@ -136,9 +137,11 @@ export default async function ProgressPage({
                       {t('trajectoryEmptyText')}
                     </p>
                   </div>
-                  <Button asChild size="sm">
-                    <Link href="/diagnostic">{t('trajectoryEmptyAction')}</Link>
-                  </Button>
+                  {!isPilotTopicsOnly() && (
+                    <Button asChild size="sm">
+                      <Link href="/diagnostic">{t('trajectoryEmptyAction')}</Link>
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <TrajectoryChart

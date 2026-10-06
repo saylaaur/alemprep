@@ -38,6 +38,27 @@ jobs:
       - run: npm run test:db:migration
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+        env:
+          LEARNING_V1_ENABLED: 'false'
+      - name: Trusted practice and teacher browser scenarios
+        run: npm run test:e2e
+        env:
+          LEARNING_V1_ENABLED: 'true'
+          DESMOS_ENABLED: 'true'
+          NEXT_PUBLIC_DESMOS_API_KEY: LOCAL_E2E_KEY
+      - name: Pilot topics-only browser scenarios
+        run: npm run test:e2e -- tests/e2e/pilot-topics-only.spec.ts
+        env:
+          LEARNING_V1_ENABLED: 'true'
+          PILOT_TOPICS_ONLY: 'true'
+      - name: Show failed local browser page snapshots
+        if: failure()
+        run: |
+          if [ -d test-results ]; then
+            rg --files test-results -g error-context.md | while IFS= read -r snapshot; do
+              cat "$snapshot"
+            done
+          fi
       - name: Stop isolated Supabase test stack
         if: always()
         run: npx supabase stop

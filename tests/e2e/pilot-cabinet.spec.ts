@@ -1,0 +1,144 @@
+import { test, expect } from '@playwright/test';
+import { createDbHarness, type DbHarness } from '../db/helpers';
+import { seedPilotSchoolPair } from '../fixtures/pilot-school';
+import { loginAs } from './helpers';
+
+let db: DbHarness;
+test.beforeEach(async () => { db = await createDbHarness(); });
+test.afterEach(async () => { await db?.close(); });
+
+test('new app routes redirect signed-out visitors to login', async ({ page }) => {
+  for (const route of ['/ru/teacher', '/ru/join-class', '/kk/visualization']) {
+    await page.goto(route);
+    await expect(page).toHaveURL(/\/(ru|kk)\/login/);
+  }
+});
+
+test('teacher creates invite, pupil joins, roster refreshes and foreign class stays hidden', async ({ page }) => {
+  const school = await seedPilotSchoolPair(db);
+  await loginAs(page, school.teacherA);
+  await page.goto('/ru/teacher');
+  await expect(page.getByRole('heading', { name: 'Кабинет учителя' })).toBeVisible();
+  await page.getByRole('link', { name: /Synthetic RU A/ }).click();
+  await expect(page.getByRole('heading', { name: 'Synthetic RU A' })).toBeVisible();
+  await page.getByRole('button', { name: 'Создать новый код' }).click();
+  const code = page.getByLabel('Код приглашения');
+  await expect(code).not.toHaveValue('');
+  const token = await code.inputValue();
+  const link = await page.getByLabel('Ссылка для учеников').inputValue();
+  expect(link).toBe(`http://127.0.0.1:3001/ru/join?code=${token}`);
+  await page.goto(`/ru/teacher/groups/${school.groupB}`);
+  await expect(page.getByRole('heading', { name: 'Synthetic RU B' })).toHaveCount(0);
+
+  const pupil = await db.actor('cabinet-joiner');
+  await loginAs(page, pupil);
+  await page.goto(link);
+  await expect(page).toHaveURL(link);
+  await expect(page.getByLabel('Код приглашения')).toHaveValue(token);
+  await page.getByRole('button', { name: 'Вступить', exact: true }).click();
+  await expect(page.getByText('Вы вступили в класс. Можно начинать подготовку.')).toBeVisible();
+  await page.reload();
+  await loginAs(page, school.teacherA);
+  await page.goto(`/ru/teacher/groups/${school.groupA}`);
+  await expect(page.locator('tbody tr')).toHaveCount(2);
+});
+
+test('accepted self-study answer survives reload and appears once in the teacher report', async ({ page }) => {
+  test.skip(process.env.LEARNING_V1_ENABLED !== 'true', 'requires a dedicated trusted server');
+  const school = await seedPilotSchoolPair(db);
+  await db.execute("UPDATE public.profiles SET second_subject='physics', full_name='E2E pupil' WHERE id=$1", [school.studentA.id]);
+  const slug = `cabinet-report-${crypto.randomUUID()}`;
+  const questionId = await db.scalar<string>(`WITH subject AS (
+    INSERT INTO public.subjects(slug,name_ru,name_kk,is_active) VALUES($1,'Test','Test',true) RETURNING id
+  ), topic AS (
+    INSERT INTO public.topics(subject_id,slug,name_ru,name_kk) SELECT id,$1,'Test','Test' FROM subject RETURNING id
+  ) INSERT INTO public.questions(topic_id,language,type,body,explanation,is_published)
+    SELECT id,'ru','single','{"stem":"TEACHER_REPORT_PUBLIC","options":[{"id":"A","content":"4"},{"id":"B","content":"5"}],"correct":"A"}',
+    '{"blocks":[{"value":"2+2=4"}]}',true FROM topic RETURNING id`, [slug]);
+  const snapshot=JSON.parse(await db.scalar<string>('SELECT public.content_source_snapshot_v1($1)::text',[questionId]));
+  const imported=await db.rpc('service','content_import_reviewed_v1',{batch_id:crypto.randomUUID(),batch_hash:'b'.repeat(64),locale:'ru',
+    entries:[{sourceId:questionId,sourceHash:'a'.repeat(64),sourceSnapshot:snapshot}]});
+  expect(imported.status,JSON.stringify(imported.data)).toBe(200);
+  const version=(imported.data as {versions:{versionId:string;contentHash:string}[]}).versions[0];
+  const accepted=await db.rpc('service','content_accept_version_v1',{version_id:version.versionId,content_hash:version.contentHash,
+    math_review_ref:'synthetic:e2e-math',language_review_ref:'synthetic:e2e-language',source_rights_ref:'synthetic:e2e-rights'});
+  expect(accepted.status,JSON.stringify(accepted.data)).toBe(200);
+
+  await loginAs(page, school.studentA);
+  await page.goto('/ru/subjects/'+slug);
+  await expect(page.locator('a[href="/ru/practice/topic/'+slug+'"]')).toHaveCount(1);
+  await page.goto(`/ru/practice/topic/${slug}`);
+  await expect(page.getByText('TEACHER_REPORT_PUBLIC')).toBeVisible();
+  await page.getByRole('radio', { name: 'A 4', exact: true }).click();
+  await page.getByRole('button', { name: 'Проверить', exact: true }).click();
+  await expect(page.getByTestId('learning-score')).toHaveText('1 / 1');
+  await page.reload();
+  await expect(page.getByTestId('learning-score')).toHaveText('1 / 1');
+
+  await loginAs(page, school.teacherA);
+  await page.goto(`/ru/teacher/groups/${school.groupA}`);
+  const row = page.locator('tbody tr').filter({ has: page.getByRole('rowheader', { name: 'E2E pupil', exact: true }) });
+  for (let reload = 0; reload < 2; reload++) {
+    await expect(row.getByRole('cell').nth(0)).toHaveText('1');
+    await expect(row.getByRole('cell').nth(1)).toHaveText('1');
+    await expect(row.getByRole('cell').nth(2)).toHaveText('1 / 1');
+    if (reload === 0) await page.reload();
+  }
+  expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE user_id=$1 AND integrity_version=1', [school.studentA.id])).toBe(1);
+});
+
+test('Kazakh graph tool works offline: sliders, presets and typing on a small screen', async ({ page }) => {
+  const pupil = await db.actor('graph-pupil');
+  await db.execute("UPDATE public.profiles SET second_subject='physics' WHERE id=$1", [pupil.id]);
+  await loginAs(page, pupil);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const desmosRequests: string[] = [];
+  page.on('request', (request) => { if (request.url().includes('desmos.com')) desmosRequests.push(request.url()); });
+  await page.goto('/kk/visualization');
+  await expect(page.getByRole('heading', { name: 'Графиктерді зерттейік' })).toBeVisible();
+  const graph = page.getByRole('img', { name: /^График: / });
+  await expect(graph).toBeVisible();
+  const slider = page.getByRole('slider', { name: 'a параметрі' });
+  await expect(slider).toHaveValue('1');
+  await slider.focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect(slider).toHaveValue('0.5');
+  await expect(page.getByRole('group', { name: 'Негізгі нүктелер' }).or(page.getByRole('list', { name: 'Негізгі нүктелер' }))).toBeVisible();
+  await page.getByRole('button', { name: 'Сызықтық', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '1-функция' })).toHaveValue('a x + b');
+  await page.getByRole('textbox', { name: '1-функция' }).fill('x^2-20x+96');
+  await expect(graph).toHaveAttribute('aria-label', /x\^\{?2/);
+  // The view refits to the typed function, so both zeros are listed as key points.
+  await expect(page.getByRole('button', { name: /Функцияның нөлі \(8; 0\)/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Функцияның нөлі \(12; 0\)/ })).toBeVisible();
+  expect(desmosRequests).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({ path: test.info().outputPath('graph-mobile.png'), fullPage: true, animations: 'disabled' });
+});
+
+test('optional Desmos failure leaves local controls usable; retry and close clean up', async ({ page }) => {
+  test.skip(process.env.DESMOS_ENABLED !== 'true', 'requires local test SDK configuration');
+  const pupil = await db.actor('graph-sdk-pupil');
+  await db.execute("UPDATE public.profiles SET second_subject='physics' WHERE id=$1", [pupil.id]);
+  await loginAs(page, pupil);
+  let calls = 0;
+  await page.route('https://www.desmos.com/api/v1.12/calculator.js?*', async (route) => {
+    calls++;
+    if (calls === 1) { await route.abort(); return; }
+    await route.fulfill({ contentType: 'application/javascript', body: `window.Desmos={GraphingCalculator:(el)=>({setExpression:({latex})=>{el.textContent=latex},setMathBounds:()=>{},resize:()=>{},destroy:()=>{document.body.dataset.desmosDestroyed='yes'}})};` });
+  });
+  await page.goto('/ru/visualization');
+  expect(calls).toBe(0);
+  await page.getByRole('button', { name: 'Открыть Desmos' }).click();
+  await expect(page.getByText('Desmos не загрузился. Продолжайте пользоваться графиком выше.')).toBeVisible();
+  const slider = page.getByRole('slider', { name: 'Параметр a', exact: true });
+  await slider.focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect(slider).toHaveValue('0.5');
+  await expect(page.getByRole('button', { name: 'Минимум (2; −5)', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Повторить', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Desmos' })).toHaveText('y=0{,}5 x^{2} + -2 x + -3');
+  expect(calls).toBe(2);
+  await page.getByRole('button', { name: 'Закрыть Desmos' }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-desmos-destroyed', 'yes');
+});

@@ -1,5 +1,13 @@
 # Журнал исполнения production-плана
 
+## 30.09.2026 — Astra c47385b review и актуальная очередь
+
+- [Review](reviews/2026-09-30-c47385b.md): исходные исправления 0032 подтверждены; два узких follow-up — прямое privileged создание approved-программы и сериализация отзыва teacher→group при публикации. Они не являются произвольным student bypass.
+- Fresh: 23 focused DB tests, 10 focused unit tests, typecheck и lint PASS. Локальные rollback/synthetic probes воспроизвели оба случая. Полные suites/build из предыдущего прохода не выдаются за свежую проверку.
+- Hosted через SQL Editor: selected function count 15 и function/permission fingerprint, 13 pilot tables/RLS/browser-access fingerprint и non-internal trigger fingerprint совпали с local 0032. Только read-only catalog SQL; business data и схема не менялись. Полная schema/constraints/alias/release smoke ещё нужны.
+- Remote main `bb903a2`, рабочий code HEAD `c47385b`; PR для `codex/trusted-practice` отсутствует. Push/merge/deploy в этом проходе не выполнялись.
+- [Новый handoff](../superpowers/plans/2026-09-30-pilot-next-steps.md): A3-R2 (0033) → binding (0034) → student entry → A4 bypass closure → A5 summary → A6 admission. Синхронизированы верхние указатели и промпт исполнителя; прошлые записи сохраняются как история.
+
 ## 23.09.2026 — L02c-R candidate: authoritative issuance, expiry and bounded catalogs
 
 - Исправлены R1–R4 из [L02c review](reviews/2026-09-23-l02c.md). После любого успешного `start_learning_v1` public DTO читается из owner-scoped immutable session rows, поэтому concurrent receipt replay не может подставить stale question body под чужой item ID. Practice выбирает детерминированно по validated actor+operation, а retry всегда получает исходный receipt. Активный row с `expires_at <= trusted now` отдаётся state API как expired. Assessment catalog читает каждый нужный question type отдельной bounded query, поэтому первые 160 single больше не вытесняют multi/matching.
@@ -245,3 +253,11 @@
 - Независимый review принял code SHA `0e1be82dd606289426246a4c60f10d06409a6494`: R1 browser trusted-fact RLS, R2 replay lock, R3 migration-path privilege placement и R4 evidence matrix закрыты.
 - Evidence: `npm run test:db` **8/68 PASS, 72.48s**; `npm run test:db:migration` **1/5 PASS, 166.49s**; `npm test` **56/576 PASS**; typecheck/lint/diff check clean. Test-only weekly clock trigger scoped and cleaned in `finally`.
 - L02c is now ready. This gate does not authorize hosted migration, Vercel deployment, paid APIs, or a pilot release.
+
+## 28.09.2026 — A1/L02: CI acceptance and merge; A2 ready
+
+- [PR #31](https://github.com/saylaaur/alemprep/pull/31) опубликован из `codex/l02cr-fixes`, head `6f6b3557ca4c3d169a30883d627afdff5482f0c7` (application code `8907703`). Review полного L02 и correction принят: [local review](reviews/2026-09-27-l02-final.md). После required checks PR merged как `bb903a24b2e95c6b2abb9846ee8e6a3404890154` в 06:26:25 UTC.
+- [Verify run 36385798188](https://github.com/saylaaur/alemprep/actions/runs/36385798188) SUCCESS за 7m25s: typecheck, lint, unit, стандартный `npm run build`, isolated Supabase DB, migration-path, Chromium browser smoke и cleanup. Gitleaks и Vercel Preview также PASS. Это закрывает прежний локальный пробел standard build. Новых тестовых прогонов после документационных правок не требовалось: application diff с accepted main отсутствует.
+- Required schema до 0028 уже находится в main после PR #30; diff PR #31 не добавляет миграций. Hosted SQL в этом проходе не применялась. Merge может инициировать обычный Vercel production deployment; состояние публичного alias и schema не устанавливалось. Новый trusted UI ещё не включён.
+- Основной checkout на ветке `codex/pilot-execution-rebaseline` синхронизирован с принятым main. Единственный merge conflict был в исторических статусах TASKS; он заменён фактической очередью. Незакоммиченные пользовательские материалы сохранены.
+- Следующий ID **A2/L03a**: [packet](../superpowers/plans/2026-09-28-l03a-trusted-practice-packet.md). Исправлена ошибка планирования: сервер уже выдаёт одну задачу на session, поэтому сохраняется ответ → проверка → объяснение → следующая задача. Очистка owner-scoped pending при смене account входит сразу в A2. Shared-school scope, отчётность, legacy cutover и release rehearsal остаются A3–A6; школьный допуск пока не выдан.

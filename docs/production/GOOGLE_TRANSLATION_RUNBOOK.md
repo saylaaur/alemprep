@@ -1,6 +1,11 @@
 # Google NMT drafts — operator runbook
 
-**20.09:** инструмент сохранён как резерв и для расширения банка. Новый [план пилота](../superpowers/plans/2026-09-20-kazakh-pilot-rebaseline.md) сначала проверяет небольшую native-KK подборку. Активация billing не блокирует серверную разработку; этот runbook не запускается автоматически при покупке пробников.
+**05.10 — актуальное решение:** переводим существующий RU-банк партиями. Основной
+вход: [инструкция оператора](../pilot/translation-handoff/OPERATOR_GUIDE.md) и
+[пакет другу](../pilot/translation-handoff/README.md). Они заменяют прежнее решение
+«native-KK сначала, Google как резерв». Новый формат самостоятельной подготовки
+не требует обязательного programme/lesson flow. Платные вызовы ещё не выполнены;
+полный export/import и version publication описаны как следующие задачи, не готовые команды.
 
 This command produces private machine drafts only. It never inserts rows in Supabase, changes `is_published`, or makes an in-browser translation feature. A Kazakh and subject-matter reviewer must accept the resulting pairs before C00c.
 
@@ -56,7 +61,7 @@ npm run content:translate-google -- \
   --execute --max-chars 20000 --max-usd 0.40
 ```
 
-The script sends at most two entities concurrently, chunks only below its conservative request limits, retries transient timeouts/429/5xx at most three times, and records `sent` before each request. A lingering `sent` means it may have been billed: inspect it and make an explicit resume decision rather than rerunning blindly. A quota-exhausted 429 stops without retry.
+The script sends at most two entities concurrently, chunks only below its conservative request limits, retries transient timeouts/429/5xx at most three times, and records `sent` before an entity's request chunks. A lingering `sent` means it may have been billed: inspect it and make an explicit resume decision rather than rerunning blindly. There is no CLI resolution flag for `resume-required`. A quota-exhausted 429 stops without retry.
 
 ## After a run
 

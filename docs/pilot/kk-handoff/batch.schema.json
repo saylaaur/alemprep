@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AlemPrep KK manual handoff v1 (not an importer)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "alemprep-kk-handoff-v1"
+    },
+    "batch_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,79}$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": {
+        "$ref": "#/$defs/question"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "batch_id",
+    "revision",
+    "questions"
+  ],
+  "$defs": {
+    "block": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "enum": [
+                "text",
+                "latex"
+              ]
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "table"
+            },
+            "columns": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "rows": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": [
+            "type",
+            "columns",
+            "rows"
+          ]
+        }
+      ]
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^kk-eq-[0-9]{3}$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "family_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "skill": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locale": {
+          "const": "kk"
+        },
+        "subject": {
+          "const": "math"
+        },
+        "topic_slug": {
+          "const": "linear-quadratic-rational-equations"
+        },
+        "type": {
+          "const": "single"
+        },
+        "difficulty": {
+          "enum": [
+            2,
+            3
+          ],
+          "type": "integer"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "stem": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stem_blocks": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/block"
+              }
+            },
+            "options": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "enum": [
+                      "A",
+                      "B",
+                      "C",
+                      "D"
+                    ]
+                  },
+                  "content": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "id",
+                  "content"
+                ]
+              }
+            },
+            "correct": {
+              "enum": [
+                "A",
+                "B",
+                "C",
+                "D"
+              ]
+            }
+          },
+          "required": [
+            "stem",
+            "options",
+            "correct"
+          ]
+        },
+        "explanation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "blocks": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/block"
+              }
+            }
+          },
+          "required": [
+            "blocks"
+          ]
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "origin": {
+              "enum": [
+                "authored",
+                "licensed-original",
+                "generated-variant"
+              ]
+            },
+            "source_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source_locator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rights_evidence_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "parent_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "origin",
+            "source_ref",
+            "source_locator",
+            "rights_evidence_ref",
+            "parent_id",
+            "rationale"
+          ]
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "family_key",
+        "skill",
+        "locale",
+        "subject",
+        "topic_slug",
+        "type",
+        "difficulty",
+        "body",
+        "explanation",
+        "provenance",
+        "issues"
+      ]
+    }
+  }
+}

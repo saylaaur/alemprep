@@ -1,4 +1,6 @@
 import { createClient } from './server';
+import { z } from 'zod';
+import { isLearningEnabled } from '@/lib/learning/feature-flag';
 import { readAllPages } from './pagination';
 import {
   EXAM_BLUEPRINT,
@@ -53,6 +55,8 @@ export async function getUnpublishedQuestions(): Promise<UnpublishedQuestion[]> 
     .from('questions')
     .select('*')
     .eq('is_published', false)
+    // Reviewed KK drafts are accepted through content:reviewed, never published here.
+    .neq('source', 'reviewed_kk_translation')
     .order('created_at', { ascending: false });
 
   if (!questions || questions.length === 0) return [];
@@ -118,17 +122,52 @@ export async function getProfile(): Promise<Profile | null> {
   }
 }
 
+const attemptTopicSchema=z.array(z.object({question_id:z.string().min(1),topic_id:z.string().min(1)}));
+/**
+ * Topic of each attempted question. KK rows from the reviewed import are unpublished and
+ * hidden by questions RLS, so their topics come from my_attempted_question_topics_v1
+ * (only the caller's own attempted questions, id and topic only).
+ */
+async function attemptedQuestionTopics(supabase:Awaited<ReturnType<typeof createClient>>,questionIds:string[]) {
+  const map=new Map<string,string>();
+  if(questionIds.length===0) return map;
+  const {data}=await supabase.from('questions').select('id, topic_id').in('id',questionIds);
+  for(const q of (data??[]) as {id:string;topic_id:string}[]) map.set(q.id,q.topic_id);
+  const missing=questionIds.filter((id)=>!map.has(id));
+  if(missing.length>0) {
+    const {data:extra,error}=await supabase.rpc('my_attempted_question_topics_v1',{question_ids:missing});
+    const parsed=attemptTopicSchema.safeParse(extra);
+    // Before 0039 is applied the RPC is missing; keep the old behaviour (topic unknown).
+    if(!error&&parsed.success) for(const row of parsed.data) map.set(row.question_id,row.topic_id);
+  }
+  return map;
+}
+const countGroupSchema=z.array(z.object({topic_id:z.string().min(1),type:z.enum(['single','multi','matching']),question_count:z.number().int().nonnegative()}));
+async function getContentCountGroups(supabase:Awaited<ReturnType<typeof createClient>>,locale:Locale) {
+  if(isLearningEnabled()) {
+    const {data,error}=await supabase.rpc('content_topic_counts_v1',{content_locale:locale});
+    const parsed=countGroupSchema.safeParse(data);
+    if(error||!parsed.success) throw new Error('Could not load reviewed content counts');
+    return parsed.data;
+  }
+  const rows=await readAllPages((from,to)=>supabase.from('questions').select('id,topic_id,type')
+    .eq('is_published',true).eq('language',locale).order('id').range(from,to),'question counts');
+  const groups=new Map<string,{topic_id:string;type:QuestionType;question_count:number}>();
+  for(const q of rows as {topic_id:string;type:QuestionType}[]) {
+    const key=q.topic_id+':'+q.type;
+    const group=groups.get(key);
+    if(group) group.question_count++;
+    else groups.set(key,{topic_id:q.topic_id,type:q.type,question_count:1});
+  }
+  return [...groups.values()];
+}
+
 export async function getSubjectsWithCounts(locale: Locale = 'ru') {
   const supabase = await createClient();
   const [subjectsRes, topicsRes, questions] = await Promise.all([
     supabase.from('subjects').select('*').order('sort_order'),
     supabase.from('topics').select('id, subject_id'),
-    readAllPages((from, to) => supabase
-      .from('questions')
-      .select('id, topic_id')
-      .eq('is_published', true)
-      .eq('language', locale)
-      .order('id').range(from, to), 'question counts'),
+    getContentCountGroups(supabase,locale),
   ]);
   if (subjectsRes.error || topicsRes.error) throw new Error('Could not load subjects');
 
@@ -146,7 +185,7 @@ export async function getSubjectsWithCounts(locale: Locale = 'ru') {
   for (const q of questions) {
     const sid = topicToSubject.get(q.topic_id);
     if (!sid) continue;
-    questionsBySubject.set(sid, (questionsBySubject.get(sid) ?? 0) + 1);
+    questionsBySubject.set(sid, (questionsBySubject.get(sid) ?? 0) + q.question_count);
   }
 
   return subjects.map((s) => ({
@@ -178,12 +217,7 @@ export async function getTopicsForSubject(subjectSlug: string, locale: Locale = 
       .select('*')
       .eq('subject_id', subject.id)
       .order('sort_order'),
-    readAllPages((from, to) => supabase
-      .from('questions')
-      .select('id, topic_id')
-      .eq('is_published', true)
-      .eq('language', locale)
-      .order('id').range(from, to), 'topic counts'),
+    getContentCountGroups(supabase,locale),
   ]);
   if (topicsRes.error) throw new Error('Could not load topics');
 
@@ -191,7 +225,7 @@ export async function getTopicsForSubject(subjectSlug: string, locale: Locale = 
 
   const counts = new Map<string, number>();
   for (const q of questions) {
-    counts.set(q.topic_id, (counts.get(q.topic_id) ?? 0) + 1);
+    counts.set(q.topic_id, (counts.get(q.topic_id) ?? 0) + q.question_count);
   }
 
   return topics.map((t) => ({
@@ -303,15 +337,7 @@ export async function getProgressData(): Promise<ProgressData | null> {
   }
 
   const questionIds = Array.from(new Set(allAttempts.map((a) => a.question_id)));
-  const { data: questionsRaw } = await supabase
-    .from('questions')
-    .select('id, topic_id')
-    .in('id', questionIds);
-
-  const questionToTopic = new Map<string, string>();
-  for (const q of (questionsRaw ?? []) as { id: string; topic_id: string }[]) {
-    questionToTopic.set(q.id, q.topic_id);
-  }
+  const questionToTopic = await attemptedQuestionTopics(supabase, questionIds);
 
   const topicMap = new Map<string, { id: string; name_ru: string; name_kk: string }>();
   for (const topic of (topicsRes.data ?? []) as {
@@ -487,16 +513,7 @@ export async function getGamification(userId: string): Promise<Gamification | nu
   }
 
   const questionIds = Array.from(new Set(attempts.map((a) => a.question_id)));
-  const questionToTopic = new Map<string, string>();
-  if (questionIds.length > 0) {
-    const { data: questions } = await supabase
-      .from('questions')
-      .select('id, topic_id')
-      .in('id', questionIds);
-    for (const q of (questions ?? []) as { id: string; topic_id: string }[]) {
-      questionToTopic.set(q.id, q.topic_id);
-    }
-  }
+  const questionToTopic = await attemptedQuestionTopics(supabase, questionIds);
 
   const byTopic = new Map<string, { total: number; correct: number }>();
   for (const a of attempts) {
@@ -574,12 +591,7 @@ export async function getExamAvailability(locale: Locale = 'ru'): Promise<ExamAv
   const [subjectsRes, topicsRes, questions] = await Promise.all([
     supabase.from('subjects').select('id, slug'),
     supabase.from('topics').select('id, subject_id'),
-    readAllPages((from, to) => supabase
-      .from('questions')
-      .select('type, topic_id')
-      .eq('language', locale)
-      .eq('is_published', true)
-      .order('id').range(from, to), 'exam availability'),
+    getContentCountGroups(supabase,locale),
   ]);
   if (subjectsRes.error || topicsRes.error) throw new Error('Could not load exam subjects');
 
@@ -594,12 +606,12 @@ export async function getExamAvailability(locale: Locale = 'ru'): Promise<ExamAv
   );
 
   const availability: ExamAvailability = {};
-  for (const q of questions as { type: QuestionType; topic_id: string }[]) {
+  for (const q of questions) {
     const subjectId = topicToSubject.get(q.topic_id);
     const slug = subjectId ? subjectSlugById.get(subjectId) : undefined;
     if (!slug) continue;
     const bySlug = (availability[slug] ??= {});
-    bySlug[q.type] = (bySlug[q.type] ?? 0) + 1;
+    bySlug[q.type] = (bySlug[q.type] ?? 0) + q.question_count;
   }
   return availability;
 }
@@ -794,13 +806,7 @@ export async function getDiagnosticBaseline(userId: string): Promise<DiagnosticB
 
   const topicStats: BaselineTopicStat[] = [];
   if (questionIds.length > 0) {
-    const { data: questionsRaw } = await supabase
-      .from('questions')
-      .select('id, topic_id')
-      .in('id', questionIds);
-    const questionToTopic = new Map(
-      ((questionsRaw ?? []) as { id: string; topic_id: string }[]).map((q) => [q.id, q.topic_id])
-    );
+    const questionToTopic = await attemptedQuestionTopics(supabase, questionIds);
 
     const topicIds = Array.from(new Set(Array.from(questionToTopic.values())));
     const { data: topicsRaw } = topicIds.length > 0

@@ -19,6 +19,11 @@ test('keeps Russian and Kazakh guests in their own login locale', async ({ page 
   await expect(page.getByRole('button', { name: 'Google арқылы кіру' })).toBeVisible();
 });
 
+test('keeps a class join link through the login redirect', async ({ page }) => {
+  await page.goto('/kk/join?code=abcdefghijklmnopqrstuvwxyz012345');
+  await expect(page).toHaveURL(/\/kk\/login\?next=%2Fkk%2Fjoin%3Fcode%3Dabcdefghijklmnopqrstuvwxyz012345$/);
+});
+
 test('uses a local Supabase session to enter the protected dashboard', async ({ page }) => {
   db = await createDbHarness();
   const actor = await db.actor('dashboard-access');
@@ -59,4 +64,16 @@ test('keeps an auth callback redirect on this application origin', async ({ page
   await page.goto('/auth/callback?next=https%3A%2F%2Fevil.example');
 
   await expect(page).toHaveURL(/\/ru\/login\?error=auth$/);
+});
+
+
+test('cancelled OAuth preserves the class link and shows a localized error', async ({ page }) => {
+  const next = '/kk/join?code=abcdefghijklmnopqrstuvwxyz012345';
+  await page.context().addCookies([{ name: 'alemprep_auth_next', value: encodeURIComponent(next), url: 'http://127.0.0.1:3001', httpOnly: true, sameSite: 'Lax' }]);
+  await page.goto('/auth/callback?error=access_denied&next=%2Fkk%2Fdashboard');
+  const url = new URL(page.url());
+  expect(url.pathname).toBe('/kk/login');
+  expect(url.searchParams.get('next')).toBe(next);
+  await expect(page.getByRole('alert')).toBeVisible();
+  expect((await page.context().cookies()).find((cookie) => cookie.name === 'alemprep_auth_next')).toBeUndefined();
 });

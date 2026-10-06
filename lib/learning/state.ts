@@ -28,7 +28,7 @@ export function createProductionLearningStateService() {
   const admin = createAdminClient();
   return createLearningStateService({
     actorId: async () => (await getActor())?.id ?? null,
-    state: createSupabaseLearningStateClient(admin),
+    state: createSupabaseLearningStateClient(admin, 'reload'),
     now: () => new Date(),
   });
 }

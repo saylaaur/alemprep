@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { localDateStr } from '@/lib/streak';
@@ -34,6 +34,7 @@ export function CalendarPicker({
   min?: string;
 }) {
   const locale = useLocale();
+  const t = useTranslations('onboarding');
   const today = localDateStr();
   const minDate = min ?? today;
 
@@ -90,7 +91,7 @@ export function CalendarPicker({
           type="button"
           onClick={goPrevMonth}
           disabled={isPastMonth}
-          aria-label="Previous month"
+          aria-label={t('calendarPrevMonth')}
           className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -99,7 +100,7 @@ export function CalendarPicker({
         <button
           type="button"
           onClick={goNextMonth}
-          aria-label="Next month"
+          aria-label={t('calendarNextMonth')}
           className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
         >
           <ChevronRight className="h-4 w-4" />

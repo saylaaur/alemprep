@@ -8,6 +8,7 @@
 //   npx supabase gen types typescript --project-id <id> > types/db.ts
 
 import type { AssistantMode } from '@/lib/assistant';
+import type { TeacherGroup, TeacherRoster } from '@/lib/teacher/contracts';
 
 export type Locale = 'ru' | 'kk';
 
@@ -261,6 +262,137 @@ export type AuditEvent = {
   metadata: unknown;
 };
 
+/** A scoped school participating in the supervised pilot. */
+export type School = {
+  id: string;
+  name: string;
+  status: 'active' | 'paused' | 'archived';
+  timezone: 'Asia/Almaty';
+  created_at: string;
+};
+
+export type SchoolMembership = {
+  id: string;
+  school_id: string;
+  user_id: string;
+  role: 'student' | 'teacher' | 'coordinator';
+  joined_at: string;
+  ended_at: string | null;
+};
+
+export type SchoolGroup = {
+  id: string;
+  school_id: string;
+  name: string;
+  locale: Locale;
+  status: 'active' | 'paused' | 'archived';
+  created_at: string;
+};
+
+export type GroupMembership = {
+  id: string;
+  school_id: string;
+  group_id: string;
+  school_membership_id: string;
+  joined_at: string;
+  ended_at: string | null;
+};
+
+export type GroupTeacher = {
+  id: string;
+  school_id: string;
+  group_id: string;
+  school_membership_id: string;
+  assigned_at: string;
+  ended_at: string | null;
+};
+
+/** The plaintext invite secret is deliberately absent from this DB shape. */
+export type GroupInvite = {
+  id: string;
+  school_id: string;
+  group_id: string;
+  token_hash: string;
+  expires_at: string;
+  max_uses: number;
+  uses: number;
+  revoked_at: string | null;
+  created_by_membership_id: string;
+  created_at: string;
+};
+
+export type PilotOperationReceipt = {
+  actor_id: string;
+  operation_id: string;
+  kind: 'pilot.invite' | 'pilot.join';
+  payload_hash: string;
+  result: unknown;
+  created_at: string;
+};
+
+export type PilotProgram = {
+  id: string;
+  version: number;
+  title_ru: string;
+  title_kk: string | null;
+  status: 'draft' | 'approved' | 'retired';
+  review_ref: string | null;
+  created_at: string;
+};
+
+export type PilotProgramItem = {
+  id: string;
+  program_id: string;
+  position: number;
+  question_version_id: string;
+  locale: Locale;
+  purpose: 'practice' | 'baseline' | 'endline';
+  created_at: string;
+};
+
+export type PilotAssignment = {
+  id: string;
+  school_id: string;
+  group_id: string;
+  program_id: string;
+  purpose: 'practice';
+  comparison_baseline_id: string | null;
+  opens_at: string;
+  due_at: string;
+  closes_at: string;
+  created_by_membership_id: string;
+  status: 'draft' | 'published' | 'cancelled';
+  revision: number;
+  created_at: string;
+};
+
+export type PilotAssignmentParticipant = {
+  id: string;
+  assignment_id: string;
+  school_id: string;
+  user_id: string;
+  school_membership_id: string;
+  eligible_from: string;
+  withdrawn_at: string | null;
+};
+
+export type PilotAssignmentReceipt = {
+  actor_id: string;
+  operation_id: string;
+  payload_hash: string;
+  result: unknown;
+  created_at: string;
+};
+
+/** Service-only idempotency receipt for an atomic school provisioning operation. */
+export type PilotProvisionReceipt = {
+  operator_id: string;
+  operation_id: string;
+  payload_hash: string;
+  result: unknown;
+  created_at: string;
+};
+
 /** ai_usage — дневной счётчик запросов к ИИ-ассистенту (Слой 2), PK (user_id, usage_date) */
 export type AiUsage = {
   user_id: string;
@@ -292,7 +424,19 @@ export type Database = {
   public: {
     Tables: Record<string, never>;
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      content_source_snapshot_v1: { Args: { source_id: string }; Returns: unknown };
+      content_topic_counts_v1: { Args: { content_locale: Locale }; Returns: { topic_id: string; type: QuestionType; question_count: number }[] };
+      content_import_reviewed_v1: { Args: { batch_id: string; batch_hash: string; locale: 'ru'; entries: unknown }; Returns: unknown };
+      content_accept_version_v1: { Args: { version_id: string; content_hash: string; math_review_ref: string; language_review_ref: string; source_rights_ref: string }; Returns: unknown };
+      learning_active_session_access_v1: { Args: { actor_id: string; session_id: string }; Returns: boolean };
+      pilot_session_has_accepted_completion_v1: { Args: { target_session: string }; Returns: boolean };
+      /** 0036: Auth-scoped self-study report; does not grant table access. */
+      pilot_teacher_dashboard_v1: {
+        Args: { target_group_id?: string | null };
+        Returns: { groups: TeacherGroup[] } | TeacherRoster | { error: 'unauthenticated' | 'not-found' };
+      };
+    };
     Enums: Record<string, never>;
   };
 };

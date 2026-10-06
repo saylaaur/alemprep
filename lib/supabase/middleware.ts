@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PROTECTED_PREFIXES = ['/dashboard', '/subjects', '/full-practice', '/progress', '/settings', '/practice', '/admin', '/onboarding', '/diagnostic', '/weekly'];
+const PROTECTED_PREFIXES = ['/dashboard', '/subjects', '/full-practice', '/progress', '/settings', '/practice', '/admin', '/onboarding', '/diagnostic', '/weekly', '/teacher', '/join-class', '/join', '/visualization'];
 
 export function isProtectedPath(pathname: string): boolean {
   const pathWithoutLocale = pathname.replace(/^\/(ru|kk)/, '') || '/';
@@ -40,6 +40,10 @@ export async function updateSession(request: NextRequest) {
     const locale = pathname.match(/^\/(ru|kk)/)?.[1] ?? 'ru';
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/login`;
+    url.search = '';
+    // Keep the requested page (for example a class join link) through Google sign-in.
+    const requested = `${pathname}${request.nextUrl.search}`;
+    if (requested !== `/${locale}/dashboard`) url.searchParams.set('next', requested);
     return NextResponse.redirect(url);
   }
 

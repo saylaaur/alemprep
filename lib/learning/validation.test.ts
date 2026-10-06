@@ -80,4 +80,13 @@ describe('learning input validation', () => {
       answers: [{ itemId, answer: ['A', 'B'], timeSpentMs: 12_000 }],
     });
   });
+
+  it('accepts a long matching label because the server-issued right side is content, not an ID', () => {
+    const label = 'өте ұзын сәйкестендіру жауабы '.repeat(5);
+    expect(validateSubmit({
+      operationId,
+      sessionId,
+      answers: [{ itemId, answer: { left: label }, timeSpentMs: 12_000 }],
+    })).toMatchObject({ answers: [{ answer: { left: label } }] });
+  });
 });
