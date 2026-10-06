@@ -21,6 +21,8 @@ export async function signInWithGoogle(redirectTo: string) {
     provider: 'google',
     options: {
       redirectTo: callback.toString(),
+      // Shared school devices: never silently reuse the previous pupil's Google account.
+      queryParams: { prompt: 'select_account' },
     },
   });
 

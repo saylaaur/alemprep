@@ -1,13 +1,24 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { signInWithGoogle } from '@/lib/supabase/auth-actions';
+import { resolveAuthRedirect } from '@/lib/auth-redirect';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { GraduationCap, ArrowLeft } from 'lucide-react';
 
-export default async function LoginPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function LoginPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ next?: string | string[]; error?: string | string[] }>;
+}) {
   const { locale } = await params;
+  const { next, error } = await searchParams;
+  // Return to the page that asked for sign-in (a join link, a topic), in the language chosen here.
+  const target = resolveAuthRedirect(typeof next === 'string' ? next : null)
+    .next.replace(/^\/(ru|kk)(?=[/?]|$)/, `/${locale}`);
   setRequestLocale(locale);
   const [tAuth, tBrand] = await Promise.all([
     getTranslations('auth'),
@@ -16,7 +27,7 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
 
   async function action() {
     'use server';
-    await signInWithGoogle(`/${locale}/dashboard`);
+    await signInWithGoogle(target);
   }
 
   return (
@@ -51,6 +62,9 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
           <CardDescription>{tAuth('signInDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
+          {error === 'auth' && (
+            <p role="alert" className="mb-4 text-center text-sm text-destructive">{tAuth('signInError')}</p>
+          )}
           <form action={action}>
             <Button type="submit" className="w-full" size="lg">
               {tAuth('signInWithGoogle')}

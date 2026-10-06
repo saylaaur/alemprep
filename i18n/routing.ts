@@ -22,6 +22,7 @@ export const routing = defineRouting({
     '/teacher': '/teacher',
     '/teacher/groups/[groupId]': '/teacher/groups/[groupId]',
     '/join-class': '/join-class',
+    '/join': '/join',
     '/visualization': '/visualization',
   },
 });

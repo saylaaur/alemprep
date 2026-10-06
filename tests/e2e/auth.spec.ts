@@ -19,6 +19,11 @@ test('keeps Russian and Kazakh guests in their own login locale', async ({ page 
   await expect(page.getByRole('button', { name: 'Google арқылы кіру' })).toBeVisible();
 });
 
+test('keeps a class join link through the login redirect', async ({ page }) => {
+  await page.goto('/kk/join?code=abcdefghijklmnopqrstuvwxyz012345');
+  await expect(page).toHaveURL(/\/kk\/login\?next=%2Fkk%2Fjoin%3Fcode%3Dabcdefghijklmnopqrstuvwxyz012345$/);
+});
+
 test('uses a local Supabase session to enter the protected dashboard', async ({ page }) => {
   db = await createDbHarness();
   const actor = await db.actor('dashboard-access');

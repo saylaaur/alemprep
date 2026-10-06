@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/routing';
 import { joinPilotClass } from '@/lib/supabase/pilot-access-actions';
 
-export function JoinClass() {
+export function JoinClass({ initialCode = '' }: { initialCode?: string }) {
   const t = useTranslations('teacher');
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(() => (/^[A-Za-z0-9_-]{22,128}$/.test(initialCode.trim()) ? initialCode.trim() : ''));
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<'idle' | 'error' | 'joined'>('idle');
   const pending = useRef<{ token: string; operationId: string } | null>(null);
