@@ -1,7 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { resolveOAuthOrigin } from '@/lib/auth-origin';
 import { resolveAuthRedirect } from '@/lib/auth-redirect';
 import { createClient } from './server';
@@ -14,7 +14,14 @@ export async function signInWithGoogle(redirectTo: string) {
     vercelBranchUrl: process.env.VERCEL_BRANCH_URL,
   });
   const callback = new URL('/auth/callback', origin);
-  callback.searchParams.set('next', resolveAuthRedirect(redirectTo).next);
+  const target = resolveAuthRedirect(redirectTo);
+  // Supabase matches the complete redirect URL. Preserve variable destinations
+  // in a short-lived same-origin cookie, keeping the allowlisted URL fixed.
+  const cookieStore = await cookies();
+  cookieStore.set('alemprep_auth_next', encodeURIComponent(target.next), {
+    httpOnly: true, sameSite: 'lax', secure: new URL(origin).protocol === 'https:',
+    path: '/', maxAge: 600,
+  });
   const supabase = await createClient();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -26,7 +33,13 @@ export async function signInWithGoogle(redirectTo: string) {
     },
   });
 
-  if (error) throw error;
+  if (error || !data.url) {
+    cookieStore.set('alemprep_auth_next', '', { path: '/', maxAge: 0 });
+    const login = new URL(`/${target.locale}/login`, origin);
+    login.searchParams.set('error', 'auth');
+    login.searchParams.set('next', target.next);
+    redirect(login.toString());
+  }
   if (data.url) redirect(data.url);
 }
 

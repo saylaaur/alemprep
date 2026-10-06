@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ oauth: vi.fn(), origin: '' }));
-vi.mock('next/headers', () => ({ headers: async () => new Headers(mocks.origin ? { origin: mocks.origin } : {}) }));
+const mocks = vi.hoisted(() => ({ oauth: vi.fn(), origin: '', setCookie: vi.fn() }));
+vi.mock('next/headers', () => ({ headers: async () => new Headers(mocks.origin ? { origin: mocks.origin } : {}), cookies: async () => ({ set: mocks.setCookie }) }));
 vi.mock('./server', () => ({ createClient: async () => ({ auth: { signInWithOAuth: mocks.oauth } }) }));
 vi.mock('next/navigation', () => ({ redirect: (url: string) => { throw new Error(`redirect:${url}`); } }));
 import { signInWithGoogle } from './auth-actions';
@@ -31,13 +31,13 @@ describe('Google OAuth callback origin', () => {
     const url = await callback();
     expect(url.origin).toBe(`https://${deployment}`);
     expect(url.pathname).toBe('/auth/callback');
-    expect(url.searchParams.get('next')).toBe('/ru/dashboard');
+    expect(url.search).toBe('');
   });
   it('keeps the branch alias and Kazakh destination on that same origin', async () => {
     mocks.origin = `https://${branch}`;
     const url = await callback('/kk/dashboard');
     expect(url.origin).toBe(mocks.origin);
-    expect(url.searchParams.get('next')).toBe('/kk/dashboard');
+    expect(url.search).toBe('');
   });
   it('preserves the configured production origin', async () => {
     vi.stubEnv('VERCEL_ENV', 'production');
@@ -71,6 +71,20 @@ describe('Google OAuth callback origin', () => {
   it('never copies an external next destination into the callback', async () => {
     mocks.origin = production;
     const url = await callback('https://evil.example/kk/dashboard');
-    expect(url.searchParams.get('next')).toBe('/ru/dashboard');
+    expect(url.search).toBe('');
+  });
+});
+
+
+describe('join-link OAuth handoff', () => {
+  it('keeps the registered callback fixed and carries the invite only in a private cookie', async () => {
+    mocks.origin = `https://${branch}`;
+    const next = '/kk/join?code=abcdefghijklmnopqrstuvwxyz012345';
+    const url = await callback(next);
+    expect(url.search).toBe('');
+    expect(url.toString()).not.toContain('abcdefghijklmnopqrstuvwxyz012345');
+    expect(mocks.setCookie).toHaveBeenCalledWith('alemprep_auth_next', encodeURIComponent(next),
+      expect.objectContaining({ httpOnly: true, sameSite: 'lax', secure: true, maxAge: 600, path: '/' }));
+    expect(mocks.oauth.mock.calls[0][0].options.queryParams).toEqual({ prompt: 'select_account' });
   });
 });

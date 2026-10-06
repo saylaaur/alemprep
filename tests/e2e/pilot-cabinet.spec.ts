@@ -25,14 +25,16 @@ test('teacher creates invite, pupil joins, roster refreshes and foreign class st
   const code = page.getByLabel('Код приглашения');
   await expect(code).not.toHaveValue('');
   const token = await code.inputValue();
+  const link = await page.getByLabel('Ссылка для учеников').inputValue();
+  expect(link).toBe(`http://127.0.0.1:3001/ru/join?code=${token}`);
   await page.goto(`/ru/teacher/groups/${school.groupB}`);
   await expect(page.getByRole('heading', { name: 'Synthetic RU B' })).toHaveCount(0);
 
   const pupil = await db.actor('cabinet-joiner');
-  await db.execute("UPDATE public.profiles SET second_subject='physics' WHERE id=$1", [pupil.id]);
   await loginAs(page, pupil);
-  await page.goto('/ru/join-class');
-  await page.getByLabel('Код приглашения').fill(token);
+  await page.goto(link);
+  await expect(page).toHaveURL(link);
+  await expect(page.getByLabel('Код приглашения')).toHaveValue(token);
   await page.getByRole('button', { name: 'Вступить', exact: true }).click();
   await expect(page.getByText('Вы вступили в класс. Можно начинать подготовку.')).toBeVisible();
   await page.reload();

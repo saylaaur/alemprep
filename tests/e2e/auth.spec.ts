@@ -65,3 +65,15 @@ test('keeps an auth callback redirect on this application origin', async ({ page
 
   await expect(page).toHaveURL(/\/ru\/login\?error=auth$/);
 });
+
+
+test('cancelled OAuth preserves the class link and shows a localized error', async ({ page }) => {
+  const next = '/kk/join?code=abcdefghijklmnopqrstuvwxyz012345';
+  await page.context().addCookies([{ name: 'alemprep_auth_next', value: encodeURIComponent(next), url: 'http://127.0.0.1:3001', httpOnly: true, sameSite: 'Lax' }]);
+  await page.goto('/auth/callback?error=access_denied&next=%2Fkk%2Fdashboard');
+  const url = new URL(page.url());
+  expect(url.pathname).toBe('/kk/login');
+  expect(url.searchParams.get('next')).toBe(next);
+  await expect(page.getByRole('alert')).toBeVisible();
+  expect((await page.context().cookies()).find((cookie) => cookie.name === 'alemprep_auth_next')).toBeUndefined();
+});
