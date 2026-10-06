@@ -3,6 +3,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { createClient } from '@/lib/supabase/server';
 import { getProfile } from '@/lib/supabase/queries';
 import { getTeacherGroups } from '@/lib/supabase/queries/teacher';
+import { isPilotTopicsOnly } from '@/lib/learning/feature-flag';
 
 export default async function AppLayout({
   children,
@@ -26,7 +27,7 @@ export default async function AppLayout({
   }
 
   return (
-    <AppShell profile={profile} email={user?.email ?? null} isTeacher={isTeacher}>
+    <AppShell profile={profile} email={user?.email ?? null} isTeacher={isTeacher} topicsOnly={isPilotTopicsOnly()}>
       {children}
     </AppShell>
   );

@@ -233,6 +233,8 @@
     "doneSummaryTarget": "Мақсат — {target} / {max}",
     "doneSummaryDaily": "{count, plural, other {# есеп/күн}}",
     "startDiagnosticButton": "Диагностикадан өту",
+    "startTopicsButton": "Тақырыптарға өту",
+    "doneDescTopics": "«Пәндер» бөлімін аш, тақырыпты таңда да, есептерді шығар. Мұғалім жұмысыңды өз кабинетінен көреді.",
     "laterButton": "Кейінірек"
   },
   "diagnostic": {

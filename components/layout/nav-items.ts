@@ -22,6 +22,11 @@ export const navItems: NavItem[] = [
   { href: '/progress', labelKey: 'progress', icon: LineChart },
 ];
 
+/** Пилот «только темы» прячет пробник: его попытки не видны учителю. */
+export function visibleNavItems(topicsOnly: boolean): NavItem[] {
+  return topicsOnly ? navItems.filter((item) => item.href !== '/full-practice') : navItems;
+}
+
 export const extraNavItems = [
   { href: '/visualization', labelKey: 'visualization', icon: FunctionSquare },
   { href: '/join-class', labelKey: 'joinClass', icon: UserPlus },

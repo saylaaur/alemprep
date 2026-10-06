@@ -10,17 +10,19 @@ import { clearPendingLearning } from '@/lib/learning/browser-storage';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import type { Profile } from '@/types/db';
-import { navItems, extraNavItems } from './nav-items';
+import { visibleNavItems, extraNavItems } from './nav-items';
 import { GraduationCap, LogOut, Menu, X, Flame } from 'lucide-react';
 
 export function MobileNav({
   profile,
   email,
   isTeacher = false,
+  topicsOnly = false,
 }: {
   profile: Profile | null;
   email: string | null;
   isTeacher?: boolean;
+  topicsOnly?: boolean;
 }) {
   const tNav = useTranslations('nav');
   const tBrand = useTranslations('brand');
@@ -166,7 +168,7 @@ export function MobileNav({
 
         {/* Nav items */}
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          {[...navItems, ...extraNavItems.filter((item) => item.href !== '/teacher' || isTeacher)].map((item) => {
+          {[...visibleNavItems(topicsOnly), ...extraNavItems.filter((item) => item.href !== '/teacher' || isTeacher)].map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
             return (

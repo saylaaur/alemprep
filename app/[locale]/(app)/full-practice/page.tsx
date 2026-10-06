@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
+import { isPilotTopicsOnly } from '@/lib/learning/feature-flag';
 import { createClient } from '@/lib/supabase/server';
 import { getExamAvailability } from '@/lib/supabase/queries';
 import { MockExamView } from '@/components/practice/MockExamView';
@@ -12,6 +13,8 @@ export default async function FullPracticePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  // Пилот «только темы»: эти попытки не видны учителю, ведём ученика в темы.
+  if (isPilotTopicsOnly()) redirect(`/${locale}/subjects`);
 
   // Маршрут защищён middleware, но user нужен явно: прогресс пробника
   // в localStorage неймспейсится по userId.

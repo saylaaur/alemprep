@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { groupTopicsBySection, type SectionedTopic } from './topics';
+import { availableTopicsFirst, groupTopicsBySection, type SectionedTopic } from './topics';
 
 function topic(overrides: Partial<SectionedTopic> & { slug: string }): SectionedTopic & { slug: string } {
   return {
@@ -75,5 +75,32 @@ describe('groupTopicsBySection', () => {
     expect(groups).toHaveLength(2);
     expect(groups[1]).toMatchObject({ sectionNo: null });
     expect(groups[1].topics.map((t) => t.slug)).toEqual(['legacy']);
+  });
+});
+
+describe('availableTopicsFirst', () => {
+  const counted = (slug: string, section_no: number | null, topic_no: number, question_count: number) => ({
+    ...topic({ slug, section_no, topic_no }),
+    question_count,
+  });
+
+  it('moves sections and topics with tasks to the front and keeps official order otherwise', () => {
+    const sections = groupTopicsBySection([
+      counted('a1', 1, 1, 0),
+      counted('a2', 1, 2, 0),
+      counted('b1', 2, 1, 0),
+      counted('b2', 2, 2, 17),
+      counted('b3', 2, 3, 0),
+      counted('c1', 3, 1, 4),
+      counted('x', null, 1, 0),
+    ]);
+    const result = availableTopicsFirst(sections);
+    expect(result.map((s) => s.sectionNo)).toEqual([2, 3, 1, null]);
+    expect(result[0].topics.map((t) => t.slug)).toEqual(['b2', 'b1', 'b3']);
+  });
+
+  it('leaves the order alone when nothing has tasks', () => {
+    const sections = groupTopicsBySection([counted('a1', 1, 1, 0), counted('b1', 2, 1, 0)]);
+    expect(availableTopicsFirst(sections).map((s) => s.sectionNo)).toEqual([1, 2]);
   });
 });

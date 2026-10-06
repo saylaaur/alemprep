@@ -3,6 +3,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { getProfile } from '@/lib/supabase/queries';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
+import { isPilotTopicsOnly } from '@/lib/learning/feature-flag';
 
 export default async function OnboardingPage({
   params,
@@ -19,5 +20,5 @@ export default async function OnboardingPage({
   const profile = await getProfile();
   if (profile?.second_subject) redirect(`/${locale}/dashboard`);
 
-  return <OnboardingWizard />;
+  return <OnboardingWizard topicsOnly={isPilotTopicsOnly()} />;
 }

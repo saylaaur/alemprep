@@ -233,6 +233,8 @@
     "doneSummaryTarget": "Цель — {target} / {max}",
     "doneSummaryDaily": "{count, plural, one {# задача в день} few {# задачи в день} other {# задач в день}}",
     "startDiagnosticButton": "Пройти диагностику",
+    "startTopicsButton": "Перейти к темам",
+    "doneDescTopics": "Открой «Предметы», выбери тему и решай задачи. Учитель увидит твою работу в своём кабинете.",
     "laterButton": "Позже"
   },
   "diagnostic": {

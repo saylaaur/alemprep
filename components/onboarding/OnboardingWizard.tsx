@@ -45,7 +45,7 @@ function targetScoreHintKey(targetScore: number): string {
   return 'targetScoreHintTop';
 }
 
-export function OnboardingWizard() {
+export function OnboardingWizard({ topicsOnly = false }: { topicsOnly?: boolean } = {}) {
   const t = useTranslations('onboarding');
   const tSubjects = useTranslations('subjects');
   const tBrand = useTranslations('brand');
@@ -107,7 +107,7 @@ export function OnboardingWizard() {
             <Check className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-semibold">{t('doneTitle')}</h1>
-          <p className="mt-3 text-sm text-muted-foreground">{t('doneDesc')}</p>
+          <p className="mt-3 text-sm text-muted-foreground">{t(topicsOnly ? 'doneDescTopics' : 'doneDesc')}</p>
 
           <div className="mt-8 flex flex-col gap-2.5 text-left">
             {summaryItems.map((item, i) => (
@@ -122,8 +122,8 @@ export function OnboardingWizard() {
           </div>
 
           <Button asChild size="lg" className="mt-8 w-full shadow-primary">
-            <Link href="/diagnostic">
-              {t('startDiagnosticButton')}
+            <Link href={topicsOnly ? '/subjects' : '/diagnostic'}>
+              {t(topicsOnly ? 'startTopicsButton' : 'startDiagnosticButton')}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
