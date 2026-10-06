@@ -17,7 +17,7 @@ test.afterEach(async () => {
   await db?.close();
 });
 
-async function lesson(type: 'single' | 'multi' | 'matching' = 'single', locale: 'ru' | 'kk' = 'ru') {
+async function lesson(type: 'single' | 'multi' | 'matching' = 'single', locale: 'ru' | 'kk' = 'ru', graphStem?: string) {
   const actor = await db.actor('trusted-practice');
   actors.push(actor.id);
   await db.execute("UPDATE public.profiles SET second_subject = 'physics' WHERE id = $1", [actor.id]);
@@ -26,7 +26,7 @@ async function lesson(type: 'single' | 'multi' | 'matching' = 'single', locale: 
   const topic = await db.scalar<string>("INSERT INTO public.topics (subject_id, slug, name_ru, name_kk) VALUES ($1, $2, 'Test topic', 'Test topic') RETURNING id", [subject, slug]);
   const body = type === 'matching'
     ? { stem: 'TRUSTED_PUBLIC_STEM', left: [{ id: '1', content: 'first' }, { id: '2', content: 'second' }], right: ['one', 'two'] }
-    : { stem: 'TRUSTED_PUBLIC_STEM', options: [{ id: 'A', content: 'four' }, { id: 'B', content: 'five' }] };
+    : { stem: graphStem ?? 'TRUSTED_PUBLIC_STEM', options: [{ id: 'A', content: graphStem ? '81;82' : 'four' }, { id: 'B', content: graphStem ? '81' : 'five' }] };
   const grading = { ...body, stem: 'PRIVATE_GRADING_MARKER', correct: type === 'single' ? 'A' : type === 'multi' ? ['A', 'B'] : { '1': 'one', '2': 'one' } };
   const question = await db.scalar<string>("INSERT INTO public.questions (topic_id, type, language, body, is_published) VALUES ($1, $2, $3, $4, true) RETURNING id", [topic, type, locale, JSON.stringify(grading)]);
   const version = await db.scalar<string>(`INSERT INTO public.question_versions
@@ -36,6 +36,25 @@ async function lesson(type: 'single' | 'multi' | 'matching' = 'single', locale: 
   await db.execute("INSERT INTO public.question_publications (question_version_id, status) VALUES ($1, 'approved')", [version]);
   return { actor, slug, version };
 }
+
+test('task graph keeps both distant roots after answer and reload on a phone', async ({ page }) => {
+  const { actor, slug } = await lesson('single', 'ru', 'Решите уравнение $x^2 - 163x + 6642 = 0$');
+  await loginAs(page, actor);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`/ru/practice/topic/${slug}`);
+  await expect(page.getByTestId('task-graph')).toHaveCount(0);
+  await page.getByRole('radio', { name: 'A 81;82', exact: true }).click();
+  await page.getByRole('button', { name: 'Проверить', exact: true }).click();
+  const graph = page.getByTestId('task-graph');
+  await expect(graph).toBeVisible();
+  await expect(graph.getByText('81; 82', { exact: true })).toBeVisible();
+  await expect(graph.getByRole('img', { name: /^График: / })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await graph.screenshot({ path: test.info().outputPath('task-graph-mobile.png'), animations: 'disabled' });
+  await page.reload();
+  await expect(graph.getByText('81; 82', { exact: true })).toBeVisible();
+  expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE user_id=$1', [actor.id])).toBe(1);
+});
 
 test('public-only delivery, draft reload, server review, and submitted reload', async ({ page }) => {
   const { actor, slug } = await lesson();
