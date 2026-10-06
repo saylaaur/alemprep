@@ -20,6 +20,15 @@ const close = (actual: number[], expected: number[], digits = 6) => {
 const solve = (left: string, relation: Relation, right: string, window = W) => formatIntervals(solveRelation(fn(left), relation, fn(right), window), window);
 
 describe('analyze: roots, extrema, asymptotes', () => {
+  it.each(['x^6+1', '0.000000000001*(x^6+1)'])('does not turn a positive minimum into a root: %s', (expression) => {
+    expect(analyze(fn(expression), -60, 60).roots).toEqual([]);
+  });
+
+  it('keeps an empty equation and nonpositive inequality empty despite large edge values', () => {
+    const window = { xmin: -60, xmax: 60 };
+    expect(solveRelation(fn('x^6+1'), '=', fn('0'), window)).toEqual([]);
+    expect(solveRelation(fn('x^6+1'), '<=', fn('0'), window)).toEqual([]);
+  });
   it('quadratic: two roots and the vertex', () => {
     const result = analyze(fn('x^2 - 4x + 3'), -10, 10);
     expect(result.roots).toEqual([1, 3]);
@@ -393,6 +402,9 @@ describe('grid steps', () => {
 
 describe('settlesBeyond', () => {
   const diff = (left: string, right: string) => { const l = fn(left); const r = fn(right); return (x: number) => l(x) - r(x); };
+  it.each([70, 200, -200])('rejects a touching root outside the solution window at %s', (root) => {
+    expect(settlesBeyond(diff(`(x-(${root}))^2`, '0'), 60)).toBe(false);
+  });
   it('rejects answers that change outside a ±60 window', () => {
     expect(settlesBeyond(diff('sqrt(x)', '9'), 60)).toBe(false);
     expect(settlesBeyond(diff('log_2(x)', '7'), 60)).toBe(false);

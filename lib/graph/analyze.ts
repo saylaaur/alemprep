@@ -140,7 +140,7 @@ export function analyze(fn: RealFn, a: number, b: number, count = 2000): Analysi
         const x = bisect(fn, xs[index - 1], xs[index], y0);
         if (!finite(x)) continue;
         const value = Math.abs(fn(x));
-        if (finite(value) && value < 1e-6 * scale) roots.push(x);
+        if (finite(value) && value < 1e-6 * Math.max(Math.abs(y0), Math.abs(y1))) roots.push(x);
         else if (blowUp(x, -1) || blowUp(x, 1)) asymptotes.push(x);
       }
     } else if (finite(y0) !== finite(y1)) {
@@ -154,7 +154,8 @@ export function analyze(fn: RealFn, a: number, b: number, count = 2000): Analysi
       const direction = inside < outside ? -1 : 1;
       // √x reaches 0 at its edge; x·ln x only tends to 0, and x = 0 is not in its domain.
       const edge = snap(inside); const edgeValue = fn(edge);
-      if (finite(edgeValue) && Math.abs(edgeValue) < 1e-6 * scale) roots.push(edge);
+      const edgeScale = Math.max(...[y0, y1].filter(finite).map(Math.abs));
+      if (finite(edgeValue) && (edgeValue === 0 || Math.abs(edgeValue) < 1e-6 * edgeScale)) roots.push(edge);
       else if (blowUp(outside, direction as 1 | -1)) asymptotes.push(outside);
     }
   }
@@ -173,7 +174,10 @@ export function analyze(fn: RealFn, a: number, b: number, count = 2000): Analysi
     if (!finite(fn(x - step)) || !finite(fn(x + step))) continue;
     (isMax ? maxima : minima).push(x);
     // Touching zero (x² at 0): the extremum value is the root.
-    if (Math.abs(y) < 1e-9 * scale) roots.push(x);
+    // Distant large values must not turn a positive local minimum into a zero.
+    // Local scaling also preserves this check when the whole function is tiny.
+    const rootScale = Math.max(Math.abs(y0), Math.abs(y1), Math.abs(y2));
+    if (y === 0 || Math.abs(y) < 1e-9 * rootScale) roots.push(x);
   }
   const tolerance = step * 2;
   return {
@@ -234,8 +238,8 @@ function isConstant(fn: RealFn, window: { xmin: number; xmax: number }): boolean
 
 /**
  * Whether `fn` keeps one sign (or stays undefined) beyond ±limit, probed out to
- * ±1e6. A solution read off a finite window is complete only then: √x = 9 or
- * log₂ x ≤ 7 change sign far outside a ±60 window.
+ * ±1e6, with refinement of possible touching zeros between probes. This is
+ * a numerical guard, not a proof of completeness for arbitrary functions.
  */
 export function settlesBeyond(fn: RealFn, limit: number, far = 1e6): boolean {
   const state = (x: number) => {
@@ -251,9 +255,25 @@ export function settlesBeyond(fn: RealFn, limit: number, far = 1e6): boolean {
   for (const side of [1, -1]) {
     const first = state(side * start);
     let x = start;
+    const samples: { x: number; y: number }[] = [{ x, y: Math.abs(fn(side * x)) }];
     for (let index = 0; index < steps; index++) {
       x *= ratio;
       if (state(side * x) !== first) return false;
+      samples.push({ x, y: Math.abs(fn(side * x)) });
+      if (samples.length > 3) samples.shift();
+      if (samples.length === 3) {
+        const [left, middle, right] = samples;
+        if ([left.y, middle.y, right.y].every(finite)
+          && middle.y <= left.y && middle.y <= right.y
+          && (middle.y < left.y || middle.y < right.y)) {
+          // A double root never changes sign, so sign probes alone miss it.
+          const absolute = (value: number) => Math.abs(fn(side * value));
+          const candidate = goldenMin(absolute, left.x, right.x);
+          const residual = absolute(candidate);
+          const localScale = Math.max(left.y, middle.y, right.y);
+          if (finite(residual) && (residual === 0 || residual < 1e-9 * localScale)) return false;
+        }
+      }
     }
   }
   return true;
