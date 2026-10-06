@@ -4,6 +4,19 @@ import { buildTaskModel } from './task-model';
 const inView = (model: NonNullable<ReturnType<typeof buildTaskModel>>, x: number) => x >= model.view.xmin && x <= model.view.xmax;
 
 describe('task graph model', () => {
+  it('keeps close roots and the interval between them in the expanded window', () => {
+    expect(buildTaskModel('Решите уравнение $x^2 - 163x + 6642 = 0$')!.solution).toBe('81; 82');
+    expect(buildTaskModel('Решите неравенство $x^2 - 163x + 6642 < 0$')!.solution).toBe('(81; 82)');
+    expect(buildTaskModel('Решите уравнение $(x-81.2)(x-81.4) = 0$')!.solution).toBe('81,2; 81,4');
+  });
+
+  it('shows constant and linear curves whose only useful feature is the Oy intercept', () => {
+    for (const [stem, y] of [['Постройте график $y = 25$', 25], ['Постройте график $y = x + 100$', 100]] as const) {
+      const model = buildTaskModel(stem)!;
+      expect(model.view.ymin).toBeLessThan(y);
+      expect(model.view.ymax).toBeGreaterThan(y);
+    }
+  });
   it('shows and names solutions that lie beyond the first window', () => {
     const quadratic = buildTaskModel('Решите уравнение $x^2 - 100x + 2400 = 0$')!;
     expect(quadratic.solution).toBe('40; 60');

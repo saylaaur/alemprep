@@ -283,7 +283,10 @@ export function settlesBeyond(fn: RealFn, limit: number, far = 1e6): boolean {
 /** Where `left(x) relation right(x)` holds inside the window, as intervals. */
 export function solveRelation(left: RealFn, relation: Relation, right: RealFn, window: { xmin: number; xmax: number }): Interval[] {
   const difference = (x: number) => left(x) - right(x);
-  const { roots, asymptotes } = analyze(difference, window.xmin, window.xmax);
+  // Expanding a task window must not coarsen the original +/-60 sampling
+  // resolution and merge nearby roots. Bound work for arbitrary user input.
+  const samples = Math.min(100_000, Math.max(2000, Math.ceil((window.xmax - window.xmin) / 0.06)));
+  const { roots, asymptotes } = analyze(difference, window.xmin, window.xmax, samples);
   if (relation === '=') return roots.map((x) => ({ from: x, to: x, fromClosed: true, toClosed: true }));
   const holds = (raw: number) => {
     if (!finite(raw)) return false;
@@ -402,9 +405,10 @@ export function autoViewport(fns: RealFn[], options: { trig?: boolean; equalAspe
   }
   // Oy intercepts count unless one is far off the rest (13^(4−x) at 0 is 28 560 while the system's points are near 8).
   const restSpan = Math.max(2, Math.max(...core) - Math.min(...core));
+  const hasOtherFeatures = core.some((value) => value !== 0);
   for (const fn of fns) {
     const value = fn(0);
-    if (finite(value) && Math.abs(value) <= Math.max(...core.map(Math.abs)) + restSpan * 10) core.push(value);
+    if (finite(value) && (!hasOtherFeatures || Math.abs(value) <= Math.max(...core.map(Math.abs)) + restSpan * 10)) core.push(value);
   }
   const coreLow = Math.min(...core); const coreHigh = Math.max(...core);
   const coreSpan = Math.max(2, coreHigh - coreLow);
