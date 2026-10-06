@@ -246,7 +246,8 @@ export function settlesBeyond(fn: RealFn, limit: number, far = 1e6): boolean {
     const value = fn(x);
     // Overflow (2^x → ∞) keeps its sign; only NaN is outside the domain.
     if (Number.isNaN(value)) return 'u';
-    if (Math.abs(value) < 1e-9 * Math.max(1, Math.abs(x))) return '0';
+    // Only an exact zero counts: (x + 4)/((x − 1)(x + 2)) is 1e-6 at 1e6 and still positive.
+    if (value === 0) return '0';
     return value > 0 ? '+' : '-';
   };
   const start = limit * 0.99;
@@ -358,12 +359,15 @@ export function autoViewport(fns: RealFn[], options: { trig?: boolean; equalAspe
     }
     for (let first = 0; first < fns.length; first++) {
       for (let second = first + 1; second < fns.length; second++) {
-        const crossings = analyze((x) => fns[first](x) - fns[second](x), -20, 20, 1600).roots;
+        // Solutions of a system or an equation can lie further out (x/8 + y/4 = 5 and x/15 − y/5 = 1 meet at x = 30).
+        // Two branches of one circle "meet" where the circle ends; points at a domain edge are not crossings.
+        const inside = (x: number) => [fns[first], fns[second]].every((fn) => [-1, 1].every((side) => finite(fn(x + side * 1e-6 * Math.max(1, Math.abs(x))))));
+        const crossings = analyze((x) => fns[first](x) - fns[second](x), -60, 60, 4800).roots.filter(inside);
         xs.push(...crossings); marked.push(...crossings);
       }
     }
     // Points the task names (segment ends, integral limits) are always shown.
-    const near = [...xs.slice(options.focus?.length ?? 0).filter((x) => Math.abs(x) <= 20), ...(options.focus ?? []).filter(finite)];
+    const near = [...xs.slice(options.focus?.length ?? 0).filter((x) => Math.abs(x) <= 20), ...(options.focus ?? []).filter(finite), ...marked.filter((x) => finite(x) && Math.abs(x) <= 60)];
     if (!near.length) { xmin = -5; xmax = 5; }
     else {
       const low = Math.min(0, ...near); const high = Math.max(0, ...near);
@@ -392,9 +396,15 @@ export function autoViewport(fns: RealFn[], options: { trig?: boolean; equalAspe
   // Keep the interesting points large: clip tall branches to a few times their spread.
   const core: number[] = [0];
   for (const fn of fns) {
-    for (const x of [...marked, 0]) { const value = fn(x); if (finite(value) && Math.abs(value) < 1e6) core.push(value); }
+    for (const x of marked) { const value = fn(x); if (finite(value) && Math.abs(value) < 1e6) core.push(value); }
     const result = analyze(fn, xmin, xmax, 800);
     for (const x of [...result.maxima, ...result.minima]) { const value = fn(x); if (finite(value) && Math.abs(value) < 1e6) core.push(value); }
+  }
+  // Oy intercepts count unless one is far off the rest (13^(4−x) at 0 is 28 560 while the system's points are near 8).
+  const restSpan = Math.max(2, Math.max(...core) - Math.min(...core));
+  for (const fn of fns) {
+    const value = fn(0);
+    if (finite(value) && Math.abs(value) <= Math.max(...core.map(Math.abs)) + restSpan * 10) core.push(value);
   }
   const coreLow = Math.min(...core); const coreHigh = Math.max(...core);
   const coreSpan = Math.max(2, coreHigh - coreLow);

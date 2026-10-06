@@ -258,7 +258,7 @@ export function GraphCanvas({ curves, markers = [], overlay = {}, initial, trig 
       </g>
       {overlay.shade?.map((interval, index) => interval.from === interval.to
         ? null
-        : <rect key={`s${index}`} x={sx(Math.max(interval.from, view.xmin))} width={Math.max(0, sx(Math.min(interval.to, view.xmax)) - sx(Math.max(interval.from, view.xmin)))} y={0} height={height} fill={shadeColor} opacity={0.08} />)}
+        : <rect key={`s${index}`} x={sx(Math.max(interval.from, view.xmin))} width={Math.max(0, sx(Math.min(interval.to, view.xmax)) - sx(Math.max(interval.from, view.xmin)))} y={0} height={height} fill={shadeColor} opacity={0.14} />)}
       {overlay.segment && <rect x={sx(overlay.segment.from)} width={Math.max(0, sx(overlay.segment.to) - sx(overlay.segment.from))} y={0} height={height} fill="hsl(var(--warning))" opacity={0.08} />}
       {areaPath && <path d={areaPath} fill={curves[overlay.area!.curve]?.color} opacity={0.22} />}
       <g stroke="hsl(var(--muted-foreground))" strokeWidth="1.5">
