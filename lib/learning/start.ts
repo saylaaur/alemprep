@@ -16,7 +16,9 @@ import type { LearningError, StartedLearning, StartInput } from './contracts';
 import {
   createSupabaseLearningContentClient,
   createSupabaseLearningReplayClient,
+  createSupabasePracticeHistoryClient,
   loadApprovedLearningVersions,
+  loadRecentPracticeFamilies,
   loadStartReplay,
   startLearningRpc,
   type LearningContentClient,
@@ -48,6 +50,8 @@ export type LearningStartDependencies = {
   content: LearningContentClient;
   rpc: LearningRpcClient;
   now: () => Date;
+  /** Families this pupil was already issued in a topic, most recent first. */
+  recentPracticeFamilies?: (input: { actorId: string; topicId: string }) => Promise<string[]>;
   /** Injectable only to keep the bounded concurrent-replay test deterministic. */
   retryPause?: (milliseconds: number) => Promise<void>;
   /** Must read the server-owned receipt/session rows before new catalog selection. */
@@ -73,6 +77,7 @@ async function selectSessions(
   request: StartRequest,
   selectionKey: string,
   now: Date,
+  recentFamilies: (topicId: string) => Promise<string[]>,
 ): Promise<SelectedLearningSession[] | { error: StartFailure }> {
   let candidates: ApprovedLearningVersion[];
   if (request.topicSlug) {
@@ -97,8 +102,10 @@ async function selectSessions(
   }
 
   if (request.mode === 'practice') {
+    const topicId = candidates.find((entry) => entry.topicSlug === request.topicSlug)?.topicId;
+    const recentFamilyIds = topicId ? await recentFamilies(topicId) : [];
     const selected = request.topicSlug ? selectPracticeSession({
-      locale: request.locale, topicSlug: request.topicSlug, selectionKey, candidates, now,
+      locale: request.locale, topicSlug: request.topicSlug, selectionKey, candidates, now, recentFamilyIds,
     }) : null;
     return selected ? [selected] : { error: 'content-unavailable' };
   }
@@ -139,7 +146,17 @@ export function createLearningStartService(dependencies: LearningStartDependenci
       if (isFailure(replay)) return replay;
       if (replay) return replay;
 
-      const selected = await selectSessions(dependencies.content, request, `${actorId}:${operationId}`, dependencies.now());
+      const recentFamilies = async (topicId: string) => {
+        if (!dependencies.recentPracticeFamilies) return [];
+        try {
+          return await dependencies.recentPracticeFamilies({ actorId, topicId });
+        } catch {
+          return [];
+        }
+      };
+      const selected = await selectSessions(
+        dependencies.content, request, `${actorId}:${operationId}`, dependencies.now(), recentFamilies,
+      );
       if (isFailure(selected)) return selected;
       const issued = await startLearningRpc(dependencies.rpc, {
         actorId,
@@ -183,11 +200,13 @@ export function createLearningStartService(dependencies: LearningStartDependenci
 export function createProductionLearningStartService() {
   const admin = createAdminClient();
   const replay = createSupabaseLearningReplayClient(admin);
+  const history = createSupabasePracticeHistoryClient(admin);
   return createLearningStartService({
     actorId: async () => (await getActor())?.id ?? null,
     content: createSupabaseLearningContentClient(admin),
     rpc: admin,
     now: () => new Date(),
+    recentPracticeFamilies: ({ actorId, topicId }) => loadRecentPracticeFamilies(history, actorId, topicId),
     findReplay: ({ actorId, operationId, payloadHash }) => loadStartReplay(replay, actorId, operationId, payloadHash),
   });
 }

@@ -613,6 +613,57 @@ const learningReviewSelect = `
   )
 `;
 
+export type PracticeHistoryClient = {
+  readRecentPracticeSessions: (actorId: string, topicId: string) => Promise<ContentResponse>;
+};
+
+const practiceHistorySchema = z.array(z.object({
+  session_items: z.array(z.object({
+    question_versions: z.object({ family_id: z.string() }).nullable(),
+  })),
+}));
+
+/**
+ * Families issued to this pupil in recent practice sessions of one topic, most
+ * recent first. Only steers which task comes next, so any read or decode
+ * failure returns an empty history and practice starts as before.
+ */
+export async function loadRecentPracticeFamilies(
+  client: PracticeHistoryClient,
+  actorId: string,
+  topicId: string,
+): Promise<string[]> {
+  try {
+    const response = await client.readRecentPracticeSessions(actorId, topicId);
+    if (response.error) return [];
+    const parsed = practiceHistorySchema.safeParse(response.data);
+    if (!parsed.success) return [];
+    return parsed.data.flatMap((session) => session.session_items
+      .map((item) => item.question_versions?.family_id)
+      .filter((familyId): familyId is string => typeof familyId === 'string'));
+  } catch {
+    return [];
+  }
+}
+
+/** Bounded owner-scoped read of recent practice sessions in one topic. */
+export function createSupabasePracticeHistoryClient(client: SupabaseClient): PracticeHistoryClient {
+  return {
+    async readRecentPracticeSessions(actorId, topicId) {
+      const { data, error } = await client
+        .from('sessions')
+        .select('session_items(question_versions(family_id))')
+        .eq('user_id', actorId)
+        .eq('topic_id', topicId)
+        .eq('mode', 'practice')
+        .eq('integrity_version', 1)
+        .order('started_at', { ascending: false })
+        .limit(200);
+      return { data, error };
+    },
+  };
+}
+
 /** Production owner-scoped reader for reload/retry state. */
 export function createSupabaseLearningStateClient(
   client: SupabaseClient,

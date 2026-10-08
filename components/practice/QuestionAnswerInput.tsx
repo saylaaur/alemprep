@@ -16,21 +16,42 @@ type Props = {
   answer: AnswerState;
   onChange: (next: AnswerState) => void;
   labels: QuestionAnswerLabels;
+  /** After a submit only: the server key, so right and wrong picks get marked. */
+  review?: {
+    correct: string | string[];
+    correctLabel: string;
+    incorrectLabel: string;
+  };
 };
+
+function optionTone(id: string, selected: boolean, correct: string | string[] | undefined): string | null {
+  if (correct === undefined) return null;
+  const isCorrect = Array.isArray(correct) ? correct.includes(id) : correct === id;
+  if (isCorrect) return 'border-success bg-success/10 text-foreground';
+  return selected ? 'border-destructive bg-destructive/10 text-foreground' : null;
+}
+
+function optionMark(id: string, selected: boolean, correct: string | string[] | undefined): string | null {
+  if (correct === undefined) return null;
+  const isCorrect = Array.isArray(correct) ? correct.includes(id) : correct === id;
+  return isCorrect ? '✓' : selected ? '✗' : null;
+}
 
 /**
  * Презентационный ввод ответа (single/multi/matching) — без состояния и без
  * знания об экзамене/диагностике/тренажёре. Извлечён из MockExamView, чтобы
  * переиспользовать в DiagnosticView без дублирования разметки.
  */
-export function QuestionAnswerInput({ question, answer, onChange, labels }: Props) {
+export function QuestionAnswerInput({ question, answer, onChange, labels, review }: Props) {
   const body = question.body;
+  const correct = review?.correct;
 
   if (question.type === 'single' && 'options' in body) {
     return (
       <div role="radiogroup" className="space-y-2.5">
         {body.options.map((opt) => {
           const selected = answer === opt.id;
+          const mark = optionMark(opt.id, selected, correct);
           return (
             <button
               key={opt.id}
@@ -39,7 +60,8 @@ export function QuestionAnswerInput({ question, answer, onChange, labels }: Prop
               aria-checked={selected}
               className={cn(
                 'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
-                selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
+                optionTone(opt.id, selected, correct)
+                  ?? (selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent')
               )}
             >
               <span className={cn(
@@ -49,6 +71,12 @@ export function QuestionAnswerInput({ question, answer, onChange, labels }: Prop
                 {opt.id}
               </span>
               <MathText text={opt.content} />
+              {mark && (
+                <span className="ml-auto shrink-0 text-base font-semibold">
+                  <span aria-hidden>{mark}</span>
+                  <span className="sr-only">{mark === '✓' ? review?.correctLabel : review?.incorrectLabel}</span>
+                </span>
+              )}
             </button>
           );
         })}
@@ -61,6 +89,7 @@ export function QuestionAnswerInput({ question, answer, onChange, labels }: Prop
       <div role="group" aria-label={labels.multiGroup} className="space-y-2.5">
         {body.options.map((opt) => {
           const selected = Array.isArray(answer) && answer.includes(opt.id);
+          const mark = optionMark(opt.id, selected, correct);
           return (
             <button
               key={opt.id}
@@ -72,7 +101,8 @@ export function QuestionAnswerInput({ question, answer, onChange, labels }: Prop
               aria-checked={selected}
               className={cn(
                 'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
-                selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent'
+                optionTone(opt.id, selected, correct)
+                  ?? (selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent')
               )}
             >
               <span className={cn(
@@ -82,6 +112,12 @@ export function QuestionAnswerInput({ question, answer, onChange, labels }: Prop
                 {opt.id}
               </span>
               <MathText text={opt.content} />
+              {mark && (
+                <span className="ml-auto shrink-0 text-base font-semibold">
+                  <span aria-hidden>{mark}</span>
+                  <span className="sr-only">{mark === '✓' ? review?.correctLabel : review?.incorrectLabel}</span>
+                </span>
+              )}
             </button>
           );
         })}

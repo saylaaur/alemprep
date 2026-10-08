@@ -180,6 +180,8 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
       <QuestionStem body={item.question.body} />
       <fieldset disabled={phase !== 'active'} className="min-w-0">
         <QuestionAnswerInput question={item.question} answer={phase === 'review' && reviewed ? reviewed.answer : answer} onChange={changeAnswer}
+          review={phase === 'review' && (typeof correct === 'string' || Array.isArray(correct))
+            ? { correct, correctLabel: t('correctOption'), incorrectLabel: t('incorrectSelection') } : undefined}
           labels={{ matchingPlaceholder: inputLabels('matchingPlaceholder'), matchingSelectFor: (value) => t('matchingSelectFor', { item: value }), multiGroup: t('multiGroup') }} />
       </fieldset>
     </div>}

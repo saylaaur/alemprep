@@ -110,6 +110,37 @@ describe('learning start service', () => {
     expect(replayCalls).toBe(2);
   });
 
+  it('passes the pupil practice history of the topic to selection and survives a failed read', async () => {
+    const historyCalls: unknown[] = [];
+    const rpcCalls: unknown[] = [];
+    const build = (recent: () => Promise<string[]>) => {
+      let replays = 0;
+      return createLearningStartService({
+        actorId: async () => actorId,
+        content: contentClient([]),
+        rpc: rpcClient(rpcCalls),
+        now: () => new Date('2026-09-22T10:00:00.000Z'),
+        recentPracticeFamilies: async (input) => {
+          historyCalls.push(input);
+          return recent();
+        },
+        findReplay: async () => (replays++ === 0 ? null : { sessions: [] }),
+      });
+    };
+    const request = { operationId, locale: 'kk', mode: 'practice', topicSlug: 'radicals-and-expressions' };
+
+    // Only one approved task: it is served even though it was already seen.
+    await expect(build(async () => ['99999999-9999-4999-8999-999999999999']).startLearning(request))
+      .resolves.toEqual({ ok: true, value: { sessions: [] } });
+    await expect(build(async () => { throw new Error('history down'); }).startLearning(request))
+      .resolves.toEqual({ ok: true, value: { sessions: [] } });
+    expect(rpcCalls).toHaveLength(2);
+    expect(historyCalls).toEqual([
+      { actorId, topicId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' },
+      { actorId, topicId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' },
+    ]);
+  });
+
   it('recovers a matching receipt after a concurrent RPC wait times out without issuing twice', async () => {
     const contentCalls: unknown[] = [];
     const rpcCalls: unknown[] = [];
