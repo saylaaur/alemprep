@@ -89,6 +89,8 @@
     "newTask": "Жаңа тапсырма",
     "saved": "Нәтижені сервер растады",
     "correctAnswer": "Дұрыс жауап:",
+    "correctOption": "Дұрыс нұсқа",
+    "incorrectSelection": "Қате таңдалған нұсқа",
     "next": "Келесі тапсырма",
     "matchingSelectFor": "{item} үшін жауап",
     "multiGroup": "Жауаптарды таңдаңыз",

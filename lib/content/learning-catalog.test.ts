@@ -98,6 +98,52 @@ describe('learning catalog planning', () => {
     expect(next?.items).not.toEqual(first?.items);
   });
 
+  it('serves every task in a topic before repeating one', () => {
+    const now = new Date('2026-09-22T10:00:00.000Z');
+    const candidates = Array.from({ length: 17 }, (_, index) => {
+      const entry = candidate(`10000000-0000-4000-8000-0000000001${String(index).padStart(2, '0')}`, 'single');
+      return { ...entry, version: { ...entry.version, familyId: `family-${index}` } };
+    });
+    const familyOf = (versionId: string | undefined) =>
+      candidates.find((entry) => entry.version.id === versionId)!.version.familyId;
+    const history: string[] = [];
+    for (let round = 0; round < 17; round += 1) {
+      const plan = buildPracticeSessionPlan({
+        locale: 'kk', topicSlug: 'radicals-and-expressions', candidates, now,
+        selectionKey: `actor:op-${round}`, recentFamilyIds: history,
+      });
+      history.unshift(familyOf(plan?.items[0]?.versionId));
+    }
+    expect(new Set(history).size).toBe(17);
+
+    // A second pass never repeats one of the most recent half.
+    for (let round = 17; round < 40; round += 1) {
+      const plan = buildPracticeSessionPlan({
+        locale: 'kk', topicSlug: 'radicals-and-expressions', candidates, now,
+        selectionKey: `actor:op-${round}`, recentFamilyIds: history,
+      });
+      const family = familyOf(plan?.items[0]?.versionId);
+      expect(history.slice(0, 8)).not.toContain(family);
+      history.unshift(family);
+    }
+  });
+
+  it('treats a family seen in the other language as already seen', () => {
+    const seen = candidate('10000000-0000-4000-8000-000000000021', 'single');
+    const fresh = candidate('10000000-0000-4000-8000-000000000022', 'single');
+    const candidates = [
+      { ...seen, version: { ...seen.version, familyId: 'family-seen-in-ru' } },
+      { ...fresh, version: { ...fresh.version, familyId: 'family-fresh' } },
+    ];
+    for (const selectionKey of ['a', 'b', 'c', 'd', 'e', 'f']) {
+      const plan = buildPracticeSessionPlan({
+        locale: 'kk', topicSlug: 'radicals-and-expressions', candidates, selectionKey,
+        now: new Date('2026-09-22T10:00:00.000Z'), recentFamilyIds: ['family-seen-in-ru'],
+      });
+      expect(plan?.items).toEqual([{ versionId: fresh.version.id }]);
+    }
+  });
+
   it('returns no assessment plan when one approved blueprint type is missing', () => {
     const oneSingle = candidate('10000000-0000-4000-8000-000000000011', 'single');
     expect(buildAssessmentSessionPlan({

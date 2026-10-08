@@ -89,6 +89,8 @@
     "newTask": "Новое задание",
     "saved": "Результат подтверждён сервером",
     "correctAnswer": "Правильный ответ:",
+    "correctOption": "Правильный вариант",
+    "incorrectSelection": "Неверный выбранный вариант",
     "next": "Следующая задача",
     "matchingSelectFor": "Ответ для {item}",
     "multiGroup": "Выберите ответы",

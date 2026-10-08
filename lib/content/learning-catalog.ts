@@ -59,6 +59,28 @@ function selectionOffset(selectionKey: string, size: number): number {
   return digest.readUInt32BE(0) % size;
 }
 
+/**
+ * Prefers families absent from the supplied recent history (the production
+ * reader keeps 200 sessions). If all candidates are present, choose the older
+ * half. RU and KK share family history. This guides sequential practice;
+ * concurrent starts with different operation IDs can still select one family.
+ */
+function preferUnseen(
+  candidates: readonly ApprovedLearningVersion[],
+  recentFamilyIds: readonly string[],
+): ApprovedLearningVersion[] {
+  const recency = new Map<string, number>();
+  for (const familyId of recentFamilyIds) {
+    if (!recency.has(familyId)) recency.set(familyId, recency.size);
+  }
+  const unseen = candidates.filter((entry) => !recency.has(entry.version.familyId));
+  if (unseen.length > 0) return unseen;
+  const families = new Set(candidates.map((entry) => entry.version.familyId));
+  const ranks = [...families].map((familyId) => recency.get(familyId)!).sort((a, b) => a - b);
+  const cutoff = ranks[Math.floor(ranks.length / 2)]!;
+  return candidates.filter((entry) => recency.get(entry.version.familyId)! >= cutoff);
+}
+
 function rotate<T>(entries: readonly T[], offset: number): T[] {
   if (entries.length === 0) return [];
   return entries.map((_, index) => entries[(index + offset) % entries.length]!);
@@ -132,11 +154,14 @@ export function selectPracticeSession(input: {
   selectionKey: string;
   candidates: readonly ApprovedLearningVersion[];
   now: Date;
+  /** Families this pupil was already issued in the topic, most recent first. */
+  recentFamilyIds?: readonly string[];
 }): SelectedLearningSession | null {
-  const candidates = input.candidates
+  const approved = input.candidates
     .filter((entry) => isApprovedForLocale(entry, input.locale) && entry.topicSlug === input.topicSlug)
     .sort(byVersionId);
-  if (candidates.length === 0) return null;
+  if (approved.length === 0) return null;
+  const candidates = preferUnseen(approved, input.recentFamilyIds ?? []);
   const candidate = candidates[selectionOffset(input.selectionKey, candidates.length)];
   if (!candidate) return null;
   const versions = [candidate.version];
@@ -159,6 +184,7 @@ export function buildPracticeSessionPlan(input: {
   selectionKey: string;
   candidates: readonly ApprovedLearningVersion[];
   now: Date;
+  recentFamilyIds?: readonly string[];
 }): LearningSessionPlan | null {
   return selectPracticeSession(input)?.plan ?? null;
 }

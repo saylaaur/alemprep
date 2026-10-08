@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  loadRecentPracticeFamilies,
   commitLearningRpc,
   decodeImmutableLearningVersion,
   loadStartReplay,
@@ -343,5 +344,38 @@ describe('learning start replay reader', () => {
 
     await expect(loadStartReplay(client, actorId, operationId, 'changed')).resolves.toEqual({ error: 'operation-conflict' });
     expect(calls).toEqual([]);
+  });
+});
+
+describe('recent practice history reader', () => {
+  const actor = '11111111-1111-4111-8111-111111111111';
+  const topic = '22222222-2222-4222-8222-222222222222';
+
+  it('flattens issued families, most recent session first', async () => {
+    const calls: unknown[] = [];
+    const families = await loadRecentPracticeFamilies({
+      readRecentPracticeSessions: async (actorId, topicId) => {
+        calls.push({ actorId, topicId });
+        return { data: [
+          { session_items: [{ question_versions: { family_id: 'family-b' } }] },
+          { session_items: [{ question_versions: null }] },
+          { session_items: [{ question_versions: { family_id: 'family-a' } }] },
+        ], error: null };
+      },
+    }, actor, topic);
+    expect(families).toEqual(['family-b', 'family-a']);
+    expect(calls).toEqual([{ actorId: actor, topicId: topic }]);
+  });
+
+  it('returns an empty history on read errors or malformed rows', async () => {
+    await expect(loadRecentPracticeFamilies({
+      readRecentPracticeSessions: async () => ({ data: null, error: { message: 'down' } }),
+    }, actor, topic)).resolves.toEqual([]);
+    await expect(loadRecentPracticeFamilies({
+      readRecentPracticeSessions: async () => ({ data: [{ nope: true }], error: null }),
+    }, actor, topic)).resolves.toEqual([]);
+    await expect(loadRecentPracticeFamilies({
+      readRecentPracticeSessions: async () => { throw new Error('network'); },
+    }, actor, topic)).resolves.toEqual([]);
   });
 });

@@ -247,6 +247,8 @@ test('Kazakh multi-answer practice renders and reviews a public DTO', async ({ p
   await page.getByRole('button', { name: 'Тексеру', exact: true }).click();
   await expect(page.getByText('PRIVATE_EXPLANATION_MARKER')).toBeVisible();
   await expect(page.getByTestId('learning-score')).toHaveText('2 / 2');
+  await expect(page.getByRole('checkbox', { name: 'A four' })).toHaveAccessibleName('A four Дұрыс нұсқа');
+  await expect(page.getByRole('checkbox', { name: 'B five' })).toHaveAccessibleName('B five Дұрыс нұсқа');
 });
 
 test('matching accepts repeated right-hand values and requires a complete answer', async ({ page }) => {
@@ -268,4 +270,40 @@ test('unapproved content never falls back to a published legacy question', async
   await expect(page.getByText('По этой теме пока нет проверенных заданий на выбранном языке.')).toBeVisible();
   await expect(page.getByText('PRIVATE_GRADING_MARKER')).toHaveCount(0);
   await expect(page.getByRole('radio')).toHaveCount(0);
+});
+
+test('next task serves every task of a topic before any repeat and marks the right option', async ({ page }) => {
+  const { actor, slug } = await lesson();
+  const topic = await db.scalar<string>('SELECT id FROM public.topics WHERE slug = $1', [slug]);
+  for (const stem of ['UNSEEN_STEM_2', 'UNSEEN_STEM_3', 'UNSEEN_STEM_4']) {
+    const body = { stem, options: [{ id: 'A', content: 'four' }, { id: 'B', content: 'five' }] };
+    const question = await db.scalar<string>("INSERT INTO public.questions (topic_id, type, language, body, is_published) VALUES ($1, 'single', 'ru', $2, true) RETURNING id",
+      [topic, JSON.stringify({ ...body, correct: 'A' })]);
+    const version = await db.scalar<string>(`INSERT INTO public.question_versions
+      (question_id, family_id, revision, locale, type, public_body, grading_body, content_hash)
+      VALUES ($1, gen_random_uuid(), 1, 'ru', 'single', $2, $3, $4) RETURNING id`,
+    [question, JSON.stringify(body), JSON.stringify({ ...body, correct: 'A' }), `hash:${slug}:${stem}`]);
+    await db.execute("INSERT INTO public.question_publications (question_version_id, status) VALUES ($1, 'approved')", [version]);
+  }
+  await loginAs(page, actor);
+  await page.goto(`/ru/practice/topic/${slug}`);
+  const seen: string[] = [];
+  for (let round = 0; round < 4; round += 1) {
+    const stem = page.getByText(/^(TRUSTED_PUBLIC_STEM|UNSEEN_STEM_\d)$/);
+    await expect(stem).toBeVisible();
+    seen.push(await stem.innerText());
+    await page.getByRole('radio', { name: 'B five' }).click();
+    await page.getByRole('button', { name: 'Проверить', exact: true }).click();
+    await expect(page.getByTestId('learning-score')).toHaveText('0 / 1');
+    await expect(page.getByRole('radio', { name: 'A four' })).toContainText('✓');
+    await expect(page.getByRole('radio', { name: 'B five' })).toContainText('✗');
+    await expect(page.getByRole('radio', { name: 'A four' })).toHaveAccessibleName('A four Правильный вариант');
+    await expect(page.getByRole('radio', { name: 'B five' })).toHaveAccessibleName('B five Неверный выбранный вариант');
+    if (round < 3) {
+      await page.getByRole('button', { name: 'Следующая задача', exact: true }).click();
+      await expect(page.getByRole('radio', { name: 'B five' })).toBeEnabled();
+      await expect(page.getByTestId('learning-score')).toHaveCount(0);
+    }
+  }
+  expect(new Set(seen).size).toBe(4);
 });
