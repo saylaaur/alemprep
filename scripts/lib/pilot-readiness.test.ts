@@ -34,6 +34,10 @@ describe('pilot inventory readiness', () => {
     const data = inventory(); data.versions[1] = version('kk', 2, id(2));
     expect(summarizePilotInventory(data).warnings).toContain('unpaired-families');
   });
+  it('warns for a topic missing either locale even when families are paired globally', () => {
+    const data = inventory(); data.versions[1]!.questions.topics.slug = 'equations';
+    expect(summarizePilotInventory(data).warnings).toContain('topic-language-gap');
+  });
   it('fails if an approved public body leaks a grading key', () => {
     const data = inventory(); Object.assign(data.versions[0]!.public_body, { correct: 'A' });
     expect(summarizePilotInventory(data).issues).toContain('public-answer-key');
@@ -42,6 +46,22 @@ describe('pilot inventory readiness', () => {
   it('fails if an approved task has an unreadable body', () => {
     const data = inventory();
     expect(summarizePilotInventory({ ...data, versions: [{ ...data.versions[0], public_body: null }, data.versions[1]] }).issues).toContain('unreadable-public-body');
+  });
+  it.each(['single', 'multi'] as const)('rejects duplicate option IDs for %s', type => {
+    const data = inventory();
+    const malformed = { ...data.versions[0], type, public_body: { stem: 'bad options', options: [{ id: 'A', content: '1' }, { id: 'A', content: '2' }] } };
+    const result = summarizePilotInventory({ ...data, versions: [malformed, data.versions[1]] });
+    expect(result.contentReady).toBe(false);
+    expect(result.issues).toContain('unreadable-public-body');
+  });
+  it.each(['left', 'right'] as const)('rejects duplicate matching %s identifiers', side => {
+    const data = inventory();
+    const body = { stem: 'match', left: [{ id: 'A', content: '1' }], right: ['x'] };
+    if (side === 'left') body.left.push({ id: 'A', content: '2' });
+    else body.right.push('x');
+    const result = summarizePilotInventory({ ...data, versions: [{ ...data.versions[0], type: 'matching', public_body: body }, data.versions[1]] });
+    expect(result.contentReady).toBe(false);
+    expect(result.issues).toContain('unreadable-public-body');
   });
   it('flags a known excluded source still approved without printing bodies', () => {
     const data = inventory(); data.versions[0]!.question_id = '32683e42-83b0-437d-92b3-b51f40d7509a';

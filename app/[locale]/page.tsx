@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { isPilotTopicsOnly } from '@/lib/learning/feature-flag';
 import {
   GraduationCap,
   ArrowRight,
@@ -27,13 +28,22 @@ export default async function LandingPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [tBrand, t, tSubjects] = await Promise.all([
+  const pilot = isPilotTopicsOnly();
+  const [tBrand, t, tSubjects, tPilot] = await Promise.all([
     getTranslations('brand'),
     getTranslations('landing'),
     getTranslations('subjects'),
+    getTranslations('pilotLanding'),
   ]);
 
-  const features: { icon: LucideIcon; title: string; text: string }[] = [
+  const features: { icon: LucideIcon; title: string; text: string }[] = pilot ? [
+    { icon: BookOpenCheck, title: tPilot('f1Title'), text: tPilot('f1Text') },
+    { icon: Calculator, title: tPilot('f2Title'), text: tPilot('f2Text') },
+    { icon: Languages, title: tPilot('f3Title'), text: tPilot('f3Text') },
+    { icon: Flame, title: tPilot('f4Title'), text: tPilot('f4Text') },
+    { icon: GraduationCap, title: tPilot('f5Title'), text: tPilot('f5Text') },
+    { icon: ListChecks, title: tPilot('f6Title'), text: tPilot('f6Text') },
+  ] : [
     { icon: Focus, title: t('f1Title'), text: t('f1Text') },
     { icon: Keyboard, title: t('f2Title'), text: t('f2Text') },
     { icon: BookOpenCheck, title: t('f3Title'), text: t('f3Text') },
@@ -47,7 +57,9 @@ export default async function LandingPage({
     name: string;
     desc: string;
     active: boolean;
-  }[] = [
+  }[] = pilot ? [
+    { icon: Calculator, name: tSubjects('math'), desc: tPilot('subjMathDesc'), active: true },
+  ] : [
     { icon: Calculator, name: tSubjects('math'), desc: t('subjMathDesc'), active: true },
     { icon: Atom, name: tSubjects('physics'), desc: t('subjPhysicsDesc'), active: true },
     { icon: Code2, name: tSubjects('informatics'), desc: t('subjInformaticsDesc'), active: true },
@@ -88,18 +100,24 @@ export default async function LandingPage({
         <div className="animate-fade-in-up">
           <div className="inline-flex items-center gap-2 rounded-full border bg-card/60 px-3.5 py-1.5 text-xs font-medium text-muted-foreground shadow-xs backdrop-blur">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            {t('badge')}
+            {pilot ? tPilot('badge') : t('badge')}
           </div>
 
           <h1 className="mt-7 text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">
-            {t('heroTitleTop')}
+            {pilot ? tPilot('heroTitleTop') : t('heroTitleTop')}
             <br />
-            <span className="text-gradient">{t('heroTitleAccent')}</span>
+            <span className="text-gradient">{pilot ? tPilot('heroTitleAccent') : t('heroTitleAccent')}</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-xl text-balance text-base leading-relaxed text-muted-foreground md:text-lg">
-            {t('heroLead')}
+            {pilot ? tPilot('heroLead') : t('heroLead')}
           </p>
+
+          {pilot && (
+            <p data-testid="pilot-content-note" className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
+              {tPilot('reviewNote')}
+            </p>
+          )}
 
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg">
@@ -115,7 +133,7 @@ export default async function LandingPage({
 
           <div className="mt-5 flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Check className="h-4 w-4 text-primary" />
-            {t('heroReassure')}
+            {pilot ? tPilot('heroReassure') : t('heroReassure')}
           </div>
         </div>
       </section>
@@ -123,13 +141,17 @@ export default async function LandingPage({
       {/* Stats */}
       <section className="mx-auto mb-8 w-full max-w-xl px-6">
         <dl className="grid grid-cols-3 divide-x divide-border rounded-2xl border bg-card/50 py-6 text-center shadow-xs backdrop-blur">
-          {[
+          {(pilot ? [
+            { value: '1', label: tPilot('stat1Label') },
+            { value: 'RU/KK', label: tPilot('stat2Label') },
+            { value: '✓', label: tPilot('stat3Label') },
+          ] : [
             { value: '3', label: t('stat1Label') },
             { value: '12', label: t('stat2Label') },
             { value: '4', label: t('stat3Label') },
-          ].map((s) => (
+          ]).map((s) => (
             <div key={s.label} className="px-3">
-              <dt className="font-mono text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+              <dt className="font-mono text-2xl font-semibold tabular-nums sm:text-3xl tracking-tight text-foreground">
                 {s.value}
               </dt>
               <dd className="mt-1 text-xs text-muted-foreground">{s.label}</dd>
@@ -172,12 +194,12 @@ export default async function LandingPage({
       <section className="mx-auto w-full max-w-6xl px-6 pb-16 md:pb-24">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
-            {t('subjectsTitle')}
+            {pilot ? tPilot('subjectsTitle') : t('subjectsTitle')}
           </h2>
-          <p className="mt-3 text-muted-foreground">{t('subjectsLead')}</p>
+          <p className="mt-3 text-muted-foreground">{pilot ? tPilot('subjectsLead') : t('subjectsLead')}</p>
         </div>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-3">
+        <div className={pilot ? "mx-auto mt-12 grid max-w-xl gap-4" : "mt-12 grid gap-4 sm:grid-cols-3"}>
           {subjects.map((s) => {
             const Icon = s.icon;
             return (
@@ -212,7 +234,7 @@ export default async function LandingPage({
               {t('finalTitle')}
             </h2>
             <p className="mx-auto mt-3 max-w-md text-muted-foreground">
-              {t('finalLead')}
+              {pilot ? tPilot('finalLead') : t('finalLead')}
             </p>
             <Button asChild size="lg" className="mt-8">
               <Link href="/login">

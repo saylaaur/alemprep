@@ -37,8 +37,17 @@ export function summarizePilotInventory(raw: unknown): PilotReadiness {
     if (families[version.locale].has(version.family_id)) issues.add('duplicate-approved-family');
     families[version.locale].add(version.family_id);
     if (hasKey(version.public_body)) issues.add('public-answer-key');
-    const schema = version.type === 'matching' ? publicMatchingSchema : publicSingleSchema;
-    if (!schema.safeParse(version.public_body).success) issues.add('unreadable-public-body');
+    // Mirror the reader's public identifier invariants without fetching grading keys.
+    let readable = false;
+    if (version.type === 'matching') {
+      const body = publicMatchingSchema.safeParse(version.public_body);
+      readable = body.success && new Set(body.data.left.map(option => option.id)).size === body.data.left.length
+        && new Set(body.data.right).size === body.data.right.length;
+    } else {
+      const body = publicSingleSchema.safeParse(version.public_body);
+      readable = body.success && new Set(body.data.options.map(option => option.id)).size === body.data.options.length;
+    }
+    if (!readable) issues.add('unreadable-public-body');
     if (excludedSources.has(version.question_id)) issues.add('excluded-source-approved');
     const slug = version.questions.topics.slug;
     if (!topics.has(slug)) topics.set(slug, { ru: new Set(), kk: new Set() });
@@ -46,6 +55,7 @@ export function summarizePilotInventory(raw: unknown): PilotReadiness {
   }
   if (!families.ru.size || !families.kk.size) issues.add('approved-language-bank-empty');
   if ([...families.ru].some(id => !families.kk.has(id)) || [...families.kk].some(id => !families.ru.has(id))) warnings.add('unpaired-families');
+  if ([...topics.values()].some(topic => !topic.ru.size || !topic.kk.size)) warnings.add('topic-language-gap');
   const bindingPresence = Object.values(input.bindings).every(n => n > 0);
   if (!bindingPresence) warnings.add('school-bindings-missing');
   return {

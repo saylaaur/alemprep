@@ -1,5 +1,7 @@
 # AlemPrep — полный план до production и школьного пилота
 
+> **Актуально09.10:** текущие approved counts, порядок самостоятельного пилота, AI-review exception и действия запуска — в [PILOT_LAUNCH.md](../pilot/PILOT_LAUNCH.md). Датированные статусы ниже — история, не команда повторно выполнять старые миграции.
+
 **Текущий старт 30.09: A3-R2.** [Review c47385b](reviews/2026-09-30-c47385b.md) подтверждает целевые исправления 0032 и описывает два дополнительных случая. [Текущий план](../superpowers/plans/2026-09-30-pilot-next-steps.md) задаёт файлы, контракты, тесты и очередь до первого урока. A1 не повторять; A2 и основа A3 уже написаны, но ещё не приняты как весь школьный сценарий. Выбранные hosted каталоги через 0032 совпали с локальными. Ниже сохранён исторический baseline: его даты, next-task и номера будущих SQL не использовать вместо актуального плана.
 
 **Текущий старт 28.09: A2/L03a.** A1/L02 принят review и required CI, [PR #31](https://github.com/saylaaur/alemprep/pull/31) merged как `bb903a2`. Выполнять [packet защищённой практики](../superpowers/plans/2026-09-28-l03a-trusted-practice-packet.md) по [очереди первого класса](../superpowers/plans/2026-09-27-first-class-rebaseline.md). Одна задача на session, server review после сдачи, owner-isolated pending/retry. Статусы L02a/L02b ниже исторические. Hosted SQL и допуск учеников этим merge не подтверждены.
