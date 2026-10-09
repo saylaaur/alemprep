@@ -444,10 +444,10 @@ export function piStep(span: number, pixels: number, minPixels = 48): number | n
 }
 
 /**
- * School formatting: decimal comma, up to two decimals, multiples of π as
- * fractions ("π/2", "−3π/4"), and "−" for minus.
+ * School formatting: decimal comma, up to two decimals (or `digits`), multiples
+ * of π as fractions ("π/2", "−3π/4"), and "−" for minus.
  */
-export function formatNumber(value: number, options: { pi?: boolean } = {}): string {
+export function formatNumber(value: number, options: { pi?: boolean; digits?: number } = {}): string {
   if (!finite(value)) return '—';
   const snapped = snap(value);
   if (options.pi !== false) {
@@ -462,20 +462,21 @@ export function formatNumber(value: number, options: { pi?: boolean } = {}): str
       }
     }
   }
+  const scale = Math.pow(10, Math.max(0, Math.min(8, options.digits ?? 2)));
   for (const denominator of [3, 6, 7, 9]) {
     const numerator = snapped * denominator;
-    if (Math.abs(numerator - Math.round(numerator)) < 1e-9 && Math.abs(Math.round(numerator) / denominator * 100 % 1) > 1e-6) {
+    if (Math.abs(numerator - Math.round(numerator)) < 1e-9 && Math.abs(Math.round(numerator) / denominator * scale % 1) > 1e-6) {
       const n = Math.round(numerator);
       return `${n < 0 ? '−' : ''}${Math.abs(n)}/${denominator}`;
     }
   }
-  const rounded = Math.round(snapped * 100) / 100;
+  const rounded = Math.round(snapped * scale) / scale;
   const text = (Object.is(rounded, -0) ? 0 : rounded).toString();
   return text.replace('-', '−').replace('.', ',');
 }
 
-export function formatPoint(x: number, y: number): string {
-  return `(${formatNumber(x)}; ${formatNumber(y)})`;
+export function formatPoint(x: number, y: number, digits?: number): string {
+  return `(${formatNumber(x, { digits })}; ${formatNumber(y, { digits })})`;
 }
 
 /** "(−∞; 1) ∪ [3; +∞)" in school notation. */

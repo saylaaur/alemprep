@@ -170,7 +170,7 @@ describe('parseExpression: errors', () => {
     ['x$', 'unknown-symbol'],
     ['@', 'unknown-symbol'],
     ['x = 2', 'unknown-symbol'],
-    ['x\'', 'unknown-symbol'],
+    ['x\'', 'syntax'],
     ['\\int x dx', 'unknown-symbol'],
     ['x'.repeat(500), 'too-long'],
   ])('%j → %s without throwing', (input, error) => {
