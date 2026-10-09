@@ -39,7 +39,7 @@
     "pilot:check": "tsx --tsconfig tsconfig.scripts.json scripts/pilot/check-readiness.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.100.1",
+    "@anthropic-ai/sdk": "^0.131.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
