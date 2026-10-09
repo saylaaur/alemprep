@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 import { createDbHarness, type DbHarness } from '../db/helpers';
 import { seedPilotSchoolPair } from '../fixtures/pilot-school';
 import { loginAs } from './helpers';
@@ -85,6 +86,27 @@ test('accepted self-study answer survives reload and appears once in the teacher
     if (reload === 0) await page.reload();
   }
   expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE user_id=$1 AND integrity_version=1', [school.studentA.id])).toBe(1);
+  const downloadStarted = page.waitForEvent('download');
+  await page.getByRole('link', { name: 'Скачать отчёт (CSV)' }).click();
+  const download = await downloadStarted;
+  expect(await download.failure()).toBeNull();
+  const file = await download.path();
+  expect(file).not.toBeNull();
+  const csv = await readFile(file!, 'utf8');
+  expect(csv).toContain('teacher-self-study-v1');
+  expect(csv).toContain('"E2E pupil","1","1","1","1"');
+  expect(csv).not.toContain('given_answer');
+  const foreign = await page.request.get(`/ru/teacher/groups/${school.groupB}/export`);
+  expect(foreign.status()).toBe(404);
+  const kk = await page.request.get(`/kk/teacher/groups/${school.groupA}/export`);
+  expect(kk.status()).toBe(200);
+  expect(await kk.text()).toContain('Оқушы');
+  await loginAs(page, school.studentA);
+  expect((await page.request.get(`/ru/teacher/groups/${school.groupA}/export`)).status()).toBe(404);
+  await loginAs(page, school.teacherA);
+  await db.execute('UPDATE public.group_teachers SET ended_at=now() WHERE group_id=$1', [school.groupA]);
+  expect((await page.request.get(`/ru/teacher/groups/${school.groupA}/export`)).status()).toBe(404);
+
 });
 
 test('Kazakh graph tool works offline: sliders, presets and typing on a small screen', async ({ page }) => {

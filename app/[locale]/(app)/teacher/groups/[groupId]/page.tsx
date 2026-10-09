@@ -34,6 +34,8 @@ export default async function TeacherGroupPage({ params }: { params: Promise<{ l
         </table>
         {roster.students.length === 0 && <p className="p-6 text-muted-foreground">{t('noPupils')}</p>}
       </div>
+      <a href={`/${locale}/teacher/groups/${groupId}/export`} className="inline-flex rounded-lg border bg-card px-4 py-2 text-sm font-medium hover:bg-accent">{t('downloadReport')}</a>
+      <p className="text-sm text-muted-foreground">{t('exportHelp')}</p>
       <ClassInvite groupId={groupId} />
     </div>
   </>;
