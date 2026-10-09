@@ -35,7 +35,8 @@
     "gen:reclassify": "tsx --tsconfig tsconfig.scripts.json scripts/reclassify-topics.ts",
     "gen:prune-topics": "tsx --tsconfig tsconfig.scripts.json scripts/prune-empty-topics.ts",
     "gen:all": "tsx --tsconfig tsconfig.scripts.json scripts/gen-all.ts",
-    "gen:translate-all": "tsx --tsconfig tsconfig.scripts.json scripts/translate-all.ts"
+    "gen:translate-all": "tsx --tsconfig tsconfig.scripts.json scripts/translate-all.ts",
+    "pilot:check": "tsx --tsconfig tsconfig.scripts.json scripts/pilot/check-readiness.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

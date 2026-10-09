@@ -1,5 +1,25 @@
 # Журнал исполнения production-плана
 
+### 09.10 pilot readiness candidate verification
+
+- Read-only inventory, private RU/KK teacher CSV and local20-pupil/two-school rehearsal implemented.
+- Independent whole-branch review: duplicate public identifiers and missing topic-language warning fixed with five RED→GREEN regressions; reviewer confirmed no remaining blockers.
+- Local1108unit,161DB,6migration pass; build/types/lint pass. Final browser matrix/release recorded in PR checks.
+- No hosted data writes, no real school bootstrap, no Auth/whole-database restore claim. Exact ambiguous RU quarantine transaction is prepared and atomically tested, owner access still required.
+
+
+## 09.10.2026 — автономная подготовка самостоятельного RU/KK пилота
+
+- Владелец делегировал весь план и действия; новый operational baseline: docs/pilot/PILOT_LAUNCH.md.
+- Main c5b535a после security PR37; обе публичные локали200. Hosted read-only RU90/KK89, четыре темы, schools/groups/memberships0; подсказки/перевод платными API не вызывались.
+- Task1: 69f622e, pilot:check; 7 unit, typecheck/lint PASS; корректно обнаруживает approved excluded source и отсутствие bindings.
+- Task2: b225061, private CSV fresh authenticated RPC; 15 unit и browser download/foreign/pupil/revoke RU+KK PASS.
+- Task3: 4d7a44e, 20 synthetic pupils, два класса RU/KK, concurrent start/submit/retry/reload; exact20 attempts,10 per school PASS. Local evidence не равно hosted capacity.
+- Exact data-only quarantine SQL подготовлен с приватным snapshot/SHA256; local idempotence и audit-failure rollback2/2 PASS; hosted не применён. Применённые миграции0001–0040 и исходники не менялись.
+- Внешние факты: Mac locked, CLI management token absent; нет реальных школ/учителей. OAuth audience, hosted backup+restore и real pupil→teacher rehearsal пока не подтверждены.
+- Task4 required full verification/review/CI/deploy выполняется; итоговые статусы фиксируются в PR и финальном отчёте, не выдаются за done заранее.
+
+
 ## 30.09.2026 — Astra c47385b review и актуальная очередь
 
 - [Review](reviews/2026-09-30-c47385b.md): исходные исправления 0032 подтверждены; два узких follow-up — прямое privileged создание approved-программы и сериализация отзыва teacher→group при публикации. Они не являются произвольным student bypass.

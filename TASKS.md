@@ -1,5 +1,8 @@
 # AlemPrep — Бэклог задач
 
+> **Текущий приоритет09.10:** [PILOT_LAUNCH](docs/pilot/PILOT_LAUNCH.md) и [coding plan](docs/superpowers/plans/2026-10-09-pilot-launch-readiness.md) выше исторических статусов ниже. Main c5b535a: dependency security PR37 выпущен; RU90/KK89 approved, одна спорная RU версия требует exact карантина. Schools/groups/memberships0. Кандидат ветки codex/pilot-launch-readiness: read-only pilot:check, приватный CSV учителя, local20-user двухшкольная репетиция. Следующее: полная проверка/review/CI/выпуск → owner SQL/консоли → настоящий класс/backup/реальная репетиция. Не начинать заново A1/A2/0034 и не ждать полного банка/платного AI.
+
+
 > **05.10 — перед объединением с Claude:** `048500c` Vercel/Gitleaks PASS, Verify FAIL на двух reload-тестах. Найдена гонка fixture mutation с readLearningState; setup теперь ждёт active state, проверки безопасности сохранены. Добавлен вывод failure snapshots в CI. Hosted allowlist прочитана: только production callback. Preview callback подготовлен без сохранения, точное подтверждение ожидается; свежие вкладки Chrome работают. Перевод и Desmos из Claude пока не обнаружены в checkout — нужны ветка/файлы для общего review.
 
 > **05.10 — вход preview:** точное разрешение аккаунта получено; реальный Google URL подтвердил ошибочный callback на production. Исправлена проверяемая по allowlist привязка callback к своему preview origin, без ослабления защиты. 675 unit/typecheck/lint/standard build PASS, независимый review без замечаний. Следующее: новый preview → hosted allowlist → успешный Google callback. Chrome сейчас отдаёт browser controls, но не содержимое страниц; успешный вход не подтверждён. Миграции не менялись.
