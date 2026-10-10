@@ -271,3 +271,17 @@ export function traceAlong(fn: RealFn, px: number, py: number, scene: PickScene,
   const snapped = snapOnBranch(fn, raw, target.x, target.y, scene);
   return { kind: 'curve', curve: -1, branch: -1, x: snapped.x, y: snapped.y, level: snapped.level };
 }
+
+/**
+ * A point picked on a line, after the lines changed (a slider moved, a value was typed):
+ * the same x on the same line, or null when the line no longer passes there.
+ * Grid points stay; key points (markers) are followed by their index elsewhere.
+ */
+export function followPick(pick: Pick, curves: { branches: RealFn[]; verticals?: number[] }[]): Pick | null {
+  if (pick.kind === 'curve') {
+    const y = curves[pick.curve]?.branches[pick.branch]?.(pick.x);
+    return y !== undefined && Number.isFinite(y) ? { ...pick, y } : null;
+  }
+  if (pick.kind === 'vertical') return curves[pick.curve]?.verticals?.some((x) => Math.abs(x - pick.x) < 1e-9) ? pick : null;
+  return pick;
+}

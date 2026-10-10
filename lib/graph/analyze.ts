@@ -281,7 +281,11 @@ export function settlesBeyond(fn: RealFn, limit: number, far = 1e6): boolean {
 }
 
 /** Where `left(x) relation right(x)` holds inside the window, as intervals. */
-export function solveRelation(left: RealFn, relation: Relation, right: RealFn, window: { xmin: number; xmax: number }): Interval[] {
+/**
+ * Where left (relation) right holds inside the window. `breaks` are extra points where the
+ * answer may change (ends of a restriction {0 < x < 1}), so narrow pieces are not sampled away.
+ */
+export function solveRelation(left: RealFn, relation: Relation, right: RealFn, window: { xmin: number; xmax: number }, breaks: number[] = []): Interval[] {
   const difference = (x: number) => left(x) - right(x);
   // Expanding a task window must not coarsen the original +/-60 sampling
   // resolution and merge nearby roots. Bound work for arbitrary user input.
@@ -314,10 +318,11 @@ export function solveRelation(left: RealFn, relation: Relation, right: RealFn, w
     }
     previousDefined = defined;
   }
-  const breaks = dedupe([window.xmin, ...roots, ...asymptotes, ...edges, window.xmax], 1e-9);
+  const inside = breaks.filter((x) => x > window.xmin && x < window.xmax);
+  const cuts = dedupe([window.xmin, ...roots, ...asymptotes, ...edges, ...inside, window.xmax], 1e-9);
   const intervals: Interval[] = [];
-  for (let index = 1; index < breaks.length; index++) {
-    const from = breaks[index - 1]; const to = breaks[index];
+  for (let index = 1; index < cuts.length; index++) {
+    const from = cuts[index - 1]; const to = cuts[index];
     if (!holds(difference((from + to) / 2))) continue;
     const closedAt = (x: number) => holds(difference(x)) && x !== window.xmin && x !== window.xmax;
     const last = intervals[intervals.length - 1];

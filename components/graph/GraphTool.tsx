@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Delete, Eye, EyeOff, Keyboard, Lightbulb, Pause, Play, Plus, Table2, X } from 'lucide-react';
 import { MathText } from '@/components/math/MathText';
 import { autoViewport, formatNumber, formatPoint, keyPoints, niceStep, type KeyPoint, type Viewport } from '@/lib/graph/analyze';
+import { solvingWindow } from '@/lib/graph/view';
 import { buildDefinitions, buildUserCurve, latexWithValues, type UserCurve } from '@/lib/graph/user-input';
 import { GRAPH_COLORS } from '@/lib/graph/topics';
 import { GraphCanvas, type PlotCurve, type PlotMarker } from './GraphCanvas';
@@ -77,16 +78,21 @@ export function GraphTool({ initial = [''], presets, defaults = {}, hint, idPref
   const deferredLines = useDeferredValue(lines);
   const deferredValues = useDeferredValue(values);
   // Letters other than x and y become sliders; an untouched slider starts at 1.
+  // x-only equations and inequalities are solved on ±1000, or wider when the pupil looks further out.
+  const solveWindow = useMemo(() => solvingWindow(liveView), [liveView]);
+  const windowKey = `${solveWindow.xmin}|${solveWindow.xmax}`;
+  /* eslint-disable react-hooks/exhaustive-deps -- windowKey captures solveWindow */
   const { built, params, scope } = useMemo(() => {
     const texts = deferredLines.map((line) => line.text);
-    const { functions } = buildDefinitions(texts);
-    const build = (scopeValues: Record<string, number>) => texts.map((text) => (text.trim() ? buildUserCurve(text, scopeValues, { functions }) : null));
+    const { functions, cyclic } = buildDefinitions(texts);
+    const build = (scopeValues: Record<string, number>) => texts.map((text) => (text.trim() ? buildUserCurve(text, scopeValues, { functions, cyclic, window: solveWindow }) : null));
     const first = build(deferredValues);
     const names = [...new Set(first.flatMap((curve) => (curve?.ok ? curve.params : [])))].sort();
     const effective = { ...Object.fromEntries(names.map((name) => [name, 1])), ...deferredValues };
     const final = names.some((name) => deferredValues[name] === undefined) ? build(effective) : first;
     return { built: final, params: names, scope: effective };
-  }, [deferredLines, deferredValues]);
+  }, [deferredLines, deferredValues, windowKey]);
+  /* eslint-enable react-hooks/exhaustive-deps */
   const ready: Ready[] = built
     .map((curve, index) => ({ curve, index, line: deferredLines[index] }))
     .filter((entry): entry is Ready => Boolean(entry.curve?.ok && entry.line && !entry.line.hidden));

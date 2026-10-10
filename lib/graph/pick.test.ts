@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fineStep, onGrid, pickAt, snapAxis, snapToGrid, traceAlong, radii, type PickScene } from './pick';
+import { fineStep, followPick, onGrid, pickAt, snapAxis, snapToGrid, traceAlong, radii, type PickScene } from './pick';
 import { gridSteps, toScreen } from './view';
 import type { RealFn, Viewport } from './analyze';
 
@@ -149,5 +149,22 @@ describe('helpers', () => {
   it('fineStep is about four pixels', () => {
     expect(fineStep(12, 400)).toBe(0.2);
     expect(fineStep(1, 400)).toBe(0.01);
+  });
+});
+
+describe('followPick (review 2026-10-10)', () => {
+  it('keeps a point on a line at the same x when the line changes', () => {
+    const pick = { kind: 'curve', curve: 0, branch: 0, x: 1, y: -4, level: 'major' } as const;
+    const moved = followPick(pick, [{ branches: [(x) => x * x - 2 * x - 2] }]);
+    expect(moved).toMatchObject({ kind: 'curve', x: 1, y: -3 });
+  });
+
+  it('drops the point when the line no longer passes there', () => {
+    const pick = { kind: 'curve', curve: 0, branch: 0, x: -1, y: 1, level: 'major' } as const;
+    expect(followPick(pick, [{ branches: [Math.sqrt] }])).toBeNull();
+    expect(followPick(pick, [])).toBeNull();
+    const vertical = { kind: 'vertical', curve: 0, x: 3, y: 1, level: 'major' } as const;
+    expect(followPick(vertical, [{ branches: [], verticals: [3] }])).toBe(vertical);
+    expect(followPick(vertical, [{ branches: [], verticals: [2] }])).toBeNull();
   });
 });

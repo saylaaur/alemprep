@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { useTranslations } from 'next-intl';
 import { Home, Maximize2, Minimize2, Minus, Plus } from 'lucide-react';
 import { formatPoint, type Interval, type RealFn, type Viewport } from '@/lib/graph/analyze';
-import { fineStep, pickAt, traceAlong, type Pick, type PickScene } from '@/lib/graph/pick';
+import { fineStep, followPick, pickAt, traceAlong, type Pick, type PickScene } from '@/lib/graph/pick';
 import { clampView, digitsFor, easeOut, interpolateView, panByPixels, spanX, spanY, toScreen, toWorld, zoomAround, type Size } from '@/lib/graph/view';
 import { axisSteps, drawScene, type DrawPoint, type Palette } from './draw';
 
@@ -256,20 +256,41 @@ export function GraphCanvas({ curves, markers = [], overlay = {}, initial, trig 
   }, [resetKey, animateTo, redraw]);
 
   // A key point chosen in the list below: show it, and bring it into view if needed.
+  // It follows the point when its coordinates change (a slider moves the minimum).
+  const chosenPoint = selected !== null && selected !== undefined ? markers[selected] : undefined;
+  const chosenKey = chosenPoint ? `${selected}|${chosenPoint.x}|${chosenPoint.y}|${chosenPoint.label ?? ''}` : '';
+  const shownIndex = useRef<number | null>(null);
   useEffect(() => {
-    const point = selected !== null && selected !== undefined ? props.current.markers[selected] : undefined;
+    const index = selected ?? null;
+    const point = index !== null ? props.current.markers[index] : undefined;
+    const newlyChosen = index !== shownIndex.current;
+    shownIndex.current = point ? index : null;
     if (!point) {
-      if (picked.current?.pick.kind === 'marker') { picked.current = null; redraw(); }
+      if (picked.current?.pick.kind === 'marker') { picked.current = null; setLive(''); redraw(); }
       return;
     }
-    picked.current = { pick: { kind: 'marker', index: selected!, x: point.x, y: point.y }, color: point.color, title: point.label };
+    picked.current = { pick: { kind: 'marker', index: index!, x: point.x, y: point.y }, color: point.color, title: point.label };
     setLive(`${point.label} ${formatPoint(point.x, point.y)}`);
     const current = view.current;
-    if (Number.isFinite(point.y) && (point.x < current.xmin || point.x > current.xmax || point.y < current.ymin || point.y > current.ymax)) {
+    const outside = point.x < current.xmin || point.x > current.xmax || point.y < current.ymin || point.y > current.ymax;
+    if (newlyChosen && Number.isFinite(point.y) && outside) {
       const dx = point.x - (current.xmin + current.xmax) / 2; const dy = point.y - (current.ymin + current.ymax) / 2;
       animateTo({ xmin: current.xmin + dx, xmax: current.xmax + dx, ymin: current.ymin + dy, ymax: current.ymax + dy });
     } else redraw();
-  }, [selected, animateTo, redraw]);
+  }, [chosenKey, selected, animateTo, redraw]);
+
+  // A point picked on a line moves with the line when it changes (a slider, a new value),
+  // and is dropped when the line no longer passes there.
+  useEffect(() => {
+    const current = picked.current;
+    if (!current || (current.pick.kind !== 'curve' && current.pick.kind !== 'vertical')) return;
+    const pick = current.pick;
+    const next = followPick(pick, curves);
+    if (next && next.x === pick.x && next.y === pick.y) return;
+    picked.current = next ? { ...current, pick: next } : null;
+    setLive(next ? formatPoint(next.x, next.y, 4) : '');
+    redraw();
+  }, [curves, redraw]);
 
   // Theme switches (light/dark) recolour the canvas.
   useEffect(() => {

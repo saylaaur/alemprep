@@ -125,3 +125,17 @@ export function sameView(a: Viewport, b: Viewport, tolerance = 1e-9): boolean {
   const scale = Math.max(spanX(a), spanY(a)) * tolerance;
   return Math.abs(a.xmin - b.xmin) <= scale && Math.abs(a.xmax - b.xmax) <= scale && Math.abs(a.ymin - b.ymin) <= scale && Math.abs(a.ymax - b.ymax) <= scale;
 }
+
+const SOLVE_LIMIT = 1000;
+
+/**
+ * Where x-only lines are solved: ±1000, widened in powers of two when the view goes
+ * beyond, so a pan or zoom inside ±1000 never re-solves or changes the answer.
+ */
+export function solvingWindow(view: Viewport | null): { xmin: number; xmax: number } {
+  if (!view || (view.xmin >= -SOLVE_LIMIT / 2 && view.xmax <= SOLVE_LIMIT / 2)) return { xmin: -SOLVE_LIMIT, xmax: SOLVE_LIMIT };
+  const span = Math.max(1e-9, view.xmax - view.xmin);
+  const size = 2 ** Math.ceil(Math.log2(span));
+  const center = Math.round((view.xmin + view.xmax) / 2 / size) * size;
+  return { xmin: Math.min(-SOLVE_LIMIT, center - 2 * size), xmax: Math.max(SOLVE_LIMIT, center + 2 * size) };
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clampView, clean, digitsFor, gridSteps, interpolateView, minorStep, panByPixels, sameView, ticksIn, toScreen, toWorld, zoomAround, MIN_SPAN } from './view';
+import { clampView, clean, digitsFor, gridSteps, interpolateView, minorStep, panByPixels, sameView, solvingWindow, ticksIn, toScreen, toWorld, zoomAround, MIN_SPAN } from './view';
 
 const view = { xmin: -6, xmax: 6, ymin: -4, ymax: 4 };
 const size = { width: 300, height: 200 };
@@ -63,5 +63,24 @@ describe('grid', () => {
     expect(digitsFor(0.25)).toBe(2);
     expect(digitsFor(0.005)).toBe(3);
     expect(digitsFor(50)).toBe(0);
+  });
+});
+
+describe('solvingWindow (review 2026-10-10)', () => {
+  it('stays at ±1000 while the view is inside, so panning never re-solves', () => {
+    expect(solvingWindow(null)).toEqual({ xmin: -1000, xmax: 1000 });
+    expect(solvingWindow({ xmin: -6, xmax: 6, ymin: -5, ymax: 5 })).toEqual({ xmin: -1000, xmax: 1000 });
+    expect(solvingWindow({ xmin: 300, xmax: 480, ymin: 0, ymax: 1 })).toEqual({ xmin: -1000, xmax: 1000 });
+  });
+
+  it('widens to cover a view further out, in steps that do not change on every small pan', () => {
+    const far = { xmin: 2000, xmax: 2100, ymin: 0, ymax: 1 };
+    const window = solvingWindow(far);
+    expect(window.xmin).toBeLessThanOrEqual(far.xmin - 100);
+    expect(window.xmax).toBeGreaterThanOrEqual(far.xmax + 100);
+    expect(solvingWindow({ ...far, xmin: 2010, xmax: 2110 })).toEqual(window);
+    const huge = solvingWindow({ xmin: -50000, xmax: 50000, ymin: 0, ymax: 1 });
+    expect(huge.xmin).toBeLessThanOrEqual(-50000);
+    expect(huge.xmax).toBeGreaterThanOrEqual(50000);
   });
 });
