@@ -28,7 +28,7 @@ export function VisualizationWorkspace({ apiKey }: { apiKey: string | null }) {
   const presets: GraphPreset[] = PRESETS.map((preset) => ({ ...preset, label: g(`presetNames.${preset.id}`) }));
   return <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
     <section className="rounded-xl border bg-card p-4 sm:p-6">
-      <GraphTool idPrefix="workspace" presets={presets} initial={[PRESETS[1].expression]} defaults={PRESETS[1].values} onPrimaryChange={setExpression} />
+      <GraphTool idPrefix="workspace" layout="split" presets={presets} initial={[PRESETS[1].expression]} defaults={PRESETS[1].values} onPrimaryChange={setExpression} />
       <p className="mt-3 text-sm text-muted-foreground">{t('localHelp')}</p>
     </section>
     {apiKey && <section className="rounded-xl border bg-card p-5 space-y-4">

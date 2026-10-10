@@ -281,7 +281,11 @@ export function settlesBeyond(fn: RealFn, limit: number, far = 1e6): boolean {
 }
 
 /** Where `left(x) relation right(x)` holds inside the window, as intervals. */
-export function solveRelation(left: RealFn, relation: Relation, right: RealFn, window: { xmin: number; xmax: number }): Interval[] {
+/**
+ * Where left (relation) right holds inside the window. `breaks` are extra points where the
+ * answer may change (ends of a restriction {0 < x < 1}), so narrow pieces are not sampled away.
+ */
+export function solveRelation(left: RealFn, relation: Relation, right: RealFn, window: { xmin: number; xmax: number }, breaks: number[] = []): Interval[] {
   const difference = (x: number) => left(x) - right(x);
   // Expanding a task window must not coarsen the original +/-60 sampling
   // resolution and merge nearby roots. Bound work for arbitrary user input.
@@ -314,10 +318,11 @@ export function solveRelation(left: RealFn, relation: Relation, right: RealFn, w
     }
     previousDefined = defined;
   }
-  const breaks = dedupe([window.xmin, ...roots, ...asymptotes, ...edges, window.xmax], 1e-9);
+  const inside = breaks.filter((x) => x > window.xmin && x < window.xmax);
+  const cuts = dedupe([window.xmin, ...roots, ...asymptotes, ...edges, ...inside, window.xmax], 1e-9);
   const intervals: Interval[] = [];
-  for (let index = 1; index < breaks.length; index++) {
-    const from = breaks[index - 1]; const to = breaks[index];
+  for (let index = 1; index < cuts.length; index++) {
+    const from = cuts[index - 1]; const to = cuts[index];
     if (!holds(difference((from + to) / 2))) continue;
     const closedAt = (x: number) => holds(difference(x)) && x !== window.xmin && x !== window.xmax;
     const last = intervals[intervals.length - 1];
@@ -444,10 +449,10 @@ export function piStep(span: number, pixels: number, minPixels = 48): number | n
 }
 
 /**
- * School formatting: decimal comma, up to two decimals, multiples of π as
- * fractions ("π/2", "−3π/4"), and "−" for minus.
+ * School formatting: decimal comma, up to two decimals (or `digits`), multiples
+ * of π as fractions ("π/2", "−3π/4"), and "−" for minus.
  */
-export function formatNumber(value: number, options: { pi?: boolean } = {}): string {
+export function formatNumber(value: number, options: { pi?: boolean; digits?: number } = {}): string {
   if (!finite(value)) return '—';
   const snapped = snap(value);
   if (options.pi !== false) {
@@ -462,20 +467,21 @@ export function formatNumber(value: number, options: { pi?: boolean } = {}): str
       }
     }
   }
+  const scale = Math.pow(10, Math.max(0, Math.min(8, options.digits ?? 2)));
   for (const denominator of [3, 6, 7, 9]) {
     const numerator = snapped * denominator;
-    if (Math.abs(numerator - Math.round(numerator)) < 1e-9 && Math.abs(Math.round(numerator) / denominator * 100 % 1) > 1e-6) {
+    if (Math.abs(numerator - Math.round(numerator)) < 1e-9 && Math.abs(Math.round(numerator) / denominator * scale % 1) > 1e-6) {
       const n = Math.round(numerator);
       return `${n < 0 ? '−' : ''}${Math.abs(n)}/${denominator}`;
     }
   }
-  const rounded = Math.round(snapped * 100) / 100;
+  const rounded = Math.round(snapped * scale) / scale;
   const text = (Object.is(rounded, -0) ? 0 : rounded).toString();
   return text.replace('-', '−').replace('.', ',');
 }
 
-export function formatPoint(x: number, y: number): string {
-  return `(${formatNumber(x)}; ${formatNumber(y)})`;
+export function formatPoint(x: number, y: number, digits?: number): string {
+  return `(${formatNumber(x, { digits })}; ${formatNumber(y, { digits })})`;
 }
 
 /** "(−∞; 1) ∪ [3; +∞)" in school notation. */

@@ -49,6 +49,12 @@ export function TaskGraph({ stem, stemBlocks }: { stem: string; stemBlocks?: unk
         selected={selected}
         onSelect={setSelected}
         ariaLabel={t('aria', { functions: graph.curves.map((curve) => curve.latex).join('; ') })}
+        legend={<ul className="space-y-1">
+          {graph.curves.map((curve, index) => <li key={index} className="flex items-center gap-2">
+            <span aria-hidden className="inline-block h-1 w-4 shrink-0 rounded-full" style={{ background: GRAPH_COLORS[index % GRAPH_COLORS.length] }} />
+            <MathText text={`$${curve.latex}$`} />
+          </li>)}
+        </ul>}
       />
       {relationKey && solution && <p className="text-sm"><span className="font-medium">{t(relationKey)}</span> <span className="font-mono">{solution}</span></p>}
       {graph.area && Number.isFinite(integral) && <p className="text-sm"><span className="font-medium">{t('integralValue', { from: formatNumber(graph.area.from), to: formatNumber(graph.area.to) })}</span> <span className="font-mono">≈ {formatNumber(integral, { pi: false })}</span></p>}

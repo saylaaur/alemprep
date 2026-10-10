@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compile, latexToPlain, parseExpression, realPow, toLatex, usesTrig } from './parse';
+import { compile, derivative, latexToPlain, parseExpression, realPow, toLatex, usesTrig } from './parse';
 
 /** Parses and compiles; fails the test on a parse error. */
 function fn(input: string): (x: number, y?: number) => number {
@@ -170,7 +170,7 @@ describe('parseExpression: errors', () => {
     ['x$', 'unknown-symbol'],
     ['@', 'unknown-symbol'],
     ['x = 2', 'unknown-symbol'],
-    ['x\'', 'unknown-symbol'],
+    ['x\'', 'syntax'],
     ['\\int x dx', 'unknown-symbol'],
     ['x'.repeat(500), 'too-long'],
   ])('%j → %s without throwing', (input, error) => {
@@ -293,5 +293,43 @@ describe('toLatex', () => {
         else expect(reparsed).toBeCloseTo(original, 9);
       }
     }
+  });
+});
+
+describe('derivative (review 2026-10-10)', () => {
+  it('is undefined at a corner and where the function is undefined', () => {
+    const abs = Math.abs;
+    expect(derivative(abs, 0, 1)).toBeNaN();
+    expect(derivative(abs, 0, 2)).toBeNaN();
+    expect(derivative((x) => Math.sin(x) / x, 0, 1)).toBeNaN();
+    expect(derivative(Math.sqrt, -1, 1)).toBeNaN();
+  });
+
+  it('stays accurate for smooth functions', () => {
+    expect(derivative(Math.abs, 1, 1)).toBeCloseTo(1, 8);
+    expect(derivative(Math.abs, -2, 2)).toBeCloseTo(0, 5);
+    expect(derivative(Math.sin, 1, 1)).toBeCloseTo(Math.cos(1), 9);
+    expect(derivative(Math.sin, 1, 2)).toBeCloseTo(-Math.sin(1), 6);
+    expect(derivative((x) => x ** 3, 2, 2)).toBeCloseTo(12, 5);
+    expect(derivative(Math.log, 1e-3, 1)).toBeCloseTo(1000, 1);
+    expect(derivative((x) => x ** 10, 5, 1) / (10 * 5 ** 9)).toBeCloseTo(1, 8);
+  });
+
+  it("abs'(x) through a definition", () => {
+    const parsed = parseExpression("f'(x)", { functions: ['f'] });
+    if (!parsed.ok) throw new Error('parse');
+    const slope = compile(parsed.node, { f: (x) => Math.abs(x) });
+    expect(slope(0)).toBeNaN();
+    expect(slope(-3)).toBeCloseTo(-1, 8);
+  });
+});
+
+describe('adaptive derivative near a smooth domain edge', () => {
+  it.each([
+    [(x: number) => 1 / x, 0.001, -1_000_000],
+    [Math.log, 0.0005, 2000],
+    [Math.sqrt, 1e-8, 5000],
+  ])('refines the step instead of confusing curvature with a corner', (fn, x, expected) => {
+    expect(derivative(fn, x, 1) / expected).toBeCloseTo(1, 7);
   });
 });

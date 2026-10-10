@@ -6,4 +6,4 @@ export const GRAPH_TOOL_TOPICS = new Set([
   'inequalities', 'inequality-systems', 'calculus-and-modeling', 'dependencies',
 ]);
 
-export const GRAPH_COLORS = ['#2563eb', '#dc2626', '#059669', '#9333ea'] as const;
+export const GRAPH_COLORS = ['#2563eb', '#dc2626', '#059669', '#9333ea', '#ea580c', '#0891b2'] as const;

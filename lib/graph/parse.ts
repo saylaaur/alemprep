@@ -14,7 +14,9 @@ export type Node =
   | { k: 'var'; name: string }
   | { k: 'neg'; a: Node }
   | { k: 'bin'; op: '+' | '-' | '*' | '/' | '^'; a: Node; b: Node }
-  | { k: 'call'; fn: FnName; args: Node[] };
+  | { k: 'call'; fn: FnName; args: Node[] }
+  /** A function the pupil defined on another line (f(x) = …), with ′ for derivatives. */
+  | { k: 'ufn'; name: string; primes: number; arg: Node };
 
 export type ParseResult =
   | { ok: true; node: Node; vars: string[] }
@@ -22,6 +24,8 @@ export type ParseResult =
 
 export type Scope = Record<string, number>;
 export type Compiled = (x: number, y?: number, scope?: Scope) => number;
+/** Functions defined on other lines, by name: f(x) = x² − 3x. */
+export type UserFunctions = Record<string, (x: number, scope?: Scope) => number>;
 
 const MAX_LENGTH = 400;
 
@@ -96,6 +100,8 @@ export function latexToPlain(input: string): string {
     .replace(/\^\s*\{?\s*\\circ\s*\}?|°/g, '*(pi/180)')
     .replace(/\\pi|π/g, 'pi')
     .replace(/[−–—]/g, '-')
+    .replace(/[′’]/g, "'")
+    .replace(/\\prime/g, "'")
     .replace(/[·×∙⋅]/g, '*')
     .replace(/÷|:/g, '/')
     .replace(/²/g, '^2')
@@ -111,7 +117,7 @@ export function latexToPlain(input: string): string {
 type Token =
   | { t: 'num'; v: number }
   | { t: 'name'; v: string }
-  | { t: 'op'; v: '+' | '-' | '*' | '/' | '^' | '(' | ')' | ',' | '|' | '_' };
+  | { t: 'op'; v: '+' | '-' | '*' | '/' | '^' | '(' | ')' | ',' | '|' | '_' | "'" };
 
 function tokenize(text: string): Token[] | { error: 'unknown-symbol'; at: string } {
   const tokens: Token[] = [];
@@ -138,7 +144,7 @@ function tokenize(text: string): Token[] | { error: 'unknown-symbol'; at: string
       index += word.length;
       continue;
     }
-    if ('+-*/^(),|_'.includes(char)) { tokens.push({ t: 'op', v: char as '+' }); index++; continue; }
+    if ("+-*/^(),|_'".includes(char)) { tokens.push({ t: 'op', v: char as '+' }); index++; continue; }
     if (char === '\\') return { error: 'unknown-symbol', at: /^\\[a-zA-Z]*/.exec(text.slice(index))![0] };
     return { error: 'unknown-symbol', at: char };
   }
@@ -149,7 +155,7 @@ class Parser {
   private index = 0;
   private absDepth = 0;
   readonly vars = new Set<string>();
-  constructor(private readonly tokens: Token[]) {}
+  constructor(private readonly tokens: Token[], private readonly functions: ReadonlySet<string> = new Set()) {}
 
   private peek(): Token | undefined { return this.tokens[this.index]; }
   private isOp(value: string, token = this.peek()): boolean { return token?.t === 'op' && token.v === value; }
@@ -251,6 +257,16 @@ class Parser {
       if (token.v === 'pi') return { k: 'num', v: Math.PI };
       if (token.v in FUNCTION_ALIASES) return this.call(token.v);
       if (token.v === 'e') return { k: 'num', v: Math.E };
+      // f(x), f'(x), g''(2) when f, g are defined on other lines.
+      if (this.functions.has(token.v) && (this.isOp('(') || this.isOp("'"))) {
+        let primes = 0;
+        while (this.isOp("'")) { this.index++; primes++; }
+        if (primes > 2) throw new SyntaxError('primes');
+        this.expectOp('(');
+        const arg = this.expression();
+        this.expectOp(')');
+        return { k: 'ufn', name: token.v, primes, arg };
+      }
       this.vars.add(token.v);
       return { k: 'var', name: token.v };
     }
@@ -292,15 +308,18 @@ class Parser {
   }
 }
 
-/** Parses plain or LaTeX input. Variables are any single letters except e. */
-export function parseExpression(input: string): ParseResult {
+/**
+ * Parses plain or LaTeX input. Variables are any single letters except e.
+ * Names in `functions` followed by ( or ′ are calls of functions defined on other lines.
+ */
+export function parseExpression(input: string, options: { functions?: Iterable<string> } = {}): ParseResult {
   if (input.length > MAX_LENGTH) return { ok: false, error: 'too-long' };
   const plain = latexToPlain(input).trim();
   if (!plain) return { ok: false, error: 'empty' };
   const tokens = tokenize(plain);
   if (!Array.isArray(tokens)) return { ok: false, error: 'unknown-symbol', at: tokens.at };
   try {
-    const parser = new Parser(tokens);
+    const parser = new Parser(tokens, new Set(options.functions ?? []));
     const node = parser.parse();
     return { ok: true, node, vars: [...parser.vars].sort() };
   } catch {
@@ -338,9 +357,49 @@ function compileBinary(op: '+' | '-' | '*' | '/' | '^', a: Compiled, b: Compiled
   }
 }
 
+/**
+ * Numeric derivative of the given order. Undefined (NaN) where the function itself is
+ * undefined, and where the slopes from the left and from the right disagree (|x| at 0).
+ * Central difference refined once (Richardson): accurate to about 1e-7 for school functions.
+ */
+export function derivative(fn: (x: number) => number, x: number, order: number, step = 1e-4): number {
+  if (order <= 0) return fn(x);
+  // Higher orders differentiate the derivative, with a wider outer step against round-off.
+  const inner = order === 1 ? fn : (value: number) => derivative(fn, value, order - 1, step);
+  let h = (order === 1 ? step : step * 10) * Math.max(1, Math.abs(x));
+  const f0 = inner(x);
+  if (!Number.isFinite(f0)) return NaN;
+  // A fixed step can cross a pole or mistake strong smooth curvature for a corner.
+  // Refine a bounded number of times; a true cusp keeps disagreeing on both sides.
+  for (let refinement = 0; refinement < 12; refinement++, h *= 0.25) {
+    if (x + h === x || x - h === x) return NaN;
+    const fp = inner(x + h); const fm = inner(x - h);
+    const fp2 = inner(x + h / 2); const fm2 = inner(x - h / 2);
+    const d1 = (fp - fm) / (2 * h);
+    const d2 = (fp2 - fm2) / h;
+    const value = (4 * d2 - d1) / 3;
+    const right = (-3 * f0 + 4 * fp2 - fp) / h;
+    const left = (3 * f0 - 4 * fm2 + fm) / h;
+    if (![value, left, right].every(Number.isFinite)) continue;
+    const scale = Math.max(1, Math.abs(left), Math.abs(right), Math.abs(value));
+    if (Math.abs(left - right) <= 1e-3 * scale && Math.abs(d2 - d1) <= 1e-5 * scale) return value;
+  }
+  return NaN;
+}
+
 /** Builds a closure tree; evaluation never throws and returns NaN outside the domain. */
-export function compile(node: Node): Compiled {
+export function compile(node: Node, functions: UserFunctions = {}): Compiled {
+  const compile_ = (child: Node) => compile(child, functions);
   switch (node.k) {
+    case 'ufn': {
+      const arg = compile_(node.arg); const name = node.name; const primes = node.primes;
+      return (x, y, s) => {
+        const fn = functions[name];
+        if (!fn) return NaN;
+        const at = arg(x, y, s);
+        return primes === 0 ? fn(at, s) : derivative((value) => fn(value, s), at, primes);
+      };
+    }
     case 'num': { const value = node.v; return () => value; }
     case 'var': {
       if (node.name === 'x') return (x) => x;
@@ -348,10 +407,10 @@ export function compile(node: Node): Compiled {
       const name = node.name;
       return (_x, _y, scope) => scope?.[name] ?? NaN;
     }
-    case 'neg': { const a = compile(node.a); return (x, y, s) => -a(x, y, s); }
-    case 'bin': return compileBinary(node.op, compile(node.a), compile(node.b));
+    case 'neg': { const a = compile_(node.a); return (x, y, s) => -a(x, y, s); }
+    case 'bin': return compileBinary(node.op, compile_(node.a), compile_(node.b));
     case 'call': {
-      const args = node.args.map(compile);
+      const args = node.args.map(compile_);
       if (node.fn === 'root') {
         const [value, degree] = args;
         return (x, y, s) => { const n = degree(x, y, s); return n === 0 ? NaN : realPow(value(x, y, s), 1 / n); };
@@ -374,6 +433,7 @@ export function usesTrig(node: Node): boolean {
   if (node.k === 'call') return ['sin', 'cos', 'tan', 'cot'].includes(node.fn) || node.args.some(usesTrig);
   if (node.k === 'bin') return usesTrig(node.a) || usesTrig(node.b);
   if (node.k === 'neg') return usesTrig(node.a);
+  if (node.k === 'ufn') return usesTrig(node.arg);
   return false;
 }
 
@@ -396,6 +456,7 @@ export function toLatex(node: Node, parent = 0): string {
       return String(Number(node.v.toPrecision(10))).replace('.', '{,}');
     }
     case 'var': return node.name;
+    case 'ufn': return `${node.name}${"'".repeat(node.primes)}\\left(${toLatex(node.arg)}\\right)`;
     case 'neg': { const inner = `-${toLatex(node.a, 2)}`; return parent >= 2 ? `\\left(${inner}\\right)` : inner; }
     case 'bin': {
       const own = PRECEDENCE[node.op];
