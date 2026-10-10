@@ -154,6 +154,8 @@ const RELATION_SPLIT = /(<=|>=|≤|≥|<|>)/;
 const normalizeRelation = (symbol: string): Relation => (symbol === '≤' || symbol === '<=' ? '<=' : symbol === '≥' || symbol === '>=' ? '>=' : symbol as Relation);
 
 type Condition = {
+  /** Only comparisons between bare x and x-independent values give exact solver cuts. */
+  simpleBounds: boolean;
   /** Does x satisfy the condition with these slider values? */
   test: (x: number, scope?: Scope) => boolean;
   /** Letters used (other than x): they become sliders too. */
@@ -171,10 +173,12 @@ function compileCondition(condition: string, names: string[], functions: UserFun
   const sides: ((x: number, scope?: Scope) => number)[] = [];
   const constants: ((scope?: Scope) => number)[] = [];
   const vars = new Set<string>();
+  let simpleBounds = true;
   const called = new Set<string>();
   for (let index = 0; index < pieces.length; index += 2) {
     const parsed = parseExpression(pieces[index], { functions: names });
     if (!parsed.ok || parsed.vars.includes('y')) return null;
+    if (parsed.vars.includes('x') && !(parsed.node.k === 'var' && parsed.node.name === 'x')) simpleBounds = false;
     parsed.vars.forEach((name) => vars.add(name));
     calledNames(parsed.node, called);
     const fn = compile(parsed.node, functions);
@@ -183,6 +187,7 @@ function compileCondition(condition: string, names: string[], functions: UserFun
   }
   const relations = pieces.filter((_, index) => index % 2 === 1).map(normalizeRelation);
   return {
+    simpleBounds,
     vars: paramsOf([...vars]),
     called,
     bounds: (scope) => constants.map((constant) => constant(scope)).filter(Number.isFinite),
@@ -311,6 +316,8 @@ export function buildUserCurve(input: string, scope: Scope, options: BuildOption
       };
     }
     if (vars.includes('y')) return { ok: false, error: 'unsupported' };
+    // The sampled x-only solver cannot infer arbitrary named-function domains.
+    if (calledNames(left.node).size || calledNames(right.node).size || restrict?.simpleBounds === false) return { ok: false, error: 'unsupported' };
     const l = compile(left.node, functions); const r = compile(right.node, functions);
     const strips = solveRelation(restricted((x) => l(x, undefined, scope)), relation, (x) => r(x, undefined, scope), solveIn, bounds).map(unbounded);
     return { ok: true, branches: [], params: withRestriction(vars), implicit: false, latex, trig, strips };
@@ -347,6 +354,7 @@ export function buildUserCurve(input: string, scope: Scope, options: BuildOption
       const value = r(0, undefined, scope);
       return { ok: true, branches: [], params: withRestriction(vars), implicit: false, latex, trig, verticals: Number.isFinite(value) && allows(value) ? [value] : [] };
     }
+    if (calledNames(left.node).size || calledNames(right.node).size || restrict?.simpleBounds === false) return { ok: false, error: 'unsupported' };
     const difference = restricted((x) => l(x, undefined, scope) - r(x, undefined, scope));
     if (isIdentity(difference, solveIn)) return { ok: false, error: 'identity' };
     const roots = analyze(difference, solveIn.xmin, solveIn.xmax, 8000).roots.filter(allows);

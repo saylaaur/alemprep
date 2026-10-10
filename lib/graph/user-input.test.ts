@@ -234,3 +234,15 @@ describe('review 2026-10-10: x-only lines and the window', () => {
     expect(ok(buildUserCurve('x^2 = 4', {})).verticals).toEqual([-2, 2]);
   });
 });
+
+describe('pilot numeric solver capability limits', () => {
+  it.each(['f(x)>0', 'f(x)-0.5=0'])('rejects %s rather than losing an inherited narrow domain', text => {
+    const definitions = buildDefinitions(['f(x)=x {0<x<1}']);
+    expect(buildUserCurve(text, {}, definitions)).toMatchObject({ ok: false, error: 'unsupported' });
+    expect(ok(buildUserCurve('y>f(x)', {}, definitions)).branches[0](0.5)).toBe(0.5);
+  });
+  it.each(['x>0 {abs(x)<0.01}', 'x>0 {x^2<0.001}'])('rejects nonlinear domain boundaries in %s instead of a false interval', text => {
+    expect(buildUserCurve(text, {})).toMatchObject({ ok: false, error: 'unsupported' });
+    expect(ok(buildUserCurve('x^2 {abs(x)<0.01}', {})).branches[0](0.005)).toBeCloseTo(0.000025);
+  });
+});

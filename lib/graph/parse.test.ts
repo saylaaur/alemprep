@@ -323,3 +323,13 @@ describe('derivative (review 2026-10-10)', () => {
     expect(slope(-3)).toBeCloseTo(-1, 8);
   });
 });
+
+describe('adaptive derivative near a smooth domain edge', () => {
+  it.each([
+    [(x: number) => 1 / x, 0.001, -1_000_000],
+    [Math.log, 0.0005, 2000],
+    [Math.sqrt, 1e-8, 5000],
+  ])('refines the step instead of confusing curvature with a corner', (fn, x, expected) => {
+    expect(derivative(fn, x, 1) / expected).toBeCloseTo(1, 7);
+  });
+});

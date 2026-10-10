@@ -366,21 +366,25 @@ export function derivative(fn: (x: number) => number, x: number, order: number, 
   if (order <= 0) return fn(x);
   // Higher orders differentiate the derivative, with a wider outer step against round-off.
   const inner = order === 1 ? fn : (value: number) => derivative(fn, value, order - 1, step);
-  const h = (order === 1 ? step : step * 10) * Math.max(1, Math.abs(x));
+  let h = (order === 1 ? step : step * 10) * Math.max(1, Math.abs(x));
   const f0 = inner(x);
   if (!Number.isFinite(f0)) return NaN;
-  const fp = inner(x + h); const fm = inner(x - h);
-  const fp2 = inner(x + h / 2); const fm2 = inner(x - h / 2);
-  const d1 = (fp - fm) / (2 * h);
-  const d2 = (fp2 - fm2) / h;
-  const value = (4 * d2 - d1) / 3;
-  if (!Number.isFinite(value)) return NaN;
-  // One-sided slopes (second order) must agree, otherwise there is a corner.
-  const right = (-3 * f0 + 4 * fp2 - fp) / h;
-  const left = (3 * f0 - 4 * fm2 + fm) / h;
-  if (!Number.isFinite(left) || !Number.isFinite(right)) return NaN;
-  if (Math.abs(left - right) > 1e-3 * Math.max(1, Math.abs(left), Math.abs(right))) return NaN;
-  return value;
+  // A fixed step can cross a pole or mistake strong smooth curvature for a corner.
+  // Refine a bounded number of times; a true cusp keeps disagreeing on both sides.
+  for (let refinement = 0; refinement < 12; refinement++, h *= 0.25) {
+    if (x + h === x || x - h === x) return NaN;
+    const fp = inner(x + h); const fm = inner(x - h);
+    const fp2 = inner(x + h / 2); const fm2 = inner(x - h / 2);
+    const d1 = (fp - fm) / (2 * h);
+    const d2 = (fp2 - fm2) / h;
+    const value = (4 * d2 - d1) / 3;
+    const right = (-3 * f0 + 4 * fp2 - fp) / h;
+    const left = (3 * f0 - 4 * fm2 + fm) / h;
+    if (![value, left, right].every(Number.isFinite)) continue;
+    const scale = Math.max(1, Math.abs(left), Math.abs(right), Math.abs(value));
+    if (Math.abs(left - right) <= 1e-3 * scale && Math.abs(d2 - d1) <= 1e-5 * scale) return value;
+  }
+  return NaN;
 }
 
 /** Builds a closure tree; evaluation never throws and returns NaN outside the domain. */
