@@ -246,11 +246,11 @@ describe('reviewed KK translation import (0039)', () => {
     expect(report.data).toMatchObject({ students: [{ id: school.studentA.id, attempts: 2, uniqueQuestions: 1, firstPoints: 1, firstMaxPoints: 1 }] });
     // Both answers are correct, but XP for the family is paid once.
     expect(await db.scalar<number>("SELECT coalesce(sum(amount),0)::int FROM public.reward_ledger WHERE user_id=$1 AND reward_key LIKE 'correct-family:%'", [school.studentA.id])).toBe(10);
-    // The pupil's own progress still finds the topic of the hidden (unpublished) KK row.
+    // Progress finds both topics even though key-bearing RU and KK sources are hidden.
     const questionIds = JSON.parse(await db.scalar<string>("SELECT jsonb_agg(DISTINCT question_id)::text FROM public.attempts WHERE user_id=$1", [school.studentA.id])) as string[];
     expect(questionIds).toHaveLength(2);
     const visible = await db.rest(school.studentA, `/questions?select=id&id=in.(${questionIds.join(',')})`);
-    expect((visible.data as unknown[]).length).toBe(1);
+    expect(visible.data).toEqual([]);
     const topics = await db.rpc(school.studentA, 'my_attempted_question_topics_v1', { question_ids: questionIds });
     expect(topics.status, JSON.stringify(topics.data)).toBe(200);
     expect((topics.data as { topic_id: string }[]).map((row) => row.topic_id)).toEqual([t.id, t.id]);

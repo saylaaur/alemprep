@@ -65,9 +65,9 @@ Files: `app/[locale]/page.tsx`, matching `pilotLanding` messages, mobile landing
 
 - [x] Replace active status entries with current approved coverage and deployed SHA; link historical status to canonical launch file.
 - [x] Provide pupil/teacher quick guides, school intake fields, 14-day pilot schedule, success metrics, reporting limits, incident/stop checklist, compatible rollback and backup/restore commands. Distinguish proposed dates/thresholds from school commitments.
-- [ ] Prepare private data-only quarantine SQL for exact ambiguous RU version with atomic audit and preserved snapshots. Apply only through already authorized owner/database access; do not bypass locked-browser or invent success.
+- [x] Prepare private data-only quarantine SQL for exact ambiguous RU version with atomic audit and preserved snapshots. Apply only through already authorized owner/database access; do not bypass locked-browser or invent success.
 - [x] Run typecheck/lint/unit/build, DB/migration and browser matrix; one independent whole-branch review; resolve blockers with regression tests.
-- [ ] Push PR, attach it, wait required CI green, merge and verify exact production deployment plus RU/KK HTTP checks.
+- [x] Push PR, attach it, wait required CI green, merge and verify exact production deployment plus RU/KK HTTP checks. PR #38 merged, then graph #40 production8400ad7.
 
 ### Task 5: Real school opening (external facts required)
 
@@ -84,3 +84,13 @@ Production landing still advertised three subjects and editorial KK review. Add 
 ## Completion rule
 
 Tasks 1–4 can be finished autonomously. A release plus local tests is technical evidence, not a fabricated real-school launch. Task 5 stays pending until real facts/actions are verified. Final report names deployed SHA, observed evidence, remaining external facts and next exact action.
+
+
+## 11.10 owner-requested final technical pass
+
+- [x] Confirm actual main/deployment8400ad7 and clean isolated branch; fresh build/types/lint/unit1177.
+- [x] Apply exact data quarantine through owner console; immutable backup privately preserved, audit1; hosted content89RU/89KK, no content blockers.
+- [x] Reproduce source-key REST disclosure RED and add restrictive0041, reviewed independently; preserve active self-study, teacher scope, editor/service and snapshots.
+- [ ] Complete fresh DB/migration/browser matrix, publish reviewed corrective release and verify hosted0041.
+- [ ] Full hosted backup/restore: CLI login/link credentials unavailable; owner setup requested.
+- [ ] School opening: actual teacher Google emails/logins, bootstrap, external pupil OAuth and teacher+1 rehearsal. Intake confirmed102 pupils/four classes/threeRU+oneKK, stored privately.

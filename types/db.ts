@@ -425,6 +425,7 @@ export type Database = {
     Tables: Record<string, never>;
     Views: Record<string, never>;
     Functions: {
+      question_has_trusted_version_v1: { Args: { source_question_id: string }; Returns: boolean };
       content_source_snapshot_v1: { Args: { source_id: string }; Returns: unknown };
       content_topic_counts_v1: { Args: { content_locale: Locale }; Returns: { topic_id: string; type: QuestionType; question_count: number }[] };
       content_import_reviewed_v1: { Args: { batch_id: string; batch_hash: string; locale: 'ru'; entries: unknown }; Returns: unknown };
