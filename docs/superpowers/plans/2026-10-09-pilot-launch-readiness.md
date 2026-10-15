@@ -7,6 +7,12 @@
 **Tech Stack:** Next.js 16.3.8, React 19, Supabase/Postgres, next-intl, Vitest, Playwright.
 **Spec:** `docs/pilot/PILOT_LAUNCH.md` is the current operational specification and status; historical September/early October plans remain history.
 
+## Current operational status — 15.10.2026
+
+Hosted 0041, four real teacher bindings, all four KK class settings, team RU/KK answer→report rehearsal, authenticated CSV download and fresh 68-table logical backup/recovery are complete. Team evidence: 17 trusted answers, 6 KK, 14 first families, 7/14 points; test scope is excluded from real school reports. Keep the original task evidence below as history, not a reason to repeat deployment, schema or provisioning.
+
+Continue with [the current launch instruction](../../pilot/PILOT_LAUNCH.md) and [15.10 evidence](../../production/reviews/2026-10-15-pilot-readiness.md): actual school pupil/device/network day 0, then 10–20 and class-by-class expansion. Real account mapping, IDs, CSV and backups stay outside Git. Do not infer pilot participation from global active-school or signup counts: a separate team rehearsal school now exists. No full ENT/new LMS block is required before the controlled start.
+
 ## Global constraints
 
 - Preserve applied migrations 0001–0040, `.env.local`, theme tokens and released content snapshots.
