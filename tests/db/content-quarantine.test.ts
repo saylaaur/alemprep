@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createDbHarness, type DbHarness } from './helpers';
-const sql = readFileSync('docs/pilot/quarantine-ambiguous-ru.sql', 'utf8');
+const sql = readFileSync('supabase/pilot/quarantine-ambiguous-ru.sql', 'utf8');
 const version = sql.match(/WHERE v.id='([^']+)'/)![1]!;
 const source = sql.match(/v.question_id='([^']+)'/)![1]!;
 const hash = sql.match(/v.content_hash='([^']+)'/)![1]!;
