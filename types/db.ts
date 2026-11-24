@@ -441,3 +441,57 @@ export type Database = {
     Enums: Record<string, never>;
   };
 };
+
+/** books — книга-конспект одной подтемы официальной темы (0042) */
+export type Book = {
+  id: string;
+  topic_id: string;
+  slug: string;
+  sort_order: number;
+  name_ru: string;
+  name_kk: string | null;
+  /** BookContent (lib/books/content.ts); null — конспект готовится */
+  content_ru: unknown;
+  content_kk: unknown;
+  has_content: boolean;
+  video_url: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** user_books — книга у ученика и её график повторения (0042). Пишет только сервер. */
+export type UserBook = {
+  user_id: string;
+  book_id: string;
+  received_on: string;
+  /** 0..7, 7 — книга выучена */
+  stage: number;
+  /** null — книга выучена */
+  due_on: string | null;
+  reviews_count: number;
+  lapses: number;
+  last_reviewed_at: string | null;
+  created_at: string;
+};
+
+/** book_reviews — история повторений (0042) */
+export type BookReview = {
+  id: number;
+  user_id: string;
+  book_id: string;
+  reviewed_on: string;
+  reviewed_at: string;
+  recalled: number;
+  counted: boolean;
+  stage_before: number;
+  stage_after: number;
+  due_on_after: string | null;
+};
+
+/** telegram_links — привязанный Telegram-чат для напоминаний (0042) */
+export type TelegramLink = {
+  user_id: string;
+  chat_id: number;
+  linked_at: string;
+  last_reminded_on: string | null;
+};

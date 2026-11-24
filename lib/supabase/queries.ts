@@ -1,6 +1,9 @@
 import { createClient } from './server';
 import { z } from 'zod';
 import { isLearningEnabled } from '@/lib/learning/feature-flag';
+import { isLocalMode } from '@/lib/data-mode';
+import { localProfile } from '@/lib/local/profile';
+import { readLocalState } from '@/lib/local/store';
 import { readAllPages } from './pagination';
 import {
   EXAM_BLUEPRINT,
@@ -10,6 +13,7 @@ import {
   type ExamShortfall,
 } from '@/lib/exam';
 import { localDateStr } from '@/lib/streak';
+import { addDays as addDaysStr } from '@/lib/books/schedule';
 import {
   levelProgress,
   upcomingBadges,
@@ -107,6 +111,7 @@ export async function getUnpublishedQuestions(): Promise<UnpublishedQuestion[]> 
 }
 
 export async function getProfile(): Promise<Profile | null> {
+  if (isLocalMode()) return localProfile(await readLocalState());
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
@@ -440,6 +445,8 @@ export type Gamification = {
   /** true, если последняя заморозка спасла серию именно на текущий last_active_date. */
   freezeJustSaved: boolean;
   solvedToday: number;
+  /** Даты последних двух недель, в которые были попытки (для кружков недели на «Сегодня»). */
+  activeDates: string[];
   earned: GamificationBadge[];
   upcoming: UpcomingBadge[];
   topicMastery: TopicMasteryStat[];
@@ -497,6 +504,9 @@ export async function getGamification(userId: string): Promise<Gamification | nu
   const solvedToday = attempts.filter(
     (a) => localDateStr(new Date(a.attempted_at)) === today
   ).length;
+
+  const recentFrom = addDaysStr(today, -13);
+  const activeDates = Array.from(new Set(attempts.map((a) => localDateStr(new Date(a.attempted_at))))).filter((d) => d >= recentFrom).sort();
 
   // Мастерство по темам: точность по каждой теме.
   const topicMap = new Map<
@@ -571,6 +581,7 @@ export async function getGamification(userId: string): Promise<Gamification | nu
     streakFreezes,
     freezeJustSaved,
     solvedToday,
+    activeDates,
     earned,
     upcoming,
     topicMastery,

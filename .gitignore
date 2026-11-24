@@ -51,3 +51,5 @@ unt*recources/
 
 # Agent execution notes remain local to this checkout.
 /.superpowers/
+
+out-demo/

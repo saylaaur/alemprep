@@ -1,0 +1,65 @@
+import type { LessonLabels } from '@/components/lessons/labels';
+
+/** Собирает подписи из словаря messages.lessons. get('video.play') → строка. */
+export function buildLessonLabels(get: (key: string) => string): LessonLabels {
+  const g = get;
+  return {
+    video: {
+      play: g('video.play'),
+      pause: g('video.pause'),
+      mute: g('video.mute'),
+      unmute: g('video.unmute'),
+      speed: g('video.speed'),
+      fullscreen: g('video.fullscreen'),
+      seek: g('video.seek'),
+      watched: g('video.watched'),
+    },
+    practice: {
+      title: g('practice.title'),
+      progress: g('practice.progress'),
+      correct: g('practice.correct'),
+      question: g('practice.question'),
+      levels: { easy: g('practice.levels.easy'), medium: g('practice.levels.medium'), hard: g('practice.levels.hard') },
+      solution: g('practice.solution'),
+      right: g('practice.right'),
+      wrong: g('practice.wrong'),
+      next: g('practice.next'),
+      closedTitle: g('practice.closedTitle'),
+      closedText: g('practice.closedText'),
+      hint: g('practice.hint'),
+      check: g('practice.check'),
+      multiHint: g('practice.multiHint'),
+    },
+    mock: {
+      title: g('mock.title'),
+      lockedTitle: g('mock.lockedTitle'),
+      lockedHint: g('mock.lockedHint'),
+      intro: g('mock.intro'),
+      start: g('mock.start'),
+      question: g('mock.question'),
+      prev: g('mock.prev'),
+      next: g('mock.next'),
+      finish: g('mock.finish'),
+      result: g('mock.result'),
+      best: g('mock.best'),
+      retry: g('mock.retry'),
+      review: g('mock.review'),
+      yourAnswer: g('mock.yourAnswer'),
+      rightAnswer: g('mock.rightAnswer'),
+      unlockDemo: g('mock.unlockDemo'),
+    },
+    notes: {
+      title: g('notes.title'),
+      subtitle: g('notes.subtitle'),
+      page: g('notes.page'),
+      expand: g('notes.expand'),
+      collapse: g('notes.collapse'),
+      notReady: g('notes.notReady'),
+    },
+    sound: { on: g('sound.on'), off: g('sound.off') },
+    streakChip: g('streakChip'),
+    gift: { title: g('gift.title'), text: g('gift.text') },
+    textFallback: g('textFallback'),
+    demoBadge: g('demoBadge'),
+  };
+}

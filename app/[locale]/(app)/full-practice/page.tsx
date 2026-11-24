@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
+import { isLocalMode } from '@/lib/data-mode';
+import { LocalTestPage } from '@/components/localtest/LocalTestPage';
 import { isPilotTopicsOnly } from '@/lib/learning/feature-flag';
 import { createClient } from '@/lib/supabase/server';
 import { getExamAvailability } from '@/lib/supabase/queries';
@@ -13,6 +15,8 @@ export default async function FullPracticePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  // Без базы: тест из вопросов уроков, результат — в cookie.
+  if (isLocalMode()) return <LocalTestPage kind="full" locale={locale as Locale} />;
   // Пилот «только темы»: эти попытки не видны учителю, ведём ученика в темы.
   if (isPilotTopicsOnly()) redirect(`/${locale}/subjects`);
 

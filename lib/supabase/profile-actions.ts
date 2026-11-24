@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { MIN_DAILY_GOAL, MAX_DAILY_GOAL } from '@/lib/settings';
 import { validateOnboarding, validateExamDate, clampTargetScore } from '@/lib/onboarding';
 import { EXAM_SECOND_SUBJECTS, type ExamSecondSubject } from '@/lib/exam';
+import { isLocalMode } from '@/lib/data-mode';
+import { updateLocalState } from '@/lib/local/store';
 import type { Locale } from '@/types/db';
 
 /**
@@ -21,9 +23,10 @@ export async function updateProfileSettings(input: {
   examDate?: string;
   targetScore?: number;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: 'unauthenticated' };
+  const local = isLocalMode();
+  const supabase = local ? null : await createClient();
+  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
+  if (!local && !user) return { ok: false, error: 'unauthenticated' };
 
   const update: Record<string, unknown> = {};
   if (input.locale === 'ru' || input.locale === 'kk') {
@@ -52,8 +55,27 @@ export async function updateProfileSettings(input: {
   }
   if (Object.keys(update).length === 0) return { ok: true };
 
-  const { error } = await supabase.from('profiles').update(update).eq('id', user.id);
-  if (error) return { ok: false, error: error.message };
+  if (supabase && user) {
+    const { error } = await supabase.from('profiles').update(update).eq('id', user.id);
+    if (error) return { ok: false, error: 'temporarily-unavailable' };
+  } else {
+    // Без базы настройки живут в cookie браузера.
+    try {
+      await updateLocalState((s) => ({
+        ...s,
+        profile: {
+          ...s.profile,
+          ...(update.locale !== undefined ? { locale: update.locale as Locale } : {}),
+          ...(update.daily_goal !== undefined ? { dailyGoal: update.daily_goal as number } : {}),
+          ...(update.second_subject !== undefined ? { secondSubject: update.second_subject as 'physics' | 'informatics' } : {}),
+          ...(update.exam_date !== undefined ? { examDate: update.exam_date as string } : {}),
+          ...(update.target_score !== undefined ? { targetScore: update.target_score as number } : {}),
+        },
+      }));
+    } catch {
+      return { ok: false, error: 'temporarily-unavailable' };
+    }
+  }
 
   // Дашборд (кольцо дневной цели, план) и сама страница настроек должны увидеть новое значение.
   revalidatePath('/[locale]/(app)/dashboard', 'page');
@@ -95,7 +117,7 @@ export async function completeOnboarding(input: {
     .eq('id', user.id)
     .select('id');
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: 'temporarily-unavailable' };
   if (!data || data.length === 0) return { ok: false, error: 'update_failed' };
 
   revalidatePath('/[locale]/(app)/dashboard', 'page');

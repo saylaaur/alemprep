@@ -15,6 +15,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
         mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       colors: {
@@ -126,8 +127,14 @@ const config: Config = {
       },
       transitionTimingFunction: {
         smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        // Сильный ease-out (Emil Kowalski): быстрый старт, мягкая посадка.
+        apple: 'cubic-bezier(0.23, 1, 0.32, 1)',
       },
     },
+  },
+  future: {
+    // hover: только на устройствах с мышью — на телефоне нет «залипших» наведений.
+    hoverOnlyWhenSupported: true,
   },
   plugins: [require('tailwindcss-animate')],
 };

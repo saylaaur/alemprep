@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
 import { resolveOAuthOrigin } from '@/lib/auth-origin';
 import { resolveAuthRedirect } from '@/lib/auth-redirect';
+import { isLocalMode } from '@/lib/data-mode';
 import { createClient } from './server';
 
 export async function signInWithGoogle(redirectTo: string) {
@@ -44,6 +45,8 @@ export async function signInWithGoogle(redirectTo: string) {
 }
 
 export async function signOut() {
+  // Без базы выходить не из чего: просто на главную, данные остаются в браузере.
+  if (isLocalMode()) redirect('/');
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect('/');
