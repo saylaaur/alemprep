@@ -212,8 +212,8 @@ describe('validateTranslation: защита от битых данных', () =>
 });
 
 // =====================================================
-// referencesMissingVisual (scripts/transcribe-questions.ts --multi,
-// scripts/generate-variants.ts via validateAndFilter)
+// referencesMissingVisual (scripts/content/transcribe-questions.ts --multi,
+// scripts/content/generate-variants.ts via validateAndFilter)
 // =====================================================
 
 function singleQuestionBody(

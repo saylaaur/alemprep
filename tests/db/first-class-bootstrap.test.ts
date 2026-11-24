@@ -6,7 +6,7 @@ import {waitForWaitingRowLock} from './lock-barrier';
 let db:DbHarness;
 afterEach(async()=>{await db?.close()});
 async function bootstrap(values:{schoolId:string;groupId:string;operatorEmail:string;teacherEmail:string;groupName?:string},execute=(sql:string)=>db.execute(sql)){
-  let sql=await readFile('docs/pilot/bootstrap-first-class.sql','utf8');
+  let sql=await readFile('supabase/pilot/bootstrap-first-class.sql','utf8');
   for(const [name,value] of Object.entries({school_id:values.schoolId,group_id:values.groupId,operator_email:values.operatorEmail,teacher_email:values.teacherEmail,school_name:'Synthetic bootstrap school',group_name:values.groupName??'Synthetic bootstrap group'})){
     sql=sql.replace(`-- SET ${name}`,`v_${name} := '${value.replaceAll("'","''")}';`);
   }
@@ -64,7 +64,7 @@ describe('operator first-class bootstrap',()=>{
   });
   it('fails closed with unset values or an account that has not signed in',async()=>{
     db=await createDbHarness();
-    await expect(db.execute(await readFile('docs/pilot/bootstrap-first-class.sql','utf8'))).rejects.toThrow('configure-bootstrap');
+    await expect(db.execute(await readFile('supabase/pilot/bootstrap-first-class.sql','utf8'))).rejects.toThrow('configure-bootstrap');
     const operator=await db.actor('bootstrap-missing-teacher');
     const schoolId=crypto.randomUUID();
     await expect(bootstrap({schoolId,groupId:crypto.randomUUID(),operatorEmail:operator.email,teacherEmail:'missing@example.test'})).rejects.toThrow('account-must-sign-in');
@@ -78,7 +78,7 @@ describe('operator first-class bootstrap',()=>{
     const connection=await db.connection();
     try{
       await connection.execute('SET ROLE authenticated');
-      await expect(connection.execute(await readFile('docs/pilot/bootstrap-first-class.sql','utf8'))).rejects.toThrow('operator-only');
+      await expect(connection.execute(await readFile('supabase/pilot/bootstrap-first-class.sql','utf8'))).rejects.toThrow('operator-only');
     }finally{await connection.execute('RESET ROLE');connection.release()}
   });
 });

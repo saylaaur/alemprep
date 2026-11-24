@@ -173,7 +173,7 @@ export type MatchingBody = z.infer<typeof MatchingBodySchema>;
 export type QuestionBody = z.infer<typeof QuestionBodySchema>;
 export type ExplanationType = z.infer<typeof ExplanationSchema>;
 
-/** Ответ переводчика (scripts/translate-questions.ts): та же структура body+explanation. */
+/** Ответ переводчика (scripts/content/translate-questions.ts): та же структура body+explanation. */
 export const TranslationResponseSchema = z.object({
   body: QuestionBodySchema,
   explanation: ExplanationSchema,

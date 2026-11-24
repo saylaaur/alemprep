@@ -1,78 +1,46 @@
 # AlemPrep
 
-Подготовка к ЕНТ. Math · Physics · Informatics.
+AlemPrep is a web app for Kazakhstan’s Unified National Testing exam (ҰБТ / ЕНТ). Students practise mathematics by topic in Kazakh or Russian, review worked explanations, and explore functions in an interactive graphing tool. Teachers can invite students to their class and follow participation and results.
 
-## Быстрый старт
+[Open AlemPrep](https://alemprep.vercel.app) · [Local development](docs/development/setup.md) · [Architecture](docs/development/architecture.md)
 
-Двойной клик по `start.command` — установит зависимости и запустит dev-сервер на `http://localhost:3000`.
+## What it does
 
-Если двойной клик не работает (macOS ругается на безопасность):
+- **Practice by topic** in Kazakh (`/kk`) or Russian (`/ru`). The initial bilingual school release covered progressions, equations, powers, and radicals.
+- **Explore graphs** with editable expressions and parameter controls. The built-in graphing tool runs without an external graphing API.
+- **Save graded attempts on the server.** The browser submits answers, and retries can recover a saved result without counting it twice.
+- **Follow class activity.** Teachers use invitation links, see results for their own classes, and can download a CSV report.
 
-```bash
-cd "/Users/macbook/Documents/Claude/Projects/UNT platform/alemprep"
-chmod +x start.command
-./start.command
-```
+## Run locally
 
-или вручную:
+Use Node.js **22–24**, npm, and Docker for local Supabase.
 
-```bash
-npm install
-cp .env.local.example .env.local
+```sh
+npm ci --legacy-peer-deps
+npx supabase start
+cp .env.example .env.local
 npm run dev
 ```
 
-## Supabase
+Before opening [http://localhost:3000/kk](http://localhost:3000/kk), set the local Supabase URL and keys from `npx supabase status`. Configure Google OAuth if you want to sign in through the app. See the [setup and test guide](docs/development/setup.md) for the environment variables, callbacks, and browser tests.
 
-Авторизация заработает только после настройки Supabase:
+## Repository layout
 
-1. Создай проект на [supabase.com](https://supabase.com)
-2. Settings → API → скопируй `Project URL` и `anon public`
-3. Вставь в `.env.local`:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-4. Authentication → Providers → Google → включи и добавь redirect URL: `http://localhost:3000/auth/callback`
+| Path | Contents |
+| --- | --- |
+| [app/](app/), [components/](components/) | Next.js routes and React UI |
+| [lib/](lib/) | Grading, practice, graphing, school access, and reporting |
+| [i18n/](i18n/), [messages/](messages/) | Kazakh and Russian routing and interface strings |
+| [supabase/](supabase/) | PostgreSQL migrations and school operator SQL |
+| [scripts/](scripts/) | Content preparation, release checks, and local test tooling |
+| [tests/](tests/) | Database, migration, and browser integration tests |
 
-## Структура
+The app uses TypeScript, Next.js, React, Tailwind CSS, and Supabase Auth and PostgreSQL. GitHub Actions runs type checking, lint, unit tests, a production build, database tests, browser tests, and secret scanning.
 
-```
-app/[locale]/(app)/   — основное приложение под Sidebar
-  dashboard/          — главная после логина
-  subjects/           — список предметов
-  full-practice/      — полный пробник (Шаг 5)
-  progress/           — статистика (Шаг 5)
-  settings/
+## Guides
 
-app/[locale]/         — публичные страницы (landing, login)
-app/auth/callback/    — OAuth-redirect Supabase
-
-components/layout/    — Sidebar, AppShell, PageHeader
-components/ui/        — shadcn-стиль (Button, Card)
-
-lib/supabase/         — SSR-клиенты + auth-actions
-i18n/                 — next-intl (ru/kk)
-messages/             — словари
-```
-
-## Roadmap
-
-- [x] **Шаг 1** — каркас, i18n, Sidebar, auth-shell
-- [ ] **Шаг 2** — схема БД, миграции Supabase, сидинг первых задач
-- [ ] **Шаг 3** — тренажёр single-choice + Deep-Work шорткаты
-- [ ] **Шаг 4** — multi-select, matching, контекстные блоки
-- [ ] **Шаг 5** — Dashboard со статистикой, режим полного пробника
-
-## Миграция шкалы баллов (fix/exam-format)
-
-Блюпринты `EXAM_BLUEPRINT`, `DIAGNOSTIC_BLUEPRINT` (`lib/exam.ts`) и
-`WEEKLY_BLUEPRINT` (`lib/weekly.ts`) приведены к официальному формату
-ЕНТ-2026 (40 заданий / 50 баллов на профильный предмет, диагностика и
-еженедельный тест — та же пропорция 6:1:1 в масштабе 8 заданий / 10 баллов).
-Это меняет шкалу баллов у уже сохранённых сессий — старые диагностики и
-еженедельные тесты записаны в другой шкале, и график траектории на
-`/progress` смешает несравнимые баллы. Реальных пользователей ещё нет,
-поэтому перед следующим деплоем нужно очистить тестовые сессии:
-
-```sql
-delete from sessions where mode in ('diagnostic', 'weekly');
-```
+- [School pilot](docs/product/school-pilot.md)
+- [Content workflow](docs/operations/content.md)
+- [Releases and recovery](docs/operations/releases.md)
+- [Project history](docs/project-history.md)
+- [Security reporting](SECURITY.md)

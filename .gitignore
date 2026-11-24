@@ -22,6 +22,7 @@ blob-report/
 next-env.d.ts
 
 # Content pipeline outputs (runtime artefacts, not committed)
+/docs/qa/
 scripts/references/
 scripts/generated/
 scripts/verified/
@@ -30,7 +31,7 @@ scripts/verified-translations/
 scripts/insert-batch.sql
 scripts/.batches/
 
-# Подготовленные фото (scripts/prepare-photos.ts) — те же материалы НЦТ, только перекодированные.
+# Подготовленные фото (scripts/content/prepare-photos.ts) — те же материалы НЦТ, только перекодированные.
 # --out может называться как угодно — покрываем и дефолтное имя, и вариант scripts/photos*/.
 scripts/prepared-photos/
 **/prepared-photos/
@@ -48,10 +49,5 @@ unt*resources/
 unt*recources/
 *.unt/
 
-# Подготовленные фото (scripts/prepare-photos.ts) — те же материалы НЦТ, только перекодированные.
-scripts/prepared-photos/
-**/prepared-photos/
-scripts/photos/
-scripts/photos-*/
 # Agent execution notes remain local to this checkout.
 /.superpowers/

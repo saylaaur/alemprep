@@ -187,7 +187,7 @@ export function validateAndFilter(questions: GeneratedQuestion[]): CheckResult {
 }
 
 // =====================================================
-// Translation validation (scripts/translate-questions.ts)
+// Translation validation (scripts/content/translate-questions.ts)
 // =====================================================
 
 const KAZAKH_ONLY_CHARS = /[әғқңөұүһі]/i;
