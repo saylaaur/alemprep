@@ -10,7 +10,7 @@ async function fixture() {
   const pupil = await db.actor('source-key-pupil');
   const admin = await db.actor('source-key-editor');
   await db.execute('UPDATE public.profiles SET is_admin=true WHERE id=$1', [admin.id]);
-  const topic = await db.scalar<string>('SELECT id FROM public.topics ORDER BY id LIMIT 1');
+  const topic = await db.scalar<string>('SELECT t.id FROM public.topics t JOIN public.subjects s ON s.id=t.subject_id WHERE s.is_active ORDER BY t.id LIMIT 1');
   const source = await db.scalar<string>(`INSERT INTO public.questions(topic_id,language,type,body,explanation,is_published)
     VALUES($1,'ru','single','{"stem":"synthetic key protection","options":[{"id":"A","content":"4"}],"correct":"A"}',
     '{"blocks":[{"value":"the answer is 4"}]}',true) RETURNING id`, [topic]);

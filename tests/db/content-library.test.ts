@@ -10,6 +10,9 @@ describe('content library migrations', () => {
   it('exposes book content to signed-in pupils and limits each collection to its owner', async () => {
     const pupil = await db.actor('library-owner');
     const peer = await db.actor('library-peer');
+    expect(await db.scalar<boolean>(
+      "SELECT has_content AND content_kk IS NOT NULL FROM public.books WHERE slug = 'accelerated-motion'",
+    )).toBe(true);
     const id = await db.scalar<string>("SELECT id FROM public.books WHERE slug = 'newton-laws' AND has_content");
     await db.execute(
       "INSERT INTO public.user_books (user_id, book_id, received_on, due_on) VALUES ($1, $2, '2026-11-23', '2026-11-24')",
