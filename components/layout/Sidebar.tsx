@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 import { signOut } from '@/lib/supabase/auth-actions';
+import { clearContentProgress } from '@/lib/lessons/progress';
 import { clearAllSavedExams } from '@/lib/exam-storage';
 import { clearPendingLearning } from '@/lib/learning/browser-storage';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -150,6 +151,7 @@ export function Sidebar({
               onSubmit={() => {
                 clearPendingLearning();
                 clearAllSavedExams();
+                clearContentProgress();
               }}
             >
               <button

@@ -27,7 +27,7 @@ export type TodayViewProps = {
   /** Кольцо «Уроки»: null — раздел ещё не подключён к данным (подпись «скоро»). */
   lessons: RingValue;
   /** Книги к повторению сегодня и сколько повторено. */
-  books: { due: ReadonlyArray<{ slug: string; name: string; subjectName: string; overdueDays: number }>; reviewedToday: number };
+  books: { due: ReadonlyArray<{ slug: string; name: string; subjectName: string; overdueDays: number }>; reviewedToday: number } | null;
 };
 
 /**
@@ -42,6 +42,8 @@ export async function TodayView({
   targetScore,
   baselineScore,
   g,
+  subjects,
+  weeklyTest,
   lessons,
   books,
 }: TodayViewProps) {
@@ -80,6 +82,20 @@ export async function TodayView({
         <h1 className="mt-2 text-balance text-[clamp(36px,7vw,80px)] font-extrabold leading-[0.95] tracking-[-0.045em]">
           {tDash('greeting', { name })}
         </h1>
+        {(subjects.length > 0 || weeklyTest?.availableThisWeek) && (
+          <div className="mt-5 flex flex-wrap gap-2">
+            {subjects.length > 0 && (
+              <Link href="/subjects" className="inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">
+                {tDash('startPractice')}
+              </Link>
+            )}
+            {weeklyTest?.availableThisWeek && (
+              <Link href="/weekly" className="glass inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold">
+                {tDash('weeklyTestStart')}
+              </Link>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="grid gap-3.5 sm:grid-cols-2">
@@ -92,10 +108,10 @@ export async function TodayView({
             values={[
               { done: Math.min(solvedToday, dailyTotal), total: dailyTotal },
               lessons,
-              { done: books.reviewedToday, total: books.reviewedToday + books.due.length },
+              books ? { done: books.reviewedToday, total: books.reviewedToday + books.due.length } : null,
             ]}
           />
-          {books.due.length > 0 && (
+          {books && books.due.length > 0 && (
             <Link
               href="/review"
               className="mt-4 inline-flex items-center justify-center gap-2 self-center rounded-full bg-streak px-5 py-2.5 text-sm font-semibold text-[#2b1100] shadow-[0_0_18px_hsl(var(--streak)/0.4)] transition-[transform,filter] duration-150 ease-apple hover:brightness-105 active:scale-[0.97]"

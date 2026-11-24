@@ -6,6 +6,7 @@ import { TopicPractice } from '@/components/problems/TopicPractice';
 import { buildLessonLabels } from '@/lib/lessons/labels';
 import { resolveBankItem, setCount, topicSet } from '@/lib/problems/bank';
 import { getLibrary } from '@/lib/supabase/queries/books';
+import { getActor } from '@/lib/server/actor';
 import { isLocalMode } from '@/lib/data-mode';
 import type { Locale } from '@/types/db';
 
@@ -26,7 +27,10 @@ export default async function TopicProblemsPage({
   if (total === 0) notFound();
   const set = Math.min(Math.max(0, Number.parseInt(sp.set ?? '0', 10) || 0), total - 1);
 
-  const [t, tl, library] = await Promise.all([getTranslations('problems'), getTranslations('lessons'), getLibrary(l)]);
+  const [t, tl, library, actor] = await Promise.all([
+    getTranslations('problems'), getTranslations('lessons'), getLibrary(l), getActor(),
+  ]);
+  const storageTopic = actor ? `${actor.id}:${topic}` : topic;
   const info = library.flatMap((s) => s.topics.map((tp) => ({ ...tp, subject: s.name }))).find((tp) => tp.slug === topic);
   const problems = topicSet(topic, set).map((it) => resolveBankItem(it, l));
   const base = buildLessonLabels((key) => tl.raw(key) as string).practice;
@@ -44,7 +48,7 @@ export default async function TopicProblemsPage({
       </header>
       <TopicPractice
         key={`${topic}-${set}`}
-        storageKey={`alemprep:topic:${topic}:set${set}:v1`}
+        storageKey={`alemprep:topic:${storageTopic}:set${set}:v1`}
         problems={problems}
         labels={labels}
         activityUrl={isLocalMode() ? '/api/local/activity' : undefined}

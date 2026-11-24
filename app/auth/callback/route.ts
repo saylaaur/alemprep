@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { resolveAuthRedirect } from '@/lib/auth-redirect';
+import { isLocalMode } from '@/lib/data-mode';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -22,6 +23,8 @@ export async function GET(request: Request) {
     response.cookies.set('alemprep_auth_next', '', { path: '/', maxAge: 0 });
     return response;
   };
+
+  if (isLocalMode()) return finish(new URL(`/${locale}/dashboard`, origin));
 
   if (code) {
     const supabase = await createClient();

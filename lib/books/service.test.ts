@@ -17,13 +17,18 @@ function memoryRepo() {
       userBooks.set(key(userId, bookId), { ...schedule, reviewsCount: 0, lapses: 0 });
       return true;
     },
-    async updateUserBook({ userId, bookId, expected }, next) {
-      const cur = userBooks.get(key(userId, bookId));
-      if (!cur || cur.stage !== expected.stage || cur.dueOn !== expected.dueOn) return false;
-      userBooks.set(key(userId, bookId), { ...next.schedule, reviewsCount: next.reviewsCount, lapses: next.lapses });
+    async recordReview(row) {
+      const k = key(row.userId, row.bookId);
+      const current = userBooks.get(k);
+      if (!current || current.stage !== row.previous.stage || current.dueOn !== row.previous.dueOn) return false;
+      userBooks.set(k, {
+        ...row.schedule,
+        reviewsCount: current.reviewsCount + 1,
+        lapses: current.lapses + (row.lapse ? 1 : 0),
+      });
+      reviews.push(row);
       return true;
     },
-    async insertReview(row) { reviews.push(row); },
   };
   return { repo, userBooks, reviews };
 }
@@ -66,7 +71,6 @@ describe('book service', () => {
 
     // раннее повторение в журнал не пишется — иначе его можно слать бесконечно
     expect(reviews).toHaveLength(2);
-    expect(reviews.every((r) => r.counted)).toBe(true);
     expect(userBooks.get('u1:b1')).toMatchObject({ reviewsCount: 2, lapses: 1 });
   });
 
@@ -84,7 +88,7 @@ describe('book service', () => {
     const m = memoryRepo();
     const svc = createBookService({
       actorId: async () => 'u1',
-      repo: { ...m.repo, updateUserBook: async () => false },
+      repo: { ...m.repo, recordReview: async () => false },
       today: () => day.v,
     });
     await svc.receiveBook('newton-laws');

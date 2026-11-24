@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getDataMode, isLocalMode, isLocalUnsupportedPath } from './data-mode';
+import { getDataMode, isContentEnabled, isLocalMode, isLocalUnsupportedPath } from './data-mode';
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -29,5 +29,22 @@ describe('local unsupported paths', () => {
     for (const p of ['/ru', '/ru/dashboard', '/kk/videos/newton-laws', '/ru/library/newton-laws', '/ru/progress', '/ru/settings', '/ru/login', '/ru/visualization']) {
       expect(isLocalUnsupportedPath(p), p).toBe(false);
     }
+  });
+});
+
+describe('supplementary content rollout', () => {
+  it('requires hosted opt-in and keeps the verified school pilot focused', () => {
+    vi.stubEnv('NEXT_PUBLIC_DATA_MODE', 'supabase');
+    vi.stubEnv('NEXT_PUBLIC_CONTENT_V1_ENABLED', '');
+    expect(isContentEnabled()).toBe(false);
+    vi.stubEnv('NEXT_PUBLIC_CONTENT_V1_ENABLED', 'true');
+    expect(isContentEnabled()).toBe(true);
+    expect(isContentEnabled(true)).toBe(false);
+  });
+
+  it('is available in the standalone demo', () => {
+    vi.stubEnv('NEXT_PUBLIC_DATA_MODE', 'local');
+    vi.stubEnv('NEXT_PUBLIC_CONTENT_V1_ENABLED', '');
+    expect(isContentEnabled(true)).toBe(true);
   });
 });

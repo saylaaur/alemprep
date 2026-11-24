@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { timingSafeEqual } from 'node:crypto';
+import { isContentEnabled, isLocalMode } from '@/lib/data-mode';
 
 /**
  * Telegram Bot API. Ключи — только из переменных окружения сервера:
@@ -9,7 +10,9 @@ import { timingSafeEqual } from 'node:crypto';
  *   NEXT_PUBLIC_TELEGRAM_BOT_USERNAME — имя бота без @ (для ссылки t.me/…)
  */
 export function telegramConfigured(): boolean {
-  return Boolean(process.env.TELEGRAM_BOT_TOKEN?.trim() && process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME?.trim());
+  return !isLocalMode() && isContentEnabled() && Boolean(
+    process.env.TELEGRAM_BOT_TOKEN?.trim() && botUsername() && process.env.TELEGRAM_WEBHOOK_SECRET?.trim()
+  );
 }
 
 export function botUsername(): string | null {

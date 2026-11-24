@@ -27,6 +27,7 @@ export function LessonWatch({
   demo = false,
   activityUrl,
   giftBook,
+  accountId,
   dateLocale = 'ru-RU',
 }: {
   lesson: ResolvedLesson;
@@ -39,6 +40,7 @@ export function LessonWatch({
   demo?: boolean;
   /** Куда сообщать о сделанном (задача решена, урок просмотрен) — чтобы кольца и серия на «Сегодня» видели урок. */
   activityUrl?: string;
+  accountId?: string;
   /** Выдать книгу-конспект, когда тема закрыта. Повторный вызов безопасен. */
   giftBook?: () => Promise<{ ok: boolean; dueOn?: string | null }>;
   dateLocale?: string;
@@ -48,19 +50,19 @@ export function LessonWatch({
   const [forced, setForced] = useState(false);
 
   useEffect(() => {
-    setProgress(loadProgress(lesson.id));
+    setProgress(loadProgress(lesson.id, accountId));
     loaded.current = true;
-  }, [lesson.id]);
+  }, [lesson.id, accountId]);
 
   const update = useCallback(
     (fn: (p: LessonProgress) => LessonProgress) => {
       setProgress((prev) => {
         const next = fn(prev);
-        if (loaded.current) saveProgress(lesson.id, next);
+        if (loaded.current) saveProgress(lesson.id, next, accountId);
         return next;
       });
     },
-    [lesson.id]
+    [lesson.id, accountId]
   );
 
   // Запросы к cookie идут строго по очереди: два одновременных перезаписали бы друг друга.

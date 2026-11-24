@@ -105,7 +105,7 @@ export function BookReader({
               key={leaf.front.key}
               onClick={() => go(flipped ? i : i + 1)}
               className={cn(
-                'absolute left-1/2 top-0 h-full w-1/2 origin-left cursor-pointer transition-transform duration-[900ms] [transform-style:preserve-3d] [transition-timing-function:cubic-bezier(.645,.045,.355,1)]',
+                'absolute left-1/2 top-0 h-full w-1/2 origin-left cursor-pointer transition-transform [transition-duration:900ms] [transform-style:preserve-3d] [transition-timing-function:cubic-bezier(.645,.045,.355,1)]',
                 flipped && '[transform:rotateY(-180deg)]'
               )}
               style={{ zIndex: flipped ? 10 + i : 20 - i }}

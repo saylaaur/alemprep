@@ -39,22 +39,22 @@ export function createLocalBookRepository(deps: {
       return true;
     },
 
-    async updateUserBook({ bookId, expected }, next) {
-      const cur = state.books[bookId];
-      if (!cur || cur.stage !== expected.stage || cur.dueOn !== expected.dueOn) return false;
-      await commit({
+    async recordReview({ bookId, previous, schedule, reviewedOn, lapse }) {
+      const current = state.books[bookId];
+      if (!current || current.stage !== previous.stage || current.dueOn !== previous.dueOn) return false;
+      await commit(recordActivity({
         ...state,
         books: {
           ...state.books,
-          [bookId]: { ...cur, stage: next.schedule.stage, dueOn: next.schedule.dueOn, reviewsCount: next.reviewsCount, lapses: next.lapses },
+          [bookId]: {
+            ...current,
+            ...schedule,
+            reviewsCount: current.reviewsCount + 1,
+            lapses: current.lapses + (lapse ? 1 : 0),
+          },
         },
-      });
+      }, reviewedOn, { cards: 1 }));
       return true;
-    },
-
-    async insertReview(row) {
-      if (!row.counted) return;
-      await commit(recordActivity(state, row.reviewedOn, { cards: 1 }));
     },
   };
 }

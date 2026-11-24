@@ -13,21 +13,17 @@ export type BookRepository = {
   getUserBook(userId: string, bookId: string): Promise<StoredUserBook | null>;
   /** false — книга у ученика уже есть */
   insertUserBook(row: { userId: string; bookId: string; receivedOn: string; schedule: BookSchedule }): Promise<boolean>;
-  /** Обновить, только если график не изменился с момента чтения. false — гонка. */
-  updateUserBook(
-    key: { userId: string; bookId: string; expected: BookSchedule },
-    next: { schedule: BookSchedule; reviewsCount: number; lapses: number; reviewedAt: string }
-  ): Promise<boolean>;
-  insertReview(row: {
+  /** Save both the schedule and its review, or return false when the schedule changed. */
+  recordReview(row: {
     userId: string;
     bookId: string;
+    previous: StoredUserBook;
+    schedule: BookSchedule;
     reviewedOn: string;
+    reviewedAt: string;
     recalled: number;
-    counted: boolean;
-    stageBefore: number;
-    stageAfter: number;
-    dueOnAfter: string | null;
-  }): Promise<void>;
+    lapse: boolean;
+  }): Promise<boolean>;
 };
 
 export type BookError = 'unauthenticated' | 'invalid-input' | 'not-found' | 'not-ready' | 'not-received' | 'conflict';
@@ -81,34 +77,19 @@ export function createBookService(deps: {
 
       const today = deps.today();
       const outcome = applyReview(current, recalled, today);
-      const ratio = Math.round(recalled * 1000) / 1000;
-
-      if (outcome.counted) {
-        const updated = await deps.repo.updateUserBook(
-          { userId, bookId: book.id, expected: { stage: current.stage, dueOn: current.dueOn } },
-          {
-            schedule: { stage: outcome.stage, dueOn: outcome.dueOn },
-            reviewsCount: current.reviewsCount + 1,
-            lapses: current.lapses + (outcome.lapse ? 1 : 0),
-            reviewedAt: now(),
-          }
-        );
-        if (!updated) return { ok: false, error: 'conflict' };
-      }
-      // Журнал ведём только по засчитанным повторениям: «слишком раннее» повторение
-      // ничего не меняет, а писать его в базу при каждом вызове значило бы дать
-      // любому вошедшему пользователю бесплатно раздувать book_reviews.
+      // Early reviews are useful practice, but they do not change the schedule or create history.
       if (!outcome.counted) return { ok: true, value: outcome };
-      await deps.repo.insertReview({
+      const saved = await deps.repo.recordReview({
         userId,
         bookId: book.id,
+        previous: current,
+        schedule: { stage: outcome.stage, dueOn: outcome.dueOn },
         reviewedOn: today,
-        recalled: ratio,
-        counted: outcome.counted,
-        stageBefore: current.stage,
-        stageAfter: outcome.stage,
-        dueOnAfter: outcome.dueOn,
+        reviewedAt: now(),
+        recalled: Math.round(recalled * 1000) / 1000,
+        lapse: outcome.lapse,
       });
+      if (!saved) return { ok: false, error: 'conflict' };
       return { ok: true, value: outcome };
     },
   };

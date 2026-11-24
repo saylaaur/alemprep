@@ -1,6 +1,6 @@
 import createIntlMiddleware from 'next-intl/middleware';
 import { NextResponse, type NextRequest } from 'next/server';
-import { isLocalMode, isLocalUnsupportedPath } from './lib/data-mode';
+import { isContentEnabled, isContentPath, isLocalMode, isLocalUnsupportedPath } from './lib/data-mode';
 import { routing } from './i18n/routing';
 import { updateSession } from './lib/supabase/middleware';
 
@@ -24,6 +24,13 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
     return NextResponse.next({ request });
+  }
+
+  if (isContentPath(request.nextUrl.pathname) && !isContentEnabled()) {
+    const target = request.nextUrl.clone();
+    target.pathname = `/${target.pathname.split('/')[1]}/dashboard`;
+    target.search = '';
+    return NextResponse.redirect(target);
   }
 
   // Дальше Supabase обновляет сессию и проверяет защищённые маршруты

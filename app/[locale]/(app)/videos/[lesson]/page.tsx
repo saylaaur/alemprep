@@ -7,6 +7,7 @@ import { getLesson, resolveLesson } from '@/lib/lessons/catalog';
 import { buildLessonLabels } from '@/lib/lessons/labels';
 import { receiveBookAction } from '@/lib/supabase/book-actions';
 import { getBook } from '@/lib/supabase/queries/books';
+import { getActor } from '@/lib/server/actor';
 import { isLocalMode } from '@/lib/data-mode';
 import type { Locale } from '@/types/db';
 
@@ -18,13 +19,14 @@ export default async function LessonPage({ params }: { params: Promise<{ locale:
   const data = getLesson(id);
   if (!data) notFound();
   const l = locale as Locale;
-  const [t, book] = await Promise.all([getTranslations('lessons'), getBook(data.bookSlug, l)]);
+  const [t, book, actor] = await Promise.all([getTranslations('lessons'), getBook(data.bookSlug, l), getActor()]);
   const lesson = resolveLesson(data, l);
   const labels = buildLessonLabels((key) => t.raw(key) as string);
 
   return (
     <LessonWatch
       lesson={lesson}
+      accountId={actor?.id}
       subtitle={t(`subject.${lesson.subject}`)}
       book={book?.content ?? null}
       bookTitle={book?.name ?? lesson.title}

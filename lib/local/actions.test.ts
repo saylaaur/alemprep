@@ -40,8 +40,8 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 
 describe('local mode end to end (no Supabase)', () => {
-  it('the actor is the local guest', async () => {
-    expect(await getActor()).toEqual({ id: LOCAL_USER_ID });
+  it('a standalone guest does not become a hosted actor', async () => {
+    expect(await getActor()).toBeNull();
   });
 
   it('receives a book, shows it in the library and the book page', async () => {

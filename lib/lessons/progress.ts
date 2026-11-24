@@ -12,7 +12,20 @@ export type LessonProgress = {
 
 export const EMPTY_PROGRESS: LessonProgress = { answers: {}, watched: false, mock: null };
 
-export const progressKey = (lessonId: string) => `alemprep:lesson:${lessonId}:v1`;
+export const progressKey = (lessonId: string, accountId?: string) =>
+  accountId ? `alemprep:lesson:${accountId}:${lessonId}:v1` : `alemprep:lesson:${lessonId}:v1`;
+
+export function clearContentProgress(): void {
+  try {
+    for (const key of Object.keys(window.localStorage)) {
+      if (key.startsWith('alemprep:lesson:') || key.startsWith('alemprep:topic:')) {
+        window.localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // Storage can be unavailable in private browsing.
+  }
+}
 
 export function parseProgress(raw: string | null): LessonProgress {
   if (!raw) return EMPTY_PROGRESS;
@@ -30,17 +43,17 @@ export function parseProgress(raw: string | null): LessonProgress {
   }
 }
 
-export function loadProgress(lessonId: string): LessonProgress {
+export function loadProgress(lessonId: string, accountId?: string): LessonProgress {
   try {
-    return parseProgress(window.localStorage.getItem(progressKey(lessonId)));
+    return parseProgress(window.localStorage.getItem(progressKey(lessonId, accountId)));
   } catch {
     return EMPTY_PROGRESS;
   }
 }
 
-export function saveProgress(lessonId: string, p: LessonProgress): void {
+export function saveProgress(lessonId: string, p: LessonProgress, accountId?: string): void {
   try {
-    window.localStorage.setItem(progressKey(lessonId), JSON.stringify(p));
+    window.localStorage.setItem(progressKey(lessonId, accountId), JSON.stringify(p));
   } catch {
     /* приватный режим: прогресс живёт только на этой странице */
   }

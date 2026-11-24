@@ -17,6 +17,11 @@ test('pilot topics-only mode hides assessments on mobile and redirects every ass
     await expect(page.locator(`a[href="/${locale}/weekly"]`)).toHaveCount(0);
     // The desktop sidebar exists but is hidden at phone width; use the tab bar.
     await expect(page.locator(`a[href="/${locale}/subjects"]`).last()).toBeVisible();
+    for (const route of ['library', 'videos', 'problems', 'review']) {
+      await expect(page.locator(`a[href="/${locale}/${route}"]`)).toHaveCount(0);
+      await page.goto(`/${locale}/${route}`);
+      await expect(page).toHaveURL(new RegExp(`/${locale}/dashboard$`));
+    }
     for (const route of ['full-practice', 'diagnostic', 'weekly']) {
       await page.goto(`/${locale}/${route}`);
       await expect(page).toHaveURL(new RegExp(`/${locale}/subjects$`));

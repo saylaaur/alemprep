@@ -8,6 +8,7 @@ import { isLocalMode } from '@/lib/data-mode';
 import { createClient } from './server';
 
 export async function signInWithGoogle(redirectTo: string) {
+  if (isLocalMode()) redirect(`/${resolveAuthRedirect(redirectTo).locale}/dashboard`);
   const origin = resolveOAuthOrigin((await headers()).get('origin'), {
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
     vercelEnv: process.env.VERCEL_ENV,

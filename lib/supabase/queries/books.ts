@@ -197,6 +197,7 @@ export async function getBookReviewsToday(userId: string, locale: Locale): Promi
       .eq('counted', true),
   ]);
   if (dueRes.error) throw dueRes.error;
+  if (doneRes.error) throw doneRes.error;
   const due = ((dueRes.data ?? []) as unknown as Array<{
     stage: number; due_on: string;
     books: { slug: string; name_ru: string; name_kk: string | null; topics: { subjects: { name_ru: string; name_kk: string | null } } };

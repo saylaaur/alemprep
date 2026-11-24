@@ -9,6 +9,7 @@ AlemPrep is a web app for Kazakhstan’s Unified National Testing exam (ҰБТ /
 - **Practice by topic** in Kazakh (`/kk`) or Russian (`/ru`). The initial bilingual school release covered progressions, equations, powers, and radicals.
 - **Explore graphs** with editable expressions and parameter controls. The built-in graphing tool runs without an external graphing API.
 - **Save graded attempts on the server.** The browser submits answers, and retries can recover a saved result without counting it twice.
+- **Explore supplementary learning content.** An optional release adds short physics videos, practice sets, and a library with spaced review.
 - **Follow class activity.** Teachers use invitation links, see results for their own classes, and can download a CSV report.
 
 ## Run locally
@@ -41,6 +42,7 @@ The app uses TypeScript, Next.js, React, Tailwind CSS, and Supabase Auth and Pos
 
 - [School pilot](docs/product/school-pilot.md)
 - [Content workflow](docs/operations/content.md)
+- [Video lessons](docs/development/video-lessons.md) and [library rollout](docs/operations/books-and-reminders.md)
 - [Releases and recovery](docs/operations/releases.md)
 - [Project history](docs/project-history.md)
 - [Security reporting](SECURITY.md)

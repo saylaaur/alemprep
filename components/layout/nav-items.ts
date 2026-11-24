@@ -11,7 +11,7 @@ import {
   FolderOpen,
   type LucideIcon,
 } from 'lucide-react';
-import { isLocalMode } from '@/lib/data-mode';
+import { isContentEnabled, isLocalMode } from '@/lib/data-mode';
 
 export type NavItem = {
   href: '/dashboard' | '/videos' | '/library' | '/problems' | '/subjects' | '/full-practice' | '/progress';
@@ -31,10 +31,13 @@ export const navItems: NavItem[] = [
 
 /** Без базы не работает тренажёр по предметам — его в меню нет (пробник работает на вопросах уроков). */
 const LOCAL_HIDDEN: ReadonlyArray<string> = ['/subjects'];
+const CONTENT_NAV: ReadonlyArray<string> = ['/library', '/videos', '/problems'];
 
 /** Пилот «только темы» прячет пробник: его попытки не видны учителю. */
 export function visibleNavItems(topicsOnly: boolean, local: boolean = isLocalMode()): NavItem[] {
+  const contentEnabled = isContentEnabled(topicsOnly);
   return navItems.filter((item) => {
+    if (!contentEnabled && CONTENT_NAV.includes(item.href)) return false;
     if (local && LOCAL_HIDDEN.includes(item.href)) return false;
     if (topicsOnly && item.href === '/full-practice') return false;
     return true;

@@ -33,6 +33,7 @@ export async function createTelegramLinkAction(): Promise<{ ok: true; url: strin
 
 /** Отключить напоминания в Telegram. */
 export async function unlinkTelegramAction(): Promise<{ ok: boolean }> {
+  if (!telegramConfigured()) return { ok: false };
   const actor = await getActor();
   if (!actor) return { ok: false };
   const { error } = await createAdminClient().from('telegram_links').delete().eq('user_id', actor.id);

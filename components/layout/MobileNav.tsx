@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 import { signOut } from '@/lib/supabase/auth-actions';
+import { clearContentProgress } from '@/lib/lessons/progress';
 import { clearAllSavedExams } from '@/lib/exam-storage';
 import { clearPendingLearning } from '@/lib/learning/browser-storage';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -224,7 +225,7 @@ export function MobileNav({
 
           {/* Прогресс пробника в localStorage — чистим при выходе, чтобы он
               не достался следующему аккаунту на этом устройстве. */}
-          <form action={signOut} onSubmit={() => { clearPendingLearning(); clearAllSavedExams(); }}>
+          <form action={signOut} onSubmit={() => { clearPendingLearning(); clearAllSavedExams(); clearContentProgress(); }}>
             <button
               type="submit"
               className="flex w-full min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"

@@ -10,7 +10,7 @@ import {
 import { isPilotTopicsOnly } from '@/lib/learning/feature-flag';
 import { TodayView } from '@/components/today/TodayView';
 import { getBookReviewsToday } from '@/lib/supabase/queries/books';
-import { isLocalMode } from '@/lib/data-mode';
+import { isContentEnabled, isLocalMode } from '@/lib/data-mode';
 import { localGamification } from '@/lib/local/profile';
 import { DAILY_LESSON_GOAL, activityOn } from '@/lib/local/activity';
 import { readLocalState } from '@/lib/local/store';
@@ -28,7 +28,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   // Без базы нет ни попыток, ни диагностики: показываем только кольца, цитату и дни до ЕНТ.
   const local = isLocalMode();
   const localState = local ? await readLocalState() : null;
-  const withPlan = !local && Boolean(profile?.second_subject) && !isPilotTopicsOnly();
+  const topicsOnly = isPilotTopicsOnly();
+  const contentEnabled = isContentEnabled(topicsOnly);
+  const withPlan = !local && Boolean(profile?.second_subject) && !topicsOnly;
 
   const [tDash, g, subjects, weeklyTest, baseline, books] = await Promise.all([
     getTranslations('dashboard'),
@@ -36,7 +38,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
     local ? Promise.resolve([]) : getSubjectsWithCounts(l),
     userId && withPlan ? getWeeklyTestSummary(userId) : Promise.resolve(null),
     userId && withPlan ? getDiagnosticBaseline(userId) : Promise.resolve(null),
-    userId ? getBookReviewsToday(userId, l).catch(() => ({ due: [], reviewedToday: 0 })) : Promise.resolve({ due: [], reviewedToday: 0 }),
+    userId && contentEnabled ? getBookReviewsToday(userId, l).catch(() => null) : Promise.resolve(null),
   ]);
 
   return (

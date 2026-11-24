@@ -12,6 +12,16 @@ export function getDataMode(): DataMode {
   return process.env.NEXT_PUBLIC_DATA_MODE === 'local' ? 'local' : 'supabase';
 }
 
+export function isContentEnabled(topicsOnly = process.env.PILOT_TOPICS_ONLY === 'true'): boolean {
+  return isLocalMode() || (!topicsOnly && process.env.NEXT_PUBLIC_CONTENT_V1_ENABLED === 'true');
+}
+
+const CONTENT_ROUTE = /^\/(?:ru|kk)\/(?:library|videos|problems|review)(?:\/|$)/;
+
+export function isContentPath(pathname: string): boolean {
+  return CONTENT_ROUTE.test(pathname);
+}
+
 export function isLocalMode(): boolean {
   return getDataMode() === 'local';
 }

@@ -7,9 +7,9 @@ import type { BookRepository } from './service';
 export function createSupabaseBookRepository(admin: SupabaseClient): BookRepository {
   return {
     async findBook(slug) {
-      const { data, error } = await admin.from('books').select('id, content_ru').eq('slug', slug).maybeSingle();
+      const { data, error } = await admin.from('books').select('id, has_content').eq('slug', slug).maybeSingle();
       if (error) throw error;
-      return data ? { id: data.id as string, hasContent: data.content_ru !== null } : null;
+      return data ? { id: data.id as string, hasContent: data.has_content === true } : null;
     },
 
     async getUserBook(userId, bookId) {
@@ -41,37 +41,21 @@ export function createSupabaseBookRepository(admin: SupabaseClient): BookReposit
       return (data?.length ?? 0) > 0;
     },
 
-    async updateUserBook({ userId, bookId, expected }, next) {
-      let q = admin
-        .from('user_books')
-        .update({
-          stage: next.schedule.stage,
-          due_on: next.schedule.dueOn,
-          reviews_count: next.reviewsCount,
-          lapses: next.lapses,
-          last_reviewed_at: next.reviewedAt,
-        })
-        .eq('user_id', userId)
-        .eq('book_id', bookId)
-        .eq('stage', expected.stage);
-      q = expected.dueOn === null ? q.is('due_on', null) : q.eq('due_on', expected.dueOn);
-      const { data, error } = await q.select('book_id');
-      if (error) throw error;
-      return (data?.length ?? 0) > 0;
-    },
-
-    async insertReview(row) {
-      const { error } = await admin.from('book_reviews').insert({
-        user_id: row.userId,
-        book_id: row.bookId,
-        reviewed_on: row.reviewedOn,
-        recalled: row.recalled,
-        counted: row.counted,
-        stage_before: row.stageBefore,
-        stage_after: row.stageAfter,
-        due_on_after: row.dueOnAfter,
+    async recordReview({ userId, bookId, previous, schedule, reviewedOn, reviewedAt, recalled, lapse }) {
+      const { data, error } = await admin.rpc('record_book_review_v1', {
+        p_user_id: userId,
+        p_book_id: bookId,
+        p_previous_stage: previous.stage,
+        p_previous_due_on: previous.dueOn,
+        p_stage: schedule.stage,
+        p_due_on: schedule.dueOn,
+        p_reviewed_on: reviewedOn,
+        p_reviewed_at: reviewedAt,
+        p_recalled: recalled,
+        p_lapse: lapse,
       });
       if (error) throw error;
+      return data === true;
     },
   };
 }

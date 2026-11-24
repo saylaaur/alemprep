@@ -36,6 +36,7 @@ test('uses a local Supabase session to enter the protected dashboard', async ({ 
   await page.goto('/ru/dashboard');
 
   await expect(page).toHaveURL(/\/ru\/dashboard$/);
+  await page.locator('aside button[aria-expanded=false]').click();
   await expect(page.getByText(actor.email).first()).toBeVisible();
 });
 
@@ -50,6 +51,7 @@ test('clears account A before account B uses the shared browser', async ({ page 
 
   await loginAs(page, a);
   await page.goto('/ru/dashboard');
+  await page.locator('aside button[aria-expanded=false]').click();
   await expect(page.getByText(a.email).first()).toBeVisible();
   await page.getByRole('button', { name: 'Выйти' }).first().click();
   await expect(page).not.toHaveURL(/\/dashboard$/);
