@@ -14,7 +14,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   webServer: {
-    command: 'node scripts/start-local-e2e-server.mjs',
+    command: 'node scripts/testing/start-local-e2e-server.mjs',
     url: 'http://127.0.0.1:3001/ru/login',
     timeout: 120_000,
     reuseExistingServer: false,
