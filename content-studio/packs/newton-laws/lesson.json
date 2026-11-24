@@ -1,0 +1,21 @@
+{
+ "id": "newton-laws",
+ "subject": "physics",
+ "section": "dynamics",
+ "title_ru": "Законы Ньютона",
+ "video": "lesson.mp4",
+ "duration_sec": null,
+ "has_voice": false,
+ "review": {
+  "intervals_days": [
+   1,
+   3,
+   7,
+   10,
+   14,
+   30,
+   60
+  ],
+  "rule": "После повторения: если вспомнено >= 50% карточек — следующий интервал; иначе шаг назад на один интервал (минимум 1 день)."
+ }
+}

@@ -72,3 +72,5 @@ unt*recources/
 # Local agent state
 /.claude/settings.local.json
 /.superpowers/
+
+out-demo/

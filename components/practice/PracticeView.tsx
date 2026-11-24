@@ -360,7 +360,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
       {/* Progress bar */}
       <div className="mb-7 h-1.5 w-full overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary transition-all duration-500 ease-smooth"
+          className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-500 ease-smooth"
           style={{ width: `${((idx + 1) / total) * 100}%` }}
         />
       </div>
@@ -377,7 +377,7 @@ export function PracticeView({ questions, contexts, topicName }: Props) {
               aria-label={t('question', { current: i + 1, total })}
               aria-current={i === idx ? 'true' : undefined}
               className={cn(
-                'h-8 w-8 rounded-lg text-xs font-medium transition-all duration-200 ease-smooth focus-visible:ring-4 focus-visible:ring-ring/25',
+                'h-8 w-8 rounded-lg text-xs font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 ease-smooth focus-visible:ring-4 focus-visible:ring-ring/25',
                 i === idx && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
                 !wasRevealed && i !== idx && 'bg-muted text-muted-foreground hover:bg-muted/70',
                 !wasRevealed && i === idx && 'bg-muted text-foreground',
@@ -610,7 +610,7 @@ function SingleAnswer({
             role="radio"
             aria-checked={isSelected}
             className={cn(
-              'group flex w-full items-center gap-3.5 rounded-xl border p-4 text-left transition-all duration-200 ease-smooth focus-visible:ring-4 focus-visible:ring-ring/25',
+              'group flex w-full items-center gap-3.5 rounded-xl border p-4 text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 ease-smooth focus-visible:ring-4 focus-visible:ring-ring/25',
               !isRevealed && 'cursor-pointer hover:border-primary/50 hover:bg-accent/40 active:scale-[0.995]',
               !isRevealed && isSelected && 'border-primary bg-primary/5 ring-1 ring-primary/30',
               !isRevealed && !isSelected && 'border-border',
@@ -679,7 +679,7 @@ function MultiAnswer({
             role="checkbox"
             aria-checked={isSelected}
             className={cn(
-              'group flex w-full items-center gap-3.5 rounded-xl border p-4 text-left transition-all duration-200 ease-smooth focus-visible:ring-4 focus-visible:ring-ring/25',
+              'group flex w-full items-center gap-3.5 rounded-xl border p-4 text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 ease-smooth focus-visible:ring-4 focus-visible:ring-ring/25',
               !isRevealed && 'cursor-pointer hover:border-primary/50 hover:bg-accent/40 active:scale-[0.995]',
               !isRevealed && isSelected && 'border-primary bg-primary/5 ring-1 ring-primary/30',
               !isRevealed && !isSelected && 'border-border',

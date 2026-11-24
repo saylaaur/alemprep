@@ -1,0 +1,599 @@
+<title>Черновики AlemPrep</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;1,500&family=Caveat:wght@600&display=swap">
+<style>
+/* Layout: 3 screens behind a glass tab bar — Сегодня (gradient hero + iOS widgets + plan + review), Библиотека (book ring + notes book), Прогресс (existing /progress data) */
+:root{
+  --black:#070908; --white:#f4f7f5; --muted:#9aa7a0; --line:rgba(255,255,255,.09);
+  --green:#2bc98f; --mint:#a6f4d0; --green-deep:#0f3b2b; --paper:#f7f7f2; --flame:#ff8a3d; --gold:#e8b931; --bad:#ff6b6b; --warn:#f5b84a;
+  --r-out:#2bc98f; --r-mid:#a6f4d0; --r-in:#ffffff;
+  --display:"Unbounded","Inter",system-ui,sans-serif;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --serif:"Lora",Georgia,serif; --hand:"Caveat","Lora",cursive;
+  --ease:cubic-bezier(.23,1,.32,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--black);color:var(--white)}
+body{font-family:var(--sans);font-size:16px;line-height:1.5;margin:0;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--black)}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.07;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible,.lbl:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+[data-view]{display:none}[data-view].on{display:block}
+
+/* glass */
+.glass{position:relative;isolation:isolate;
+  background:linear-gradient(135deg,rgba(255,255,255,.13),rgba(255,255,255,.04) 45%,rgba(255,255,255,.08));
+  background-color:rgba(8,12,10,.42);
+  -webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(255,255,255,.06),inset 0 0 24px rgba(255,255,255,.04),0 12px 36px -12px rgba(0,0,0,.65)}
+.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;background:radial-gradient(120% 60% at 15% 0%,rgba(255,255,255,.2),transparent 55%)}
+.glass.green{background:linear-gradient(135deg,rgba(43,201,143,.6),rgba(43,201,143,.25) 50%,rgba(43,201,143,.45));border-color:rgba(160,255,215,.35)}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:10px 18px;font-weight:600;font-size:14px;color:#fff;cursor:pointer;transition:transform .14s var(--ease);user-select:none;border:0;text-decoration:none}
+.btn:active{transform:scale(.97)}
+
+/* nav */
+.navwrap{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;padding-block:14px}
+nav{max-width:1120px;margin:0 auto;border-radius:999px;display:flex;align-items:center;gap:14px;padding:6px 6px 6px 18px}
+.logo{font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.logo i{width:20px;height:20px;border-radius:7px;background:var(--green);display:block;box-shadow:inset 0 -6px 10px rgba(0,0,0,.25)}
+.tabs{display:flex;gap:4px;margin-left:auto;background:rgba(0,0,0,.25);border-radius:999px;padding:4px}
+.tab{border:0;background:none;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:500;color:rgba(255,255,255,.7);cursor:pointer;transition:background .2s var(--ease),color .2s var(--ease)}
+.tab.on{background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+@media (max-width:560px){.logo span{display:none}.tab{padding:8px 11px;font-size:13px}}
+
+/* hero (v1 gradient) */
+.hero{position:relative;margin-top:-72px;padding-top:72px;overflow:hidden}
+.hero canvas{position:absolute;inset:-6%;width:112%;height:112%;filter:blur(28px) saturate(120%);z-index:0}
+.hero .vign{position:absolute;inset:0;background:radial-gradient(90% 80% at 30% 45%,transparent 40%,rgba(7,9,8,.7)),linear-gradient(180deg,transparent 70%,var(--black));z-index:1}
+.hero .in{position:relative;z-index:2;padding-block:56px 40px;display:grid;gap:28px}
+.hi{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.date{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.75)}
+.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(38px,7.4vw,92px);line-height:.95;letter-spacing:-.045em;margin:8px 0 0}
+.hero h1 span{display:block;font-family:var(--serif);font-style:italic;font-weight:500;letter-spacing:-.02em;font-size:.4em;margin-top:.35em;color:rgba(255,255,255,.85)}
+.ntf{border-radius:20px;padding:10px 12px;display:flex;gap:12px;align-items:center;max-width:380px;animation:drop .6s var(--ease) both}
+@keyframes drop{from{opacity:0;transform:translateY(-12px)}}
+.ntf .ic{width:34px;height:34px;flex:none;border-radius:9px;background:var(--green);display:grid;place-items:center;color:#062a1d}
+.ntf b{display:block;font-size:14px}.ntf p{margin:0;font-size:13px;color:rgba(255,255,255,.75)}
+.ntf .btn{padding:7px 12px;font-size:12px;margin-left:auto}
+
+/* iOS widgets */
+.widgets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(150px,auto);gap:14px;max-width:780px}
+@media (max-width:620px){.widgets{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.w{border-radius:24px;padding:14px;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.w.m{grid-column:span 2}
+
+.wk{font-size:12px;font-weight:600;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:6px}
+.wv{font-family:var(--display);font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ringsW{flex-direction:row;align-items:center;gap:8px;padding:12px;background-color:rgba(6,10,8,.62)}
+.ringsW svg{width:78px;height:78px;flex:none}
+.ringsW circle.bar{transition:stroke-dashoffset 1.1s var(--ease)}
+.rl{display:grid;gap:4px;min-width:0;font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.rl small{display:block;font-family:var(--sans);font-size:8px;font-weight:700;letter-spacing:.06em;opacity:.8;margin-bottom:1px}
+.streakW .wv{font-size:38px;line-height:1;margin-top:auto;color:var(--flame)}
+.streakW .wv small{font-family:var(--sans);font-size:13px;font-weight:600;color:rgba(255,255,255,.75);margin-left:4px;letter-spacing:0}
+.week{display:flex;justify-content:space-between;margin-top:10px}
+.week span{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.1);display:grid;place-items:center;font-size:8px;color:rgba(255,255,255,.55);font-weight:700}
+.week span.on{background:var(--flame);color:#3a1600}
+.quoteW blockquote{margin:auto 0 0;font-family:var(--serif);font-style:italic;font-size:19px;line-height:1.25;text-wrap:balance}
+.quoteW .src{font-size:12px;color:rgba(255,255,255,.65);margin-top:6px}
+.quoteW{cursor:pointer}
+.examW .wv{font-size:40px;line-height:1;margin-top:auto}
+.examW .sub,.lvlW .sub{font-size:12px;color:rgba(255,255,255,.7);margin-top:4px}
+.lvlW .wv{font-size:32px;line-height:1;margin-top:auto;color:var(--green)}
+.xpbar{height:6px;border-radius:9px;background:rgba(255,255,255,.12);margin-top:8px;overflow:hidden}
+.xpbar i{display:block;height:100%;border-radius:9px;background:var(--green)}
+.achW{gap:8px}
+.ach{display:flex;gap:10px;align-items:center}
+.badge{width:38px;height:38px;flex:none;border-radius:12px;display:grid;place-items:center}
+.badge.gold{background:rgba(232,185,49,.18);color:var(--gold);box-shadow:inset 0 0 0 1px rgba(232,185,49,.4)}
+.badge.dim{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6)}
+.ach b{font-size:13px;display:block;line-height:1.2}
+.ach small{font-size:11px;color:rgba(255,255,255,.65)}
+.newtag{font-size:9px;font-weight:700;letter-spacing:.06em;background:var(--green);color:#062a1d;border-radius:999px;padding:1px 6px;margin-left:4px;vertical-align:2px}
+.mbar{height:5px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:4px}
+.mbar i{display:block;height:100%;border-radius:9px}
+
+/* sections below hero */
+.blk{padding-block:18px 70px;display:grid;gap:18px;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+@media (max-width:860px){.blk{grid-template-columns:1fr}}
+.panel{border-radius:26px;padding:20px;background:#0f1412;border:1px solid var(--line)}
+.ptitle{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.ptitle h2{font-size:19px;font-weight:700;letter-spacing:-.02em;margin:0}
+.ptitle span,.ptitle a{font-size:13px;color:var(--muted);text-decoration:none}
+.ptitle a{color:var(--green);font-weight:600;cursor:pointer}
+.items{display:grid;gap:8px}
+.it{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:12px;border-radius:16px;background:rgba(255,255,255,.04);text-align:left;width:100%;border:0;cursor:pointer;transition:background .2s var(--ease),transform .14s var(--ease)}
+.it:active{transform:scale(.985)}
+@media (hover:hover){.it:hover{background:rgba(255,255,255,.07)}}
+.ck{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.35);display:grid;place-items:center;transition:background .2s var(--ease),border-color .2s var(--ease)}
+.ck svg{opacity:0;transition:opacity .2s var(--ease)}
+.it.done .ck{background:var(--c,var(--green));border-color:var(--c,var(--green))}
+.it.done .ck svg{opacity:1}
+.it.done .nm{color:rgba(255,255,255,.5);text-decoration:line-through;text-decoration-color:rgba(255,255,255,.3)}
+.nm{font-size:15px;font-weight:500}
+.sub{font-size:13px;color:var(--muted);margin-top:1px}
+.it .ct{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.8);white-space:nowrap}
+.pill{display:inline-block;font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:1px}
+.rev{display:grid;gap:10px}
+.rb{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:10px;border-radius:16px;background:rgba(255,255,255,.04);border:0;width:100%;text-align:left;cursor:pointer}
+.cov{width:44px;height:58px;border-radius:4px 8px 8px 4px;box-shadow:inset 4px 0 0 rgba(0,0,0,.2),0 0 0 2px var(--green),0 0 16px rgba(43,201,143,.45)}
+.rb .day{font-size:12px;font-weight:700;color:var(--green);white-space:nowrap}
+
+/* library */
+.lib{background:var(--paper);color:#0b0d0c}
+.sec{padding-block:56px 6px;display:grid;gap:10px}
+.sec h2{font-family:var(--display);font-weight:700;font-size:clamp(28px,4.4vw,48px);letter-spacing:-.04em;line-height:1.02;margin:0}
+.sec p{color:#55605a;max-width:60ch;margin:0}
+.dark .sec p{color:var(--muted)}
+.stage{position:relative;height:clamp(460px,58vw,680px);perspective:1700px;overflow:hidden;cursor:grab;touch-action:pan-y}
+.stage:active{cursor:grabbing}
+.ring{position:absolute;left:50%;top:54%;width:0;height:0;transform-style:preserve-3d}
+.card{position:absolute;transform-style:preserve-3d}
+.card .f,.card .b{position:absolute;inset:0;border-radius:4px 8px 8px 4px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;display:grid;align-content:space-between;padding:8%;box-shadow:inset 6px 0 0 rgba(0,0,0,.16),inset 0 0 0 1px rgba(0,0,0,.06)}
+.card .b{transform:rotateY(180deg)}
+.card .s{font-size:.5em;font-weight:600;letter-spacing:.06em;text-transform:uppercase;opacity:.7}
+.card .t{font-family:var(--serif);font-weight:600;line-height:1.1}
+.card.due .f,.card.due .b{box-shadow:inset 6px 0 0 rgba(0,0,0,.16),0 0 0 2px #2bc98f,0 0 22px rgba(43,201,143,.7)}
+.center{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);text-align:center;display:grid;gap:12px;justify-items:center;width:min(520px,78%);pointer-events:none}
+.center h3{font-family:var(--display);font-size:clamp(22px,3.4vw,38px);font-weight:700;letter-spacing:-.04em;margin:0;line-height:1.05;text-shadow:0 0 18px var(--paper),0 0 6px var(--paper)}
+.duelist{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;pointer-events:auto}
+.due-b{border:0;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;background:#0b0d0c;color:#fff;display:inline-flex;gap:8px;align-items:center;transition:transform .14s var(--ease)}
+.due-b:active{transform:scale(.97)}
+.due-b small{font-weight:500;color:#a6f4d0}
+.lbls{position:absolute;inset:0;pointer-events:none}
+.lbl{position:absolute;left:0;top:0;pointer-events:auto;font-size:14px;font-weight:500;white-space:nowrap;color:#0b0d0c;background:none;border:0;padding:4px 2px;cursor:pointer;text-shadow:0 0 6px var(--paper),0 0 2px var(--paper)}
+.lbl sup{font-size:10px;color:#6b766f;margin-left:2px}
+.hint{text-align:center;font-size:13px;color:#6b766f;padding-bottom:50px}
+.booksec{background:repeating-linear-gradient(118deg,rgba(255,255,255,.025) 0 2px,transparent 2px 46px),radial-gradient(70% 60% at 50% 40%,#141a17,var(--black))}
+.bookwrap{max-width:1040px;margin:0 auto;padding-block:30px 90px;display:grid;gap:26px;justify-items:center}
+.book{position:relative;width:100%;aspect-ratio:2/1.18;perspective:2400px;filter:drop-shadow(0 40px 60px rgba(0,0,0,.6))}
+@media (max-width:640px){.book{aspect-ratio:2/1.7}}
+.half{position:absolute;top:0;width:50%;height:100%;overflow:hidden}
+.L{left:0;border-radius:22px 0 0 22px}.R{left:50%;border-radius:0 22px 22px 0}
+.page{position:absolute;top:0;left:50%;width:50%;height:100%;transform-origin:left center;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.645,.045,.355,1);cursor:pointer}
+.page.flip{transform:rotateY(-180deg)}
+.page>.half{left:0;width:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.page>.half.bk{transform:rotateY(180deg);border-radius:22px 0 0 22px}
+.page>.half.fr{border-radius:0 22px 22px 0}
+.pg{position:absolute;inset:0;padding:clamp(12px,5%,44px);display:grid;align-content:center;gap:clamp(4px,1.1vw,12px);font-size:clamp(9px,1.45vw,15px)}
+.pg .k{font-size:.78em;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.6;font-family:var(--sans)}
+.pg h4{font-family:var(--hand);font-weight:600;font-size:2.7em;line-height:.95;margin:0}
+.pg p,.pg li{font-family:var(--serif);line-height:1.42;margin:0}
+.pg ul,.pg ol{margin:0;padding-left:1.2em;display:grid;gap:.3em}
+.fx{font-family:var(--serif);font-style:italic;font-size:1.7em;font-weight:500;padding:.25em .55em;border-radius:.4em;justify-self:start}
+.box{border-radius:.7em;padding:.6em .8em;font-size:.95em}
+.cover{align-content:space-between}
+.cover .big{font-family:var(--hand);font-size:4em;line-height:.9}
+.ribbon{display:inline-flex;gap:.5em;align-items:center;font-family:var(--sans);font-weight:600;font-size:.85em;border-radius:999px;padding:.35em .9em;justify-self:start}
+.days{display:flex;gap:.4em;flex-wrap:wrap}
+.days span{font-family:var(--sans);font-weight:600;font-size:.85em;border-radius:999px;padding:.3em .7em}
+.spine{position:absolute;left:50%;top:0;bottom:0;width:40px;margin-left:-20px;pointer-events:none;z-index:30;background:linear-gradient(90deg,transparent,rgba(0,0,0,.18) 45%,rgba(0,0,0,.28) 50%,rgba(255,255,255,.08) 52%,transparent)}
+.chap{display:flex;align-items:center;gap:14px;min-height:72px}
+.dot{position:relative;width:16px;height:16px;border-radius:50%;border:0;padding:0;cursor:pointer;transition:width .35s var(--ease),height .35s var(--ease)}
+.dot.on{width:70px;height:70px}
+.dot svg{position:absolute;inset:-22px;width:114px;height:114px;opacity:0;transition:opacity .3s var(--ease);pointer-events:none}
+.dot.on svg{opacity:1}
+.dot svg text{font-family:var(--serif);font-style:italic;font-size:13px;fill:#fff}
+.nb{display:flex;gap:10px}
+
+/* progress */
+.prog{padding-block:30px 80px;display:grid;gap:18px}
+.prog h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,5.6vw,64px);letter-spacing:-.045em;margin:0;line-height:1}
+.prog .lead{color:var(--muted);margin:6px 0 0}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.g2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px}
+@media (max-width:820px){.g3,.g2{grid-template-columns:1fr}}
+.stat .k{font-size:13px;color:var(--muted)}
+.stat .v{font-family:var(--display);font-weight:700;font-size:34px;letter-spacing:-.03em;line-height:1.1;font-variant-numeric:tabular-nums;margin-top:4px}
+.stat .s{font-size:12px;color:var(--muted);margin-top:2px}
+.chart{width:100%;height:auto;display:block}
+.heat{overflow-x:auto}
+.hg{display:grid;grid-auto-flow:column;grid-template-rows:16px repeat(7,1fr);gap:5px;width:max-content}
+.hc{width:clamp(18px,3.4vw,34px);aspect-ratio:1;border-radius:5px;background:rgba(255,255,255,.07)}
+.hc.l1{background:#0f5a3e}.hc.l2{background:#178a5f}.hc.l3{background:#2bc98f}.hc.l4{background:#a6f4d0}
+.hc.fut{background:transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.hc.today{box-shadow:0 0 0 2px #fff}
+.mo{font-size:11px;color:var(--muted);white-space:nowrap;height:16px}
+.wd{font-size:10px;color:var(--muted);display:flex;align-items:center;height:100%}
+.actfoot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:13px;color:var(--muted)}
+.scale{display:flex;gap:4px;align-items:center}.scale .hc{width:12px}
+.tb{display:grid;gap:14px}
+.tr .top{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.tr .top span:last-child{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.tr .mbar{height:7px;margin-top:6px}
+.tr .err{font-size:12px;color:var(--muted);margin-top:4px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.bd{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:18px;border:1px solid var(--line)}
+.bd.got{border-color:rgba(232,185,49,.35);background:rgba(232,185,49,.06)}
+.bd.lock{opacity:.6}
+.bd b{font-size:14px;display:block}.bd p{margin:2px 0 0;font-size:12px;color:var(--muted);line-height:1.35}
+.bd .when{font-size:11px;margin-top:5px;color:var(--gold)}
+.bd.lock .when{color:var(--muted)}
+.att{display:flex;justify-content:space-between;align-items:center;padding:11px 2px;border-top:1px solid var(--line);font-size:14px}
+.att:first-child{border-top:0}
+.att span:first-child{display:flex;gap:10px;align-items:center}
+.att small{color:var(--muted);font-size:12px}
+.note{font-size:13px;color:var(--muted)}
+footer{padding-block:30px 50px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;z-index:70;border-radius:999px;padding:10px 18px;font-size:14px;transition:opacity .25s var(--ease),transform .25s var(--ease);pointer-events:none;color:#fff}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.page,.ringsW circle.bar{transition:none}.ntf{animation:none}}
+</style>
+
+<div class="grain" aria-hidden="true"></div>
+
+<div class="navwrap gut">
+  <nav class="glass" aria-label="Меню">
+    <div class="logo"><i></i><span>AlemPrep</span></div>
+    <div class="tabs" role="tablist">
+      <button class="tab" type="button" data-go="today">Сегодня</button>
+      <button class="tab" type="button" data-go="library">Библиотека</button>
+      <button class="tab" type="button" data-go="stats">Прогресс</button>
+    </div>
+  </nav>
+</div>
+
+<!-- ================= СЕГОДНЯ ================= -->
+<main data-view="today">
+  <header class="hero gut">
+    <canvas id="flow" aria-hidden="true"></canvas>
+    <div class="vign" aria-hidden="true"></div>
+    <div class="in wrap">
+      <div class="hi">
+        <div><div class="date" id="dateLine"></div><h1>Привет, Кайрат<span>Сегодня хороший день, чтобы порешать задачи.</span></h1></div>
+        <div class="ntf glass">
+          <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M7.5 8a2.5 2.5 0 1 1 4.5-1.5A2.5 2.5 0 1 1 16.5 8"/></svg></div>
+          <div><b>Новая книга в библиотеке</b><p>Подарок за урок «Законы Ньютона»</p></div>
+          <button class="btn glass green" type="button" data-book>Открыть</button>
+        </div>
+      </div>
+
+      <div class="widgets">
+        <div class="w glass ringsW" aria-label="Кольца на сегодня">
+          <svg viewBox="0 0 100 100" role="img" aria-label="Задачи, уроки и карточки">
+            <g transform="rotate(-90 50 50)" fill="none" stroke-linecap="round" stroke-width="10">
+              <circle cx="50" cy="50" r="44" stroke="var(--r-out)" stroke-opacity=".2"/><circle class="bar" id="rOut" cx="50" cy="50" r="44" stroke="var(--r-out)"/>
+              <circle cx="50" cy="50" r="32" stroke="var(--r-mid)" stroke-opacity=".2"/><circle class="bar" id="rMid" cx="50" cy="50" r="32" stroke="var(--r-mid)"/>
+              <circle cx="50" cy="50" r="20" stroke="var(--r-in)" stroke-opacity=".2"/><circle class="bar" id="rIn" cx="50" cy="50" r="20" stroke="var(--r-in)"/>
+            </g>
+          </svg>
+          <div class="rl">
+            <div style="color:var(--r-out)"><small>ЗАДАЧИ</small><span id="vOut"></span></div>
+            <div style="color:var(--r-mid)"><small>УРОКИ</small><span id="vMid"></span></div>
+            <div style="color:var(--r-in)"><small>КАРТОЧКИ</small><span id="vIn"></span></div>
+          </div>
+        </div>
+
+        <div class="w glass streakW">
+          <div class="wk"><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--flame)"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 1.8 1 2.8 2 3.2C11 8.5 11 5 12 2z"/></svg>Серия</div>
+          <div class="wv">6<small>дней</small></div>
+          <div class="week" id="week"></div>
+          <div class="sub" style="font-size:11px;color:rgba(255,255,255,.65);margin-top:6px">❄ 2 заморозки · рекорд 12</div>
+        </div>
+
+        <div class="w m glass quoteW" id="quoteW" title="Нажми, чтобы сменить цитату">
+          <div class="wk">Мысль дня</div>
+          <blockquote id="qText"></blockquote>
+          <div class="src" id="qSrc"></div>
+        </div>
+
+        <div class="w glass examW">
+          <div class="wk">До ЕНТ</div>
+          <div class="wv">178</div>
+          <div class="sub">дней · 25 недель</div>
+          <div class="sub">прогноз 92 → цель 120</div>
+        </div>
+
+        <div class="w glass lvlW">
+          <div class="wk">Уровень 7</div>
+          <div class="wv">2 340 <span style="font-size:13px;font-family:var(--sans);color:rgba(255,255,255,.7)">XP</span></div>
+          <div class="xpbar"><i style="width:68%"></i></div>
+          <div class="sub">до уровня 8 — 160 XP</div>
+        </div>
+
+        <div class="w m glass achW">
+          <div class="wk">Достижения · 3 / 8</div>
+          <div class="ach"><div class="badge gold"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 1.8 1 2.8 2 3.2C11 8.5 11 5 12 2z"/></svg></div><div><b>Серия 7 дней</b><small>осталось 1 день · 6/7</small><div class="mbar"><i style="width:86%;background:var(--gold)"></i></div></div></div>
+          <div class="ach"><div class="badge dim"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div><div><b>3 темы за день<span class="newtag">НОВОЕ</span></b><small>закрой 3 темы за один день · 1/3</small><div class="mbar"><i style="width:33%;background:var(--green)"></i></div></div></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap gut">
+    <div class="blk">
+      <section class="panel" aria-label="План на день">
+        <div class="ptitle"><h2>План на день</h2><span id="planCount"></span></div>
+        <div class="items" id="items"></div>
+      </section>
+      <section class="panel" aria-label="Повторить сегодня">
+        <div class="ptitle"><h2>Повторить сегодня</h2><a data-go="library">Библиотека ›</a></div>
+        <div class="rev" id="rev"></div>
+        <p class="note" style="margin:12px 2px 0">Книги приходят после каждого урока. Платформа сама напоминает, когда их открыть: через 1, 3, 7, 10, 14, 30 и 60 дней.</p>
+      </section>
+    </div>
+  </div>
+</main>
+
+<!-- ================= БИБЛИОТЕКА ================= -->
+<main data-view="library">
+  <section class="lib">
+    <div class="sec wrap gut">
+      <h2>Библиотека конспектов</h2>
+      <p>Все книги, которые ты получил за уроки. Светятся те, что пора повторить сегодня.</p>
+    </div>
+    <div class="stage" id="stage">
+      <div class="ring" id="ring"></div>
+      <div class="lbls" id="lbls"></div>
+      <div class="center"><h3>Повторить сегодня</h3><div class="duelist" id="duelist"></div></div>
+    </div>
+    <div class="hint gut">Кольцо можно крутить мышкой или пальцем. Книги, кроме «Законов Ньютона», для примера.</div>
+  </section>
+  <section class="booksec dark" id="bookSec">
+    <div class="sec wrap gut"><h2>Законы Ньютона</h2><p>Книга-конспект. Перепиши её в тетрадь. Нажми на правую страницу, чтобы листать дальше.</p></div>
+    <div class="bookwrap gut">
+      <div class="book" id="book"></div>
+      <div class="chap" id="chap"></div>
+      <div class="nb"><button class="btn glass" id="prev" type="button">← Назад</button><button class="btn glass green" id="next" type="button">Дальше →</button></div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= ПРОГРЕСС ================= -->
+<main data-view="stats">
+  <div class="wrap gut prog">
+    <div><h1>Прогресс</h1><p class="lead">Как ты растёшь: точность, активность, слабые темы и бейджи.</p></div>
+
+    <div class="g3">
+      <div class="panel stat"><div class="k">Решено задач</div><div class="v">486</div><div class="s">всего попыток</div></div>
+      <div class="panel stat"><div class="k">Точность</div><div class="v">74%</div><div class="s">360 / 486</div></div>
+      <div class="panel stat"><div class="k">Серия</div><div class="v" style="color:var(--flame)">6 <span style="font-size:15px;font-family:var(--sans);color:var(--muted);font-weight:500">дней</span></div><div class="s">рекорд серии — 12 дней</div></div>
+    </div>
+
+    <section class="panel">
+      <div class="ptitle"><h2>Траектория баллов</h2><span>диагностика и еженедельные тесты</span></div>
+      <svg class="chart" id="traj" viewBox="0 0 640 220" role="img" aria-label="Рост баллов от диагностики к неделе 6"></svg>
+    </section>
+
+    <section class="panel">
+      <div class="ptitle"><h2>Активность за 60 дней</h2><span>один квадрат — один день</span></div>
+      <div class="heat"><div class="hg" id="heat"></div></div>
+      <div class="actfoot">
+        <span id="actStats"></span>
+        <div class="scale">Меньше <span class="hc"></span><span class="hc l1"></span><span class="hc l2"></span><span class="hc l3"></span><span class="hc l4"></span> Больше</div>
+      </div>
+    </section>
+
+    <div class="g2">
+      <section class="panel">
+        <div class="ptitle"><h2>Слабые темы</h2><span>по неверным попыткам</span></div>
+        <div class="tb" id="topics"></div>
+      </section>
+      <section class="panel">
+        <div class="ptitle"><h2>Последние попытки</h2></div>
+        <div id="atts"></div>
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="ptitle"><h2>Бейджи</h2><span>3 / 10</span></div>
+      <div class="badges" id="badges"></div>
+    </section>
+  </div>
+</main>
+
+<footer class="wrap gut">Черновик. Цифры для примера. Всё, кроме уроков, книг, карточек и двух новых бейджей, уже есть в AlemPrep: цель на день, серия с заморозками, уровень и XP, отсчёт до ЕНТ с прогнозом, слабые темы, траектория, активность, бейджи и последние попытки.</footer>
+<div class="toast glass" id="toast" role="status"></div>
+
+<script>
+(function(){
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $=id=>document.getElementById(id);
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2200);};
+const NOW=new Date();
+$('dateLine').textContent=NOW.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+
+/* ---------- router ---------- */
+const views=[...document.querySelectorAll('[data-view]')];
+let ringLaid=false;
+function show(v){if(!views.some(x=>x.dataset.view===v))v='today';
+  views.forEach(x=>x.classList.toggle('on',x.dataset.view===v));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.go===v));
+  if(v==='library'&&!ringLaid){layout();ringLaid=true;}
+  if(v==='today')setTimeout(updateRings,60);
+}
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{location.hash=b.dataset.go;}));
+addEventListener('hashchange',()=>{show(location.hash.slice(1));scrollTo(0,0);});
+
+/* ---------- v1 hero gradient ---------- */
+const cv=$('flow'),cx=cv.getContext('2d');let W=0,H=0;
+function size(){W=cv.width=Math.max(160,Math.round(cv.clientWidth/6));H=cv.height=Math.max(100,Math.round(cv.clientHeight/6));}
+size();addEventListener('resize',size);
+function blob(x,y,r,c){const g=cx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,c);g.addColorStop(1,'rgba(0,0,0,0)');cx.fillStyle=g;cx.beginPath();cx.arc(x,y,r,0,7);cx.fill();}
+function frame(ms){const t=ms/1000;
+  cx.globalCompositeOperation='source-over';cx.fillStyle='#070908';cx.fillRect(0,0,W,H);cx.globalCompositeOperation='screen';
+  blob(W*(.78+.06*Math.sin(t*.3)),H*(.25+.08*Math.cos(t*.25)),H*.7,'rgba(15,59,43,.9)');
+  cx.save();cx.lineCap='round';
+  for(let k=0;k<3;k++){const o=k*.9,w=[H*.42,H*.24,H*.09][k];
+    const col=[['rgba(15,90,62,.95)','rgba(43,201,143,.95)','rgba(15,90,62,0)'],['rgba(43,201,143,0)','rgba(120,240,190,.9)','rgba(43,201,143,.6)'],['rgba(255,255,255,0)','rgba(255,255,255,.95)','rgba(255,255,255,0)']][k];
+    const g=cx.createLinearGradient(0,0,W,H);g.addColorStop(0,col[0]);g.addColorStop(.5,col[1]);g.addColorStop(1,col[2]);
+    cx.strokeStyle=g;cx.lineWidth=w;cx.beginPath();
+    cx.moveTo(-W*.1,H*(.62+.08*Math.sin(t*.4+o)));
+    cx.bezierCurveTo(W*.3,H*(.15+.15*Math.sin(t*.5+o)),W*.55,H*(.95+.1*Math.cos(t*.45+o)),W*1.1,H*(.3+.1*Math.cos(t*.33+o)));cx.stroke();}
+  cx.restore();
+  blob(W*(.18+.05*Math.cos(t*.2)),H*.9,H*.5,'rgba(43,201,143,.25)');
+  if(!RM)requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+
+/* ---------- streak week ---------- */
+['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach((d,i)=>{const s=document.createElement('span');s.textContent=d[0];if(i<6)s.className='on';$('week').appendChild(s);});
+
+/* ---------- quote ---------- */
+const Q=[['Ғылым таппай мақтанба.','Абай Құнанбайұлы'],['Білім — таусылмас қазына.','Казахская пословица'],['Повторение — мать учения.','Пословица'],['Капля камень точит.','Пословица'],['Еңбек етсең ерінбей, тояды қарның тіленбей.','Абай Құнанбайұлы']];
+let qi=0;const showQ=()=>{$('qText').textContent='«'+Q[qi][0]+'»';$('qSrc').textContent=Q[qi][1];};showQ();
+$('quoteW').onclick=()=>{qi=(qi+1)%Q.length;showQ();};
+
+/* ---------- plan + rings ---------- */
+const PLAN=[
+ {ring:'mid',n:'Видеоурок «Законы Ньютона»',s:'Физика · 7 минут',done:true},
+ {ring:null,n:'Переписать конспект в тетрадь',s:'Книга «Законы Ньютона» в библиотеке',done:false,book:true},
+ {ring:'out',n:'Цель на сегодня: задачи',s:'Нажимай, чтобы отметить решённую',count:12,total:20},
+ {ring:null,n:'Слабая тема: Логарифмы',s:'10 задач · точность 42%',done:false,pill:['слабая','var(--bad)']},
+ {ring:'in',n:'Карточки: Законы Ньютона',s:'1-й день повторения',done:true},
+ {ring:'in',n:'Карточки: Логарифмы',s:'7-й день повторения',done:true},
+ {ring:'in',n:'Карточки: Кинематика',s:'14-й день повторения',done:false},
+ {ring:null,n:'Еженедельный тест',s:'Доступен новый тест',done:false,pill:['неделя','var(--green)']}
+];
+const RC={mid:'var(--r-mid)',out:'var(--r-out)',in:'var(--r-in)'};
+const CHECK='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#062a1d" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+function renderPlan(){const box=$('items');box.innerHTML='';
+  PLAN.forEach(p=>{const d=p.total?p.count>=p.total:p.done;
+    const b=document.createElement('button');b.type='button';b.className='it'+(d?' done':'');if(p.ring)b.style.setProperty('--c',RC[p.ring]);
+    const pill=p.pill?`<span class="pill" style="background:${p.pill[1]};color:#0b0d0c">${p.pill[0]}</span>`:'';
+    const dotc=p.ring?`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${RC[p.ring]};margin-right:6px;vertical-align:1px"></span>`:'';
+    b.innerHTML=`<span class="ck">${CHECK}</span><span><div class="nm">${dotc}${p.n}${pill}</div><div class="sub">${p.s}</div></span><span class="ct">${p.total?p.count+' / '+p.total:(p.book?'Открыть ›':'')}</span>`;
+    b.addEventListener('click',e=>{if(p.book&&e.target.closest('.ct')){openBook();return;}if(p.total)p.count=p.count>=p.total?0:p.count+1;else p.done=!p.done;renderPlan();updateRings();});
+    box.appendChild(b);});
+  $('planCount').textContent=`${PLAN.filter(p=>p.total?p.count>=p.total:p.done).length} из ${PLAN.length}`;}
+function setRing(id,r,f){const C=2*Math.PI*r,c=$(id);c.style.strokeDasharray=C;c.style.strokeDashoffset=C*(1-Math.min(f,1));}
+function updateRings(){const pr=PLAN[2],vid=PLAN.filter(p=>p.ring==='mid'),cd=PLAN.filter(p=>p.ring==='in');
+  const dv=vid.filter(p=>p.done).length,dc=cd.filter(p=>p.done).length;
+  setRing('rOut',44,pr.count/pr.total);setRing('rMid',32,dv/vid.length);setRing('rIn',20,dc/cd.length);
+  $('vOut').textContent=`${pr.count}/${pr.total}`;$('vMid').textContent=`${dv}/${vid.length}`;$('vIn').textContent=`${dc}/${cd.length}`;}
+[['rOut',44],['rMid',32],['rIn',20]].forEach(([id,r])=>{const C=2*Math.PI*r;$(id).style.strokeDasharray=C;$(id).style.strokeDashoffset=C;});
+renderPlan();
+
+/* ---------- review list ---------- */
+const DUE=[['Законы Ньютона','Физика','1-й день','#0f3b2b','#dff6ec'],['Логарифмы','Математика','7-й день','#2bc98f','#062a1d'],['Кинематика','Физика','14-й день','#dff6ec','#0f3b2b']];
+DUE.forEach(([t,s,d,bg,fg])=>{const b=document.createElement('button');b.type='button';b.className='rb';
+  b.innerHTML=`<span class="cov" style="background:${bg}"></span><span><div class="nm">${t}</div><div class="sub">${s} · конспект и карточки</div></span><span class="day">${d}</span>`;
+  b.onclick=()=>t==='Законы Ньютона'?openBook():(location.hash='library');$('rev').appendChild(b);});
+
+/* ---------- library ring ---------- */
+const SUBJ=[
+ {n:'Физика',books:['Законы Ньютона','Кинематика','Импульс','Электростатика']},
+ {n:'Математика',books:['Логарифмы','Тригонометрия','Производная','Прогрессии']},
+ {n:'Информатика',books:['Системы счисления','Алгоритмы','Python: циклы','Логика']},
+ {n:'Мат. грамотность',books:['Проценты','Пропорции','Графики','Вероятность']},
+ {n:'Грамотность чтения',books:['Главная мысль','Аргументы','Таблицы в тексте','Вывод']},
+ {n:'История Казахстана',books:['Казахское ханство','Жузы','XX век','Независимость']}];
+const DUEMAP={'Законы Ньютона':'1-й день','Логарифмы':'7-й день','Кинематика':'14-й день'};
+const PAL=[['#0f3b2b','#dff6ec'],['#2bc98f','#062a1d'],['#0b0d0c','#f4f7f5'],['#dff6ec','#0f3b2b'],['#ffffff','#0b0d0c'],['#1b6b4c','#dff6ec']];
+const ring=$('ring'),stage=$('stage'),lbls=$('lbls');
+const PER=4,N=SUBJ.length*PER,TILT=-14;let R=420,CW=80,CH=110,spin=0,vel=0,target=null;const cards=[];
+SUBJ.forEach((s,si)=>s.books.forEach((t,j)=>{const el=document.createElement('div');el.className='card'+(DUEMAP[t]?' due':'');const p=PAL[(si*2+j)%PAL.length];
+  const face=c=>{const d=document.createElement('div');d.className=c;d.style.background=p[0];d.style.color=p[1];d.innerHTML=`<div class="s">${s.n}</div><div class="t">${t}</div>`;return d;};
+  el.appendChild(face('f'));el.appendChild(face('b'));el.addEventListener('click',()=>t==='Законы Ньютона'?openBook():toast(`«${t}» — пример книги`));
+  ring.appendChild(el);cards.push({el,t,i:cards.length});}));
+const labels=SUBJ.map((s,i)=>{const b=document.createElement('button');b.className='lbl';b.type='button';b.innerHTML=`${s.n}<sup>(${s.books.length})</sup>`;b.addEventListener('click',()=>spinTo(i*PER+(PER-1)/2));lbls.appendChild(b);return b;});
+Object.keys(DUEMAP).forEach(t=>{const b=document.createElement('button');b.type='button';b.className='due-b';b.innerHTML=`${t}<small>${DUEMAP[t]}</small>`;
+  b.addEventListener('click',()=>{const c=cards.find(c=>c.t===t);spinTo(c.i);if(t==='Законы Ньютона')setTimeout(openBook,700);});$('duelist').appendChild(b);});
+function layout(){const w=stage.clientWidth||innerWidth;R=Math.min(520,w*.43);CW=Math.max(52,Math.min(96,w*.075));CH=CW*1.38;
+  cards.forEach((c,i)=>{const a=i*360/N;Object.assign(c.el.style,{width:CW+'px',height:CH+'px',left:(-CW/2)+'px',top:(-CH/2)+'px',fontSize:(CW*.16)+'px',transform:`rotateY(${a}deg) translateZ(${R}px) rotateY(90deg)`});});}
+addEventListener('resize',layout);
+function spinTo(idx){let t=-(idx*360/N)+60;while(t-spin>180)t-=360;while(t-spin<-180)t+=360;target=t;vel=0;}
+let lastY=scrollY;addEventListener('scroll',()=>{const d=scrollY-lastY;lastY=scrollY;if(target===null)vel+=d*.02;},{passive:true});
+let drag=null,moved=0;
+stage.addEventListener('pointerdown',e=>{if(e.target.closest('.lbl,.due-b'))return;drag={x:e.clientX,s:spin};moved=0;target=null;});
+addEventListener('pointermove',e=>{if(!drag)return;moved=Math.abs(e.clientX-drag.x);const ns=drag.s+(e.clientX-drag.x)*.25;vel=ns-spin;spin=ns;});
+addEventListener('pointerup',()=>{drag=null;});
+stage.addEventListener('click',e=>{if(moved>6){e.stopPropagation();moved=0;}},true);
+const P=1700,th=TILT*Math.PI/180;
+function tick(){
+  if(stage.offsetParent){
+  if(target!==null){spin+=(target-spin)*.08;if(Math.abs(target-spin)<.05){spin=target;target=null;}}else if(!drag){spin+=vel+(RM?0:.035);vel*=.92;}
+  ring.style.transform=`rotateX(${TILT}deg) rotateY(${spin}deg)`;
+  const cxp=stage.clientWidth/2,cyp=stage.clientHeight*.54;
+  SUBJ.forEach((s,i)=>{const a=((i*PER+(PER-1)/2)*360/N+spin)*Math.PI/180,r=R+CW*.9,y=-CH*.8,x=r*Math.sin(a),z=r*Math.cos(a);
+    const yp=y*Math.cos(th)-z*Math.sin(th),zp=y*Math.sin(th)+z*Math.cos(th),k=P/(P-zp),l=labels[i];
+    l.style.transform=`translate(${cxp+x*k}px,${cyp+yp*k}px) translate(-50%,-50%)`;l.style.opacity=zp<-R*.6?.35:1;l.style.zIndex=zp>0?2:0;});}
+  requestAnimationFrame(tick);}
+requestAnimationFrame(tick);
+
+/* ---------- notes book ---------- */
+const D='#0b0d0c',G='#2bc98f',DG='#0f3b2b',MN='#dff6ec',PP='#f7f7f2';
+const SP=[
+ {t:'Обложка',bg:[DG,MN],fg:['#f4f7f5',D],
+  L:`<div class="pg cover"><div class="k">Физика · Динамика</div><div class="big">Законы<br>Ньютона</div><span class="ribbon" style="background:${G};color:#062a1d">Подарок за урок</span></div>`,
+  R:`<div class="pg"><div class="k">Основные понятия</div><h4>Что такое сила</h4><ul><li><b>Сила</b> <i>F</i> — мера действия одного тела на другое. Вектор, единица — <b>Н</b>.</li><li><b>Масса</b> <i>m</i> — мера инертности, <b>кг</b>.</li><li><b>Равнодействующая</b> — сумма всех сил на тело.</li><li>Частые силы: <i>mg</i>, <i>N</i>, <i>F<sub>тр</sub></i>, <i>T</i>.</li></ul></div>`},
+ {t:'Законы 1–2',bg:[PP,G],fg:[D,D],
+  L:`<div class="pg"><div class="k">1-й закон · инерция</div><h4>Тело «ленится»</h4><p>Если сил нет или они уравновешены, тело <b>покоится</b> или движется <b>равномерно и прямолинейно</b>.</p><div class="box" style="background:${MN}">Работает в инерциальных системах. Тормозящий автобус — неинерциальная, поэтому нас «бросает» вперёд.</div></div>`,
+  R:`<div class="pg"><div class="k">2-й закон</div><h4>Сила = масса × ускорение</h4><div class="fx" style="background:${D};color:${G}">F = m·a &nbsp; a = F/m</div><ul><li>Ускорение направлено <b>как равнодействующая</b>.</li><li>1 Н = 1 кг·м/с².</li><li>Сначала найди равнодействующую, потом дели на массу.</li></ul></div>`},
+ {t:'3-й закон',bg:[D,MN],fg:['#f4f7f5',D],
+  L:`<div class="pg"><div class="k">3-й закон</div><h4>Действие = противодействие</h4><div class="fx" style="background:${G};color:#062a1d">F<sub>12</sub> = −F<sub>21</sub></div><ol><li>Равны по модулю</li><li>Противоположны по направлению</li><li>Одной природы</li><li><b>Приложены к разным телам</b></li></ol></div>`,
+  R:`<div class="pg"><div class="k">Ловушки ЕНТ</div><h4>Где ошибаются</h4><ul><li><i>v</i> = const → <i>a</i> = 0 → <i>F<sub>рез</sub></i> = 0. Не умножай массу на скорость!</li><li>км/ч → м/с: дели на 3,6.</li><li>Несколько сил — бери <b>равнодействующую</b>.</li><li>«Кто сильнее давит?» Силы <b>равны</b>, разные только ускорения.</li></ul></div>`},
+ {t:'Повторение',bg:[G,PP],fg:['#062a1d',D],
+  L:`<div class="pg"><div class="k">График повторения</div><h4>Когда открыть снова</h4><div class="days">${[['1',1],['3',0],['7',0],['10',0],['14',0],['30',0],['60',0]].map(([d,on])=>`<span style="background:${on?'#062a1d':'rgba(6,42,29,.15)'};color:${on?G:'#062a1d'}">${d} дн.</span>`).join('')}</div><p>Если вспомнил меньше половины карточек, книга вернётся на шаг раньше.</p></div>`,
+  R:`<div class="pg"><div class="k">Проверь себя</div><h4>3 вопроса</h4><ol><li>Почему силы 3-го закона не уравновешивают друг друга?</li><li>Силу увеличили в 3 раза, массу в 2. Как изменилось ускорение?</li><li>Тело едет с <i>v</i> = const. Чему равна равнодействующая?</li></ol><span class="ribbon" style="background:${D};color:${G}">Повторить 15 карточек</span></div>`}];
+const book=$('book'),chap=$('chap');
+function half(s,side,cls){const d=document.createElement('div');d.className='half '+cls;const k=side==='L'?0:1;d.style.background=s.bg[k];d.style.color=s.fg[k];d.innerHTML=s[side];return d;}
+const baseL=half(SP[0],'L','L');book.appendChild(baseL);const lastR=half(SP[SP.length-1],'R','R');book.appendChild(lastR);
+const pages=[];for(let i=0;i<SP.length-1;i++){const p=document.createElement('div');p.className='page';p.appendChild(half(SP[i],'R','fr'));p.appendChild(half(SP[i+1],'L','bk'));
+  p.addEventListener('click',()=>go(p.classList.contains('flip')?i:i+1));book.appendChild(p);pages.push(p);}
+const sp=document.createElement('div');sp.className='spine';book.appendChild(sp);
+baseL.addEventListener('click',()=>go(cur-1));lastR.addEventListener('click',()=>go(cur+1));
+const dots=SP.map((s,i)=>{const b=document.createElement('button');b.type='button';b.className='dot';b.setAttribute('aria-label',s.t);
+  b.style.background=`radial-gradient(circle at 35% 30%,${s.bg[1]},${s.bg[0]})`;b.style.boxShadow='inset 0 0 0 1px rgba(255,255,255,.25)';
+  b.innerHTML=`<svg viewBox="0 0 114 114" aria-hidden="true"><defs><path id="cp${i}" d="M57,57 m-48,0 a48,48 0 1,1 96,0"/></defs><text><textPath href="#cp${i}" startOffset="12%">${s.t}</textPath></text></svg>`;
+  b.addEventListener('click',()=>go(i));chap.appendChild(b);return b;});
+let cur=0;function go(n){n=Math.max(0,Math.min(SP.length-1,n));cur=n;pages.forEach((p,i)=>{const f=i<n;p.classList.toggle('flip',f);p.style.zIndex=f?10+i:20-i;});dots.forEach((d,i)=>d.classList.toggle('on',i===n));}
+go(0);$('prev').onclick=()=>go(cur-1);$('next').onclick=()=>go(cur+1);
+addEventListener('keydown',e=>{if(!$('bookSec').offsetParent)return;if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1);});
+function openBook(){location.hash='library';setTimeout(()=>{$('bookSec').scrollIntoView({behavior:RM?'auto':'smooth'});go(0);},80);}
+document.querySelectorAll('[data-book]').forEach(b=>b.onclick=openBook);
+
+/* ---------- progress: trajectory ---------- */
+(function(){const pts=[['Диагн.',48],['Нед. 1',52],['Нед. 2',55],['Нед. 3',54],['Нед. 4',61],['Нед. 5',64],['Нед. 6',69]],target=80;
+  const s=$('traj'),x0=46,x1=620,y0=190,y1=16,X=i=>x0+(x1-x0)*i/(pts.length-1),Y=v=>y0-(y0-y1)*v/100;let h='';
+  [0,25,50,75,100].forEach(v=>{h+=`<line x1="${x0}" x2="${x1}" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(255,255,255,.07)"/><text x="${x0-10}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="#9aa7a0">${v}%</text>`;});
+  h+=`<line x1="${x0}" x2="${x1}" y1="${Y(target)}" y2="${Y(target)}" stroke="#e8b931" stroke-dasharray="5 5"/><text x="${x1}" y="${Y(target)-7}" text-anchor="end" font-size="11" fill="#e8b931">цель ${target}%</text>`;
+  const line=pts.map((p,i)=>`${i?'L':'M'}${X(i)},${Y(p[1])}`).join(' ');
+  h+=`<defs><linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2bc98f" stop-opacity=".35"/><stop offset="1" stop-color="#2bc98f" stop-opacity="0"/></linearGradient></defs>`;
+  h+=`<path d="${line} L${X(pts.length-1)},${y0} L${x0},${y0} Z" fill="url(#ar)"/><path d="${line}" fill="none" stroke="#2bc98f" stroke-width="3" stroke-linejoin="round"/>`;
+  pts.forEach((p,i)=>{const last=i===pts.length-1;h+=`<circle cx="${X(i)}" cy="${Y(p[1])}" r="${last?6:4}" fill="${last?'#a6f4d0':'#2bc98f'}" stroke="#0f1412" stroke-width="2"/><text x="${X(i)}" y="${y0+20}" text-anchor="middle" font-size="11" fill="#9aa7a0">${p[0]}</text>`;
+    if(last)h+=`<text x="${X(i)-12}" y="${Y(p[1])+22}" text-anchor="end" font-size="13" font-weight="700" fill="#a6f4d0">${p[1]}%</text>`;});
+  s.innerHTML=h;})();
+
+/* ---------- progress: heatmap 60 days ---------- */
+(function(){const hg=$('heat'),days=60,today=new Date(NOW.getFullYear(),NOW.getMonth(),NOW.getDate());
+  const start=new Date(today);start.setDate(start.getDate()-(days-1));const dow=d=>(d.getDay()+6)%7;
+  const gS=new Date(start);gS.setDate(gS.getDate()-dow(start));const gE=new Date(today);gE.setDate(gE.getDate()+(6-dow(today)));
+  let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};const lv=[];
+  for(let i=0;i<days;i++){const d=new Date(start);d.setDate(d.getDate()+i);let l;
+    if(i>=days-6)l=2+Math.floor(rnd()*3);else{const x=rnd()+(i/days)*.5-(dow(d)>4?.35:0);l=x<.35?0:x<.6?1:x<.85?2:x<1.05?3:4;}
+    if(i===days-7)l=0;lv.push(l);}
+  const M=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+  const lab=document.createElement('div');lab.className='mo';hg.appendChild(lab);
+  ['Пн','','Ср','','Пт','',''].forEach(t=>{const w=document.createElement('div');w.className='wd';w.textContent=t;hg.appendChild(w);});
+  let d=new Date(gS),lm=-1;
+  while(d<=gE){const mo=document.createElement('div');mo.className='mo';if(d.getMonth()!==lm){mo.textContent=M[d.getMonth()];lm=d.getMonth();}hg.appendChild(mo);
+    for(let k=0;k<7;k++){const c=document.createElement('div');c.className='hc';const idx=Math.round((d-start)/864e5);
+      if(idx<0||idx>=days)c.classList.add('fut');else{const l=lv[idx];if(l)c.classList.add('l'+l);if(idx===days-1)c.classList.add('today');
+        c.title=d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})+': '+(l?['','1–2','3–5','6–10','10+'][l]+' задач':'0 задач');}
+      hg.appendChild(c);d.setDate(d.getDate()+1);}}
+  let st=0;for(let i=days-1;i>=0&&lv[i]>0;i--)st++;let best=0,c=0;lv.forEach(l=>{c=l?c+1:0;best=Math.max(best,c);});
+  $('actStats').textContent=`${lv.filter(Boolean).length} активных дней из 60 · серия ${st} · лучшая ${best}`;})();
+
+/* ---------- progress: weak topics, attempts, badges ---------- */
+const TOP=[['Логарифмы',42,38],['Тригонометрия',55,29],['Кинематика',63,24],['Законы Ньютона',71,21],['Прогрессии',84,31],['Проценты',91,22]];
+TOP.forEach(([n,p,tot])=>{const c=p<40?'var(--bad)':p<70?'var(--warn)':'var(--green)';const el=document.createElement('div');el.className='tr';
+  el.innerHTML=`<div class="top"><span>${n}</span><span>${p}% · ${tot}</span></div><div class="mbar"><i style="width:${p}%;background:${c}"></i></div><div class="err">${Math.round(tot*(100-p)/100)} неверных попыток</div>`;$('topics').appendChild(el);});
+const ATT=[[1,'Законы Ньютона','сегодня'],[1,'Законы Ньютона','сегодня'],[0,'Логарифмы','сегодня'],[1,'Логарифмы','вчера'],[0,'Тригонометрия','вчера'],[1,'Кинематика','14 нояб.']];
+ATT.forEach(([ok,n,d])=>{const el=document.createElement('div');el.className='att';
+  el.innerHTML=`<span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${ok?'#2bc98f':'#ff6b6b'}" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/>${ok?'<path d="M8 12.5l3 3 5-6"/>':'<path d="M9 9l6 6M15 9l-6 6"/>'}</svg>${n}</span><small>${d}</small>`;$('atts').appendChild(el);});
+const BD=[['Первый шаг','Реши первую задачу','2 окт.'],['Сотня решённых','Реши 100 задач','19 окт.'],['Пятьсот решённых','Реши 500 задач',null],['Серия 7 дней','Занимайся 7 дней подряд',null],['Серия 30 дней','Занимайся 30 дней подряд',null],
+  ['Мастер темы','Освой любую тему','8 нояб.'],['Пробник пройден','Заверши блок пробника',null],['Высокий балл','Набери 90% в блоке пробника',null],['3 темы за день','Закрой 3 темы за один день',null,1],['Книжный червь','Повтори 10 книг вовремя',null,1]];
+BD.forEach(([t,dsc,when,isNew])=>{const el=document.createElement('div');el.className='bd '+(when?'got':'lock');
+  el.innerHTML=`<div class="badge ${when?'gold':'dim'}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="6"/><path d="M8.5 14l-1.5 8 5-3 5 3-1.5-8"/></svg></div><div><b>${t}${isNew?'<span class="newtag">НОВОЕ</span>':''}</b><p>${dsc}</p><div class="when">${when||'ещё не открыт'}</div></div>`;$('badges').appendChild(el);});
+
+show(location.hash.slice(1)||'today');
+setTimeout(updateRings,RM?0:300);
+})();
+</script>

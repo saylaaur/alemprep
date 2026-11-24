@@ -8,6 +8,9 @@ import { navItems, visibleNavItems } from './nav-items';
 /** Короткие подписи для таб-бара (полные — в сайдбаре/дровере). */
 const TAB_LABEL: Record<(typeof navItems)[number]['href'], string> = {
   '/dashboard': 'home',
+  '/videos': 'videos',
+  '/library': 'library',
+  '/problems': 'problems',
   '/subjects': 'subjects',
   '/full-practice': 'exam',
   '/progress': 'progress',
@@ -28,14 +31,16 @@ export function BottomTabBar({ topicsOnly = false }: { topicsOnly?: boolean }) {
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
   if (immersive) return null;
-  const items = visibleNavItems(topicsOnly);
+  // В таб-баре не больше 6 разделов: «Прогресс» тогда остаётся в меню.
+  const all = visibleNavItems(topicsOnly);
+  const items = all.length > 6 ? all.filter((i) => i.href !== '/progress') : all;
 
   return (
     <nav
       data-hide-in-focus
       aria-label={tNav('menu')}
       style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
-      className="fixed inset-x-0 bottom-0 z-30 grid border-t bg-card/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
+      className="glass fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 grid rounded-[28px] md:hidden"
     >
       {items.map((item) => {
         const isActive =
@@ -47,12 +52,12 @@ export function BottomTabBar({ topicsOnly = false }: { topicsOnly?: boolean }) {
             href={item.href}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'flex min-h-[60px] flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-ring/25',
+              'flex min-h-[58px] min-w-0 flex-col items-center justify-center gap-0.5 text-[10px] font-medium tracking-tight min-[400px]:text-[11px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-ring/25',
               isActive ? 'text-primary' : 'text-muted-foreground'
             )}
           >
             <Icon className="h-[22px] w-[22px]" />
-            {tNav(TAB_LABEL[item.href])}
+            <span className="max-w-full truncate">{tNav(TAB_LABEL[item.href])}</span>
           </Link>
         );
       })}

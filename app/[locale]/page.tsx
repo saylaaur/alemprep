@@ -175,7 +175,7 @@ export default async function LandingPage({
             return (
               <div
                 key={f.title}
-                className="group rounded-2xl border bg-card p-5 shadow-xs transition-all duration-300 ease-smooth hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
+                className="group rounded-2xl border bg-card p-5 shadow-xs transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 ease-smooth hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
               >
                 <div className="mb-4 grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-105">
                   <Icon className="h-5 w-5" />

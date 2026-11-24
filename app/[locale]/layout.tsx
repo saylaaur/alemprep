@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono, Lora } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -9,9 +9,18 @@ import { cn } from '@/lib/utils';
 import 'katex/dist/katex.min.css';
 import '../globals.css';
 
+// cyrillic-ext — казахские буквы (ә, ғ, қ, ң, ө, ұ, ү, һ, і).
 const inter = Inter({
-  subsets: ['latin', 'cyrillic'],
+  subsets: ['latin', 'cyrillic', 'cyrillic-ext'],
   variable: '--font-sans',
+  display: 'swap',
+});
+
+// Засечный шрифт для цитат на экране «Сегодня».
+const lora = Lora({
+  subsets: ['latin', 'cyrillic', 'cyrillic-ext'],
+  style: ['normal', 'italic'],
+  variable: '--font-serif',
   display: 'swap',
 });
 
@@ -58,7 +67,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={cn(inter.variable, jetbrainsMono.variable)}
+      className={cn(inter.variable, lora.variable, jetbrainsMono.variable)}
     >
       <body className={cn('min-h-dvh antialiased font-sans')}>
         <ThemeProvider

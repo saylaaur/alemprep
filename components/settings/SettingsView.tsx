@@ -155,10 +155,10 @@ export function SettingsView({
                 aria-checked={active}
                 onClick={() => setTheme(opt.value)}
                 className={cn(
-                  'flex flex-col items-center gap-2 rounded-xl border px-3 py-4 text-sm font-medium transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
+                  'flex flex-col items-center gap-2 rounded-xl border px-3 py-4 text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
                   active
                     ? 'border-primary bg-primary/8 text-foreground ring-1 ring-primary/30'
-                    : 'border-border bg-card text-muted-foreground hover:border-primary/30 hover:bg-accent'
+                    : 'border-border bg-card/70 backdrop-blur-xl text-muted-foreground hover:border-primary/30 hover:bg-accent'
                 )}
               >
                 <Icon className="h-5 w-5" />
@@ -183,10 +183,10 @@ export function SettingsView({
                 disabled={pendingLocale}
                 onClick={() => changeLocale(opt.value)}
                 className={cn(
-                  'flex items-center justify-center gap-2 rounded-xl border px-4 py-3.5 text-sm font-medium transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25 disabled:opacity-60',
+                  'flex items-center justify-center gap-2 rounded-xl border px-4 py-3.5 text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-150 focus-visible:ring-4 focus-visible:ring-ring/25 disabled:opacity-60',
                   active
                     ? 'border-primary bg-primary/8 text-foreground ring-1 ring-primary/30'
-                    : 'border-border bg-card text-muted-foreground hover:border-primary/30 hover:bg-accent'
+                    : 'border-border bg-card/70 backdrop-blur-xl text-muted-foreground hover:border-primary/30 hover:bg-accent'
                 )}
               >
                 {active && <Check className="h-4 w-4 text-primary" />}
@@ -212,7 +212,7 @@ export function SettingsView({
                 setGoal(Number(e.target.value));
                 setGoalState('idle');
               }}
-              className="h-11 w-28 rounded-xl border bg-card px-3 text-base font-semibold tabular-nums focus:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
+              className="h-11 w-28 rounded-xl border bg-card/70 backdrop-blur-xl px-3 text-base font-semibold tabular-nums focus:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
             />
           </label>
           <Button onClick={saveGoal} disabled={savingGoal || !goalDirty}>
@@ -251,10 +251,10 @@ export function SettingsView({
                     aria-checked={active}
                     onClick={() => { setSecond(slug); setExamState('idle'); }}
                     className={cn(
-                      'rounded-xl border px-4 py-3 text-sm font-medium transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
+                      'rounded-xl border px-4 py-3 text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
                       active
                         ? 'border-primary bg-primary/8 text-foreground ring-1 ring-primary/30'
-                        : 'border-border bg-card text-muted-foreground hover:border-primary/30 hover:bg-accent'
+                        : 'border-border bg-card/70 backdrop-blur-xl text-muted-foreground hover:border-primary/30 hover:bg-accent'
                     )}
                   >
                     {tSubjects('math')} + {tSubjects(slug)}
@@ -270,7 +270,7 @@ export function SettingsView({
               type="date"
               value={examDate}
               onChange={(e) => { setExamDate(e.target.value); setExamState('idle'); }}
-              className="h-11 w-full max-w-[220px] rounded-xl border bg-card px-3 text-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
+              className="h-11 w-full max-w-[220px] rounded-xl border bg-card/70 backdrop-blur-xl px-3 text-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
             />
           </label>
 
@@ -283,7 +283,7 @@ export function SettingsView({
               max={MAX_TARGET_SCORE}
               value={targetScore}
               onChange={(e) => { setTargetScore(Number(e.target.value)); setExamState('idle'); }}
-              className="h-11 w-28 rounded-xl border bg-card px-3 text-base font-semibold tabular-nums focus:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
+              className="h-11 w-28 rounded-xl border bg-card/70 backdrop-blur-xl px-3 text-base font-semibold tabular-nums focus:outline-none focus-visible:ring-4 focus-visible:ring-ring/25"
             />
             <span className="text-xs text-muted-foreground">
               {t('targetScoreHint', { min: MIN_TARGET_SCORE, max: MAX_TARGET_SCORE })}
