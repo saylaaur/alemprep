@@ -4,6 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 import { getProfile } from '@/lib/supabase/queries';
 import { getTeacherGroups } from '@/lib/supabase/queries/teacher';
 import { isPilotTopicsOnly } from '@/lib/learning/feature-flag';
+import { isLocalMode } from '@/lib/data-mode';
+import { localProfile } from '@/lib/local/profile';
+import { readLocalState } from '@/lib/local/store';
 
 export default async function AppLayout({
   children,
@@ -13,6 +16,16 @@ export default async function AppLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
+  // Без базы: вход не нужен, профиль берётся из настроек в браузере.
+  if (isLocalMode()) {
+    return (
+      <AppShell profile={localProfile(await readLocalState())} email={null} isTeacher={false} topicsOnly>
+        {children}
+      </AppShell>
+    );
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`/${locale}/login`);

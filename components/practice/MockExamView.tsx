@@ -360,7 +360,7 @@ export function MockExamView({ availability, locale, userId }: Props) {
                   onClick={() => setSecond(slug)}
                   aria-pressed={selected}
                   className={cn(
-                    'rounded-xl border px-4 py-3.5 text-left text-sm font-medium transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
+                    'rounded-xl border px-4 py-3.5 text-left text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
                     selected
                       ? 'border-primary bg-primary/8 ring-1 ring-primary/30'
                       : 'border-border bg-card hover:border-primary/30 hover:bg-accent'

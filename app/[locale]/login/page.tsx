@@ -5,6 +5,7 @@ import { resolveAuthRedirect } from '@/lib/auth-redirect';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { isLocalMode } from '@/lib/data-mode';
 import { GraduationCap, ArrowLeft } from 'lucide-react';
 
 export default async function LoginPage({
@@ -65,11 +66,18 @@ export default async function LoginPage({
           {error === 'auth' && (
             <p role="alert" className="mb-4 text-center text-sm text-destructive">{tAuth('signInError')}</p>
           )}
-          <form action={action}>
-            <Button type="submit" className="w-full" size="lg">
-              {tAuth('signInWithGoogle')}
+          {isLocalMode() ? (
+            // Без базы входа нет: ученик сразу попадает на «Сегодня», данные остаются в его браузере.
+            <Button asChild className="w-full" size="lg">
+              <Link href="/dashboard">{tAuth('continueWithoutSignIn')}</Link>
             </Button>
-          </form>
+          ) : (
+            <form action={action}>
+              <Button type="submit" className="w-full" size="lg">
+                {tAuth('signInWithGoogle')}
+              </Button>
+            </form>
+          )}
         </CardContent>
       </Card>
     </main>

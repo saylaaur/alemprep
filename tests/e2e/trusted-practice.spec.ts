@@ -144,6 +144,7 @@ test('account switch clears the old draft before rendering and logout removes it
   await page.reload();
   await expect(page.getByRole('radio', { name: 'B five' })).toHaveAttribute('aria-checked', 'false');
   expect(await page.evaluate(() => JSON.parse(sessionStorage.getItem('alemprep.learning.pending.v1')!).owner)).toBe(other.id);
+  await page.locator('aside button[aria-expanded=false]').click();
   await page.getByRole('button', { name: 'Выйти' }).first().click();
   await expect(page).not.toHaveURL(/practice/);
   expect(await page.evaluate(() => sessionStorage.getItem('alemprep.learning.pending.v1'))).toBeNull();

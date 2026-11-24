@@ -1,0 +1,309 @@
+/*
+ * Коллекционная карта повторения (вариант C, выбран владельцем 18.11).
+ * Размеры текста — в cqw от ширины карты (350px = 100cqw), поэтому карта
+ * одинаково выглядит и на телефоне, и на компьютере. 1px = 0.2857cqw.
+ * container-type стоит на .root, а 3D-цепочка — глубже: containment иначе
+ * сплющил бы preserve-3d.
+ */
+
+.root {
+  container-type: inline-size;
+  width: min(350px, 100%);
+  aspect-ratio: 350 / 460;
+  margin-inline: auto;
+}
+
+.scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: 1300px;
+}
+
+.shadow {
+  position: absolute;
+  left: 11%;
+  right: 11%;
+  bottom: -7%;
+  height: 8%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0) 70%);
+}
+
+.float {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: float 8s ease-in-out infinite;
+}
+
+.tilt {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.16s ease-out;
+}
+
+.flipper {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 6.9cqw;
+  padding: 2.3cqw;
+  background: linear-gradient(140deg, #f6d86b, #2bc98f 35%, #a6f4d0 55%, #e8b931 80%, #2bc98f);
+  box-shadow: 0 30px 70px rgb(0 0 0 / 0.55), 0 0 60px rgb(232 185 49 / 0.18);
+}
+
+.back {
+  transform: rotateY(180deg);
+}
+
+.inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 4.9cqw;
+  background: linear-gradient(170deg, #0f1d17, #07100c);
+  padding: 3.4cqw;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #eafff5;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2cqw;
+  height: 9.7cqw;
+}
+
+.title {
+  font-size: 4.6cqw;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #f6e7b0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 9.7cqw;
+  height: 9.7cqw;
+  padding: 0 2.3cqw;
+  border-radius: 999px;
+  background: linear-gradient(140deg, #f6d86b, #e8b931);
+  color: #2b1c00;
+  font-size: 4cqw;
+  font-weight: 800;
+}
+
+.art {
+  position: relative;
+  margin-top: 2.9cqw;
+  height: 41.3%;
+  border-radius: 3.4cqw;
+  border: 2px solid rgb(232 185 49 / 0.75);
+  background: radial-gradient(circle at 50% 120%, #17503d, #07100c 70%);
+  overflow: hidden;
+}
+
+.art > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.strip {
+  margin-top: 2.9cqw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2cqw;
+  font-size: 3.2cqw;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a6f4d0;
+}
+
+.strip > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.question {
+  margin-top: 2.3cqw;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  padding: 3.4cqw 4cqw;
+  border-radius: 3.4cqw;
+  background: rgb(255 255 255 / 0.07);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  font-size: 4.9cqw;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.foot {
+  margin-top: 2.6cqw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 3.4cqw;
+  font-weight: 600;
+  color: rgb(234 255 245 / 0.75);
+}
+
+.foot > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.6cqw;
+}
+
+.label {
+  align-self: flex-start;
+  padding: 1.4cqw 3.4cqw;
+  border-radius: 999px;
+  background: linear-gradient(140deg, #f6d86b, #e8b931);
+  color: #2b1c00;
+  font-size: 3.4cqw;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.answer {
+  position: relative;
+  margin-top: 4.6cqw;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4cqw 4.6cqw;
+  border-radius: 3.4cqw;
+  background: rgb(7 16 12 / 0.72);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  font-size: 5.7cqw;
+  font-weight: 700;
+  line-height: 1.32;
+  color: #fff3c4;
+  text-shadow: 0 0 22px rgb(232 185 49 / 0.45);
+}
+
+.orbit {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: 92%;
+  transform: translate(-50%, -50%);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.holo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: color-dodge;
+  opacity: 0.4;
+  background: linear-gradient(
+    115deg,
+    transparent 15%,
+    rgb(255 119 119 / 0.55) 28%,
+    rgb(255 214 102 / 0.55) 38%,
+    rgb(102 255 178 / 0.55) 48%,
+    rgb(102 204 255 / 0.55) 58%,
+    rgb(214 119 255 / 0.55) 68%,
+    transparent 82%
+  );
+  background-size: 260% 260%;
+}
+
+.glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hit {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  padding: 0;
+  border: 0;
+  border-radius: 6.9cqw;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hit:focus-visible {
+  outline: 3px solid #e8b931;
+  outline-offset: 4px;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotateZ(-0.4deg);
+  }
+  50% {
+    transform: translateY(-2.2%) rotateZ(0.4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float {
+    animation: none;
+  }
+  .tilt,
+  .flipper {
+    transition: none;
+  }
+}
+
+.scene {
+  animation: enter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene {
+    animation: none;
+  }
+}
+
+.orbit svg {
+  display: block;
+  width: 100%;
+}

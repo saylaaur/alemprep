@@ -10,14 +10,17 @@ import {
   getGamification,
   getProgressTrajectory,
 } from '@/lib/supabase/queries';
-import type { DailyActivity, TopicStat, RecentAttemptItem } from '@/lib/supabase/queries';
+import type { TopicStat, RecentAttemptItem } from '@/lib/supabase/queries';
 import { ACHIEVEMENT_KEYS } from '@/lib/gamification';
 import { ACHIEVEMENT_META } from '@/components/gamification/achievement-meta';
 import { TrajectoryChart } from '@/components/progress/TrajectoryChart';
-import { localDateStr } from '@/lib/streak';
+import { ActivityGrid } from '@/components/progress/ActivityGrid';
+import { buildActivityGrid } from '@/lib/activity-grid';
 import { EXAM_PAIR_MAX_SCORE } from '@/lib/exam';
 import { cn } from '@/lib/utils';
 import { isPilotTopicsOnly } from '@/lib/learning/feature-flag';
+import { isLocalMode } from '@/lib/data-mode';
+import { LocalProgress } from '@/components/progress/LocalProgress';
 import type { Locale } from '@/types/db';
 
 export default async function ProgressPage({
@@ -27,6 +30,9 @@ export default async function ProgressPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  // Без базы попыток в базе нет: показываем серию, активность, достижения и книги из cookie.
+  if (isLocalMode()) return <LocalProgress locale={locale as Locale} />;
 
   const profile = await getProfile();
   const userId = profile?.id;
@@ -69,7 +75,9 @@ export default async function ProgressPage({
       ? Math.round((data.correctAttempts / data.totalAttempts) * 100)
       : 0;
 
-  const heatmap = buildHeatmap(data.dailyActivity);
+  const activityWeeks = buildActivityGrid(data.dailyActivity, 60);
+  const months = t('months').split(',');
+  const weekdays = t('weekdaysShort').split(',');
   const targetPercent = profile?.target_score ? profile.target_score / EXAM_PAIR_MAX_SCORE : undefined;
 
   return (
@@ -165,16 +173,16 @@ export default async function ProgressPage({
             <span className="ml-1.5 normal-case font-normal">· {t('activitySub')}</span>
           </h2>
           <Card>
-            <CardContent className="overflow-x-auto p-5">
-              <Heatmap weeks={heatmap} />
-              <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span>{t('heatmapLess')}</span>
-                <span className="h-3 w-3 rounded-sm bg-muted" />
-                <span className="h-3 w-3 rounded-sm bg-success/30" />
-                <span className="h-3 w-3 rounded-sm bg-success/60" />
-                <span className="h-3 w-3 rounded-sm bg-success" />
-                <span>{t('heatmapMore')}</span>
-              </div>
+            <CardContent className="p-5">
+              <ActivityGrid
+                weeks={activityWeeks}
+                months={months}
+                weekdays={weekdays}
+                less={t('heatmapLess')}
+                more={t('heatmapMore')}
+                cellLabel={(date, count) => t('activityCell', { date, count })}
+                summary={(st) => t('activitySummary', { active: st.activeDays, total: st.totalDays, best: st.bestRun })}
+              />
             </CardContent>
           </Card>
         </section>
@@ -279,69 +287,6 @@ export default async function ProgressPage({
 }
 
 // ---- Helpers ----
-
-function buildHeatmap(dailyActivity: DailyActivity[]) {
-  const byDate = new Map(dailyActivity.map((d) => [d.date, d.count]));
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const dow = today.getDay(); // 0 = Sunday
-
-  // First Sunday of the 12-week window
-  const start = new Date(today);
-  start.setDate(today.getDate() - dow - 11 * 7);
-
-  const weeks: { date: string; count: number; isFuture: boolean }[][] = [];
-  for (let w = 0; w < 12; w++) {
-    const days: { date: string; count: number; isFuture: boolean }[] = [];
-    for (let d = 0; d < 7; d++) {
-      const cell = new Date(start);
-      cell.setDate(start.getDate() + w * 7 + d);
-      // локальная дата: toISOString сдвигал ячейки на день в TZ восточнее UTC
-      const dateStr = localDateStr(cell);
-      const isFuture = cell > today;
-      days.push({
-        date: dateStr,
-        count: isFuture ? 0 : (byDate.get(dateStr) ?? 0),
-        isFuture,
-      });
-    }
-    weeks.push(days);
-  }
-  return weeks;
-}
-
-function cellClass(count: number, isFuture: boolean): string {
-  if (isFuture) return 'bg-muted/30';
-  if (count === 0) return 'bg-muted';
-  if (count <= 2) return 'bg-success/30';
-  if (count <= 5) return 'bg-success/60';
-  return 'bg-success';
-}
-
-// ---- Sub-components (server) ----
-
-function Heatmap({
-  weeks,
-}: {
-  weeks: { date: string; count: number; isFuture: boolean }[][];
-}) {
-  return (
-    <div className="flex gap-[3px]">
-      {weeks.map((week, wi) => (
-        <div key={wi} className="flex flex-col gap-[3px]">
-          {week.map((cell, di) => (
-            <div
-              key={di}
-              title={!cell.isFuture ? `${cell.date}: ${cell.count}` : undefined}
-              className={`h-3.5 w-3.5 rounded-sm ${cellClass(cell.count, cell.isFuture)}`}
-            />
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function TopicBars({ stats, locale }: { stats: TopicStat[]; locale: Locale }) {
   return (

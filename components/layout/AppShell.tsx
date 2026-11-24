@@ -1,6 +1,8 @@
 import { Sidebar } from './Sidebar';
 import { MobileNav } from './MobileNav';
 import { BottomTabBar } from './BottomTabBar';
+import { AppBackdrop } from './AppBackdrop';
+import { UiSoundListener } from '@/components/sound/SoundProvider';
 import type { Profile } from '@/types/db';
 
 export function AppShell({
@@ -17,14 +19,17 @@ export function AppShell({
   topicsOnly?: boolean;
 }) {
   return (
-    <div className="flex min-h-dvh">
+    <div className="relative isolate flex min-h-dvh">
+      {/* Один длинный градиент за всеми экранами */}
+      <AppBackdrop />
       <Sidebar profile={profile} email={email} isTeacher={isTeacher} topicsOnly={topicsOnly} />
-      <div className="flex flex-1 flex-col overflow-x-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
         <MobileNav profile={profile} email={email} isTeacher={isTeacher} topicsOnly={topicsOnly} />
-        {/* нижний отступ на моб. — под таб-бар (68px + safe-area) */}
-        <main className="flex-1 pb-[68px] md:pb-0">{children}</main>
+        {/* нижний отступ на моб. — под таб-бар (плавающий таб-бар + отступ) */}
+        <main className="flex-1 pb-[96px] md:pb-0">{children}</main>
       </div>
       <BottomTabBar topicsOnly={topicsOnly} />
+      <UiSoundListener />
     </div>
   );
 }

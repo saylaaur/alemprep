@@ -50,7 +50,7 @@ export default async function SubjectTopicsPage({
 
       <div className="space-y-8 p-4 sm:p-6 lg:p-8">
         {topics.every((topic) => topic.question_count === 0) && (
-          <p className="rounded-xl border bg-card p-5 text-sm text-muted-foreground">{availabilityText('topicDescription')}</p>
+          <p className="rounded-xl border bg-card/70 backdrop-blur-xl p-5 text-sm text-muted-foreground">{availabilityText('topicDescription')}</p>
         )}
         {sections.map((section) => (
           <section key={section.sectionNo ?? 'other'}>

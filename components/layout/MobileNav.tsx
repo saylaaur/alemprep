@@ -5,12 +5,14 @@ import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 import { signOut } from '@/lib/supabase/auth-actions';
+import { clearContentProgress } from '@/lib/lessons/progress';
 import { clearAllSavedExams } from '@/lib/exam-storage';
 import { clearPendingLearning } from '@/lib/learning/browser-storage';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { SoundRow } from '@/components/sound/SoundProvider';
 import type { Profile } from '@/types/db';
-import { visibleNavItems, extraNavItems } from './nav-items';
+import { visibleNavItems, visibleExtraNavItems } from './nav-items';
 import { GraduationCap, LogOut, Menu, X, Flame } from 'lucide-react';
 
 export function MobileNav({
@@ -25,6 +27,7 @@ export function MobileNav({
   topicsOnly?: boolean;
 }) {
   const tNav = useTranslations('nav');
+  const tSound = useTranslations('lessons.sound');
   const tBrand = useTranslations('brand');
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -168,7 +171,7 @@ export function MobileNav({
 
         {/* Nav items */}
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          {[...visibleNavItems(topicsOnly), ...extraNavItems.filter((item) => item.href !== '/teacher' || isTeacher)].map((item) => {
+          {[...visibleNavItems(topicsOnly), ...visibleExtraNavItems(isTeacher)].map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
             return (
@@ -176,7 +179,7 @@ export function MobileNav({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 focus-visible:ring-4 focus-visible:ring-ring/25',
+                  'group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 focus-visible:ring-4 focus-visible:ring-ring/25',
                   isActive
                     ? 'bg-primary/10 text-foreground'
                     : 'text-muted-foreground hover:bg-accent hover:text-foreground'
@@ -217,14 +220,15 @@ export function MobileNav({
           </div>
 
           <ThemeToggle />
+          <SoundRow labelOn={tSound('on')} labelOff={tSound('off')} />
           <LanguageSwitcher />
 
           {/* Прогресс пробника в localStorage — чистим при выходе, чтобы он
               не достался следующему аккаунту на этом устройстве. */}
-          <form action={signOut} onSubmit={() => { clearPendingLearning(); clearAllSavedExams(); }}>
+          <form action={signOut} onSubmit={() => { clearPendingLearning(); clearAllSavedExams(); clearContentProgress(); }}>
             <button
               type="submit"
-              className="flex w-full min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"
+              className="flex w-full min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"
             >
               <LogOut className="h-[18px] w-[18px]" />
               {tNav('signOut')}

@@ -181,7 +181,7 @@ export function OnboardingWizard({ topicsOnly = false }: { topicsOnly?: boolean 
                   onClick={() => setSecond(slug)}
                   aria-pressed={selected}
                   className={cn(
-                    'flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25',
+                    'flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-150 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25',
                     selected
                       ? 'border-primary bg-primary/8 ring-1 ring-primary/30'
                       : 'border-border bg-card hover:border-primary/30 hover:bg-accent'

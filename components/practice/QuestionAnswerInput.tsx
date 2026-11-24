@@ -59,7 +59,7 @@ export function QuestionAnswerInput({ question, answer, onChange, labels, review
               role="radio"
               aria-checked={selected}
               className={cn(
-                'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
+                'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
                 optionTone(opt.id, selected, correct)
                   ?? (selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent')
               )}
@@ -100,7 +100,7 @@ export function QuestionAnswerInput({ question, answer, onChange, labels, review
               role="checkbox"
               aria-checked={selected}
               className={cn(
-                'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-all duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
+                'flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-sm font-medium text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-150 focus-visible:ring-4 focus-visible:ring-ring/25',
                 optionTone(opt.id, selected, correct)
                   ?? (selected ? 'border-primary bg-primary/8 text-foreground' : 'border-border bg-card hover:border-primary/30 hover:bg-accent')
               )}

@@ -4,9 +4,11 @@ import { redirect } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
 import { resolveOAuthOrigin } from '@/lib/auth-origin';
 import { resolveAuthRedirect } from '@/lib/auth-redirect';
+import { isLocalMode } from '@/lib/data-mode';
 import { createClient } from './server';
 
 export async function signInWithGoogle(redirectTo: string) {
+  if (isLocalMode()) redirect(`/${resolveAuthRedirect(redirectTo).locale}/dashboard`);
   const origin = resolveOAuthOrigin((await headers()).get('origin'), {
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
     vercelEnv: process.env.VERCEL_ENV,
@@ -44,6 +46,8 @@ export async function signInWithGoogle(redirectTo: string) {
 }
 
 export async function signOut() {
+  // Без базы выходить не из чего: просто на главную, данные остаются в браузере.
+  if (isLocalMode()) redirect('/');
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect('/');

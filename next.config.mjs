@@ -19,6 +19,12 @@ const securityHeaders = [
     key: 'X-Frame-Options',
     value: 'DENY',
   },
+  // Безопасные директивы CSP, которые не ломают Next/KaTeX: запрет встраивания
+  // в чужие страницы, чужой <base> и плагинов. script-src не задаём — Next использует inline-скрипты.
+  {
+    key: 'Content-Security-Policy',
+    value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'",
+  },
 ];
 
 if (process.env.NODE_ENV === 'production') {
@@ -30,6 +36,7 @@ if (process.env.NODE_ENV === 'production') {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  agentRules: false,
   reactStrictMode: true,
   async headers() {
     return [
