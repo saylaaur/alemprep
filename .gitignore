@@ -9,15 +9,20 @@ dist
 .venv
 __pycache__/
 
+# Environment overrides and local deployment metadata
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+/.vercel/
+/supabase/.branches/
+/supabase/.temp/
 
 .DS_Store
 *.log
 playwright-report/
 test-results/
 blob-report/
+coverage/
 
 next-env.d.ts
 
@@ -49,5 +54,21 @@ unt*resources/
 unt*recources/
 *.unt/
 
-# Agent execution notes remain local to this checkout.
+# Track published Markdown and GitHub templates. Keep other notes local.
+*.md
+!/README.md
+!/AGENTS.md
+!/SECURITY.md
+!/docs/development/**/*.md
+!/docs/operations/**/*.md
+!/docs/product/**/*.md
+!/docs/project-history.md
+!/.github/**/*.md
+*.local.md
+/docs/drafts/
+/local-notes/
+/scratch/
+
+# Local agent state
+/.claude/settings.local.json
 /.superpowers/
