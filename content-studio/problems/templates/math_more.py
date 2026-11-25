@@ -16,8 +16,9 @@ def T(topic: str, level: str = "medium") -> dict:
 
 def sq(k: int, m: int) -> str:
     """k√m в LaTeX как вариант ответа."""
-    if m == 1:
-        return f"${k}$"
+    r = math.isqrt(m)
+    if r * r == m:  # √4 → 2: неупрощённый корень ученик отбросит сразу
+        return f"${k * r}$"
     return f"$\\sqrt{{{m}}}$" if k == 1 else f"${k}\\sqrt{{{m}}}$"
 
 
@@ -90,7 +91,7 @@ TEMPLATES = [
         answer=lambda p: p.a ** (p.m + p.n - p.k),
         distractors=[lambda p: F(p.a) ** (p.m * p.n - p.k), lambda p: p.a ** (p.m + p.n + p.k) if p.m + p.n + p.k < 9 else p.a ** (p.m + p.n - p.k + 1),
                      lambda p: p.a ** (p.m + p.n - p.k) * p.a, lambda p: (p.m + p.n - p.k) * p.a],
-        spread=None,
+        spread=None, valid=lambda p, x: x >= 1 and float(x).is_integer(),
         text={"ru": "Вычислите: $\\dfrac{[[a]]^{[[m]]} \\cdot [[a]]^{[[n]]}}{[[a]]^{[[k]]}}$.", "kk": "Есептеңіз: $\\dfrac{[[a]]^{[[m]]} \\cdot [[a]]^{[[n]]}}{[[a]]^{[[k]]}}$."},
         solution={"ru": "При умножении показатели складываются, при делении вычитаются: $[[a]]^{[[m]] + ([[n]]) - [[k]]} = [[a]]^{[[e]]} = [[ans]]$.",
                   "kk": "Көбейткенде дәреже көрсеткіштері қосылады, бөлгенде азаяды: $[[a]]^{[[m]] + ([[n]]) - [[k]]} = [[a]]^{[[e]]} = [[ans]]$."},
@@ -194,7 +195,7 @@ TEMPLATES = [
     Template(
         id="math.m.alg.percent-twice", **T("algebraic-expressions", "medium"),
         params={"p_": [10, 20, 25, 30, 40, 50], "dir": [0, 1]},
-        derived=lambda p: {"ru1": "повысили" if p.dir == 0 else "понизили", "ru2": "понизили" if p.dir == 0 else "повысили",
+        derived=lambda p: {"sq": p.p_ * p.p_ / 100, "ru1": "повысили" if p.dir == 0 else "понизили", "ru2": "понизили" if p.dir == 0 else "повысили",
                            "kk1": "көтерді" if p.dir == 0 else "төмендетті", "kk2": "төмендетті" if p.dir == 0 else "көтерді"},
         answer=lambda p: f"уменьшилась на ${p.p_ * p.p_ // 100 if p.p_ * p.p_ % 100 == 0 else p.p_ * p.p_ / 100}\\%$".replace(".", "{,}"),
         distractors=[lambda p: "не изменилась", lambda p: f"увеличилась на ${p.p_ * p.p_ // 100 if p.p_ * p.p_ % 100 == 0 else p.p_ * p.p_ / 100}\\%$".replace(".", "{,}"),
@@ -204,8 +205,8 @@ TEMPLATES = [
                     "не изменилась": "өзгерген жоқ"},
         text={"ru": "Цену товара сначала [[ru1]] на $[[p_]]\\%$, а затем [[ru2]] на $[[p_]]\\%$. Как изменилась цена по сравнению с первоначальной?",
               "kk": "Тауар бағасын алдымен $[[p_]]\\%$-ға [[kk1]], сосын $[[p_]]\\%$-ға [[kk2]]. Бастапқы бағамен салыстырғанда баға қалай өзгерді?"},
-        solution={"ru": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен.",
-                  "kk": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."},
+        solution={"ru": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{[[p_]]^2}{100} = [[sq]]$.",
+                  "kk": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{[[p_]]^2}{100} = [[sq]]$."},
     ),
 
     # ---------- уравнения ----------
@@ -240,8 +241,8 @@ TEMPLATES = [
         distractors=[(lambda p, j=j: f"${TRIG_EQ[p.i][2][j]}, \\; n \\in \\mathbb{{Z}}$") for j in range(3)],
         variants=12,
         text={"ru": "Решите уравнение $[[eq]]$.", "kk": "$[[eq]]$ теңдеуін шешіңіз."},
-        solution={"ru": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: [[ans]].",
-                  "kk": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: [[ans]]."},
+        solution={"ru": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: [[ans]].",
+                  "kk": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: [[ans]]."},
     ),
     Template(
         id="math.m.treq.count-on-segment", **T("trig-irrational-equations", "hard"),
@@ -288,7 +289,7 @@ TEMPLATES = [
         answer=lambda p: p.x + p.y,
         distractors=[lambda p: p.x - p.y, lambda p: p.x * p.y, lambda p: p.x, lambda p: p.y, lambda p: p.y - p.x],
         decimals=0, spread=None,
-        text={"ru": "Решите систему $\\begin{cases} [[e1]] = [[r1]] \\\\ [[e2]] = [[r2]] \\end{cases}$ и найдите $x + y$.", "kk": "$\\begin{cases} [[e1]] = [[r1]] \\\\ [[e2]] = [[r2]] \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз."},
+        text={"ru": "Решите систему $\\begin{cases} [[e1]] = [[r1]] \\\\ [[e2]] = [[r2]] \\end{cases}$ и найдите $x + y$.", "kk": "$\\begin{cases} [[e1]] = [[r1]] \\\\ [[e2]] = [[r2]] \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз."},
         solution={"ru": "Сложением или подстановкой получаем $x = [[x]]$, $y = [[y]]$. Проверка подстановкой в оба уравнения. $x + y = [[ans]]$.",
                   "kk": "Қосу немесе ауыстыру тәсілімен $x = [[x]]$, $y = [[y]]$ шығады. Екі теңдеуге қойып тексереміз. $x + y = [[ans]]$."},
     ),
@@ -299,8 +300,8 @@ TEMPLATES = [
         where=lambda p: p.x > p.y and p.x * p.y > 0 and p.x != 0,
         answer=lambda p: p.x ** 2 + p.y ** 2,
         distractors=[lambda p: p.d ** 2 - 2 * p.pr, lambda p: p.d ** 2, lambda p: p.d ** 2 + p.pr, lambda p: (p.x + p.y) ** 2],
-        decimals=0, spread=None,
-        text={"ru": "Известно, что $x - y = [[d]]$ и $xy = [[pr]]$. Найдите $x^2 + y^2$.", "kk": "$x - y = [[d]]$ және $xy = [[pr]]$ екені белгілі. $x^2 + y^2$ табыңыз."},
+        decimals=0, spread=None, valid=lambda p, x: x > 0,
+        text={"ru": "Известно, что $x - y = [[d]]$ и $xy = [[pr]]$. Найдите $x^2 + y^2$.", "kk": "$x - y = [[d]]$ және $xy = [[pr]]$ екені белгілі. $x^2 + y^2$ мәнін табыңыз."},
         solution={"ru": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = [[d]]^2 + 2 \\cdot [[pr]] = [[ans]]$.",
                   "kk": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = [[d]]^2 + 2 \\cdot [[pr]] = [[ans]]$."},
     ),
@@ -313,7 +314,7 @@ TEMPLATES = [
         distractors=[lambda p: p.y, lambda p: p.s, lambda p: p.d, lambda p: p.x + 1],
         decimals=0, spread=None,
         text={"ru": "Решите систему $\\begin{cases} [[a]]^x \\cdot [[a]]^y = [[a]]^{[[s]]} \\\\ x - y = [[d]] \\end{cases}$. В ответе укажите $x$.",
-              "kk": "$\\begin{cases} [[a]]^x \\cdot [[a]]^y = [[a]]^{[[s]]} \\\\ x - y = [[d]] \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз."},
+              "kk": "$\\begin{cases} [[a]]^x \\cdot [[a]]^y = [[a]]^{[[s]]} \\\\ x - y = [[d]] \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз."},
         solution={"ru": "$[[a]]^{x + y} = [[a]]^{[[s]]}$, значит $x + y = [[s]]$. Складываем с $x - y = [[d]]$: $2x = [[s]] + ([[d]])$, $x = [[ans]]$.",
                   "kk": "$[[a]]^{x + y} = [[a]]^{[[s]]}$, демек $x + y = [[s]]$. $x - y = [[d]]$ теңдеуімен қосамыз: $2x = [[s]] + ([[d]])$, $x = [[ans]]$."},
     ),
@@ -326,7 +327,7 @@ TEMPLATES = [
         distractors=[lambda p: p.y, lambda p: p.s, lambda p: p.x - p.y, lambda p: p.pr // 2],
         decimals=0, spread=None,
         text={"ru": "Решите систему $\\begin{cases} x + y = [[s]] \\\\ \\log_2 x + \\log_2 y = \\log_2 [[pr]] \\end{cases}$, $x > y$. В ответе укажите $x$.",
-              "kk": "$\\begin{cases} x + y = [[s]] \\\\ \\log_2 x + \\log_2 y = \\log_2 [[pr]] \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ жазыңыз."},
+              "kk": "$\\begin{cases} x + y = [[s]] \\\\ \\log_2 x + \\log_2 y = \\log_2 [[pr]] \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ мәнін жазыңыз."},
         solution={"ru": "Второе уравнение: $xy = [[pr]]$ (при $x, y > 0$). По теореме Виета $x$ и $y$ — корни $t^2 - [[s]]t + [[pr]] = 0$: $[[x]]$ и $[[y]]$. Так как $x > y$, $x = [[ans]]$.",
                   "kk": "Екінші теңдеу: $xy = [[pr]]$ ($x, y > 0$). Виет теоремасы бойынша $x$ пен $y$ — $t^2 - [[s]]t + [[pr]] = 0$ теңдеуінің түбірлері: $[[x]]$ және $[[y]]$. $x > y$ болғандықтан, $x = [[ans]]$."},
     ),
@@ -490,8 +491,8 @@ TEMPLATES = [
         valid=lambda p, x: x > 0,
         text={"ru": "Сколько диагоналей у $[[n]]$-угольной призмы? (Диагональ призмы соединяет вершины, не лежащие в одной грани.)",
               "kk": "$[[n]]$-бұрышты призманың неше диагоналі бар? (Призманың диагоналі бір жақта жатпайтын төбелерді қосады.)"},
-        solution={"ru": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме себя и двух соседних: $[[n]] - 3$. Всего $[[n]]([[n]] - 3) = [[ans]]$.",
-                  "kk": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінен және екі көршісінен басқа барлық төбесіне жүреді: $[[n]] - 3$. Барлығы $[[n]]([[n]] - 3) = [[ans]]$."},
+        solution={"ru": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме вершины над ней и двух соседних с той: $[[n]] - 3$. Всего $[[n]]([[n]] - 3) = [[ans]]$.",
+                  "kk": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінің үстіндегі төбеден және оның екі көршісінен басқа барлық төбесіне жүреді: $[[n]] - 3$. Барлығы $[[n]]([[n]] - 3) = [[ans]]$."},
     ),
     Template(
         id="math.m.space.pyramid-volume", **T("metric-relations-space", "hard"),
@@ -681,7 +682,7 @@ CONTEXTS = [
         derived=lambda p: {"S": (p.v1 + p.v2) * p.t, "s1": p.v1 * p.t, "s2": p.v2 * p.t},
         where=lambda p: p.v1 != p.v2 and p.v1 > p.v2,
         context={"ru": "Из сёл Акжар и Талдыбулак, расстояние между которыми $[[S]]$ км, одновременно навстречу друг другу выехали два велосипедиста. Скорость первого $[[v1]]$ км/ч, второго — $[[v2]]$ км/ч.",
-                 "kk": "Арақашықтығы $[[S]]$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $[[v1]]$ км/сағ, екіншісінікі — $[[v2]]$ км/сағ."},
+                 "kk": "Арақашықтығы $[[S]]$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $[[v1]]$ км/сағ, екіншісінікі — $[[v2]]$ км/сағ."},
         questions=[
             Q("С какой скоростью велосипедисты сближаются?", "Велосипедшілер қандай жылдамдықпен жақындасады?",
               lambda p: p.v1 + p.v2, [lambda p: p.v1 - p.v2, lambda p: (p.v1 + p.v2) / 2, lambda p: p.v1 * p.v2 // 4],
@@ -738,7 +739,7 @@ CONTEXTS = [
             Q("Найдите точку максимума функции.", "Функцияның максимум нүктесін табыңыз.",
               lambda p: -p.r, [lambda p: p.r, lambda p: 0, lambda p: p.k],
               "$f'(x) = 0$ при $x = \\pm [[r]]$. Производная меняет знак с «+» на «−» в точке $x = [[ans]]$ — это максимум.",
-              "$x = \\pm [[r]]$ болғанда $f'(x) = 0$. Туынды $x = [[ans]]$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум.", decimals=0),
+              "$x = \\pm [[r]]$ болғанда $f'(x) = 0$. Туынды $x = [[ans]]$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум.", decimals=0),
             Q("Найдите значение функции в точке минимума.", "Минимум нүктесіндегі функцияның мәнін табыңыз.",
               lambda p: p.fmin, [lambda p: p.fmx, lambda p: p.f0, lambda p: p.fmin - p.k],
               "Минимум в $x = [[r]]$: $f([[r]]) = [[r]]^3 - [[k]] \\cdot [[r]] [[ct]] = [[ans]]$.", "Минимум $x = [[r]]$ нүктесінде: $f([[r]]) = [[r]]^3 - [[k]] \\cdot [[r]] [[ct]] = [[ans]]$.", decimals=0),
@@ -768,13 +769,13 @@ TEMPLATES += [
     Template(
         id="math.m.multi.points-on-line", kind="multi", **T("calculus-and-modeling", "easy"),
         params={"k": [-3, -2, -1, 2, 3], "b": [-4, -1, 2, 5], "x1": [-2, 0, 1], "x2": [2, 3, 4]},
-        derived=lambda p: {"f": lead(p.k, "x") + " " + term(p.b)},
+        derived=lambda p: {"f": lead(p.k, "x") + " " + term(p.b), "y1": p.k * p.x1 + p.b, "y2": p.k * p.x2 + p.b},
         # ни одна «неверная» точка случайно не должна лежать на прямой
         where=lambda p: all(y != p.k * x + p.b for x, y in [(p.k * p.x1 + p.b, p.x1), (p.x2, p.k * p.x2 - p.b), (-p.x2, p.k * p.x2 + p.b)]),
         answers=[lambda p: f"({p.x1}; {p.k * p.x1 + p.b})".replace("-", "−"), lambda p: f"({p.x2}; {p.k * p.x2 + p.b})".replace("-", "−")],
         distractors=[lambda p: f"({p.k * p.x1 + p.b}; {p.x1})".replace("-", "−"), lambda p: f"({p.x2}; {p.k * p.x2 - p.b})".replace("-", "−"),
                      lambda p: f"({p.x1}; {p.k * p.x1 + p.b + 1})".replace("-", "−"), lambda p: f"({-p.x2}; {p.k * p.x2 + p.b})".replace("-", "−")],
         text={"ru": "Какие из точек лежат на графике функции $y = [[f]]$? Выберите все верные ответы.", "kk": "Қай нүктелер $y = [[f]]$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз."},
-        solution={"ru": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки [[ans]] и ещё одна отмеченная.", "kk": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. [[ans]] нүктесі және тағы бір белгіленген нүкте жарайды."},
+        solution={"ru": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y([[x1]]) = [[y1]]$, $y([[x2]]) = [[y2]]$. Подходят точки $([[x1]]; [[y1]])$ и $([[x2]]; [[y2]])$.", "kk": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y([[x1]]) = [[y1]]$, $y([[x2]]) = [[y2]]$. $([[x1]]; [[y1]])$ және $([[x2]]; [[y2]])$ нүктелері жарайды."},
     ),
 ]

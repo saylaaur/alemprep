@@ -51456,7 +51456,7 @@
     "1",
     "27",
     "3",
-    "0"
+    "2"
    ],
    "correct": 0,
    "solution": "При умножении показатели складываются, при делении вычитаются: $3^{3 + (3) - 6} = 3^{0} = 1$."
@@ -51467,7 +51467,7 @@
     "1",
     "27",
     "3",
-    "0"
+    "2"
    ],
    "correct": 0,
    "solution": "Көбейткенде дәреже көрсеткіштері қосылады, бөлгенде азаяды: $3^{3 + (3) - 6} = 3^{0} = 1$."
@@ -51486,7 +51486,7 @@
     "1",
     "243",
     "3",
-    "0"
+    "2"
    ],
    "correct": 0,
    "solution": "При умножении показатели складываются, при делении вычитаются: $3^{3 + (4) - 7} = 3^{0} = 1$."
@@ -51497,7 +51497,7 @@
     "1",
     "243",
     "3",
-    "0"
+    "2"
    ],
    "correct": 0,
    "solution": "Көбейткенде дәреже көрсеткіштері қосылады, бөлгенде азаяды: $3^{3 + (4) - 7} = 3^{0} = 1$."
@@ -51606,7 +51606,7 @@
     "5",
     "25",
     "10",
-    "2,5"
+    "15"
    ],
    "correct": 0,
    "solution": "При умножении показатели складываются, при делении вычитаются: $5^{3 + (2) - 4} = 5^{1} = 5$."
@@ -51617,7 +51617,7 @@
     "5",
     "25",
     "10",
-    "2,5"
+    "15"
    ],
    "correct": 0,
    "solution": "Көбейткенде дәреже көрсеткіштері қосылады, бөлгенде азаяды: $5^{3 + (2) - 4} = 5^{1} = 5$."
@@ -51726,7 +51726,7 @@
     "1",
     "6561",
     "3",
-    "0"
+    "2"
    ],
    "correct": 0,
    "solution": "При умножении показатели складываются, при делении вычитаются: $3^{4 + (4) - 8} = 3^{0} = 1$."
@@ -51737,7 +51737,7 @@
     "1",
     "6561",
     "3",
-    "0"
+    "2"
    ],
    "correct": 0,
    "solution": "Көбейткенде дәреже көрсеткіштері қосылады, бөлгенде азаяды: $3^{4 + (4) - 8} = 3^{0} = 1$."
@@ -51756,7 +51756,7 @@
     "1",
     "6561",
     "3",
-    "0"
+    "2"
    ],
    "correct": 0,
    "solution": "При умножении показатели складываются, при делении вычитаются: $3^{5 + (-1) - 4} = 3^{0} = 1$."
@@ -51767,7 +51767,7 @@
     "1",
     "6561",
     "3",
-    "0"
+    "2"
    ],
    "correct": 0,
    "solution": "Көбейткенде дәреже көрсеткіштері қосылады, бөлгенде азаяды: $3^{5 + (-1) - 4} = 3^{0} = 1$."
@@ -51841,42 +51841,12 @@
   "level": "easy",
   "kind": "single",
   "ru": {
-   "question": "Вычислите: $\\dfrac{3^{6} \\cdot 3^{-1}}{3^{5}}$.",
-   "options": [
-    "1",
-    "3",
-    "0",
-    "2"
-   ],
-   "correct": 0,
-   "solution": "При умножении показатели складываются, при делении вычитаются: $3^{6 + (-1) - 5} = 3^{0} = 1$."
-  },
-  "kk": {
-   "question": "Есептеңіз: $\\dfrac{3^{6} \\cdot 3^{-1}}{3^{5}}$.",
-   "options": [
-    "1",
-    "3",
-    "0",
-    "2"
-   ],
-   "correct": 0,
-   "solution": "Көбейткенде дәреже көрсеткіштері қосылады, бөлгенде азаяды: $3^{6 + (-1) - 5} = 3^{0} = 1$."
-  }
- },
- {
-  "id": "math.m.pow.same-base-value#019",
-  "template": "math.m.pow.same-base-value",
-  "subject": "math",
-  "topic": "powers",
-  "level": "easy",
-  "kind": "single",
-  "ru": {
    "question": "Вычислите: $\\dfrac{3^{5} \\cdot 3^{2}}{3^{7}}$.",
    "options": [
     "1",
     "27",
     "3",
-    "0"
+    "2"
    ],
    "correct": 0,
    "solution": "При умножении показатели складываются, при делении вычитаются: $3^{5 + (2) - 7} = 3^{0} = 1$."
@@ -51887,14 +51857,14 @@
     "1",
     "27",
     "3",
-    "0"
+    "2"
    ],
    "correct": 0,
    "solution": "Көбейткенде дәреже көрсеткіштері қосылады, бөлгенде азаяды: $3^{5 + (2) - 7} = 3^{0} = 1$."
   }
  },
  {
-  "id": "math.m.pow.same-base-value#020",
+  "id": "math.m.pow.same-base-value#019",
   "template": "math.m.pow.same-base-value",
   "subject": "math",
   "topic": "powers",
@@ -51924,7 +51894,7 @@
   }
  },
  {
-  "id": "math.m.pow.same-base-value#021",
+  "id": "math.m.pow.same-base-value#020",
   "template": "math.m.pow.same-base-value",
   "subject": "math",
   "topic": "powers",
@@ -51954,7 +51924,7 @@
   }
  },
  {
-  "id": "math.m.pow.same-base-value#022",
+  "id": "math.m.pow.same-base-value#021",
   "template": "math.m.pow.same-base-value",
   "subject": "math",
   "topic": "powers",
@@ -51984,7 +51954,7 @@
   }
  },
  {
-  "id": "math.m.pow.same-base-value#023",
+  "id": "math.m.pow.same-base-value#022",
   "template": "math.m.pow.same-base-value",
   "subject": "math",
   "topic": "powers",
@@ -52014,7 +51984,7 @@
   }
  },
  {
-  "id": "math.m.pow.same-base-value#024",
+  "id": "math.m.pow.same-base-value#023",
   "template": "math.m.pow.same-base-value",
   "subject": "math",
   "topic": "powers",
@@ -52044,7 +52014,7 @@
   }
  },
  {
-  "id": "math.m.pow.same-base-value#025",
+  "id": "math.m.pow.same-base-value#024",
   "template": "math.m.pow.same-base-value",
   "subject": "math",
   "topic": "powers",
@@ -52071,6 +52041,36 @@
    ],
    "correct": 0,
    "solution": "Көбейткенде дәреже көрсеткіштері қосылады, бөлгенде азаяды: $5^{3 + (3) - 3} = 5^{3} = 125$."
+  }
+ },
+ {
+  "id": "math.m.pow.same-base-value#025",
+  "template": "math.m.pow.same-base-value",
+  "subject": "math",
+  "topic": "powers",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Вычислите: $\\dfrac{2^{5} \\cdot 2^{3}}{2^{6}}$.",
+   "options": [
+    "4",
+    "512",
+    "8",
+    "2"
+   ],
+   "correct": 0,
+   "solution": "При умножении показатели складываются, при делении вычитаются: $2^{5 + (3) - 6} = 2^{2} = 4$."
+  },
+  "kk": {
+   "question": "Есептеңіз: $\\dfrac{2^{5} \\cdot 2^{3}}{2^{6}}$.",
+   "options": [
+    "4",
+    "512",
+    "8",
+    "2"
+   ],
+   "correct": 0,
+   "solution": "Көбейткенде дәреже көрсеткіштері қосылады, бөлгенде азаяды: $2^{5 + (3) - 6} = 2^{2} = 4$."
   }
  },
  {
@@ -54604,7 +54604,7 @@
    "question": "Вынесите множитель из-под знака корня: $\\sqrt{96}$.",
    "options": [
     "$4\\sqrt{6}$",
-    "$6\\sqrt{4}$",
+    "$12$",
     "$16\\sqrt{6}$",
     "$24$"
    ],
@@ -54615,7 +54615,7 @@
    "question": "Көбейткішті түбір белгісінің астынан шығарыңыз: $\\sqrt{96}$.",
    "options": [
     "$4\\sqrt{6}$",
-    "$6\\sqrt{4}$",
+    "$12$",
     "$16\\sqrt{6}$",
     "$24$"
    ],
@@ -54754,7 +54754,7 @@
    "question": "Вынесите множитель из-под знака корня: $\\sqrt{32}$.",
    "options": [
     "$4\\sqrt{2}$",
-    "$2\\sqrt{4}$",
+    "$4$",
     "$16\\sqrt{2}$",
     "$8$"
    ],
@@ -54765,7 +54765,7 @@
    "question": "Көбейткішті түбір белгісінің астынан шығарыңыз: $\\sqrt{32}$.",
    "options": [
     "$4\\sqrt{2}$",
-    "$2\\sqrt{4}$",
+    "$4$",
     "$16\\sqrt{2}$",
     "$8$"
    ],
@@ -54784,7 +54784,7 @@
    "question": "Вынесите множитель из-под знака корня: $\\sqrt{112}$.",
    "options": [
     "$4\\sqrt{7}$",
-    "$7\\sqrt{4}$",
+    "$14$",
     "$16\\sqrt{7}$",
     "$28$"
    ],
@@ -54795,7 +54795,7 @@
    "question": "Көбейткішті түбір белгісінің астынан шығарыңыз: $\\sqrt{112}$.",
    "options": [
     "$4\\sqrt{7}$",
-    "$7\\sqrt{4}$",
+    "$14$",
     "$16\\sqrt{7}$",
     "$28$"
    ],
@@ -55114,7 +55114,7 @@
    "question": "Вынесите множитель из-под знака корня: $\\sqrt{80}$.",
    "options": [
     "$4\\sqrt{5}$",
-    "$5\\sqrt{4}$",
+    "$10$",
     "$16\\sqrt{5}$",
     "$20$"
    ],
@@ -55125,7 +55125,7 @@
    "question": "Көбейткішті түбір белгісінің астынан шығарыңыз: $\\sqrt{80}$.",
    "options": [
     "$4\\sqrt{5}$",
-    "$5\\sqrt{4}$",
+    "$10$",
     "$16\\sqrt{5}$",
     "$20$"
    ],
@@ -55144,7 +55144,7 @@
    "question": "Вынесите множитель из-под знака корня: $\\sqrt{48}$.",
    "options": [
     "$4\\sqrt{3}$",
-    "$3\\sqrt{4}$",
+    "$6$",
     "$16\\sqrt{3}$",
     "$12$"
    ],
@@ -55155,7 +55155,7 @@
    "question": "Көбейткішті түбір белгісінің астынан шығарыңыз: $\\sqrt{48}$.",
    "options": [
     "$4\\sqrt{3}$",
-    "$3\\sqrt{4}$",
+    "$6$",
     "$16\\sqrt{3}$",
     "$12$"
    ],
@@ -55296,7 +55296,7 @@
     "$2\\sqrt{2}$",
     "$\\sqrt{24}$",
     "$6\\sqrt{2}$",
-    "$2\\sqrt{4}$"
+    "$4$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{32} = 4\\sqrt{2}$, $\\sqrt{8} = 2\\sqrt{2}$. Подобные корни складываем как одночлены: $2\\sqrt{2}$. Складывать подкоренные выражения нельзя."
@@ -55307,7 +55307,7 @@
     "$2\\sqrt{2}$",
     "$\\sqrt{24}$",
     "$6\\sqrt{2}$",
-    "$2\\sqrt{4}$"
+    "$4$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{32} = 4\\sqrt{2}$, $\\sqrt{8} = 2\\sqrt{2}$. Ұқсас түбірлерді бірмүшелер сияқты қосамыз: $2\\sqrt{2}$. Түбір астындағы өрнектерді қосуға болмайды."
@@ -55414,7 +55414,7 @@
    "question": "Упростите: $\\sqrt{45} - \\sqrt{20}$.",
    "options": [
     "$\\sqrt{5}$",
-    "$\\sqrt{25}$",
+    "$5$",
     "$5\\sqrt{5}$",
     "$\\sqrt{10}$"
    ],
@@ -55425,7 +55425,7 @@
    "question": "Ықшамдаңыз: $\\sqrt{45} - \\sqrt{20}$.",
    "options": [
     "$\\sqrt{5}$",
-    "$\\sqrt{25}$",
+    "$5$",
     "$5\\sqrt{5}$",
     "$\\sqrt{10}$"
    ],
@@ -55444,7 +55444,7 @@
    "question": "Упростите: $\\sqrt{45} + \\sqrt{180}$.",
    "options": [
     "$9\\sqrt{5}$",
-    "$\\sqrt{225}$",
+    "$15$",
     "$11\\sqrt{5}$",
     "$9\\sqrt{10}$"
    ],
@@ -55455,7 +55455,7 @@
    "question": "Ықшамдаңыз: $\\sqrt{45} + \\sqrt{180}$.",
    "options": [
     "$9\\sqrt{5}$",
-    "$\\sqrt{225}$",
+    "$15$",
     "$11\\sqrt{5}$",
     "$9\\sqrt{10}$"
    ],
@@ -55536,7 +55536,7 @@
     "$3\\sqrt{2}$",
     "$\\sqrt{10}$",
     "$5\\sqrt{2}$",
-    "$3\\sqrt{4}$"
+    "$6$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{2} = 1\\sqrt{2}$, $\\sqrt{8} = 2\\sqrt{2}$. Подобные корни складываем как одночлены: $3\\sqrt{2}$. Складывать подкоренные выражения нельзя."
@@ -55547,7 +55547,7 @@
     "$3\\sqrt{2}$",
     "$\\sqrt{10}$",
     "$5\\sqrt{2}$",
-    "$3\\sqrt{4}$"
+    "$6$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{2} = 1\\sqrt{2}$, $\\sqrt{8} = 2\\sqrt{2}$. Ұқсас түбірлерді бірмүшелер сияқты қосамыз: $3\\sqrt{2}$. Түбір астындағы өрнектерді қосуға болмайды."
@@ -55596,7 +55596,7 @@
     "$\\sqrt{2}$",
     "$\\sqrt{10}$",
     "$5\\sqrt{2}$",
-    "$\\sqrt{4}$"
+    "$2$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{18} = 3\\sqrt{2}$, $\\sqrt{8} = 2\\sqrt{2}$. Подобные корни складываем как одночлены: $\\sqrt{2}$. Складывать подкоренные выражения нельзя."
@@ -55607,7 +55607,7 @@
     "$\\sqrt{2}$",
     "$\\sqrt{10}$",
     "$5\\sqrt{2}$",
-    "$\\sqrt{4}$"
+    "$2$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{18} = 3\\sqrt{2}$, $\\sqrt{8} = 2\\sqrt{2}$. Ұқсас түбірлерді бірмүшелер сияқты қосамыз: $\\sqrt{2}$. Түбір астындағы өрнектерді қосуға болмайды."
@@ -55626,7 +55626,7 @@
     "$5\\sqrt{2}$",
     "$\\sqrt{34}$",
     "$3\\sqrt{2}$",
-    "$5\\sqrt{4}$"
+    "$10$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{32} = 4\\sqrt{2}$, $\\sqrt{2} = 1\\sqrt{2}$. Подобные корни складываем как одночлены: $5\\sqrt{2}$. Складывать подкоренные выражения нельзя."
@@ -55637,7 +55637,7 @@
     "$5\\sqrt{2}$",
     "$\\sqrt{34}$",
     "$3\\sqrt{2}$",
-    "$5\\sqrt{4}$"
+    "$10$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{32} = 4\\sqrt{2}$, $\\sqrt{2} = 1\\sqrt{2}$. Ұқсас түбірлерді бірмүшелер сияқты қосамыз: $5\\sqrt{2}$. Түбір астындағы өрнектерді қосуға болмайды."
@@ -55656,7 +55656,7 @@
     "$5\\sqrt{2}$",
     "$\\sqrt{26}$",
     "$\\sqrt{2}$",
-    "$5\\sqrt{4}$"
+    "$10$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{18} = 3\\sqrt{2}$, $\\sqrt{8} = 2\\sqrt{2}$. Подобные корни складываем как одночлены: $5\\sqrt{2}$. Складывать подкоренные выражения нельзя."
@@ -55667,7 +55667,7 @@
     "$5\\sqrt{2}$",
     "$\\sqrt{26}$",
     "$\\sqrt{2}$",
-    "$5\\sqrt{4}$"
+    "$10$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{18} = 3\\sqrt{2}$, $\\sqrt{8} = 2\\sqrt{2}$. Ұқсас түбірлерді бірмүшелер сияқты қосамыз: $5\\sqrt{2}$. Түбір астындағы өрнектерді қосуға болмайды."
@@ -55896,7 +55896,7 @@
     "$10\\sqrt{2}$",
     "$\\sqrt{104}$",
     "$12\\sqrt{2}$",
-    "$10\\sqrt{4}$"
+    "$20$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{32} = 4\\sqrt{2}$, $\\sqrt{72} = 6\\sqrt{2}$. Подобные корни складываем как одночлены: $10\\sqrt{2}$. Складывать подкоренные выражения нельзя."
@@ -55907,7 +55907,7 @@
     "$10\\sqrt{2}$",
     "$\\sqrt{104}$",
     "$12\\sqrt{2}$",
-    "$10\\sqrt{4}$"
+    "$20$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{32} = 4\\sqrt{2}$, $\\sqrt{72} = 6\\sqrt{2}$. Ұқсас түбірлерді бірмүшелер сияқты қосамыз: $10\\sqrt{2}$. Түбір астындағы өрнектерді қосуға болмайды."
@@ -56104,7 +56104,7 @@
    "question": "Упростите: $\\sqrt{80} + \\sqrt{20}$.",
    "options": [
     "$6\\sqrt{5}$",
-    "$\\sqrt{100}$",
+    "$10$",
     "$2\\sqrt{5}$",
     "$6\\sqrt{10}$"
    ],
@@ -56115,7 +56115,7 @@
    "question": "Ықшамдаңыз: $\\sqrt{80} + \\sqrt{20}$.",
    "options": [
     "$6\\sqrt{5}$",
-    "$\\sqrt{100}$",
+    "$10$",
     "$2\\sqrt{5}$",
     "$6\\sqrt{10}$"
    ],
@@ -56316,7 +56316,7 @@
     "$4\\sqrt{2}$",
     "$\\sqrt{20}$",
     "$2\\sqrt{2}$",
-    "$4\\sqrt{4}$"
+    "$8$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{18} = 3\\sqrt{2}$, $\\sqrt{2} = 1\\sqrt{2}$. Подобные корни складываем как одночлены: $4\\sqrt{2}$. Складывать подкоренные выражения нельзя."
@@ -56327,7 +56327,7 @@
     "$4\\sqrt{2}$",
     "$\\sqrt{20}$",
     "$2\\sqrt{2}$",
-    "$4\\sqrt{4}$"
+    "$8$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{18} = 3\\sqrt{2}$, $\\sqrt{2} = 1\\sqrt{2}$. Ұқсас түбірлерді бірмүшелер сияқты қосамыз: $4\\sqrt{2}$. Түбір астындағы өрнектерді қосуға болмайды."
@@ -56376,7 +56376,7 @@
     "$6\\sqrt{2}$",
     "$\\sqrt{40}$",
     "$8\\sqrt{2}$",
-    "$6\\sqrt{4}$"
+    "$12$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{8} = 2\\sqrt{2}$, $\\sqrt{32} = 4\\sqrt{2}$. Подобные корни складываем как одночлены: $6\\sqrt{2}$. Складывать подкоренные выражения нельзя."
@@ -56387,7 +56387,7 @@
     "$6\\sqrt{2}$",
     "$\\sqrt{40}$",
     "$8\\sqrt{2}$",
-    "$6\\sqrt{4}$"
+    "$12$"
    ],
    "correct": 0,
    "solution": "$\\sqrt{8} = 2\\sqrt{2}$, $\\sqrt{32} = 4\\sqrt{2}$. Ұқсас түбірлерді бірмүшелер сияқты қосамыз: $6\\sqrt{2}$. Түбір астындағы өрнектерді қосуға болмайды."
@@ -60099,7 +60099,7 @@
     "уменьшилась на $40\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{20^2}{100} = 4$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $20\\%$-ға көтерді, сосын $20\\%$-ға төмендетті. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60110,7 +60110,7 @@
     "$40\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{20^2}{100} = 4$."
   }
  },
  {
@@ -60129,7 +60129,7 @@
     "уменьшилась на $60\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{30^2}{100} = 9$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $30\\%$-ға көтерді, сосын $30\\%$-ға төмендетті. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60140,7 +60140,7 @@
     "$60\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{30^2}{100} = 9$."
   }
  },
  {
@@ -60159,7 +60159,7 @@
     "уменьшилась на $100\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{50^2}{100} = 25$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $50\\%$-ға төмендетті, сосын $50\\%$-ға көтерді. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60170,7 +60170,7 @@
     "$100\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{50^2}{100} = 25$."
   }
  },
  {
@@ -60189,7 +60189,7 @@
     "уменьшилась на $20\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{10^2}{100} = 1$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $10\\%$-ға төмендетті, сосын $10\\%$-ға көтерді. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60200,7 +60200,7 @@
     "$20\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{10^2}{100} = 1$."
   }
  },
  {
@@ -60219,7 +60219,7 @@
     "уменьшилась на $20\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{10^2}{100} = 1$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $10\\%$-ға көтерді, сосын $10\\%$-ға төмендетті. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60230,7 +60230,7 @@
     "$20\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{10^2}{100} = 1$."
   }
  },
  {
@@ -60249,7 +60249,7 @@
     "уменьшилась на $80\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{40^2}{100} = 16$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $40\\%$-ға көтерді, сосын $40\\%$-ға төмендетті. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60260,7 +60260,7 @@
     "$80\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{40^2}{100} = 16$."
   }
  },
  {
@@ -60279,7 +60279,7 @@
     "уменьшилась на $40\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{20^2}{100} = 4$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $20\\%$-ға төмендетті, сосын $20\\%$-ға көтерді. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60290,7 +60290,7 @@
     "$40\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{20^2}{100} = 4$."
   }
  },
  {
@@ -60309,7 +60309,7 @@
     "уменьшилась на $80\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{40^2}{100} = 16$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $40\\%$-ға төмендетті, сосын $40\\%$-ға көтерді. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60320,7 +60320,7 @@
     "$80\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{40^2}{100} = 16$."
   }
  },
  {
@@ -60339,7 +60339,7 @@
     "уменьшилась на $100\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{50^2}{100} = 25$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $50\\%$-ға көтерді, сосын $50\\%$-ға төмендетті. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60350,7 +60350,7 @@
     "$100\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{50^2}{100} = 25$."
   }
  },
  {
@@ -60369,7 +60369,7 @@
     "уменьшилась на $60\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{30^2}{100} = 9$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $30\\%$-ға төмендетті, сосын $30\\%$-ға көтерді. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60380,7 +60380,7 @@
     "$60\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{30^2}{100} = 9$."
   }
  },
  {
@@ -60399,7 +60399,7 @@
     "уменьшилась на $50\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{25^2}{100} = 6{,}25$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $25\\%$-ға төмендетті, сосын $25\\%$-ға көтерді. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60410,7 +60410,7 @@
     "$50\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{25^2}{100} = 6{,}25$."
   }
  },
  {
@@ -60429,7 +60429,7 @@
     "уменьшилась на $50\\%$"
    ],
    "correct": 0,
-   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен."
+   "solution": "Множители: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Цена всегда уменьшается на $\\frac{p^2}{100}\\%$, порядок не важен: $\\frac{25^2}{100} = 6{,}25$."
   },
   "kk": {
    "question": "Тауар бағасын алдымен $25\\%$-ға көтерді, сосын $25\\%$-ға төмендетті. Бастапқы бағамен салыстырғанда баға қалай өзгерді?",
@@ -60440,7 +60440,7 @@
     "$50\\%$-ға кеміді"
    ],
    "correct": 0,
-   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді."
+   "solution": "Көбейткіштер: $(1 + 0{,}01p)(1 - 0{,}01p) = 1 - (0{,}01p)^2$. Реті маңызды емес, баға әрқашан $\\frac{p^2}{100}\\%$-ға кемиді: $\\frac{25^2}{100} = 6{,}25$."
   }
  },
  {
@@ -62779,7 +62779,7 @@
     "$\\frac{\\pi}{2} + \\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\operatorname{tg} x = 1$ теңдеуін шешіңіз.",
@@ -62790,7 +62790,7 @@
     "$\\frac{\\pi}{2} + \\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -62809,7 +62809,7 @@
     "$\\frac{\\pi}{2} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $\\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $\\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\sin x = 0$ теңдеуін шешіңіз.",
@@ -62820,7 +62820,7 @@
     "$\\frac{\\pi}{2} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $\\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $\\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -62839,7 +62839,7 @@
     "$2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $\\frac{\\pi}{2} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $\\frac{\\pi}{2} + \\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\cos x = 0$ теңдеуін шешіңіз.",
@@ -62850,7 +62850,7 @@
     "$2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $\\frac{\\pi}{2} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $\\frac{\\pi}{2} + \\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -62869,7 +62869,7 @@
     "$\\pm \\frac{\\pi}{4} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $-\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $-\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\operatorname{tg} x = -1$ теңдеуін шешіңіз.",
@@ -62880,7 +62880,7 @@
     "$\\pm \\frac{\\pi}{4} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $-\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $-\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -62899,7 +62899,7 @@
     "$\\frac{\\pi}{3} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $(-1)^n \\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $(-1)^n \\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\sin x = \\frac{\\sqrt{3}}{2}$ теңдеуін шешіңіз.",
@@ -62910,7 +62910,7 @@
     "$\\frac{\\pi}{3} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $(-1)^n \\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $(-1)^n \\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -62929,7 +62929,7 @@
     "$\\pm \\frac{\\pi}{3} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $\\pm \\frac{\\pi}{4} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $\\pm \\frac{\\pi}{4} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\cos x = \\frac{\\sqrt{2}}{2}$ теңдеуін шешіңіз.",
@@ -62940,7 +62940,7 @@
     "$\\pm \\frac{\\pi}{3} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $\\pm \\frac{\\pi}{4} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $\\pm \\frac{\\pi}{4} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -62959,7 +62959,7 @@
     "$\\pm \\frac{\\pi}{3} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $\\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $\\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\operatorname{tg} x = \\sqrt{3}$ теңдеуін шешіңіз.",
@@ -62970,7 +62970,7 @@
     "$\\pm \\frac{\\pi}{3} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $\\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $\\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -62989,7 +62989,7 @@
     "$\\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $\\pm \\frac{\\pi}{3} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $\\pm \\frac{\\pi}{3} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\cos x = \\frac{1}{2}$ теңдеуін шешіңіз.",
@@ -63000,7 +63000,7 @@
     "$\\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $\\pm \\frac{\\pi}{3} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $\\pm \\frac{\\pi}{3} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -63019,7 +63019,7 @@
     "$2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $\\frac{\\pi}{2} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $\\frac{\\pi}{2} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\sin x = 1$ теңдеуін шешіңіз.",
@@ -63030,7 +63030,7 @@
     "$2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $\\frac{\\pi}{2} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $\\frac{\\pi}{2} + 2\\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -63049,7 +63049,7 @@
     "$(-1)^n \\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $(-1)^n \\frac{\\pi}{6} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $(-1)^n \\frac{\\pi}{6} + \\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\sin x = \\frac{1}{2}$ теңдеуін шешіңіз.",
@@ -63060,7 +63060,7 @@
     "$(-1)^n \\frac{\\pi}{3} + \\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $(-1)^n \\frac{\\pi}{6} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $(-1)^n \\frac{\\pi}{6} + \\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -63079,7 +63079,7 @@
     "$2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $\\pi + 2\\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $\\pi + 2\\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\cos x = -1$ теңдеуін шешіңіз.",
@@ -63090,7 +63090,7 @@
     "$2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $\\pi + 2\\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $\\pi + 2\\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -63109,7 +63109,7 @@
     "$\\pm \\frac{\\pi}{4} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Ответ: $\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулы: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. Для $a = 0, \\pm 1$ у синуса и косинуса — частные формулы (например, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Ответ: $\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
   },
   "kk": {
    "question": "$\\operatorname{ctg} x = 1$ теңдеуін шешіңіз.",
@@ -63120,7 +63120,7 @@
     "$\\pm \\frac{\\pi}{4} + 2\\pi n, \\; n \\in \\mathbb{Z}$"
    ],
    "correct": 0,
-   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$. Жауабы: $\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
+   "solution": "Формулалар: $\\sin x = a \\Rightarrow x = (-1)^n \\arcsin a + \\pi n$; $\\cos x = a \\Rightarrow x = \\pm \\arccos a + 2\\pi n$; $\\operatorname{tg} x = a \\Rightarrow x = \\operatorname{arctg} a + \\pi n$; $\\operatorname{ctg} x = a \\Rightarrow x = \\operatorname{arcctg} a + \\pi n$. $a = 0, \\pm 1$ болғанда синус пен косинусқа дербес формулалар бар (мысалы, $\\sin x = 1 \\Rightarrow x = \\frac{\\pi}{2} + 2\\pi n$). Жауабы: $\\frac{\\pi}{4} + \\pi n, \\; n \\in \\mathbb{Z}$."
   }
  },
  {
@@ -65572,7 +65572,7 @@
    "solution": "Сложением или подстановкой получаем $x = 1$, $y = -2$. Проверка подстановкой в оба уравнения. $x + y = -1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x - 3y = 8 \\\\ 3x - 2y = 7 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x - 3y = 8 \\\\ 3x - 2y = 7 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−1",
     "3",
@@ -65602,7 +65602,7 @@
    "solution": "Сложением или подстановкой получаем $x = -2$, $y = 4$. Проверка подстановкой в оба уравнения. $x + y = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x + y = 0 \\\\ 2x - 2y = -12 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x + y = 0 \\\\ 2x - 2y = -12 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "2",
     "−6",
@@ -65632,7 +65632,7 @@
    "solution": "Сложением или подстановкой получаем $x = 1$, $y = -3$. Проверка подстановкой в оба уравнения. $x + y = -2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x + 2y = -4 \\\\ 2x - y = 5 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x + 2y = -4 \\\\ 2x - y = 5 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−2",
     "4",
@@ -65662,7 +65662,7 @@
    "solution": "Сложением или подстановкой получаем $x = 4$, $y = 5$. Проверка подстановкой в оба уравнения. $x + y = 9$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x + 2y = 22 \\\\ x - y = -1 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x + 2y = 22 \\\\ x - y = -1 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "9",
     "−1",
@@ -65692,7 +65692,7 @@
    "solution": "Сложением или подстановкой получаем $x = -3$, $y = -4$. Проверка подстановкой в оба уравнения. $x + y = -7$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = -7 \\\\ 2x + 4y = -22 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x + y = -7 \\\\ 2x + 4y = -22 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−7",
     "1",
@@ -65722,7 +65722,7 @@
    "solution": "Сложением или подстановкой получаем $x = -4$, $y = 2$. Проверка подстановкой в оба уравнения. $x + y = -2$."
   },
   "kk": {
-   "question": "$\\begin{cases} x - 3y = -10 \\\\ x - 2y = -8 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x - 3y = -10 \\\\ x - 2y = -8 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−2",
     "−6",
@@ -65752,7 +65752,7 @@
    "solution": "Сложением или подстановкой получаем $x = 4$, $y = 5$. Проверка подстановкой в оба уравнения. $x + y = 9$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x + y = 17 \\\\ 2x + y = 13 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x + y = 17 \\\\ 2x + y = 13 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "9",
     "−1",
@@ -65782,7 +65782,7 @@
    "solution": "Сложением или подстановкой получаем $x = -4$, $y = 1$. Проверка подстановкой в оба уравнения. $x + y = -3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x + 2y = -6 \\\\ 3x + y = -11 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x + 2y = -6 \\\\ 3x + y = -11 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−3",
     "−5",
@@ -65812,7 +65812,7 @@
    "solution": "Сложением или подстановкой получаем $x = 4$, $y = 3$. Проверка подстановкой в оба уравнения. $x + y = 7$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x + y = 11 \\\\ x + 4y = 16 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x + y = 11 \\\\ x + 4y = 16 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "7",
     "1",
@@ -65842,7 +65842,7 @@
    "solution": "Сложением или подстановкой получаем $x = -1$, $y = -2$. Проверка подстановкой в оба уравнения. $x + y = -3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x - y = -1 \\\\ 2x + y = -4 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x - y = -1 \\\\ 2x + y = -4 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−3",
     "1",
@@ -65872,7 +65872,7 @@
    "solution": "Сложением или подстановкой получаем $x = 4$, $y = -3$. Проверка подстановкой в оба уравнения. $x + y = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x + 2y = 2 \\\\ 2x + y = 5 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x + 2y = 2 \\\\ 2x + y = 5 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "1",
     "7",
@@ -65902,7 +65902,7 @@
    "solution": "Сложением или подстановкой получаем $x = 4$, $y = 5$. Проверка подстановкой в оба уравнения. $x + y = 9$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + 2y = 14 \\\\ 2x - 2y = -2 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x + 2y = 14 \\\\ 2x - 2y = -2 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "9",
     "−1",
@@ -65932,7 +65932,7 @@
    "solution": "Сложением или подстановкой получаем $x = 4$, $y = -2$. Проверка подстановкой в оба уравнения. $x + y = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x + y = 10 \\\\ 3x - 2y = 16 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x + y = 10 \\\\ 3x - 2y = 16 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "2",
     "6",
@@ -65962,7 +65962,7 @@
    "solution": "Сложением или подстановкой получаем $x = -1$, $y = 2$. Проверка подстановкой в оба уравнения. $x + y = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x - 3y = -8 \\\\ 3x - 2y = -7 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x - 3y = -8 \\\\ 3x - 2y = -7 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "1",
     "−3",
@@ -65992,7 +65992,7 @@
    "solution": "Сложением или подстановкой получаем $x = -3$, $y = 4$. Проверка подстановкой в оба уравнения. $x + y = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} x - 3y = -15 \\\\ x + y = 1 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x - 3y = -15 \\\\ x + y = 1 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "1",
     "−7",
@@ -66022,7 +66022,7 @@
    "solution": "Сложением или подстановкой получаем $x = 5$, $y = 4$. Проверка подстановкой в оба уравнения. $x + y = 9$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 9 \\\\ x + 4y = 21 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x + y = 9 \\\\ x + 4y = 21 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "9",
     "1",
@@ -66052,7 +66052,7 @@
    "solution": "Сложением или подстановкой получаем $x = 5$, $y = 1$. Проверка подстановкой в оба уравнения. $x + y = 6$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x + y = 16 \\\\ x - y = 4 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x + y = 16 \\\\ x - y = 4 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "6",
     "4",
@@ -66082,7 +66082,7 @@
    "solution": "Сложением или подстановкой получаем $x = 3$, $y = -1$. Проверка подстановкой в оба уравнения. $x + y = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 2 \\\\ 2x - y = 7 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x + y = 2 \\\\ 2x - y = 7 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "2",
     "4",
@@ -66112,7 +66112,7 @@
    "solution": "Сложением или подстановкой получаем $x = 2$, $y = -3$. Проверка подстановкой в оба уравнения. $x + y = -1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x + 2y = -2 \\\\ 2x - y = 7 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x + 2y = -2 \\\\ 2x - y = 7 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−1",
     "5",
@@ -66142,7 +66142,7 @@
    "solution": "Сложением или подстановкой получаем $x = 3$, $y = -4$. Проверка подстановкой в оба уравнения. $x + y = -1$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + 2y = -5 \\\\ 3x - 2y = 17 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x + 2y = -5 \\\\ 3x - 2y = 17 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−1",
     "7",
@@ -66172,7 +66172,7 @@
    "solution": "Сложением или подстановкой получаем $x = 5$, $y = 4$. Проверка подстановкой в оба уравнения. $x + y = 9$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x - y = 11 \\\\ 2x - 2y = 2 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x - y = 11 \\\\ 2x - 2y = 2 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "9",
     "1",
@@ -66202,7 +66202,7 @@
    "solution": "Сложением или подстановкой получаем $x = 3$, $y = -2$. Проверка подстановкой в оба уравнения. $x + y = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x + y = 4 \\\\ x + 4y = -5 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x + y = 4 \\\\ x + 4y = -5 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "1",
     "5",
@@ -66232,7 +66232,7 @@
    "solution": "Сложением или подстановкой получаем $x = -2$, $y = 4$. Проверка подстановкой в оба уравнения. $x + y = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x + y = -2 \\\\ 2x - 2y = -12 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x + y = -2 \\\\ 2x - 2y = -12 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "2",
     "−6",
@@ -66262,7 +66262,7 @@
    "solution": "Сложением или подстановкой получаем $x = -3$, $y = -2$. Проверка подстановкой в оба уравнения. $x + y = -5$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x - y = -7 \\\\ 3x - 2y = -5 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x - y = -7 \\\\ 3x - 2y = -5 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−5",
     "−1",
@@ -66292,7 +66292,7 @@
    "solution": "Сложением или подстановкой получаем $x = 2$, $y = -1$. Проверка подстановкой в оба уравнения. $x + y = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} x - y = 3 \\\\ x + y = 1 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x - y = 3 \\\\ x + y = 1 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "1",
     "3",
@@ -66322,7 +66322,7 @@
    "solution": "Сложением или подстановкой получаем $x = -2$, $y = -3$. Проверка подстановкой в оба уравнения. $x + y = -5$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x + y = -7 \\\\ 3x - y = -3 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x + y = -7 \\\\ 3x - y = -3 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−5",
     "1",
@@ -66352,7 +66352,7 @@
    "solution": "Сложением или подстановкой получаем $x = -2$, $y = -1$. Проверка подстановкой в оба уравнения. $x + y = -3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x - y = -5 \\\\ x + y = -3 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x - y = -5 \\\\ x + y = -3 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−3",
     "−1",
@@ -66382,7 +66382,7 @@
    "solution": "Сложением или подстановкой получаем $x = -4$, $y = 5$. Проверка подстановкой в оба уравнения. $x + y = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + 2y = 6 \\\\ x + 4y = 16 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x + 2y = 6 \\\\ x + 4y = 16 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "1",
     "−9",
@@ -66412,7 +66412,7 @@
    "solution": "Сложением или подстановкой получаем $x = -3$, $y = 2$. Проверка подстановкой в оба уравнения. $x + y = -1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x + 2y = -5 \\\\ 2x - 2y = -10 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x + 2y = -5 \\\\ 2x - 2y = -10 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−1",
     "−5",
@@ -66442,7 +66442,7 @@
    "solution": "Сложением или подстановкой получаем $x = -4$, $y = -3$. Проверка подстановкой в оба уравнения. $x + y = -7$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = -7 \\\\ 3x + y = -15 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x + y = -7 \\\\ 3x + y = -15 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−7",
     "−1",
@@ -66472,7 +66472,7 @@
    "solution": "Сложением или подстановкой получаем $x = -3$, $y = 5$. Проверка подстановкой в оба уравнения. $x + y = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x - 3y = -21 \\\\ 2x + y = -1 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x - 3y = -21 \\\\ 2x + y = -1 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "2",
     "−8",
@@ -66502,7 +66502,7 @@
    "solution": "Сложением или подстановкой получаем $x = 4$, $y = 3$. Проверка подстановкой в оба уравнения. $x + y = 7$."
   },
   "kk": {
-   "question": "$\\begin{cases} x - y = 1 \\\\ 2x + y = 11 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x - y = 1 \\\\ 2x + y = 11 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "7",
     "1",
@@ -66532,7 +66532,7 @@
    "solution": "Сложением или подстановкой получаем $x = -2$, $y = -1$. Проверка подстановкой в оба уравнения. $x + y = -3$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + 2y = -4 \\\\ 3x - y = -5 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x + 2y = -4 \\\\ 3x - y = -5 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−3",
     "−1",
@@ -66562,7 +66562,7 @@
    "solution": "Сложением или подстановкой получаем $x = 5$, $y = 3$. Проверка подстановкой в оба уравнения. $x + y = 8$."
   },
   "kk": {
-   "question": "$\\begin{cases} x - 3y = -4 \\\\ 3x - 2y = 9 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x - 3y = -4 \\\\ 3x - 2y = 9 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "8",
     "2",
@@ -66592,7 +66592,7 @@
    "solution": "Сложением или подстановкой получаем $x = 2$, $y = -4$. Проверка подстановкой в оба уравнения. $x + y = -2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x - y = 10 \\\\ 3x + y = 2 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x - y = 10 \\\\ 3x + y = 2 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "−2",
     "6",
@@ -66622,7 +66622,7 @@
    "solution": "Сложением или подстановкой получаем $x = 5$, $y = -3$. Проверка подстановкой в оба уравнения. $x + y = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x - y = 18 \\\\ 3x + y = 12 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x - y = 18 \\\\ 3x + y = 12 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "2",
     "8",
@@ -66652,7 +66652,7 @@
    "solution": "Сложением или подстановкой получаем $x = 2$, $y = 4$. Проверка подстановкой в оба уравнения. $x + y = 6$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x + y = 10 \\\\ x + y = 6 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x + y = 10 \\\\ x + y = 6 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "6",
     "−2",
@@ -66682,7 +66682,7 @@
    "solution": "Сложением или подстановкой получаем $x = 1$, $y = 3$. Проверка подстановкой в оба уравнения. $x + y = 4$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2x - y = -1 \\\\ 2x - 2y = -4 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 2x - y = -1 \\\\ 2x - 2y = -4 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "4",
     "−2",
@@ -66712,7 +66712,7 @@
    "solution": "Сложением или подстановкой получаем $x = 5$, $y = 3$. Проверка подстановкой в оба уравнения. $x + y = 8$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + 2y = 11 \\\\ x + 4y = 17 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} x + 2y = 11 \\\\ x + 4y = 17 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "8",
     "2",
@@ -66742,7 +66742,7 @@
    "solution": "Сложением или подстановкой получаем $x = 3$, $y = -2$. Проверка подстановкой в оба уравнения. $x + y = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3x - y = 11 \\\\ 3x + y = 7 \\end{cases}$ жүйесін шешіп, $x + y$ табыңыз.",
+   "question": "$\\begin{cases} 3x - y = 11 \\\\ 3x + y = 7 \\end{cases}$ жүйесін шешіп, $x + y$ мәнін табыңыз.",
    "options": [
     "1",
     "5",
@@ -66764,20 +66764,20 @@
    "question": "Известно, что $x - y = 5$ и $xy = 14$. Найдите $x^2 + y^2$.",
    "options": [
     "53",
-    "−3",
     "25",
-    "39"
+    "39",
+    "81"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 5^2 + 2 \\cdot 14 = 53$."
   },
   "kk": {
-   "question": "$x - y = 5$ және $xy = 14$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 5$ және $xy = 14$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "53",
-    "−3",
     "25",
-    "39"
+    "39",
+    "81"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 5^2 + 2 \\cdot 14 = 53$."
@@ -66794,20 +66794,20 @@
    "question": "Известно, что $x - y = 1$ и $xy = 56$. Найдите $x^2 + y^2$.",
    "options": [
     "113",
-    "−111",
     "1",
-    "57"
+    "57",
+    "225"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 56 = 113$."
   },
   "kk": {
-   "question": "$x - y = 1$ және $xy = 56$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 1$ және $xy = 56$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "113",
-    "−111",
     "1",
-    "57"
+    "57",
+    "225"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 56 = 113$."
@@ -66824,20 +66824,20 @@
    "question": "Известно, что $x - y = 4$ и $xy = 32$. Найдите $x^2 + y^2$.",
    "options": [
     "80",
-    "−48",
     "16",
-    "48"
+    "48",
+    "144"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 4^2 + 2 \\cdot 32 = 80$."
   },
   "kk": {
-   "question": "$x - y = 4$ және $xy = 32$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 4$ және $xy = 32$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "80",
-    "−48",
     "16",
-    "48"
+    "48",
+    "144"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 4^2 + 2 \\cdot 32 = 80$."
@@ -66854,20 +66854,20 @@
    "question": "Известно, что $x - y = 1$ и $xy = 30$. Найдите $x^2 + y^2$.",
    "options": [
     "61",
-    "−59",
     "1",
-    "31"
+    "31",
+    "121"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 30 = 61$."
   },
   "kk": {
-   "question": "$x - y = 1$ және $xy = 30$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 1$ және $xy = 30$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "61",
-    "−59",
     "1",
-    "31"
+    "31",
+    "121"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 30 = 61$."
@@ -66892,7 +66892,7 @@
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 5^2 + 2 \\cdot 6 = 37$."
   },
   "kk": {
-   "question": "$x - y = 5$ және $xy = 6$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 5$ және $xy = 6$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "37",
     "13",
@@ -66914,20 +66914,20 @@
    "question": "Известно, что $x - y = 2$ и $xy = 24$. Найдите $x^2 + y^2$.",
    "options": [
     "52",
-    "−44",
     "4",
-    "28"
+    "28",
+    "100"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 24 = 52$."
   },
   "kk": {
-   "question": "$x - y = 2$ және $xy = 24$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 2$ және $xy = 24$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "52",
-    "−44",
     "4",
-    "28"
+    "28",
+    "100"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 24 = 52$."
@@ -66952,7 +66952,7 @@
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 3^2 + 2 \\cdot 4 = 17$."
   },
   "kk": {
-   "question": "$x - y = 3$ және $xy = 4$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 3$ және $xy = 4$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "17",
     "1",
@@ -66982,7 +66982,7 @@
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 7^2 + 2 \\cdot 8 = 65$."
   },
   "kk": {
-   "question": "$x - y = 7$ және $xy = 8$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 7$ және $xy = 8$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "65",
     "33",
@@ -67004,20 +67004,20 @@
    "question": "Известно, что $x - y = 2$ и $xy = 3$. Найдите $x^2 + y^2$.",
    "options": [
     "10",
-    "−2",
     "4",
-    "7"
+    "7",
+    "16"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 3 = 10$."
   },
   "kk": {
-   "question": "$x - y = 2$ және $xy = 3$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 2$ және $xy = 3$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "10",
-    "−2",
     "4",
-    "7"
+    "7",
+    "16"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 3 = 10$."
@@ -67034,20 +67034,20 @@
    "question": "Известно, что $x - y = 5$ и $xy = 24$. Найдите $x^2 + y^2$.",
    "options": [
     "73",
-    "−23",
     "25",
-    "49"
+    "49",
+    "121"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 5^2 + 2 \\cdot 24 = 73$."
   },
   "kk": {
-   "question": "$x - y = 5$ және $xy = 24$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 5$ және $xy = 24$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "73",
-    "−23",
     "25",
-    "49"
+    "49",
+    "121"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 5^2 + 2 \\cdot 24 = 73$."
@@ -67064,20 +67064,20 @@
    "question": "Известно, что $x - y = 1$ и $xy = 42$. Найдите $x^2 + y^2$.",
    "options": [
     "85",
-    "−83",
     "1",
-    "43"
+    "43",
+    "169"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 42 = 85$."
   },
   "kk": {
-   "question": "$x - y = 1$ және $xy = 42$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 1$ және $xy = 42$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "85",
-    "−83",
     "1",
-    "43"
+    "43",
+    "169"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 42 = 85$."
@@ -67102,7 +67102,7 @@
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 4^2 + 2 \\cdot 5 = 26$."
   },
   "kk": {
-   "question": "$x - y = 4$ және $xy = 5$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 4$ және $xy = 5$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "26",
     "6",
@@ -67132,7 +67132,7 @@
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 6^2 + 2 \\cdot 16 = 68$."
   },
   "kk": {
-   "question": "$x - y = 6$ және $xy = 16$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 6$ және $xy = 16$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "68",
     "4",
@@ -67154,20 +67154,20 @@
    "question": "Известно, что $x - y = 4$ и $xy = 12$. Найдите $x^2 + y^2$.",
    "options": [
     "40",
-    "−8",
     "16",
-    "28"
+    "28",
+    "64"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 4^2 + 2 \\cdot 12 = 40$."
   },
   "kk": {
-   "question": "$x - y = 4$ және $xy = 12$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 4$ және $xy = 12$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "40",
-    "−8",
     "16",
-    "28"
+    "28",
+    "64"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 4^2 + 2 \\cdot 12 = 40$."
@@ -67184,20 +67184,20 @@
    "question": "Известно, что $x - y = 1$ и $xy = 2$. Найдите $x^2 + y^2$.",
    "options": [
     "5",
-    "−3",
     "1",
-    "3"
+    "3",
+    "9"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 2 = 5$."
   },
   "kk": {
-   "question": "$x - y = 1$ және $xy = 2$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 1$ және $xy = 2$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "5",
-    "−3",
     "1",
-    "3"
+    "3",
+    "9"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 2 = 5$."
@@ -67214,20 +67214,20 @@
    "question": "Известно, что $x - y = 4$ и $xy = 21$. Найдите $x^2 + y^2$.",
    "options": [
     "58",
-    "−26",
     "16",
-    "37"
+    "37",
+    "100"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 4^2 + 2 \\cdot 21 = 58$."
   },
   "kk": {
-   "question": "$x - y = 4$ және $xy = 21$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 4$ және $xy = 21$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "58",
-    "−26",
     "16",
-    "37"
+    "37",
+    "100"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 4^2 + 2 \\cdot 21 = 58$."
@@ -67244,20 +67244,20 @@
    "question": "Известно, что $x - y = 3$ и $xy = 10$. Найдите $x^2 + y^2$.",
    "options": [
     "29",
-    "−11",
     "9",
-    "19"
+    "19",
+    "49"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 3^2 + 2 \\cdot 10 = 29$."
   },
   "kk": {
-   "question": "$x - y = 3$ және $xy = 10$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 3$ және $xy = 10$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "29",
-    "−11",
     "9",
-    "19"
+    "19",
+    "49"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 3^2 + 2 \\cdot 10 = 29$."
@@ -67274,20 +67274,20 @@
    "question": "Известно, что $x - y = 3$ и $xy = 18$. Найдите $x^2 + y^2$.",
    "options": [
     "45",
-    "−27",
     "9",
-    "27"
+    "27",
+    "81"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 3^2 + 2 \\cdot 18 = 45$."
   },
   "kk": {
-   "question": "$x - y = 3$ және $xy = 18$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 3$ және $xy = 18$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "45",
-    "−27",
     "9",
-    "27"
+    "27",
+    "81"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 3^2 + 2 \\cdot 18 = 45$."
@@ -67304,20 +67304,20 @@
    "question": "Известно, что $x - y = 1$ и $xy = 12$. Найдите $x^2 + y^2$.",
    "options": [
     "25",
-    "−23",
     "1",
-    "13"
+    "13",
+    "49"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 12 = 25$."
   },
   "kk": {
-   "question": "$x - y = 1$ және $xy = 12$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 1$ және $xy = 12$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "25",
-    "−23",
     "1",
-    "13"
+    "13",
+    "49"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 12 = 25$."
@@ -67334,20 +67334,20 @@
    "question": "Известно, что $x - y = 2$ и $xy = 8$. Найдите $x^2 + y^2$.",
    "options": [
     "20",
-    "−12",
     "4",
-    "12"
+    "12",
+    "36"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 8 = 20$."
   },
   "kk": {
-   "question": "$x - y = 2$ және $xy = 8$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 2$ және $xy = 8$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "20",
-    "−12",
     "4",
-    "12"
+    "12",
+    "36"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 8 = 20$."
@@ -67364,20 +67364,20 @@
    "question": "Известно, что $x - y = 2$ и $xy = 35$. Найдите $x^2 + y^2$.",
    "options": [
     "74",
-    "−66",
     "4",
-    "39"
+    "39",
+    "144"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 35 = 74$."
   },
   "kk": {
-   "question": "$x - y = 2$ және $xy = 35$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 2$ және $xy = 35$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "74",
-    "−66",
     "4",
-    "39"
+    "39",
+    "144"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 35 = 74$."
@@ -67394,20 +67394,20 @@
    "question": "Известно, что $x - y = 1$ и $xy = 20$. Найдите $x^2 + y^2$.",
    "options": [
     "41",
-    "−39",
     "1",
-    "21"
+    "21",
+    "81"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 20 = 41$."
   },
   "kk": {
-   "question": "$x - y = 1$ және $xy = 20$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 1$ және $xy = 20$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "41",
-    "−39",
     "1",
-    "21"
+    "21",
+    "81"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 20 = 41$."
@@ -67424,20 +67424,20 @@
    "question": "Известно, что $x - y = 1$ и $xy = 6$. Найдите $x^2 + y^2$.",
    "options": [
     "13",
-    "−11",
     "1",
-    "7"
+    "7",
+    "25"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 6 = 13$."
   },
   "kk": {
-   "question": "$x - y = 1$ және $xy = 6$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 1$ және $xy = 6$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "13",
-    "−11",
     "1",
-    "7"
+    "7",
+    "25"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 1^2 + 2 \\cdot 6 = 13$."
@@ -67454,20 +67454,20 @@
    "question": "Известно, что $x - y = 3$ и $xy = 28$. Найдите $x^2 + y^2$.",
    "options": [
     "65",
-    "−47",
     "9",
-    "37"
+    "37",
+    "121"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 3^2 + 2 \\cdot 28 = 65$."
   },
   "kk": {
-   "question": "$x - y = 3$ және $xy = 28$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 3$ және $xy = 28$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "65",
-    "−47",
     "9",
-    "37"
+    "37",
+    "121"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 3^2 + 2 \\cdot 28 = 65$."
@@ -67484,20 +67484,20 @@
    "question": "Известно, что $x - y = 2$ и $xy = 48$. Найдите $x^2 + y^2$.",
    "options": [
     "100",
-    "−92",
     "4",
-    "52"
+    "52",
+    "196"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 48 = 100$."
   },
   "kk": {
-   "question": "$x - y = 2$ және $xy = 48$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 2$ және $xy = 48$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "100",
-    "−92",
     "4",
-    "52"
+    "52",
+    "196"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 48 = 100$."
@@ -67514,20 +67514,20 @@
    "question": "Известно, что $x - y = 2$ и $xy = 15$. Найдите $x^2 + y^2$.",
    "options": [
     "34",
-    "−26",
     "4",
-    "19"
+    "19",
+    "64"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 15 = 34$."
   },
   "kk": {
-   "question": "$x - y = 2$ және $xy = 15$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 2$ және $xy = 15$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "34",
-    "−26",
     "4",
-    "19"
+    "19",
+    "64"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 2^2 + 2 \\cdot 15 = 34$."
@@ -67544,20 +67544,20 @@
    "question": "Известно, что $x - y = 3$ и $xy = 40$. Найдите $x^2 + y^2$.",
    "options": [
     "89",
-    "−71",
     "9",
-    "49"
+    "49",
+    "169"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 3^2 + 2 \\cdot 40 = 89$."
   },
   "kk": {
-   "question": "$x - y = 3$ және $xy = 40$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 3$ және $xy = 40$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "89",
-    "−71",
     "9",
-    "49"
+    "49",
+    "169"
    ],
    "correct": 0,
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, демек $x^2 + y^2 = (x - y)^2 + 2xy = 3^2 + 2 \\cdot 40 = 89$."
@@ -67582,7 +67582,7 @@
    "solution": "$(x - y)^2 = x^2 - 2xy + y^2$, значит $x^2 + y^2 = (x - y)^2 + 2xy = 6^2 + 2 \\cdot 7 = 50$."
   },
   "kk": {
-   "question": "$x - y = 6$ және $xy = 7$ екені белгілі. $x^2 + y^2$ табыңыз.",
+   "question": "$x - y = 6$ және $xy = 7$ екені белгілі. $x^2 + y^2$ мәнін табыңыз.",
    "options": [
     "50",
     "22",
@@ -67612,7 +67612,7 @@
    "solution": "$2^{x + y} = 2^{3}$, значит $x + y = 3$. Складываем с $x - y = -7$: $2x = 3 + (-7)$, $x = -2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{3} \\\\ x - y = -7 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{3} \\\\ x - y = -7 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−2",
     "5",
@@ -67642,7 +67642,7 @@
    "solution": "$2^{x + y} = 2^{8}$, значит $x + y = 8$. Складываем с $x - y = -2$: $2x = 8 + (-2)$, $x = 3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{8} \\\\ x - y = -2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{8} \\\\ x - y = -2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "3",
     "5",
@@ -67672,7 +67672,7 @@
    "solution": "$5^{x + y} = 5^{5}$, значит $x + y = 5$. Складываем с $x - y = 5$: $2x = 5 + (5)$, $x = 5$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{5} \\\\ x - y = 5 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{5} \\\\ x - y = 5 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "5",
     "0",
@@ -67702,7 +67702,7 @@
    "solution": "$2^{x + y} = 2^{8}$, значит $x + y = 8$. Складываем с $x - y = 2$: $2x = 8 + (2)$, $x = 5$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{8} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{8} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "5",
     "3",
@@ -67732,7 +67732,7 @@
    "solution": "$5^{x + y} = 5^{4}$, значит $x + y = 4$. Складываем с $x - y = -2$: $2x = 4 + (-2)$, $x = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{4} \\\\ x - y = -2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{4} \\\\ x - y = -2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "1",
     "3",
@@ -67762,7 +67762,7 @@
    "solution": "$5^{x + y} = 5^{2}$, значит $x + y = 2$. Складываем с $x - y = -2$: $2x = 2 + (-2)$, $x = 0$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{2} \\\\ x - y = -2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{2} \\\\ x - y = -2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "0",
     "2",
@@ -67792,7 +67792,7 @@
    "solution": "$3^{x + y} = 3^{3}$, значит $x + y = 3$. Складываем с $x - y = 1$: $2x = 3 + (1)$, $x = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{3} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{3} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "2",
     "1",
@@ -67822,7 +67822,7 @@
    "solution": "$5^{x + y} = 5^{5}$, значит $x + y = 5$. Складываем с $x - y = 1$: $2x = 5 + (1)$, $x = 3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{5} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{5} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "3",
     "2",
@@ -67852,7 +67852,7 @@
    "solution": "$5^{x + y} = 5^{3}$, значит $x + y = 3$. Складываем с $x - y = -1$: $2x = 3 + (-1)$, $x = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{3} \\\\ x - y = -1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{3} \\\\ x - y = -1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "1",
     "2",
@@ -67882,7 +67882,7 @@
    "solution": "$3^{x + y} = 3^{4}$, значит $x + y = 4$. Складываем с $x - y = 2$: $2x = 4 + (2)$, $x = 3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{4} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{4} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "3",
     "1",
@@ -67912,7 +67912,7 @@
    "solution": "$3^{x + y} = 3^{7}$, значит $x + y = 7$. Складываем с $x - y = -1$: $2x = 7 + (-1)$, $x = 3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{7} \\\\ x - y = -1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{7} \\\\ x - y = -1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "3",
     "4",
@@ -67942,7 +67942,7 @@
    "solution": "$5^{x + y} = 5^{1}$, значит $x + y = 1$. Складываем с $x - y = 1$: $2x = 1 + (1)$, $x = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{1} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{1} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "1",
     "0",
@@ -67972,7 +67972,7 @@
    "solution": "$2^{x + y} = 2^{4}$, значит $x + y = 4$. Складываем с $x - y = 2$: $2x = 4 + (2)$, $x = 3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{4} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{4} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "3",
     "1",
@@ -68002,7 +68002,7 @@
    "solution": "$3^{x + y} = 3^{4}$, значит $x + y = 4$. Складываем с $x - y = -6$: $2x = 4 + (-6)$, $x = -1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{4} \\\\ x - y = -6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{4} \\\\ x - y = -6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−1",
     "5",
@@ -68032,7 +68032,7 @@
    "solution": "$5^{x + y} = 5^{1}$, значит $x + y = 1$. Складываем с $x - y = -3$: $2x = 1 + (-3)$, $x = -1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{1} \\\\ x - y = -3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{1} \\\\ x - y = -3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−1",
     "2",
@@ -68062,7 +68062,7 @@
    "solution": "$2^{x + y} = 2^{2}$, значит $x + y = 2$. Складываем с $x - y = 4$: $2x = 2 + (4)$, $x = 3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{2} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{2} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "3",
     "−1",
@@ -68092,7 +68092,7 @@
    "solution": "$2^{x + y} = 2^{1}$, значит $x + y = 1$. Складываем с $x - y = -3$: $2x = 1 + (-3)$, $x = -1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{1} \\\\ x - y = -3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{1} \\\\ x - y = -3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−1",
     "2",
@@ -68122,7 +68122,7 @@
    "solution": "$2^{x + y} = 2^{2}$, значит $x + y = 2$. Складываем с $x - y = -4$: $2x = 2 + (-4)$, $x = -1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{2} \\\\ x - y = -4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{2} \\\\ x - y = -4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−1",
     "3",
@@ -68152,7 +68152,7 @@
    "solution": "$3^{x + y} = 3^{7}$, значит $x + y = 7$. Складываем с $x - y = 3$: $2x = 7 + (3)$, $x = 5$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{7} \\\\ x - y = 3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{7} \\\\ x - y = 3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "5",
     "2",
@@ -68182,7 +68182,7 @@
    "solution": "$2^{x + y} = 2^{2}$, значит $x + y = 2$. Складываем с $x - y = -6$: $2x = 2 + (-6)$, $x = -2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{2} \\\\ x - y = -6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{2} \\\\ x - y = -6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−2",
     "4",
@@ -68212,7 +68212,7 @@
    "solution": "$2^{x + y} = 2^{4}$, значит $x + y = 4$. Складываем с $x - y = -6$: $2x = 4 + (-6)$, $x = -1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{4} \\\\ x - y = -6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{4} \\\\ x - y = -6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−1",
     "5",
@@ -68242,7 +68242,7 @@
    "solution": "$3^{x + y} = 3^{5}$, значит $x + y = 5$. Складываем с $x - y = -1$: $2x = 5 + (-1)$, $x = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{5} \\\\ x - y = -1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{5} \\\\ x - y = -1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "2",
     "3",
@@ -68272,7 +68272,7 @@
    "solution": "$3^{x + y} = 3^{1}$, значит $x + y = 1$. Складываем с $x - y = 1$: $2x = 1 + (1)$, $x = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{1} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{1} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "1",
     "0",
@@ -68302,7 +68302,7 @@
    "solution": "$5^{x + y} = 5^{3}$, значит $x + y = 3$. Складываем с $x - y = -5$: $2x = 3 + (-5)$, $x = -1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{3} \\\\ x - y = -5 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{3} \\\\ x - y = -5 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−1",
     "4",
@@ -68332,7 +68332,7 @@
    "solution": "$3^{x + y} = 3^{1}$, значит $x + y = 1$. Складываем с $x - y = -5$: $2x = 1 + (-5)$, $x = -2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{1} \\\\ x - y = -5 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{1} \\\\ x - y = -5 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−2",
     "3",
@@ -68362,7 +68362,7 @@
    "solution": "$5^{x + y} = 5^{4}$, значит $x + y = 4$. Складываем с $x - y = 2$: $2x = 4 + (2)$, $x = 3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{4} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{4} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "3",
     "1",
@@ -68392,7 +68392,7 @@
    "solution": "$3^{x + y} = 3^{6}$, значит $x + y = 6$. Складываем с $x - y = 2$: $2x = 6 + (2)$, $x = 4$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{6} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{6} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "4",
     "2",
@@ -68422,7 +68422,7 @@
    "solution": "$3^{x + y} = 3^{3}$, значит $x + y = 3$. Складываем с $x - y = -7$: $2x = 3 + (-7)$, $x = -2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{3} \\\\ x - y = -7 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{3} \\\\ x - y = -7 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−2",
     "5",
@@ -68452,7 +68452,7 @@
    "solution": "$3^{x + y} = 3^{4}$, значит $x + y = 4$. Складываем с $x - y = 4$: $2x = 4 + (4)$, $x = 4$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{4} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{4} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "4",
     "0",
@@ -68482,7 +68482,7 @@
    "solution": "$2^{x + y} = 2^{2}$, значит $x + y = 2$. Складываем с $x - y = 2$: $2x = 2 + (2)$, $x = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{2} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{2} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "2",
     "0",
@@ -68512,7 +68512,7 @@
    "solution": "$2^{x + y} = 2^{6}$, значит $x + y = 6$. Складываем с $x - y = -2$: $2x = 6 + (-2)$, $x = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{6} \\\\ x - y = -2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{6} \\\\ x - y = -2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "2",
     "4",
@@ -68542,7 +68542,7 @@
    "solution": "$5^{x + y} = 5^{1}$, значит $x + y = 1$. Складываем с $x - y = -5$: $2x = 1 + (-5)$, $x = -2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{1} \\\\ x - y = -5 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{1} \\\\ x - y = -5 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−2",
     "3",
@@ -68572,7 +68572,7 @@
    "solution": "$5^{x + y} = 5^{4}$, значит $x + y = 4$. Складываем с $x - y = 4$: $2x = 4 + (4)$, $x = 4$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{4} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{4} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "4",
     "0",
@@ -68602,7 +68602,7 @@
    "solution": "$2^{x + y} = 2^{9}$, значит $x + y = 9$. Складываем с $x - y = -1$: $2x = 9 + (-1)$, $x = 4$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{9} \\\\ x - y = -1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{9} \\\\ x - y = -1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "4",
     "5",
@@ -68632,7 +68632,7 @@
    "solution": "$2^{x + y} = 2^{7}$, значит $x + y = 7$. Складываем с $x - y = 1$: $2x = 7 + (1)$, $x = 4$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{7} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{7} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "4",
     "3",
@@ -68662,7 +68662,7 @@
    "solution": "$2^{x + y} = 2^{6}$, значит $x + y = 6$. Складываем с $x - y = 2$: $2x = 6 + (2)$, $x = 4$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{6} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{6} \\\\ x - y = 2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "4",
     "2",
@@ -68692,7 +68692,7 @@
    "solution": "$2^{x + y} = 2^{5}$, значит $x + y = 5$. Складываем с $x - y = -1$: $2x = 5 + (-1)$, $x = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{5} \\\\ x - y = -1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{5} \\\\ x - y = -1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "2",
     "3",
@@ -68722,7 +68722,7 @@
    "solution": "$3^{x + y} = 3^{5}$, значит $x + y = 5$. Складываем с $x - y = -3$: $2x = 5 + (-3)$, $x = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{5} \\\\ x - y = -3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{5} \\\\ x - y = -3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "1",
     "4",
@@ -68752,7 +68752,7 @@
    "solution": "$2^{x + y} = 2^{4}$, значит $x + y = 4$. Складываем с $x - y = 6$: $2x = 4 + (6)$, $x = 5$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{4} \\\\ x - y = 6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{4} \\\\ x - y = 6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "5",
     "−1",
@@ -68782,7 +68782,7 @@
    "solution": "$3^{x + y} = 3^{6}$, значит $x + y = 6$. Складываем с $x - y = 4$: $2x = 6 + (4)$, $x = 5$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{6} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{6} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "5",
     "1",
@@ -68812,7 +68812,7 @@
    "solution": "$2^{x + y} = 2^{6}$, значит $x + y = 6$. Складываем с $x - y = 4$: $2x = 6 + (4)$, $x = 5$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{6} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{6} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "5",
     "1",
@@ -68842,7 +68842,7 @@
    "solution": "$3^{x + y} = 3^{6}$, значит $x + y = 6$. Складываем с $x - y = -2$: $2x = 6 + (-2)$, $x = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{6} \\\\ x - y = -2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{6} \\\\ x - y = -2 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "2",
     "4",
@@ -68872,7 +68872,7 @@
    "solution": "$2^{x + y} = 2^{2}$, значит $x + y = 2$. Складываем с $x - y = 6$: $2x = 2 + (6)$, $x = 4$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{2} \\\\ x - y = 6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{2} \\\\ x - y = 6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "4",
     "−2",
@@ -68902,7 +68902,7 @@
    "solution": "$2^{x + y} = 2^{1}$, значит $x + y = 1$. Складываем с $x - y = 3$: $2x = 1 + (3)$, $x = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{1} \\\\ x - y = 3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{1} \\\\ x - y = 3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "2",
     "−1",
@@ -68932,7 +68932,7 @@
    "solution": "$2^{x + y} = 2^{1}$, значит $x + y = 1$. Складываем с $x - y = 1$: $2x = 1 + (1)$, $x = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{1} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 2^{1} \\\\ x - y = 1 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "1",
     "0",
@@ -68962,7 +68962,7 @@
    "solution": "$5^{x + y} = 5^{1}$, значит $x + y = 1$. Складываем с $x - y = 5$: $2x = 1 + (5)$, $x = 3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{1} \\\\ x - y = 5 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{1} \\\\ x - y = 5 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "3",
     "−2",
@@ -68992,7 +68992,7 @@
    "solution": "$5^{x + y} = 5^{4}$, значит $x + y = 4$. Складываем с $x - y = -6$: $2x = 4 + (-6)$, $x = -1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{4} \\\\ x - y = -6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{4} \\\\ x - y = -6 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "−1",
     "5",
@@ -69022,7 +69022,7 @@
    "solution": "$3^{x + y} = 3^{1}$, значит $x + y = 1$. Складываем с $x - y = 3$: $2x = 1 + (3)$, $x = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{1} \\\\ x - y = 3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{1} \\\\ x - y = 3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "2",
     "−1",
@@ -69052,7 +69052,7 @@
    "solution": "$3^{x + y} = 3^{2}$, значит $x + y = 2$. Складываем с $x - y = 4$: $2x = 2 + (4)$, $x = 3$."
   },
   "kk": {
-   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{2} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 3^x \\cdot 3^y = 3^{2} \\\\ x - y = 4 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "3",
     "−1",
@@ -69082,7 +69082,7 @@
    "solution": "$5^{x + y} = 5^{5}$, значит $x + y = 5$. Складываем с $x - y = -3$: $2x = 5 + (-3)$, $x = 1$."
   },
   "kk": {
-   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{5} \\\\ x - y = -3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} 5^x \\cdot 5^y = 5^{5} \\\\ x - y = -3 \\end{cases}$ жүйесін шешіңіз. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "1",
     "4",
@@ -69112,7 +69112,7 @@
    "solution": "Второе уравнение: $xy = 128$ (при $x, y > 0$). По теореме Виета $x$ и $y$ — корни $t^2 - 24t + 128 = 0$: $16$ и $8$. Так как $x > y$, $x = 16$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 24 \\\\ \\log_2 x + \\log_2 y = \\log_2 128 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} x + y = 24 \\\\ \\log_2 x + \\log_2 y = \\log_2 128 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "16",
     "8",
@@ -69142,7 +69142,7 @@
    "solution": "Второе уравнение: $xy = 16$ (при $x, y > 0$). По теореме Виета $x$ и $y$ — корни $t^2 - 10t + 16 = 0$: $8$ и $2$. Так как $x > y$, $x = 8$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 10 \\\\ \\log_2 x + \\log_2 y = \\log_2 16 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} x + y = 10 \\\\ \\log_2 x + \\log_2 y = \\log_2 16 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "8",
     "2",
@@ -69172,7 +69172,7 @@
    "solution": "Второе уравнение: $xy = 32$ (при $x, y > 0$). По теореме Виета $x$ и $y$ — корни $t^2 - 18t + 32 = 0$: $16$ и $2$. Так как $x > y$, $x = 16$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 18 \\\\ \\log_2 x + \\log_2 y = \\log_2 32 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} x + y = 18 \\\\ \\log_2 x + \\log_2 y = \\log_2 32 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "16",
     "2",
@@ -69202,7 +69202,7 @@
    "solution": "Второе уравнение: $xy = 2$ (при $x, y > 0$). По теореме Виета $x$ и $y$ — корни $t^2 - 3t + 2 = 0$: $2$ и $1$. Так как $x > y$, $x = 2$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 3 \\\\ \\log_2 x + \\log_2 y = \\log_2 2 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} x + y = 3 \\\\ \\log_2 x + \\log_2 y = \\log_2 2 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "2",
     "1",
@@ -69232,7 +69232,7 @@
    "solution": "Второе уравнение: $xy = 16$ (при $x, y > 0$). По теореме Виета $x$ и $y$ — корни $t^2 - 17t + 16 = 0$: $16$ и $1$. Так как $x > y$, $x = 16$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 17 \\\\ \\log_2 x + \\log_2 y = \\log_2 16 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} x + y = 17 \\\\ \\log_2 x + \\log_2 y = \\log_2 16 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "16",
     "1",
@@ -69262,7 +69262,7 @@
    "solution": "Второе уравнение: $xy = 32$ (при $x, y > 0$). По теореме Виета $x$ и $y$ — корни $t^2 - 12t + 32 = 0$: $8$ и $4$. Так как $x > y$, $x = 8$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 12 \\\\ \\log_2 x + \\log_2 y = \\log_2 32 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} x + y = 12 \\\\ \\log_2 x + \\log_2 y = \\log_2 32 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "8",
     "4",
@@ -69292,7 +69292,7 @@
    "solution": "Второе уравнение: $xy = 8$ (при $x, y > 0$). По теореме Виета $x$ и $y$ — корни $t^2 - 9t + 8 = 0$: $8$ и $1$. Так как $x > y$, $x = 8$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 9 \\\\ \\log_2 x + \\log_2 y = \\log_2 8 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} x + y = 9 \\\\ \\log_2 x + \\log_2 y = \\log_2 8 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "8",
     "1",
@@ -69322,7 +69322,7 @@
    "solution": "Второе уравнение: $xy = 8$ (при $x, y > 0$). По теореме Виета $x$ и $y$ — корни $t^2 - 6t + 8 = 0$: $4$ и $2$. Так как $x > y$, $x = 4$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 6 \\\\ \\log_2 x + \\log_2 y = \\log_2 8 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} x + y = 6 \\\\ \\log_2 x + \\log_2 y = \\log_2 8 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "4",
     "2",
@@ -69352,7 +69352,7 @@
    "solution": "Второе уравнение: $xy = 64$ (при $x, y > 0$). По теореме Виета $x$ и $y$ — корни $t^2 - 20t + 64 = 0$: $16$ и $4$. Так как $x > y$, $x = 16$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 20 \\\\ \\log_2 x + \\log_2 y = \\log_2 64 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} x + y = 20 \\\\ \\log_2 x + \\log_2 y = \\log_2 64 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "16",
     "4",
@@ -69382,7 +69382,7 @@
    "solution": "Второе уравнение: $xy = 4$ (при $x, y > 0$). По теореме Виета $x$ и $y$ — корни $t^2 - 5t + 4 = 0$: $4$ и $1$. Так как $x > y$, $x = 4$."
   },
   "kk": {
-   "question": "$\\begin{cases} x + y = 5 \\\\ \\log_2 x + \\log_2 y = \\log_2 4 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ жазыңыз.",
+   "question": "$\\begin{cases} x + y = 5 \\\\ \\log_2 x + \\log_2 y = \\log_2 4 \\end{cases}$ жүйесін шешіңіз, $x > y$. Жауапқа $x$ мәнін жазыңыз.",
    "options": [
     "4",
     "1",
@@ -79483,7 +79483,7 @@
     "12"
    ],
    "correct": 0,
-   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме себя и двух соседних: $6 - 3$. Всего $6(6 - 3) = 18$."
+   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме вершины над ней и двух соседних с той: $6 - 3$. Всего $6(6 - 3) = 18$."
   },
   "kk": {
    "question": "$6$-бұрышты призманың неше диагоналі бар? (Призманың диагоналі бір жақта жатпайтын төбелерді қосады.)",
@@ -79494,7 +79494,7 @@
     "12"
    ],
    "correct": 0,
-   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінен және екі көршісінен басқа барлық төбесіне жүреді: $6 - 3$. Барлығы $6(6 - 3) = 18$."
+   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінің үстіндегі төбеден және оның екі көршісінен басқа барлық төбесіне жүреді: $6 - 3$. Барлығы $6(6 - 3) = 18$."
   }
  },
  {
@@ -79513,7 +79513,7 @@
     "24"
    ],
    "correct": 0,
-   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме себя и двух соседних: $12 - 3$. Всего $12(12 - 3) = 108$."
+   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме вершины над ней и двух соседних с той: $12 - 3$. Всего $12(12 - 3) = 108$."
   },
   "kk": {
    "question": "$12$-бұрышты призманың неше диагоналі бар? (Призманың диагоналі бір жақта жатпайтын төбелерді қосады.)",
@@ -79524,7 +79524,7 @@
     "24"
    ],
    "correct": 0,
-   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінен және екі көршісінен басқа барлық төбесіне жүреді: $12 - 3$. Барлығы $12(12 - 3) = 108$."
+   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінің үстіндегі төбеден және оның екі көршісінен басқа барлық төбесіне жүреді: $12 - 3$. Барлығы $12(12 - 3) = 108$."
   }
  },
  {
@@ -79543,7 +79543,7 @@
     "12"
    ],
    "correct": 0,
-   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме себя и двух соседних: $5 - 3$. Всего $5(5 - 3) = 10$."
+   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме вершины над ней и двух соседних с той: $5 - 3$. Всего $5(5 - 3) = 10$."
   },
   "kk": {
    "question": "$5$-бұрышты призманың неше диагоналі бар? (Призманың диагоналі бір жақта жатпайтын төбелерді қосады.)",
@@ -79554,7 +79554,7 @@
     "12"
    ],
    "correct": 0,
-   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінен және екі көршісінен басқа барлық төбесіне жүреді: $5 - 3$. Барлығы $5(5 - 3) = 10$."
+   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінің үстіндегі төбеден және оның екі көршісінен басқа барлық төбесіне жүреді: $5 - 3$. Барлығы $5(5 - 3) = 10$."
   }
  },
  {
@@ -79573,7 +79573,7 @@
     "8"
    ],
    "correct": 0,
-   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме себя и двух соседних: $4 - 3$. Всего $4(4 - 3) = 4$."
+   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме вершины над ней и двух соседних с той: $4 - 3$. Всего $4(4 - 3) = 4$."
   },
   "kk": {
    "question": "$4$-бұрышты призманың неше диагоналі бар? (Призманың диагоналі бір жақта жатпайтын төбелерді қосады.)",
@@ -79584,7 +79584,7 @@
     "8"
    ],
    "correct": 0,
-   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінен және екі көршісінен басқа барлық төбесіне жүреді: $4 - 3$. Барлығы $4(4 - 3) = 4$."
+   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінің үстіндегі төбеден және оның екі көршісінен басқа барлық төбесіне жүреді: $4 - 3$. Барлығы $4(4 - 3) = 4$."
   }
  },
  {
@@ -79603,7 +79603,7 @@
     "30"
    ],
    "correct": 0,
-   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме себя и двух соседних: $7 - 3$. Всего $7(7 - 3) = 28$."
+   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме вершины над ней и двух соседних с той: $7 - 3$. Всего $7(7 - 3) = 28$."
   },
   "kk": {
    "question": "$7$-бұрышты призманың неше диагоналі бар? (Призманың диагоналі бір жақта жатпайтын төбелерді қосады.)",
@@ -79614,7 +79614,7 @@
     "30"
    ],
    "correct": 0,
-   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінен және екі көршісінен басқа барлық төбесіне жүреді: $7 - 3$. Барлығы $7(7 - 3) = 28$."
+   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінің үстіндегі төбеден және оның екі көршісінен басқа барлық төбесіне жүреді: $7 - 3$. Барлығы $7(7 - 3) = 28$."
   }
  },
  {
@@ -79633,7 +79633,7 @@
     "18"
    ],
    "correct": 0,
-   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме себя и двух соседних: $9 - 3$. Всего $9(9 - 3) = 54$."
+   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме вершины над ней и двух соседних с той: $9 - 3$. Всего $9(9 - 3) = 54$."
   },
   "kk": {
    "question": "$9$-бұрышты призманың неше диагоналі бар? (Призманың диагоналі бір жақта жатпайтын төбелерді қосады.)",
@@ -79644,7 +79644,7 @@
     "18"
    ],
    "correct": 0,
-   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінен және екі көршісінен басқа барлық төбесіне жүреді: $9 - 3$. Барлығы $9(9 - 3) = 54$."
+   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінің үстіндегі төбеден және оның екі көршісінен басқа барлық төбесіне жүреді: $9 - 3$. Барлығы $9(9 - 3) = 54$."
   }
  },
  {
@@ -79663,7 +79663,7 @@
     "16"
    ],
    "correct": 0,
-   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме себя и двух соседних: $8 - 3$. Всего $8(8 - 3) = 40$."
+   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме вершины над ней и двух соседних с той: $8 - 3$. Всего $8(8 - 3) = 40$."
   },
   "kk": {
    "question": "$8$-бұрышты призманың неше диагоналі бар? (Призманың диагоналі бір жақта жатпайтын төбелерді қосады.)",
@@ -79674,7 +79674,7 @@
     "16"
    ],
    "correct": 0,
-   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінен және екі көршісінен басқа барлық төбесіне жүреді: $8 - 3$. Барлығы $8(8 - 3) = 40$."
+   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінің үстіндегі төбеден және оның екі көршісінен басқа барлық төбесіне жүреді: $8 - 3$. Барлығы $8(8 - 3) = 40$."
   }
  },
  {
@@ -79693,7 +79693,7 @@
     "20"
    ],
    "correct": 0,
-   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме себя и двух соседних: $10 - 3$. Всего $10(10 - 3) = 70$."
+   "solution": "Из каждой вершины нижнего основания диагонали идут ко всем вершинам верхнего, кроме вершины над ней и двух соседних с той: $10 - 3$. Всего $10(10 - 3) = 70$."
   },
   "kk": {
    "question": "$10$-бұрышты призманың неше диагоналі бар? (Призманың диагоналі бір жақта жатпайтын төбелерді қосады.)",
@@ -79704,7 +79704,7 @@
     "20"
    ],
    "correct": 0,
-   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінен және екі көршісінен басқа барлық төбесіне жүреді: $10 - 3$. Барлығы $10(10 - 3) = 70$."
+   "solution": "Төменгі табанның әр төбесінен диагональдар жоғарғы табанның өзінің үстіндегі төбеден және оның екі көршісінен басқа барлық төбесіне жүреді: $10 - 3$. Барлығы $10(10 - 3) = 70$."
   }
  },
  {
@@ -90117,7 +90117,7 @@
     "(−2; 5)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (0; −1) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(0) = -1$, $y(2) = 5$. Подходят точки $(0; -1)$ и $(2; 5)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 3x - 1$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90130,7 +90130,7 @@
     "(−2; 5)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (0; −1) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(0) = -1$, $y(2) = 5$. $(0; -1)$ және $(2; 5)$ нүктелері жарайды."
   }
  },
  {
@@ -90151,7 +90151,7 @@
     "(−3; 11)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (−2; −4) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(-2) = -4$, $y(3) = 11$. Подходят точки $(-2; -4)$ и $(3; 11)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 3x + 2$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90164,7 +90164,7 @@
     "(−3; 11)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (−2; −4) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(-2) = -4$, $y(3) = 11$. $(-2; -4)$ және $(3; 11)$ нүктелері жарайды."
   }
  },
  {
@@ -90185,7 +90185,7 @@
     "(−4; −13)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (0; −1) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(0) = -1$, $y(4) = -13$. Подходят точки $(0; -1)$ и $(4; -13)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -3x - 1$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90198,7 +90198,7 @@
     "(−4; −13)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (0; −1) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(0) = -1$, $y(4) = -13$. $(0; -1)$ және $(4; -13)$ нүктелері жарайды."
   }
  },
  {
@@ -90219,7 +90219,7 @@
     "(−4; −6)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (0; 2) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(0) = 2$, $y(4) = -6$. Подходят точки $(0; 2)$ и $(4; -6)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -2x + 2$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90232,7 +90232,7 @@
     "(−4; −6)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (0; 2) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(0) = 2$, $y(4) = -6$. $(0; 2)$ және $(4; -6)$ нүктелері жарайды."
   }
  },
  {
@@ -90253,7 +90253,7 @@
     "(−3; 5)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (−2; −10) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(-2) = -10$, $y(3) = 5$. Подходят точки $(-2; -10)$ и $(3; 5)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 3x - 4$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90266,7 +90266,7 @@
     "(−3; 5)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (−2; −10) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(-2) = -10$, $y(3) = 5$. $(-2; -10)$ және $(3; 5)$ нүктелері жарайды."
   }
  },
  {
@@ -90287,7 +90287,7 @@
     "(−3; −4)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (−2; 11) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(-2) = 11$, $y(3) = -4$. Подходят точки $(-2; 11)$ и $(3; -4)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -3x + 5$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90300,7 +90300,7 @@
     "(−3; −4)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (−2; 11) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(-2) = 11$, $y(3) = -4$. $(-2; 11)$ және $(3; -4)$ нүктелері жарайды."
   }
  },
  {
@@ -90321,7 +90321,7 @@
     "(−2; 0)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (−2; −8) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(-2) = -8$, $y(2) = 0$. Подходят точки $(-2; -8)$ и $(2; 0)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 2x - 4$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90334,7 +90334,7 @@
     "(−2; 0)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (−2; −8) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(-2) = -8$, $y(2) = 0$. $(-2; -8)$ және $(2; 0)$ нүктелері жарайды."
   }
  },
  {
@@ -90355,7 +90355,7 @@
     "(−4; −10)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (0; 2) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(0) = 2$, $y(4) = -10$. Подходят точки $(0; 2)$ и $(4; -10)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -3x + 2$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90368,7 +90368,7 @@
     "(−4; −10)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (0; 2) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(0) = 2$, $y(4) = -10$. $(0; 2)$ және $(4; -10)$ нүктелері жарайды."
   }
  },
  {
@@ -90389,7 +90389,7 @@
     "(−4; 10)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (1; 4) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(1) = 4$, $y(4) = 10$. Подходят точки $(1; 4)$ и $(4; 10)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 2x + 2$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90402,7 +90402,7 @@
     "(−4; 10)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (1; 4) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(1) = 4$, $y(4) = 10$. $(1; 4)$ және $(4; 10)$ нүктелері жарайды."
   }
  },
  {
@@ -90423,7 +90423,7 @@
     "(−2; −1)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (1; 2) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(1) = 2$, $y(2) = -1$. Подходят точки $(1; 2)$ и $(2; -1)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -3x + 5$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90436,7 +90436,7 @@
     "(−2; −1)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (1; 2) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(1) = 2$, $y(2) = -1$. $(1; 2)$ және $(2; -1)$ нүктелері жарайды."
   }
  },
  {
@@ -90457,7 +90457,7 @@
     "(−2; 0)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (1; −2) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(1) = -2$, $y(2) = 0$. Подходят точки $(1; -2)$ и $(2; 0)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 2x - 4$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90470,7 +90470,7 @@
     "(−2; 0)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (1; −2) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(1) = -2$, $y(2) = 0$. $(1; -2)$ және $(2; 0)$ нүктелері жарайды."
   }
  },
  {
@@ -90491,7 +90491,7 @@
     "(−4; −10)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (1; −1) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(1) = -1$, $y(4) = -10$. Подходят точки $(1; -1)$ и $(4; -10)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -3x + 2$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90504,7 +90504,7 @@
     "(−4; −10)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (1; −1) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(1) = -1$, $y(4) = -10$. $(1; -1)$ және $(4; -10)$ нүктелері жарайды."
   }
  },
  {
@@ -90525,7 +90525,7 @@
     "(−4; 14)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (1; 5) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(1) = 5$, $y(4) = 14$. Подходят точки $(1; 5)$ и $(4; 14)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 3x + 2$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90538,7 +90538,7 @@
     "(−4; 14)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (1; 5) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(1) = 5$, $y(4) = 14$. $(1; 5)$ және $(4; 14)$ нүктелері жарайды."
   }
  },
  {
@@ -90559,7 +90559,7 @@
     "(−2; −4)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (0; 2) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(0) = 2$, $y(2) = -4$. Подходят точки $(0; 2)$ и $(2; -4)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -3x + 2$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90572,7 +90572,7 @@
     "(−2; −4)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (0; 2) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(0) = 2$, $y(2) = -4$. $(0; 2)$ және $(2; -4)$ нүктелері жарайды."
   }
  },
  {
@@ -90593,7 +90593,7 @@
     "(−4; 4)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (1; −2) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(1) = -2$, $y(4) = 4$. Подходят точки $(1; -2)$ и $(4; 4)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 2x - 4$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90606,7 +90606,7 @@
     "(−4; 4)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (1; −2) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(1) = -2$, $y(4) = 4$. $(1; -2)$ және $(4; 4)$ нүктелері жарайды."
   }
  },
  {
@@ -90627,7 +90627,7 @@
     "(−3; −4)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (1; 2) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(1) = 2$, $y(3) = -4$. Подходят точки $(1; 2)$ и $(3; -4)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -3x + 5$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90640,7 +90640,7 @@
     "(−3; −4)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (1; 2) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(1) = 2$, $y(3) = -4$. $(1; 2)$ және $(3; -4)$ нүктелері жарайды."
   }
  },
  {
@@ -90661,7 +90661,7 @@
     "(−3; −10)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (0; −4) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(0) = -4$, $y(3) = -10$. Подходят точки $(0; -4)$ и $(3; -10)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -2x - 4$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90674,7 +90674,7 @@
     "(−3; −10)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (0; −4) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(0) = -4$, $y(3) = -10$. $(0; -4)$ және $(3; -10)$ нүктелері жарайды."
   }
  },
  {
@@ -90695,7 +90695,7 @@
     "(−2; 8)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (0; 2) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(0) = 2$, $y(2) = 8$. Подходят точки $(0; 2)$ и $(2; 8)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 3x + 2$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90708,7 +90708,7 @@
     "(−2; 8)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (0; 2) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(0) = 2$, $y(2) = 8$. $(0; 2)$ және $(2; 8)$ нүктелері жарайды."
   }
  },
  {
@@ -90729,7 +90729,7 @@
     "(−3; −10)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (1; −6) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(1) = -6$, $y(3) = -10$. Подходят точки $(1; -6)$ и $(3; -10)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -2x - 4$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90742,7 +90742,7 @@
     "(−3; −10)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (1; −6) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(1) = -6$, $y(3) = -10$. $(1; -6)$ және $(3; -10)$ нүктелері жарайды."
   }
  },
  {
@@ -90763,7 +90763,7 @@
     "(−4; 10)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (0; 2) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(0) = 2$, $y(4) = 10$. Подходят точки $(0; 2)$ и $(4; 10)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 2x + 2$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90776,7 +90776,7 @@
     "(−4; 10)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (0; 2) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(0) = 2$, $y(4) = 10$. $(0; 2)$ және $(4; 10)$ нүктелері жарайды."
   }
  },
  {
@@ -90797,7 +90797,7 @@
     "(−2; −5)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (0; −1) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(0) = -1$, $y(2) = -5$. Подходят точки $(0; -1)$ и $(2; -5)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -2x - 1$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90810,7 +90810,7 @@
     "(−2; −5)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (0; −1) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(0) = -1$, $y(2) = -5$. $(0; -1)$ және $(2; -5)$ нүктелері жарайды."
   }
  },
  {
@@ -90831,7 +90831,7 @@
     "(−2; −2)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (1; 0) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(1) = 0$, $y(2) = -2$. Подходят точки $(1; 0)$ и $(2; -2)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -2x + 2$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90844,7 +90844,7 @@
     "(−2; −2)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (1; 0) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(1) = 0$, $y(2) = -2$. $(1; 0)$ және $(2; -2)$ нүктелері жарайды."
   }
  },
  {
@@ -90865,7 +90865,7 @@
     "(−2; −8)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (−2; 0) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(-2) = 0$, $y(2) = -8$. Подходят точки $(-2; 0)$ и $(2; -8)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = -2x - 4$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90878,7 +90878,7 @@
     "(−2; −8)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (−2; 0) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(-2) = 0$, $y(2) = -8$. $(-2; 0)$ және $(2; -8)$ нүктелері жарайды."
   }
  },
  {
@@ -90899,7 +90899,7 @@
     "(−2; 3)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (0; −1) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(0) = -1$, $y(2) = 3$. Подходят точки $(0; -1)$ и $(2; 3)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 2x - 1$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90912,7 +90912,7 @@
     "(−2; 3)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (0; −1) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(0) = -1$, $y(2) = 3$. $(0; -1)$ және $(2; 3)$ нүктелері жарайды."
   }
  },
  {
@@ -90933,7 +90933,7 @@
     "(−2; 11)"
    ],
    "correct": 3,
-   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой. Подходят точки (1; 8) и ещё одна отмеченная."
+   "solution": "Подставляем абсциссу точки в формулу и сравниваем с ординатой: $y(1) = 8$, $y(2) = 11$. Подходят точки $(1; 8)$ и $(2; 11)$."
   },
   "kk": {
    "question": "Қай нүктелер $y = 3x + 5$ функциясының графигінде жатыр? Барлық дұрыс жауапты таңдаңыз.",
@@ -90946,7 +90946,7 @@
     "(−2; 11)"
    ],
    "correct": 3,
-   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз. (1; 8) нүктесі және тағы бір белгіленген нүкте жарайды."
+   "solution": "Нүктенің абсциссасын формулаға қойып, ординатасымен салыстырамыз: $y(1) = 8$, $y(2) = 11$. $(1; 8)$ және $(2; 11)$ нүктелері жарайды."
   }
  },
  {
@@ -92554,7 +92554,7 @@
    "solution": "При движении навстречу скорости складываются: $15 + 8 = 23$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $69$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $69$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "23 км/сағ",
@@ -92587,7 +92587,7 @@
    "solution": "$t = \\frac{69}{15 + 8} = 3$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $69$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $69$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "3 сағ",
@@ -92620,7 +92620,7 @@
    "solution": "$s_1 = 15 \\cdot 3 = 45$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $69$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $69$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "45 км",
@@ -92653,7 +92653,7 @@
    "solution": "Середина пути — $\\frac{69}{2}$ км от Акжара. Первый проехал $45$ км, то есть дальше середины на $10{,}5$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $69$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $69$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "10,5 км",
@@ -92686,7 +92686,7 @@
    "solution": "При движении навстречу скорости складываются: $12 + 8 = 20$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $60$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $60$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "20 км/сағ",
@@ -92719,7 +92719,7 @@
    "solution": "$t = \\frac{60}{12 + 8} = 3$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $60$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $60$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "3 сағ",
@@ -92752,7 +92752,7 @@
    "solution": "$s_1 = 12 \\cdot 3 = 36$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $60$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $60$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "36 км",
@@ -92785,7 +92785,7 @@
    "solution": "Середина пути — $\\frac{60}{2}$ км от Акжара. Первый проехал $36$ км, то есть дальше середины на $6$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $60$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $60$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "6 км",
@@ -92818,7 +92818,7 @@
    "solution": "При движении навстречу скорости складываются: $15 + 10 = 25$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $50$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $50$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "25 км/сағ",
@@ -92851,7 +92851,7 @@
    "solution": "$t = \\frac{50}{15 + 10} = 2$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $50$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $50$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "2 сағ",
@@ -92884,7 +92884,7 @@
    "solution": "$s_1 = 15 \\cdot 2 = 30$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $50$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $50$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "30 км",
@@ -92917,7 +92917,7 @@
    "solution": "Середина пути — $\\frac{50}{2}$ км от Акжара. Первый проехал $30$ км, то есть дальше середины на $5$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $50$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $50$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "5 км",
@@ -92950,7 +92950,7 @@
    "solution": "При движении навстречу скорости складываются: $15 + 8 = 23$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $23$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $23$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "23 км/сағ",
@@ -92983,7 +92983,7 @@
    "solution": "$t = \\frac{23}{15 + 8} = 1$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $23$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $23$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "1 сағ",
@@ -93016,7 +93016,7 @@
    "solution": "$s_1 = 15 \\cdot 1 = 15$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $23$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $23$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "15 км",
@@ -93049,7 +93049,7 @@
    "solution": "Середина пути — $\\frac{23}{2}$ км от Акжара. Первый проехал $15$ км, то есть дальше середины на $3{,}5$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $23$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $23$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "3,5 км",
@@ -93082,7 +93082,7 @@
    "solution": "При движении навстречу скорости складываются: $18 + 12 = 30$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $30$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $30$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "30 км/сағ",
@@ -93115,7 +93115,7 @@
    "solution": "$t = \\frac{30}{18 + 12} = 1$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $30$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $30$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "1 сағ",
@@ -93148,7 +93148,7 @@
    "solution": "$s_1 = 18 \\cdot 1 = 18$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $30$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $30$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "18 км",
@@ -93181,7 +93181,7 @@
    "solution": "Середина пути — $\\frac{30}{2}$ км от Акжара. Первый проехал $18$ км, то есть дальше середины на $3$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $30$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $30$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "3 км",
@@ -93214,7 +93214,7 @@
    "solution": "При движении навстречу скорости складываются: $20 + 8 = 28$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $28$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $28$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "28 км/сағ",
@@ -93247,7 +93247,7 @@
    "solution": "$t = \\frac{28}{20 + 8} = 1$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $28$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $28$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "1 сағ",
@@ -93280,7 +93280,7 @@
    "solution": "$s_1 = 20 \\cdot 1 = 20$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $28$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $28$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "20 км",
@@ -93313,7 +93313,7 @@
    "solution": "Середина пути — $\\frac{28}{2}$ км от Акжара. Первый проехал $20$ км, то есть дальше середины на $6$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $28$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $28$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "6 км",
@@ -93346,7 +93346,7 @@
    "solution": "При движении навстречу скорости складываются: $18 + 8 = 26$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $52$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $52$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "26 км/сағ",
@@ -93379,7 +93379,7 @@
    "solution": "$t = \\frac{52}{18 + 8} = 2$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $52$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $52$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "2 сағ",
@@ -93412,7 +93412,7 @@
    "solution": "$s_1 = 18 \\cdot 2 = 36$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $52$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $52$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "36 км",
@@ -93445,7 +93445,7 @@
    "solution": "Середина пути — $\\frac{52}{2}$ км от Акжара. Первый проехал $36$ км, то есть дальше середины на $10$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $52$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $8$ км/сағ.",
+   "context": "Арақашықтығы $52$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $8$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "10 км",
@@ -93478,7 +93478,7 @@
    "solution": "При движении навстречу скорости складываются: $15 + 12 = 27$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $27$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $27$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "27 км/сағ",
@@ -93511,7 +93511,7 @@
    "solution": "$t = \\frac{27}{15 + 12} = 1$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $27$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $27$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "1 сағ",
@@ -93544,7 +93544,7 @@
    "solution": "$s_1 = 15 \\cdot 1 = 15$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $27$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $27$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "15 км",
@@ -93577,7 +93577,7 @@
    "solution": "Середина пути — $\\frac{27}{2}$ км от Акжара. Первый проехал $15$ км, то есть дальше середины на $1{,}5$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $27$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $27$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "1,5 км",
@@ -93610,7 +93610,7 @@
    "solution": "При движении навстречу скорости складываются: $18 + 12 = 30$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $60$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $60$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "30 км/сағ",
@@ -93643,7 +93643,7 @@
    "solution": "$t = \\frac{60}{18 + 12} = 2$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $60$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $60$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "2 сағ",
@@ -93676,7 +93676,7 @@
    "solution": "$s_1 = 18 \\cdot 2 = 36$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $60$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $60$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "36 км",
@@ -93709,7 +93709,7 @@
    "solution": "Середина пути — $\\frac{60}{2}$ км от Акжара. Первый проехал $36$ км, то есть дальше середины на $6$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $60$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $60$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $18$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "6 км",
@@ -93742,7 +93742,7 @@
    "solution": "При движении навстречу скорости складываются: $15 + 12 = 27$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $54$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $54$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "27 км/сағ",
@@ -93775,7 +93775,7 @@
    "solution": "$t = \\frac{54}{15 + 12} = 2$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $54$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $54$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "2 сағ",
@@ -93808,7 +93808,7 @@
    "solution": "$s_1 = 15 \\cdot 2 = 30$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $54$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $54$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "30 км",
@@ -93841,7 +93841,7 @@
    "solution": "Середина пути — $\\frac{54}{2}$ км от Акжара. Первый проехал $30$ км, то есть дальше середины на $3$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $54$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
+   "context": "Арақашықтығы $54$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $15$ км/сағ, екіншісінікі — $12$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "3 км",
@@ -93874,7 +93874,7 @@
    "solution": "При движении навстречу скорости складываются: $12 + 10 = 22$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $66$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $66$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "22 км/сағ",
@@ -93907,7 +93907,7 @@
    "solution": "$t = \\frac{66}{12 + 10} = 3$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $66$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $66$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "3 сағ",
@@ -93940,7 +93940,7 @@
    "solution": "$s_1 = 12 \\cdot 3 = 36$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $66$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $66$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "36 км",
@@ -93973,7 +93973,7 @@
    "solution": "Середина пути — $\\frac{66}{2}$ км от Акжара. Первый проехал $36$ км, то есть дальше середины на $3$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $66$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $66$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $12$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "3 км",
@@ -94006,7 +94006,7 @@
    "solution": "При движении навстречу скорости складываются: $20 + 10 = 30$ км/ч."
   },
   "kk": {
-   "context": "Арақашықтығы $90$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $90$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Велосипедшілер қандай жылдамдықпен жақындасады?",
    "options": [
     "30 км/сағ",
@@ -94039,7 +94039,7 @@
    "solution": "$t = \\frac{90}{20 + 10} = 3$ ч."
   },
   "kk": {
-   "context": "Арақашықтығы $90$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $90$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Олар неше сағаттан кейін кездеседі?",
    "options": [
     "3 сағ",
@@ -94072,7 +94072,7 @@
    "solution": "$s_1 = 20 \\cdot 3 = 60$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $90$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $90$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Кездескенге дейін бірінші велосипедші неше километр жүреді?",
    "options": [
     "60 км",
@@ -94105,7 +94105,7 @@
    "solution": "Середина пути — $\\frac{90}{2}$ км от Акжара. Первый проехал $60$ км, то есть дальше середины на $15$ км."
   },
   "kk": {
-   "context": "Арақашықтығы $90$ км Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $10$ км/сағ.",
+   "context": "Арақашықтығы $90$ км болатын Ақжар және Талдыбұлақ ауылдарынан бір мезгілде бір-біріне қарсы екі велосипедші шықты. Біріншісінің жылдамдығы $20$ км/сағ, екіншісінікі — $10$ км/сағ.",
    "question": "Кездесу жолдың ортасынан қандай қашықтықта болады?",
    "options": [
     "15 км",
@@ -94860,7 +94860,7 @@
     "12"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 2$ болғанда $f'(x) = 0$. Туынды $x = -2$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 2$ болғанда $f'(x) = 0$. Туынды $x = -2$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
@@ -94992,7 +94992,7 @@
     "27"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 3$ болғанда $f'(x) = 0$. Туынды $x = -3$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 3$ болғанда $f'(x) = 0$. Туынды $x = -3$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
@@ -95124,7 +95124,7 @@
     "12"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 2$ болғанда $f'(x) = 0$. Туынды $x = -2$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 2$ болғанда $f'(x) = 0$. Туынды $x = -2$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
@@ -95256,7 +95256,7 @@
     "27"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 3$ болғанда $f'(x) = 0$. Туынды $x = -3$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 3$ болғанда $f'(x) = 0$. Туынды $x = -3$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
@@ -95388,7 +95388,7 @@
     "3"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 1$ болғанда $f'(x) = 0$. Туынды $x = -1$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 1$ болғанда $f'(x) = 0$. Туынды $x = -1$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
@@ -95520,7 +95520,7 @@
     "3"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 1$ болғанда $f'(x) = 0$. Туынды $x = -1$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 1$ болғанда $f'(x) = 0$. Туынды $x = -1$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
@@ -95652,7 +95652,7 @@
     "12"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 2$ болғанда $f'(x) = 0$. Туынды $x = -2$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 2$ болғанда $f'(x) = 0$. Туынды $x = -2$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
@@ -95784,7 +95784,7 @@
     "27"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 3$ болғанда $f'(x) = 0$. Туынды $x = -3$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 3$ болғанда $f'(x) = 0$. Туынды $x = -3$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
@@ -95916,7 +95916,7 @@
     "3"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 1$ болғанда $f'(x) = 0$. Туынды $x = -1$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 1$ болғанда $f'(x) = 0$. Туынды $x = -1$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
@@ -96048,7 +96048,7 @@
     "27"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 3$ болғанда $f'(x) = 0$. Туынды $x = -3$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 3$ болғанда $f'(x) = 0$. Туынды $x = -3$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
@@ -96180,7 +96180,7 @@
     "12"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 2$ болғанда $f'(x) = 0$. Туынды $x = -2$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 2$ болғанда $f'(x) = 0$. Туынды $x = -2$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
@@ -96312,7 +96312,7 @@
     "27"
    ],
    "correct": 0,
-   "solution": "$x = \\pm 3$ болғанда $f'(x) = 0$. Туынды $x = -3$ нүктесінде таңбасын «+»-тен «−»-ке өзгертеді — бұл максимум."
+   "solution": "$x = \\pm 3$ болғанда $f'(x) = 0$. Туынды $x = -3$ нүктесінде таңбасын плюстен минусқа өзгертеді — бұл максимум."
   }
  },
  {
