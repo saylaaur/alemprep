@@ -53,6 +53,8 @@ class Template:
     answers: list[Callable[[P], Value]] | None = None  # для kind="multi"
     kind: str = "single"
     rows: dict[str, list[str]] = field(default_factory=dict)  # для kind="match": {"ru": [строка A, строка B], "kk": [...]}
+    # Перевод вариантов-слов на казахский: {"фиолетовый": "күлгін"}. Числа и формулы не переводятся.
+    options_kk: dict[str, str] = field(default_factory=dict)
     options: int | None = None  # как в ЕНТ: single — 4 варианта (A–D), multi — 6 (A–F)
     text: dict[str, str] = field(default_factory=dict)  # {"ru": "...", "kk": "..."} — kk можно не давать
     solution: dict[str, str] = field(default_factory=dict)
@@ -241,7 +243,7 @@ def _side(t: Template, lang: str, p: P, ans: Value, opts: list[str], mask: int) 
     fill = lambda s: fill_mixed(s, p, ans, t.decimals)
     out = {
         "question": fill(t.text[lang]),
-        "options": [o + (f" {unit}" if unit else "") for o in opts],
+        "options": [(t.options_kk.get(o, o) if lang == "kk" else o) + (f" {unit}" if unit else "") for o in opts],
         # перемешивает сайт
         "correct": 0 if t.kind == "single" else MATCH_CORRECT if t.kind == "match" else mask,
         "solution": fill(t.solution[lang]),
@@ -434,12 +436,23 @@ def pi_ans(k: Num) -> str:
 
 def fact(id, topic, level, q_ru, q_kk, right, wrong, sol_ru, sol_kk, kind="single"):
     """Вопрос без чисел: right — верный ответ (или список верных для multi), wrong — правдоподобные ошибки.
-    topic — словарь dict(subject=..., topic=...)."""
-    rights = right if isinstance(right, list) else [right]
+    topic — словарь dict(subject=..., topic=...).
+    Вариант — строка (формула, число, код — одинаково на обоих языках) или пара ("по-русски", "қазақша")."""
+    tr: dict[str, str] = {}
+
+    def ru(o):
+        if isinstance(o, tuple):
+            tr[o[0]] = o[1]
+            return o[0]
+        return o
+
+    rights = [ru(o) for o in (right if isinstance(right, list) else [right])]
+    wrong = [ru(o) for o in wrong]
     return Template(
         id=id, level=level, kind=kind, params={}, **topic,
         text={"ru": q_ru, "kk": q_kk}, solution={"ru": sol_ru, "kk": sol_kk},
         answer=(lambda p, r=rights[0]: r) if kind == "single" else None,
         answers=[(lambda p, r=r: r) for r in rights] if kind == "multi" else None,
         distractors=[(lambda p, w=w: w) for w in wrong],
+        options_kk=tr,
     )
