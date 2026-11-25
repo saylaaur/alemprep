@@ -57,7 +57,7 @@ describe('local mode end to end (no Supabase)', () => {
   });
 
   it('answers “not ready” for a book without a written text', async () => {
-    expect(await receiveBookAction('arithmetic-roots')).toEqual({ ok: false, error: 'not-ready' });
+    expect(await receiveBookAction('trig-unit-circle')).toEqual({ ok: false, error: 'not-ready' });
   });
 
   it('rejects a review of a book that was never received', async () => {

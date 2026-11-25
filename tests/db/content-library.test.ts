@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDbHarness, type DbHarness } from './helpers';
 
@@ -47,6 +48,37 @@ describe('content library migrations', () => {
       'SELECT count(*)::int FROM public.book_reviews WHERE user_id = $1 AND book_id = $2',
       [pupil.id, id],
     )).toBe(1);
+  });
+
+  it('loads the bilingual first-term books and preserves edits when the seed is replayed', async () => {
+    const seed = readFileSync('supabase/migrations/0045_first_term_books.sql', 'utf8');
+    const slugs = [...seed.matchAll(/^WHERE slug = '([a-z0-9-]+)' AND content_ru IS NULL;$/gm)].map((match) => match[1]);
+    expect(slugs).toHaveLength(30);
+    expect(await db.scalar<number>(
+      'SELECT count(*)::int FROM public.books WHERE slug = ANY($1::text[]) AND has_content AND content_kk IS NOT NULL',
+      [slugs],
+    )).toBe(slugs.length);
+    const math = JSON.parse(readFileSync('scripts/data/books/arithmetic-roots.json', 'utf8'));
+    expect(await db.scalar<boolean>(
+      "SELECT content_ru = $1::jsonb AND content_kk = $2::jsonb FROM public.books WHERE slug = 'arithmetic-roots'",
+      [JSON.stringify(math.ru), JSON.stringify(math.kk)],
+    )).toBe(true);
+
+    const tx = await db.connection();
+    try {
+      await tx.execute('BEGIN');
+      await tx.execute(
+        "UPDATE public.books SET content_ru = $1::jsonb WHERE slug = 'arithmetic-roots'",
+        [JSON.stringify({ pages: [{ title: 'Synthetic editorial change', blocks: [{ type: 'text', text: 'Keep this edit.' }] }] })],
+      );
+      await tx.execute(seed);
+      expect(await tx.scalar<string>(
+        "SELECT content_ru #>> '{pages,0,title}' FROM public.books WHERE slug = 'arithmetic-roots'",
+      )).toBe('Synthetic editorial change');
+    } finally {
+      await tx.execute('ROLLBACK');
+      tx.release();
+    }
   });
 
   it('pairs a synthetic reminder account once per code', async () => {
