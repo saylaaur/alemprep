@@ -34,6 +34,17 @@ export function shuffleOptions(id: string, options: string[], correct: number): 
   return { options: o.map((i) => options[i]), correct: o.indexOf(correct) };
 }
 
+/** Ответ на соответствие: выбор строки A + MATCH_BASE · выбор строки B. */
+export const MATCH_BASE = 8;
+
+/** Перемешивает варианты вопроса на соответствие и пересчитывает закодированный ответ. */
+export function shuffleMatch(id: string, options: string[], correct: number): { options: string[]; correct: number } {
+  const o = order(id, options.length);
+  const a = o.indexOf(correct % MATCH_BASE);
+  const b = o.indexOf(Math.floor(correct / MATCH_BASE));
+  return { options: o.map((i) => options[i]), correct: a + MATCH_BASE * b };
+}
+
 /** То же для вопроса с несколькими верными ответами: mask — биты верных вариантов (бит i — вариант i). */
 export function shuffleMask(id: string, options: string[], mask: number): { options: string[]; correct: number } {
   const o = order(id, options.length);

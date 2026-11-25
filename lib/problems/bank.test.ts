@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import official from '../../scripts/data/official-topics.json';
+import { MATCH_BASE } from '@/lib/lessons/shuffle';
 import { BANK, bankCounts, resolveBankItem, SET_SIZE, setCount, topicSet, type BankItem } from './bank';
 
 const subjects = ['math', 'physics', 'informatics'] as const;
@@ -62,14 +63,21 @@ describe('банк задач', () => {
       if (it.kind === 'multi') {
         expect(r.multi).toBe(true);
         expect(pick(r.options, r.correct), it.id).toEqual(pick(it.ru.options, it.ru.correct));
+      } else if (it.kind === 'match') {
+        const was = [it.ru.correct % MATCH_BASE, Math.floor(it.ru.correct / MATCH_BASE)].map((i) => it.ru.options[i]);
+        const now = [r.correct % MATCH_BASE, Math.floor(r.correct / MATCH_BASE)].map((i) => r.options[i]);
+        expect(now, it.id).toEqual(was);
+        expect(r.rows, it.id).toEqual(it.ru.rows);
       } else {
         expect(r.options[r.correct], it.id).toBe(it.ru.options[0]);
       }
     }
   });
 
-  it('в банке есть все форматы: один ответ, несколько ответов, контекстные блоки', () => {
+  it('в банке есть все форматы ЕНТ: один ответ, несколько ответов, соответствие, контекстные блоки', () => {
     expect(BANK.some((b) => b.kind === 'multi')).toBe(true);
+    expect(BANK.some((b) => b.kind === 'match')).toBe(true);
+    for (const b of BANK) expect(b.ru.options.length, b.id).toBe(b.kind === 'multi' ? 6 : 4);
     expect(BANK.some((b) => b.group)).toBe(true);
     for (const b of BANK.filter((x) => x.kind === 'multi')) {
       const n = b.ru.correct.toString(2).split('').filter((c) => c === '1').length;

@@ -7,6 +7,7 @@ import { MathText } from '@/components/math/MathText';
 import { cn } from '@/lib/utils';
 import type { ResolvedQuestion } from '@/lib/lessons/catalog';
 import type { LessonLabels } from './labels';
+import { MATCH_BASE } from '@/lib/lessons/shuffle';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
@@ -21,6 +22,7 @@ const LEVEL_STYLE = {
  * в пробнике revealed=false до самого конца, виден только выбранный вариант.
  * q.multi — несколько верных: ученик отмечает варианты и жмёт «Проверить»; ответ и q.correct — битовые маски.
  * q.context — общее условие контекстного блока, показывается над вопросом.
+ * q.rows — задание на соответствие: к каждой строке ученик подбирает вариант; ответ = выбор(1) + MATCH_BASE · выбор(2).
  */
 export function QuestionCard({
   q,
@@ -35,6 +37,7 @@ export function QuestionCard({
   disabled,
   checkLabel = 'OK',
   multiHint,
+  matchHint,
 }: {
   q: ResolvedQuestion;
   selected: number | undefined;
@@ -48,12 +51,33 @@ export function QuestionCard({
   disabled?: boolean;
   checkLabel?: string;
   multiHint?: string;
+  matchHint?: string;
 }) {
   const [draft, setDraft] = useState(0);
   const answered = selected !== undefined;
   const isRight = answered && selected === q.correct;
   const multi = q.multi === true;
   const bit = (i: number) => 1 << i;
+  const rows = q.rows;
+  if (rows) {
+    return (
+      <MatchCard
+        q={q}
+        rows={rows}
+        selected={selected}
+        revealed={revealed}
+        onSelect={onSelect}
+        levelLabels={levelLabels}
+        heading={heading}
+        solutionLabel={solutionLabel}
+        rightLabel={rightLabel}
+        wrongLabel={wrongLabel}
+        disabled={disabled}
+        checkLabel={checkLabel}
+        hint={matchHint}
+      />
+    );
+  }
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-muted-foreground">
@@ -124,6 +148,124 @@ export function QuestionCard({
           role="status"
           className={cn('mt-4 animate-fade-in rounded-2xl p-4 text-[15px] leading-relaxed', isRight ? 'bg-success/10' : 'bg-destructive/10')}
         >
+          <div className={cn('mb-1 text-sm font-semibold', isRight ? 'text-success' : 'text-destructive')}>{isRight ? rightLabel : wrongLabel}</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">{solutionLabel}</div>
+          <p className="mt-1">
+            <MathText text={q.solution} />
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Задание на соответствие (как ЕНТ 31–35): список вариантов и две строки, к каждой подбирается буква. */
+function MatchCard({
+  q,
+  rows,
+  selected,
+  revealed,
+  onSelect,
+  levelLabels,
+  heading,
+  solutionLabel,
+  rightLabel,
+  wrongLabel,
+  disabled,
+  checkLabel,
+  hint,
+}: {
+  q: ResolvedQuestion;
+  rows: string[];
+  selected: number | undefined;
+  revealed: boolean;
+  onSelect?: (index: number) => void;
+  levelLabels?: LessonLabels['practice']['levels'];
+  heading: string;
+  solutionLabel: string;
+  rightLabel: string;
+  wrongLabel: string;
+  disabled?: boolean;
+  checkLabel: string;
+  hint?: string;
+}) {
+  const [draft, setDraft] = useState<(number | undefined)[]>([undefined, undefined]);
+  const answered = selected !== undefined;
+  const isRight = answered && selected === q.correct;
+  const decode = (v: number) => [v % MATCH_BASE, Math.floor(v / MATCH_BASE)];
+  const picked = answered ? decode(selected) : draft;
+  const correct = decode(q.correct);
+  const ready = draft.every((d) => d !== undefined);
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-muted-foreground">
+        <span>{heading}</span>
+        {levelLabels && <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-semibold', LEVEL_STYLE[q.level])}>{levelLabels[q.level]}</span>}
+      </div>
+      {q.context && (
+        <div className="mt-2 rounded-2xl bg-muted/60 p-3.5 text-[15px] leading-relaxed">
+          <MathText text={q.context} />
+        </div>
+      )}
+      <p className="mt-2 text-balance text-[17px] font-medium leading-snug sm:text-lg">
+        <MathText text={q.question} />
+      </p>
+      {hint && !answered && <p className="mt-1 text-sm text-muted-foreground">{hint}</p>}
+
+      <ul className="mt-4 grid gap-1.5 rounded-2xl border border-border bg-card/70 p-3 backdrop-blur-xl">
+        {q.options.map((opt, i) => (
+          <li key={i} className="flex items-center gap-3 text-[15px]">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">{LETTERS[i]}</span>
+            <span className="min-w-0 flex-1">
+              <MathText text={opt} />
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-3 grid gap-2">
+        {rows.map((row, r) => (
+          <div key={r} className="rounded-2xl border border-border bg-card/70 p-3 backdrop-blur-xl">
+            <div className="text-[15px]">
+              <span className="mr-2 font-semibold text-muted-foreground">{r + 1})</span>
+              <MathText text={row} />
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5" role="group">
+              {q.options.map((_, i) => {
+                const chosen = picked[r] === i;
+                const good = revealed && answered && i === correct[r];
+                const bad = revealed && answered && chosen && i !== correct[r];
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    data-sound="off"
+                    aria-pressed={chosen}
+                    disabled={disabled || answered}
+                    onClick={() => setDraft((d) => d.map((v, k) => (k === r ? i : v)))}
+                    className={cn(
+                      'flex h-9 w-9 items-center justify-center rounded-xl border text-sm font-bold transition-colors disabled:pointer-events-none',
+                      'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25',
+                      good ? 'border-success bg-success text-success-foreground' : bad ? 'border-destructive bg-destructive text-destructive-foreground' : chosen ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-muted text-muted-foreground hover:border-primary/50'
+                    )}
+                  >
+                    {LETTERS[i]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {!answered && (
+        <Button className="mt-3" onClick={() => ready && onSelect?.((draft[0] ?? 0) + MATCH_BASE * (draft[1] ?? 0))} disabled={disabled || !ready}>
+          {checkLabel}
+        </Button>
+      )}
+
+      {revealed && answered && (
+        <div role="status" className={cn('mt-4 animate-fade-in rounded-2xl p-4 text-[15px] leading-relaxed', isRight ? 'bg-success/10' : 'bg-destructive/10')}>
           <div className={cn('mb-1 text-sm font-semibold', isRight ? 'text-success' : 'text-destructive')}>{isRight ? rightLabel : wrongLabel}</div>
           <div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">{solutionLabel}</div>
           <p className="mt-1">

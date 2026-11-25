@@ -33,11 +33,13 @@ class P(dict):
 
 @dataclass
 class Template:
-    """Вопрос с одним верным ответом (kind="single") или с несколькими (kind="multi").
+    """Вопрос с одним верным ответом (kind="single"), с несколькими (kind="multi") или на соответствие (kind="match").
 
-    single: answer → один верный, distractors → неверные; итого 5 вариантов.
+    single: answer → один верный, distractors → неверные; итого 4 варианта (A–D), как в ЕНТ.
     multi:  answers → 2–3 верных (например, одно и то же множество, записанное по-разному),
-            distractors → неверные; итого 5 вариантов. Верные задаются битовой маской.
+            distractors → неверные; итого 6 вариантов (A–F). Верные задаются битовой маской.
+    match:  rows → две строки условия («если a = 7, то …»), answers → ответ для каждой строки,
+            distractors → неверные; итого 4 варианта на выбор. correct = выбор(A) + 8 · выбор(B).
     Вопрос без чисел (факт): params={} и answer=lambda p: "строка" — получится одна задача.
     """
 
@@ -50,6 +52,7 @@ class Template:
     answer: Callable[[P], Value] | None = None
     answers: list[Callable[[P], Value]] | None = None  # для kind="multi"
     kind: str = "single"
+    rows: dict[str, list[str]] = field(default_factory=dict)  # для kind="match": {"ru": [строка A, строка B], "kk": [...]}
     options: int | None = None  # как в ЕНТ: single — 4 варианта (A–D), multi — 6 (A–F)
     text: dict[str, str] = field(default_factory=dict)  # {"ru": "...", "kk": "..."} — kk можно не давать
     solution: dict[str, str] = field(default_factory=dict)
@@ -127,7 +130,7 @@ class TemplateError(ValueError):
 
 
 def n_options(t: Template) -> int:
-    return t.options if t.options is not None else (4 if t.kind == "single" else 6)
+    return t.options if t.options is not None else (6 if t.kind == "multi" else 4)
 
 
 def check_template(t: Template) -> None:
@@ -137,6 +140,13 @@ def check_template(t: Template) -> None:
         if t.answer is None or t.answers:
             raise TemplateError(f"{t.id}: для single нужен answer (и не нужен answers)")
         need = n_options(t) - 1
+    elif t.kind == "match":
+        rows = t.rows.get("ru", [])
+        if len(rows) != 2 or not t.answers or len(t.answers) != 2 or t.answer is not None:
+            raise TemplateError(f"{t.id}: для match нужны 2 строки rows и 2 answers")
+        if any(len(r) != 2 for r in t.rows.values()):
+            raise TemplateError(f"{t.id}: в rows для каждого языка ровно 2 строки")
+        need = n_options(t) - 2
     elif t.kind == "multi":
         if not t.answers or not 2 <= len(t.answers) <= 3 or t.answer is not None:
             raise TemplateError(f"{t.id}: для multi нужно 2–3 answers")
@@ -149,7 +159,7 @@ def check_template(t: Template) -> None:
         raise TemplateError(f"{t.id}: нет русского текста или разбора")
     for lang, s in [*t.text.items(), *t.solution.items()]:
         for name in _PH.findall(s):
-            if name != "ans" and name not in t.params and t.derived is None:
+            if name not in ("ans", "ans1", "ans2") and name not in t.params and t.derived is None:
                 raise TemplateError(f"{t.id} ({lang}): неизвестная переменная [[{name}]]")
         for formula in re.findall(r"\$([^$]*)\$", s):
             if re.search(r"[А-Яа-яЁёӘәҒғҚқҢңӨөҰұҮүҺһІі]", re.sub(r"\\text\{[^}]*\}", "", formula)):
@@ -169,6 +179,8 @@ def _variant(t: Template, p: P) -> tuple[list[str], int, Value] | None:
         return None
     if not all(nice(x, t.decimals) for x in right):
         return None
+    if t.kind == "match":
+        p["ans1"], p["ans2"] = right  # ответы строк A и B — для разбора
     opts = [fmt(x, t.decimals) for x in right]
     if len(set(opts)) != len(opts):
         return None
@@ -214,20 +226,28 @@ def _fillers(right: Value) -> list[Value]:
 
 
 def _check_names(t: Template, p: P) -> None:
-    for lang, s in [*t.text.items(), *t.solution.items()]:
+    rows = [(lang, r) for lang, rs in t.rows.items() for r in rs]
+    for lang, s in [*t.text.items(), *t.solution.items(), *rows]:
         for name in _PH.findall(s):
-            if name != "ans" and name not in p:
+            if name not in ("ans", "ans1", "ans2") and name not in p:
                 raise TemplateError(f"{t.id} ({lang}): неизвестная переменная [[{name}]]")
+
+
+MATCH_CORRECT = 0 + 8 * 1  # верные стоят первыми: строка A → вариант 0, строка B → вариант 1
 
 
 def _side(t: Template, lang: str, p: P, ans: Value, opts: list[str], mask: int) -> dict:
     unit = t.unit_kk if (lang == "kk" and t.unit_kk) else t.unit
+    fill = lambda s: fill_mixed(s, p, ans, t.decimals)
     out = {
-        "question": fill_mixed(t.text[lang], p, ans, t.decimals),
+        "question": fill(t.text[lang]),
         "options": [o + (f" {unit}" if unit else "") for o in opts],
-        "correct": 0 if t.kind == "single" else mask,  # перемешивает сайт
-        "solution": fill_mixed(t.solution[lang], p, ans, t.decimals),
+        # перемешивает сайт
+        "correct": 0 if t.kind == "single" else MATCH_CORRECT if t.kind == "match" else mask,
+        "solution": fill(t.solution[lang]),
     }
+    if t.kind == "match":
+        out["rows"] = [fill(r) for r in t.rows[lang]]
     return out
 
 

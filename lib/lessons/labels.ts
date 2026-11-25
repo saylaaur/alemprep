@@ -29,6 +29,7 @@ export function buildLessonLabels(get: (key: string) => string): LessonLabels {
       hint: g('practice.hint'),
       check: g('practice.check'),
       multiHint: g('practice.multiHint'),
+      matchHint: g('practice.matchHint'),
     },
     mock: {
       title: g('mock.title'),

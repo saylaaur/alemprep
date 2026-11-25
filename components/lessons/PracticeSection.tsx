@@ -66,7 +66,7 @@ export function PracticeSection({
       const { answer: a, next: n, selected: s, q: cur } = latest.current;
       if (/^[1-6]$/.test(e.key)) {
         const i = Number(e.key) - 1;
-        if (!cur.multi && i < cur.options.length && s === undefined) {
+        if (!cur.multi && !cur.rows && i < cur.options.length && s === undefined) {
           e.preventDefault();
           a(i);
         }
@@ -135,6 +135,7 @@ export function PracticeSection({
           wrongLabel={labels.wrong}
           checkLabel={labels.check}
           multiHint={labels.multiHint}
+          matchHint={labels.matchHint}
         />
       </div>
 

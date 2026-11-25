@@ -18,6 +18,8 @@ export type ResolvedQuestion = Omit<LessonQuestion, 'correct' | 'options'> & {
   multi?: boolean;
   /** Общее условие контекстного блока — показывается над вопросом. */
   context?: string;
+  /** Задание на соответствие: две строки условия; ответ = выбор(A) + MATCH_BASE · выбор(B). */
+  rows?: string[];
 };
 
 export type ResolvedLesson = {

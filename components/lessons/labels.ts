@@ -31,6 +31,7 @@ export type LessonLabels = {
     check: string;
     /** «Выберите все верные ответы» */
     multiHint: string;
+    matchHint: string;
   };
   mock: {
     title: string;

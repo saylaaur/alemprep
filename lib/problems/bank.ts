@@ -2,7 +2,7 @@ import { z } from 'zod';
 import math from './bank/math.json';
 import physics from './bank/physics.json';
 import informatics from './bank/informatics.json';
-import { shuffleMask, shuffleOptions } from '@/lib/lessons/shuffle';
+import { MATCH_BASE, shuffleMask, shuffleMatch, shuffleOptions } from '@/lib/lessons/shuffle';
 import type { ResolvedQuestion } from '@/lib/lessons/catalog';
 import type { Locale } from '@/types/db';
 
@@ -15,8 +15,10 @@ const side = z
   .object({
     context: text.optional(),
     question: text,
+    /** Только для kind = match: две строки, к каждой ученик подбирает вариант. */
+    rows: z.array(text).length(2).optional(),
     options: z.array(z.string().trim().min(1).max(200)).min(4).max(6),
-    /** single — всегда 0 (верный первым, перемешивает сайт); multi — маска верных. */
+    /** single — всегда 0 (верный первым, перемешивает сайт); multi — маска верных; match — выбор(A) + 8 · выбор(B). */
     correct: z.number().int().min(0),
     solution: text,
   })
@@ -29,16 +31,25 @@ export const bankItemSchema = z
     subject: z.enum(['math', 'physics', 'informatics']),
     topic: z.string().regex(/^[a-z0-9-]+$/),
     level: z.enum(['easy', 'medium', 'hard']),
-    kind: z.enum(['single', 'multi']),
+    kind: z.enum(['single', 'multi', 'match']),
     /** Задачи одного контекстного блока: показываются подряд и в одном наборе. */
     group: z.string().optional(),
     ru: side,
     kk: side.optional(),
   })
   .strict()
-  .refine((it) => (it.kind === 'single' ? it.ru.correct === 0 : it.ru.correct > 0 && it.ru.correct < 1 << it.ru.options.length), {
-    message: 'correct не соответствует kind',
+  .refine((it) => [it.ru, it.kk].every((s) => s === undefined || correctFits(it.kind, s)), {
+    message: 'correct или rows не соответствуют kind',
   });
+
+function correctFits(kind: 'single' | 'multi' | 'match', s: { options: string[]; correct: number; rows?: string[] }): boolean {
+  const n = s.options.length;
+  if (kind === 'single') return s.correct === 0 && !s.rows;
+  if (kind === 'multi') return s.correct > 0 && s.correct < 1 << n && !s.rows;
+  const a = s.correct % MATCH_BASE;
+  const b = Math.floor(s.correct / MATCH_BASE);
+  return s.rows !== undefined && a < n && b < n && a !== b;
+}
 
 export type BankItem = z.infer<typeof bankItemSchema>;
 
@@ -111,7 +122,12 @@ export function setCount(topic: string, items: BankItem[] = BANK): number {
 export function resolveBankItem(it: BankItem, locale: Locale): ResolvedQuestion {
   const side = (locale === 'kk' && it.kk) || it.ru;
   const multi = it.kind === 'multi';
-  const s = multi ? shuffleMask(it.id, side.options, side.correct) : shuffleOptions(it.id, side.options, side.correct);
+  const s =
+    it.kind === 'match'
+      ? shuffleMatch(it.id, side.options, side.correct)
+      : multi
+        ? shuffleMask(it.id, side.options, side.correct)
+        : shuffleOptions(it.id, side.options, side.correct);
   return {
     id: it.id,
     level: it.level,
@@ -121,5 +137,6 @@ export function resolveBankItem(it: BankItem, locale: Locale): ResolvedQuestion 
     correct: s.correct,
     ...(multi ? { multi: true } : {}),
     ...(side.context ? { context: side.context } : {}),
+    ...(side.rows ? { rows: side.rows } : {}),
   };
 }
