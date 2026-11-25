@@ -34,14 +34,15 @@ test('pilot topics-only mode hides assessments on mobile and redirects every ass
 test('pilot landing describes the released math scope and AI review in both languages', async ({ page }) => {
   test.skip(process.env.PILOT_TOPICS_ONLY !== 'true', 'requires the pilot server flag');
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const [locale, badge, note, absentSubject] of [
-    ['ru', 'Школьный пилот · математика', 'Задания проверены AI', 'Физика'],
-    ['kk', 'Мектеп пилоты · математика', 'Есептерді AI тексерді', 'Физика'],
+  for (const [locale, title, note, signIn] of [
+    ['ru', 'Математика в школьном пилоте', 'Задания проверены AI', 'Войти через Google'],
+    ['kk', 'Мектеп пилотындағы математика', 'Есептерді AI тексерді', 'Google арқылы кіру'],
   ]) {
     await page.goto(`/${locale}`);
-    await expect(page.getByText(badge, { exact: true })).toBeVisible();
-    await expect(page.getByText(note, { exact: false })).toBeVisible();
-    await expect(page.getByRole('heading', { name: absentSubject, exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
+    await expect(page.getByTestId('pilot-content-note')).toContainText(note);
+    await expect(page.getByText(/физик/i)).toHaveCount(0);
+    await expect(page.getByRole('button', { name: signIn })).toHaveCount(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   }
 });
