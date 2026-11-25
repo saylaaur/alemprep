@@ -55,6 +55,8 @@ class Template:
     rows: dict[str, list[str]] = field(default_factory=dict)  # для kind="match": {"ru": [строка A, строка B], "kk": [...]}
     # Перевод вариантов-слов на казахский: {"фиолетовый": "күлгін"}. Числа и формулы не переводятся.
     options_kk: dict[str, str] = field(default_factory=dict)
+    # Рисунок к задаче: функция от переменных → SVG (см. figures.py). Подписи — латиница и числа, общие для ru/kk.
+    figure: Callable[[P], str] | None = None
     options: int | None = None  # как в ЕНТ: single — 4 варианта (A–D), multi — 6 (A–F)
     text: dict[str, str] = field(default_factory=dict)  # {"ru": "...", "kk": "..."} — kk можно не давать
     solution: dict[str, str] = field(default_factory=dict)
@@ -271,9 +273,10 @@ def generate(t: Template, seed: int = 0) -> list[dict]:
         opts, mask, ans = v
         _check_names(t, p)
         q_ru = fill_mixed(t.text["ru"], p, ans, t.decimals)
-        if q_ru in seen:
+        key = q_ru + (t.figure(p) if t.figure is not None else "")  # с рисунком одинаковый текст — разные задачи
+        if key in seen:
             continue
-        seen.add(q_ru)
+        seen.add(key)
         item: dict = {
             "id": f"{t.id}#{len(out) + 1:03d}",
             "template": t.id,
@@ -285,6 +288,8 @@ def generate(t: Template, seed: int = 0) -> list[dict]:
         }
         if "kk" in t.text and "kk" in t.solution:
             item["kk"] = _side(t, "kk", p, ans, opts, mask)
+        if t.figure is not None:
+            item["figure"] = t.figure(p)
         out.append(item)
     return out
 
@@ -309,6 +314,7 @@ class Context:
     where: Callable[[P], bool] = lambda p: True
     derived: Callable[[P], dict] | None = None
     variants: int = 10  # сколько разных блоков
+    figure: Callable[[P], str] | None = None  # общий рисунок блока (показывается у каждого вопроса)
 
 
 def generate_context(c: Context, seed: int = 0) -> list[dict]:
@@ -338,9 +344,10 @@ def generate_context(c: Context, seed: int = 0) -> list[dict]:
         if any(v is None for v in parts):
             continue  # блок берём только целиком
         ctx_ru = fill_mixed(c.context["ru"], p, 0, 2)
-        if ctx_ru in seen:
+        key = ctx_ru + (c.figure(p) if c.figure is not None else "")
+        if key in seen:
             continue
-        seen.add(ctx_ru)
+        seen.add(key)
         groups += 1
         gid = f"{c.id}#{groups:03d}"
         for k, (q, v) in enumerate(zip(c.questions, parts), start=1):
@@ -358,6 +365,9 @@ def generate_context(c: Context, seed: int = 0) -> list[dict]:
             }
             if "kk" in c.context and "kk" in q.text and "kk" in q.solution:
                 item["kk"] = {"context": fill_mixed(c.context["kk"], p, 0, 2), **_side(q, "kk", p, ans, opts, mask)}
+            fig = q.figure or c.figure
+            if fig is not None:
+                item["figure"] = fig(p)
             out.append(item)
     return out
 

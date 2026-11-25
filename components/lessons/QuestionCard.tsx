@@ -92,6 +92,7 @@ export function QuestionCard({
       <p className="mt-2 text-balance text-[17px] font-medium leading-snug sm:text-lg">
         <MathText text={q.question} />
       </p>
+      {q.figure && <Figure svg={q.figure} />}
       {multi && multiHint && !answered && <p className="mt-1 text-sm text-muted-foreground">{multiHint}</p>}
 
       <div className="mt-4 grid gap-2" role="group">
@@ -210,6 +211,7 @@ function MatchCard({
       <p className="mt-2 text-balance text-[17px] font-medium leading-snug sm:text-lg">
         <MathText text={q.question} />
       </p>
+      {q.figure && <Figure svg={q.figure} />}
       {hint && !answered && <p className="mt-1 text-sm text-muted-foreground">{hint}</p>}
 
       <ul className="mt-4 grid gap-1.5 rounded-2xl border border-border bg-card/70 p-3 backdrop-blur-xl">
@@ -274,5 +276,17 @@ function MatchCard({
         </div>
       )}
     </div>
+  );
+}
+
+/** Рисунок к задаче: SVG из банка показывается через <img> — так в нём не выполняется никакой код. */
+function Figure({ svg }: { svg: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- data-URI SVG, оптимизация next/image не нужна
+    <img
+      src={`data:image/svg+xml;utf8,${encodeURIComponent(svg)}`}
+      alt=""
+      className="mt-3 block h-auto max-h-60 w-full max-w-sm rounded-2xl border border-border bg-white object-contain"
+    />
   );
 }

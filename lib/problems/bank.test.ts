@@ -19,7 +19,7 @@ describe('банк задач', () => {
       for (const side of [it.ru, it.kk].filter(Boolean) as BankItem['ru'][]) {
         expect(new Set(side.options).size, it.id).toBe(side.options.length);
       }
-      const key = `${it.template}|${it.ru.context ?? ''}|${it.ru.question}`;
+      const key = `${it.template}|${it.ru.context ?? ''}|${it.ru.question}|${it.figure ?? ''}`;
       expect(q.has(key), it.id).toBe(false);
       q.add(key);
     }

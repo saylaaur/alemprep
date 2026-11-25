@@ -48,6 +48,10 @@ def official_topics() -> dict[str, set[str]]:
     return {s: {t["slug"] for sec in d[s]["sections"] for t in sec["topics"]} for s in SUBJECTS}
 
 
+# Не больше стольких вариантов одного шаблона: лёгкие — одна формула, их много не нужно.
+CAP = {"easy": 25, "medium": 40, "hard": 50}
+
+
 def main() -> None:
     sample = "--sample" in sys.argv
     topics = official_topics()
@@ -58,6 +62,9 @@ def main() -> None:
             raise SystemExit(f"{t.id}: неизвестный предмет {t.subject}")
         if t.topic not in topics[t.subject]:
             raise SystemExit(f"{t.id}: темы {t.topic!r} нет в официальной спецификации {t.subject}")
+        if not isinstance(t, Context):
+            # Чистка: однотипных лёгких задач меньше, чтобы набор из 15 не состоял из одной и той же формулы.
+            t.variants = min(t.variants, CAP[t.level])
         items = generate_context(t) if isinstance(t, Context) else generate(t)
         if len(items) < MIN_VARIANTS and t.params:
             weak.append(f"{t.id}: {len(items)}")

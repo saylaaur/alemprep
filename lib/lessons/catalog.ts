@@ -20,6 +20,8 @@ export type ResolvedQuestion = Omit<LessonQuestion, 'correct' | 'options'> & {
   context?: string;
   /** Задание на соответствие: две строки условия; ответ = выбор(A) + MATCH_BASE · выбор(B). */
   rows?: string[];
+  /** Рисунок (SVG-разметка) — показывается под условием. */
+  figure?: string;
 };
 
 export type ResolvedLesson = {

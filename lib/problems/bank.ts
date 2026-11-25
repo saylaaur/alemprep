@@ -34,6 +34,12 @@ export const bankItemSchema = z
     kind: z.enum(['single', 'multi', 'match']),
     /** Задачи одного контекстного блока: показываются подряд и в одном наборе. */
     group: z.string().optional(),
+    /** Рисунок к задаче — SVG из генератора (подписи общие для ru/kk). Показывается как картинка, скрипты не выполняются. */
+    figure: z
+      .string()
+      .max(12000)
+      .refine((s) => s.startsWith('<svg') && !/<script|on[a-z]+=|javascript:/i.test(s), 'figure: только простой SVG')
+      .optional(),
     ru: side,
     kk: side.optional(),
   })
@@ -91,19 +97,22 @@ function units(topic: string, items: BankItem[]): BankItem[][] {
   return out;
 }
 
-/** Наборы темы: до SET_SIZE задач, контекстный блок никогда не разрывается. */
+/**
+ * Наборы темы: до SET_SIZE задач, контекстный блок никогда не разрывается и в наборе не больше одного блока.
+ * Раскладка «первый подходящий»: одиночные задачи добивают наборы, где для целого блока не хватило места,
+ * поэтому наборы не обрываются на 10–12 задачах.
+ */
 function sets(topic: string, items: BankItem[]): BankItem[][] {
-  const out: BankItem[][] = [];
-  let cur: BankItem[] = [];
+  const out: { items: BankItem[]; hasBlock: boolean }[] = [];
   for (const u of units(topic, items)) {
-    if (cur.length > 0 && cur.length + u.length > SET_SIZE) {
-      out.push(cur);
-      cur = [];
-    }
-    cur.push(...u);
+    const block = u.length > 1 || u[0]?.group !== undefined;
+    const target = out.find((s) => s.items.length + u.length <= SET_SIZE && !(block && s.hasBlock));
+    if (target) {
+      target.items.push(...u);
+      target.hasBlock ||= block;
+    } else out.push({ items: [...u], hasBlock: block });
   }
-  if (cur.length) out.push(cur);
-  return out;
+  return out.map((s) => s.items);
 }
 
 /**
@@ -138,5 +147,6 @@ export function resolveBankItem(it: BankItem, locale: Locale): ResolvedQuestion 
     ...(multi ? { multi: true } : {}),
     ...(side.context ? { context: side.context } : {}),
     ...(side.rows ? { rows: side.rows } : {}),
+    ...(it.figure ? { figure: it.figure } : {}),
   };
 }
