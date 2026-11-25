@@ -8,4 +8,6 @@
 4. Check the production commit and repeat the critical learner and teacher flows after deployment. Confirm saved answers survive reload and teacher reports stay class-scoped.
 5. If the release needs an app rollback, choose a verified deployment that is compatible with the current database. For a database recovery, check backups and practise a restore in an isolated environment before restoring any production data.
 
+Earlier hosted schema changes were applied through the SQL Editor. Check the actual hosted objects alongside the migration ledger before using a linked CLI push. Record a Management API migration's hosted version alongside the equivalent repository filenames so an operator can reconcile them without replaying SQL.
+
 Keep database dumps, credential values, and school records in private storage. Retain the release commit, check results, deployment identity, and restore evidence in the operator record.
