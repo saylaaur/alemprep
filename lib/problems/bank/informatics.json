@@ -1,5 +1,1671 @@
 [
  {
+  "id": "inf.c.py.split#001",
+  "template": "inf.c.py.split",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Что выведет программа?\n\n```python\na = \"Scroll Lock\"\nprint(a.split(\"o\"))\n```",
+   "options": [
+    "['Scr', 'll L', 'ck']",
+    "['Scr', 'oll L', 'ock']",
+    "['Scro', 'll Lo', 'ck']",
+    "['Scr', 'll', 'L', 'ck']"
+   ],
+   "correct": 0,
+   "solution": "`split(\"o\")` режет строку по каждой букве «o» и выбрасывает сами «o»."
+  },
+  "kk": {
+   "question": "Бағдарлама не шығарады?\n\n```python\na = \"Scroll Lock\"\nprint(a.split(\"o\"))\n```",
+   "options": [
+    "['Scr', 'll L', 'ck']",
+    "['Scr', 'oll L', 'ock']",
+    "['Scro', 'll Lo', 'ck']",
+    "['Scr', 'll', 'L', 'ck']"
+   ],
+   "correct": 0,
+   "solution": "`split(\"o\")` жолды әр «o» әрпі бойынша бөледі де, «o»-ларды алып тастайды."
+  }
+ },
+ {
+  "id": "inf.c.py.isupper#001",
+  "template": "inf.c.py.isupper",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Что выведет программа?\n\n```python\na = \"Red Hot Chili Peppers\"\nprint(a.isupper())\n```",
+   "options": [
+    "False",
+    "True",
+    "RED HOT CHILI PEPPERS",
+    "RHCP"
+   ],
+   "correct": 0,
+   "solution": "`isupper()` не меняет строку, а проверяет, все ли буквы заглавные. Здесь есть строчные — `False`. Перевод в заглавные — `upper()`."
+  },
+  "kk": {
+   "question": "Бағдарлама не шығарады?\n\n```python\na = \"Red Hot Chili Peppers\"\nprint(a.isupper())\n```",
+   "options": [
+    "False",
+    "True",
+    "RED HOT CHILI PEPPERS",
+    "RHCP"
+   ],
+   "correct": 0,
+   "solution": "`isupper()` жолды өзгертпейді, барлық әріп бас әріп пе — соны тексереді. Мұнда кіші әріптер бар — `False`. Бас әріпке айналдыру — `upper()`."
+  }
+ },
+ {
+  "id": "inf.c.py.nested-if#001",
+  "template": "inf.c.py.nested-if",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Что выведет программа?\n\n```python\na = 26\nif a % 2 == 0:\n    if a % 3 == 0:\n        print(\"A\")\n    else:\n        print(\"B\")\nelse:\n    print(\"C\")\n```",
+   "options": [
+    "B",
+    "A",
+    "C",
+    "BC"
+   ],
+   "correct": 0,
+   "solution": "26 чётное — заходим во внешний `if`; на 3 не делится — выполняется внутренний `else`."
+  },
+  "kk": {
+   "question": "Бағдарлама не шығарады?\n\n```python\na = 26\nif a % 2 == 0:\n    if a % 3 == 0:\n        print(\"A\")\n    else:\n        print(\"B\")\nelse:\n    print(\"C\")\n```",
+   "options": [
+    "B",
+    "A",
+    "C",
+    "BC"
+   ],
+   "correct": 0,
+   "solution": "26 — жұп сан, сыртқы `if`-ке кіреміз; 3-ке бөлінбейді — ішкі `else` орындалады."
+  }
+ },
+ {
+  "id": "inf.c.py.augmented#001",
+  "template": "inf.c.py.augmented",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Что выведет программа?\n\n```python\nx = 10\ny = x\nx = x + 3\nx += x + 2\nprint(x)\n```",
+   "options": [
+    "28",
+    "18",
+    "25",
+    "15"
+   ],
+   "correct": 0,
+   "solution": "$x = 13$, затем `x += x + 2` означает $x = 13 + (13 + 2) = 28$. Переменная `y` на результат не влияет."
+  },
+  "kk": {
+   "question": "Бағдарлама не шығарады?\n\n```python\nx = 10\ny = x\nx = x + 3\nx += x + 2\nprint(x)\n```",
+   "options": [
+    "28",
+    "18",
+    "25",
+    "15"
+   ],
+   "correct": 0,
+   "solution": "$x = 13$, сосын `x += x + 2` дегеніміз $x = 13 + (13 + 2) = 28$. `y` айнымалысы нәтижеге әсер етпейді."
+  }
+ },
+ {
+  "id": "inf.c.py.list-slice#001",
+  "template": "inf.c.py.list-slice",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Что выведет программа?\n\n```python\na = [5, 8, 1, 9, 4, 7]\nprint(a[1:4])\n```",
+   "options": [
+    "[8, 1, 9]",
+    "[5, 8, 1, 9]",
+    "[8, 1, 9, 4]",
+    "[5, 8, 1]"
+   ],
+   "correct": 0,
+   "solution": "Срез `[1:4]` берёт элементы с индексами 1, 2, 3; правая граница не входит. Индексы с нуля."
+  },
+  "kk": {
+   "question": "Бағдарлама не шығарады?\n\n```python\na = [5, 8, 1, 9, 4, 7]\nprint(a[1:4])\n```",
+   "options": [
+    "[8, 1, 9]",
+    "[5, 8, 1, 9]",
+    "[8, 1, 9, 4]",
+    "[5, 8, 1]"
+   ],
+   "correct": 0,
+   "solution": "`[1:4]` қимасы 1, 2, 3 индексті элементтерді алады; оң шекара кірмейді. Индекстер нөлден басталады."
+  }
+ },
+ {
+  "id": "inf.c.py.matrix-diag#001",
+  "template": "inf.c.py.matrix-diag",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "hard",
+  "kind": "single",
+  "ru": {
+   "question": "Что выведет программа?\n\n```python\na = [\n    [9, 2, 3],\n    [4, 1, 4],\n    [7, 2, 5]\n]\nn = len(a)\ns = 0\nfor i in range(n):\n    s += a[i][n - 1 - i]\nprint(s)\n```",
+   "options": [
+    "11",
+    "15",
+    "13",
+    "20"
+   ],
+   "correct": 0,
+   "solution": "`a[i][n - 1 - i]` — побочная диагональ: $a[0][2] + a[1][1] + a[2][0] = 3 + 1 + 7 = 11$."
+  },
+  "kk": {
+   "question": "Бағдарлама не шығарады?\n\n```python\na = [\n    [9, 2, 3],\n    [4, 1, 4],\n    [7, 2, 5]\n]\nn = len(a)\ns = 0\nfor i in range(n):\n    s += a[i][n - 1 - i]\nprint(s)\n```",
+   "options": [
+    "11",
+    "15",
+    "13",
+    "20"
+   ],
+   "correct": 0,
+   "solution": "`a[i][n - 1 - i]` — қосалқы диагональ: $a[0][2] + a[1][1] + a[2][0] = 3 + 1 + 7 = 11$."
+  }
+ },
+ {
+  "id": "inf.c.py.list-append#001",
+  "template": "inf.c.py.list-append",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Что выведет программа?\n\n```python\na = [1, 2, 3]\nb = a\nb.append(4)\nprint(len(a))\n```",
+   "options": [
+    "4",
+    "3",
+    "1",
+    "7"
+   ],
+   "correct": 0,
+   "solution": "`b = a` не копирует список: обе переменные ссылаются на один и тот же список, поэтому в `a` тоже 4 элемента."
+  },
+  "kk": {
+   "question": "Бағдарлама не шығарады?\n\n```python\na = [1, 2, 3]\nb = a\nb.append(4)\nprint(len(a))\n```",
+   "options": [
+    "4",
+    "3",
+    "1",
+    "7"
+   ],
+   "correct": 0,
+   "solution": "`b = a` тізімді көшірмейді: екі айнымалы да бір тізімге сілтейді, сондықтан `a`-да да 4 элемент."
+  }
+ },
+ {
+  "id": "inf.c.py.str-mult#001",
+  "template": "inf.c.py.str-mult",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Что выведет программа?\n\n```python\nprint(\"ab\" * 3 + \"c\")\n```",
+   "options": [
+    "abababc",
+    "abcabcabc",
+    "ab3c",
+    "ababc"
+   ],
+   "correct": 0,
+   "solution": "Умножение строки на число повторяет её: `\"ab\" * 3` → `ababab`, затем приклеиваем `c`."
+  },
+  "kk": {
+   "question": "Бағдарлама не шығарады?\n\n```python\nprint(\"ab\" * 3 + \"c\")\n```",
+   "options": [
+    "abababc",
+    "abcabcabc",
+    "ab3c",
+    "ababc"
+   ],
+   "correct": 0,
+   "solution": "Жолды санға көбейту оны қайталайды: `\"ab\" * 3` → `ababab`, сосын `c` жалғанады."
+  }
+ },
+ {
+  "id": "inf.c.py.error-name#001",
+  "template": "inf.c.py.error-name",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Какую ошибку выдаст программа?\n\n```python\na = 0\nprint(a + b)\n```",
+   "options": [
+    "NameError",
+    "SyntaxError",
+    "TypeError",
+    "ValueError"
+   ],
+   "correct": 0,
+   "solution": "Переменная `b` нигде не создана — `NameError`. `TypeError` — несовместимые типы, `ValueError` — неверное значение, например `int(\"abc\")`."
+  },
+  "kk": {
+   "question": "Бағдарлама қандай қате береді?\n\n```python\na = 0\nprint(a + b)\n```",
+   "options": [
+    "NameError",
+    "SyntaxError",
+    "TypeError",
+    "ValueError"
+   ],
+   "correct": 0,
+   "solution": "`b` айнымалысы еш жерде жасалмаған — `NameError`. `TypeError` — үйлеспейтін типтер, `ValueError` — қате мән, мысалы `int(\"abc\")`."
+  }
+ },
+ {
+  "id": "inf.c.py.error-type#001",
+  "template": "inf.c.py.error-type",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Какую ошибку выдаст программа?\n\n```python\nx = \"5\" + 3\n```",
+   "options": [
+    "TypeError",
+    "NameError",
+    "SyntaxError",
+    "ZeroDivisionError"
+   ],
+   "correct": 0,
+   "solution": "Строку и число складывать нельзя — `TypeError`. Нужно `int(\"5\") + 3` или `\"5\" + str(3)`."
+  },
+  "kk": {
+   "question": "Бағдарлама қандай қате береді?\n\n```python\nx = \"5\" + 3\n```",
+   "options": [
+    "TypeError",
+    "NameError",
+    "SyntaxError",
+    "ZeroDivisionError"
+   ],
+   "correct": 0,
+   "solution": "Жол мен санды қосуға болмайды — `TypeError`. `int(\"5\") + 3` немесе `\"5\" + str(3)` керек."
+  }
+ },
+ {
+  "id": "inf.c.py.input-type#001",
+  "template": "inf.c.py.input-type",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Какой тип данных возвращает функция `input()`?",
+   "options": [
+    "str",
+    "int",
+    "float",
+    "bool"
+   ],
+   "correct": 0,
+   "solution": "`input()` всегда возвращает строку. Для числа пишут `int(input())`."
+  },
+  "kk": {
+   "question": "`input()` функциясы қандай деректер типін қайтарады?",
+   "options": [
+    "str",
+    "int",
+    "float",
+    "bool"
+   ],
+   "correct": 0,
+   "solution": "`input()` әрқашан жол қайтарады. Сан үшін `int(input())` жазады."
+  }
+ },
+ {
+  "id": "inf.c.py.while-block#001",
+  "template": "inf.c.py.while-block",
+  "subject": "informatics",
+  "topic": "python-programming",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Блок-схема: «Условие» → если истина, «Инструкции тела цикла» и возврат к условию; если ложь — выход. Это",
+   "options": [
+    "цикл while",
+    "цикл for",
+    "полное ветвление",
+    "неполное ветвление"
+   ],
+   "correct": 0,
+   "solution": "Условие проверяется перед каждым повтором, число повторов заранее не известно — это `while`. В ветвлении возврата к условию нет."
+  },
+  "kk": {
+   "question": "Блок-сұлба: «Шарт» → ақиқат болса, «Цикл денесінің нұсқаулары» және шартқа қайту; жалған болса — шығу. Бұл",
+   "options": [
+    "while циклі",
+    "for циклі",
+    "толық тармақталу",
+    "толымсыз тармақталу"
+   ],
+   "correct": 0,
+   "solution": "Шарт әр қайталаудың алдында тексеріледі, қайталау саны алдын ала белгісіз — бұл `while`. Тармақталуда шартқа қайту жоқ."
+  }
+ },
+ {
+  "id": "inf.c.alg.euclid#001",
+  "template": "inf.c.alg.euclid",
+  "subject": "informatics",
+  "topic": "algorithms-and-programs",
+  "level": "hard",
+  "kind": "single",
+  "ru": {
+   "question": "Какая функция правильно находит НОД алгоритмом Евклида с рекурсией?",
+   "options": [
+    "```python\ndef F(a, b):\n    if b == 0:\n        return a\n    return F(b, a % b)\n```",
+    "```python\ndef F(a, b):\n    if b > 0:\n        return a\n    return F(b, a % b)\n```",
+    "```python\ndef F(a, b):\n    if b == 0:\n        return b\n    return F(b, a % b)\n```",
+    "```python\ndef F(a, b):\n    if b == 0:\n        return a\n    return F(a, a % b)\n```"
+   ],
+   "correct": 0,
+   "solution": "НОД$(a, b)$ = НОД$(b, a \\% b)$, база рекурсии — $b = 0$, тогда ответ $a$."
+  },
+  "kk": {
+   "question": "Қай функция Евклид алгоритмімен рекурсия арқылы ЕҮОБ-ты дұрыс табады?",
+   "options": [
+    "```python\ndef F(a, b):\n    if b == 0:\n        return a\n    return F(b, a % b)\n```",
+    "```python\ndef F(a, b):\n    if b > 0:\n        return a\n    return F(b, a % b)\n```",
+    "```python\ndef F(a, b):\n    if b == 0:\n        return b\n    return F(b, a % b)\n```",
+    "```python\ndef F(a, b):\n    if b == 0:\n        return a\n    return F(a, a % b)\n```"
+   ],
+   "correct": 0,
+   "solution": "ЕҮОБ$(a, b)$ = ЕҮОБ$(b, a \\% b)$, рекурсия негізі — $b = 0$, сонда жауап $a$."
+  }
+ },
+ {
+  "id": "inf.c.alg.recursion-sum#001",
+  "template": "inf.c.alg.recursion-sum",
+  "subject": "informatics",
+  "topic": "algorithms-and-programs",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Что выведет программа?\n\n```python\ndef f(n):\n    if n == 0:\n        return 0\n    return n + f(n - 1)\nprint(f(5))\n```",
+   "options": [
+    "15",
+    "5",
+    "10",
+    "120"
+   ],
+   "correct": 0,
+   "solution": "$f(5) = 5 + 4 + 3 + 2 + 1 + 0 = 15$. 120 было бы при умножении (факториал)."
+  },
+  "kk": {
+   "question": "Бағдарлама не шығарады?\n\n```python\ndef f(n):\n    if n == 0:\n        return 0\n    return n + f(n - 1)\nprint(f(5))\n```",
+   "options": [
+    "15",
+    "5",
+    "10",
+    "120"
+   ],
+   "correct": 0,
+   "solution": "$f(5) = 5 + 4 + 3 + 2 + 1 + 0 = 15$. Көбейтсе (факториал) 120 болар еді."
+  }
+ },
+ {
+  "id": "inf.c.alg.string-reverse#001",
+  "template": "inf.c.alg.string-reverse",
+  "subject": "informatics",
+  "topic": "algorithms-and-programs",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Что выведет программа?\n\n```python\ns = \"ALEM\"\nprint(s[::-1])\n```",
+   "options": [
+    "MELA",
+    "ALEM",
+    "AMEL",
+    "M"
+   ],
+   "correct": 0,
+   "solution": "Срез `[::-1]` идёт с шагом $-1$ — строка задом наперёд."
+  },
+  "kk": {
+   "question": "Бағдарлама не шығарады?\n\n```python\ns = \"ALEM\"\nprint(s[::-1])\n```",
+   "options": [
+    "MELA",
+    "ALEM",
+    "AMEL",
+    "M"
+   ],
+   "correct": 0,
+   "solution": "`[::-1]` қимасы $-1$ қадаммен жүреді — жол кері ретпен."
+  }
+ },
+ {
+  "id": "inf.c.alg.count#001",
+  "template": "inf.c.alg.count",
+  "subject": "informatics",
+  "topic": "algorithms-and-programs",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Что выведет программа?\n\n```python\ns = \"информатика\"\nprint(s.count(\"а\"))\n```",
+   "options": [
+    "2",
+    "1",
+    "3",
+    "0"
+   ],
+   "correct": 0,
+   "solution": "`count` считает вхождения подстроки: в слове «информатика» две буквы «а»."
+  },
+  "kk": {
+   "question": "Бағдарлама не шығарады?\n\n```python\ns = \"информатика\"\nprint(s.count(\"а\"))\n```",
+   "options": [
+    "2",
+    "1",
+    "3",
+    "0"
+   ],
+   "correct": 0,
+   "solution": "`count` ішкі жолдың кездесу санын санайды: «информатика» сөзінде екі «а» әрпі бар."
+  }
+ },
+ {
+  "id": "inf.c.alg.binary-search#001",
+  "template": "inf.c.alg.binary-search",
+  "subject": "informatics",
+  "topic": "algorithms-and-programs",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Бинарный (двоичный) поиск можно применять, только если массив",
+   "options": [
+    "отсортирован",
+    "содержит только чётные числа",
+    "содержит не более 100 элементов",
+    "не содержит повторов"
+   ],
+   "correct": 0,
+   "solution": "Двоичный поиск каждый раз отбрасывает половину, сравнивая с серединой — это работает только в упорядоченном массиве. Сложность $O(\\log n)$."
+  },
+  "kk": {
+   "question": "Бинарлық (екілік) іздеуді тек массив қандай болғанда қолдануға болады?",
+   "options": [
+    "сұрыпталған",
+    "тек жұп сандардан тұрса",
+    "100 элементтен аспаса",
+    "қайталанбаса"
+   ],
+   "correct": 0,
+   "solution": "Екілік іздеу әр жолы ортасымен салыстырып, жартысын тастайды — бұл тек реттелген массивте жұмыс істейді. Күрделілігі $O(\\log n)$."
+  }
+ },
+ {
+  "id": "inf.c.alg.bubble#001",
+  "template": "inf.c.alg.bubble",
+  "subject": "informatics",
+  "topic": "algorithms-and-programs",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Сортировка пузырьком последовательно",
+   "options": [
+    "сравнивает соседние элементы и меняет их местами, если они стоят неправильно",
+    "находит минимум и ставит его в начало",
+    "делит массив пополам и сортирует части",
+    "вставляет каждый элемент в отсортированную часть"
+   ],
+   "correct": 0,
+   "solution": "После каждого прохода самый большой элемент «всплывает» в конец. Поиск минимума — сортировка выбором, вставка — сортировка вставками."
+  },
+  "kk": {
+   "question": "Көпіршікті сұрыптау",
+   "options": [
+    "көрші элементтерді салыстырып, дұрыс тұрмаса орындарын ауыстырады",
+    "минимумды тауып, басына қояды",
+    "массивті екіге бөліп, бөліктерді сұрыптайды",
+    "әр элементті сұрыпталған бөлікке кірістіреді"
+   ],
+   "correct": 0,
+   "solution": "Әр өтуден кейін ең үлкен элемент соңына «қалқып шығады». Минимумды іздеу — таңдау арқылы сұрыптау, кірістіру — кірістіру арқылы сұрыптау."
+  }
+ },
+ {
+  "id": "inf.c.alg.graph-terms#001",
+  "template": "inf.c.alg.graph-terms",
+  "subject": "informatics",
+  "topic": "algorithms-and-programs",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "В графе вершины соединены",
+   "options": [
+    "рёбрами",
+    "узлами",
+    "листьями",
+    "корнями"
+   ],
+   "correct": 0,
+   "solution": "Граф = вершины + рёбра. Если рёбра имеют направление — граф ориентированный, если есть веса — взвешенный."
+  },
+  "kk": {
+   "question": "Графта төбелер немен қосылған?",
+   "options": [
+    "қабырғалармен",
+    "түйіндермен",
+    "жапырақтармен",
+    "тамырлармен"
+   ],
+   "correct": 0,
+   "solution": "Граф = төбелер + қабырғалар. Қабырғалардың бағыты болса — бағытталған граф, салмағы болса — салмақталған."
+  }
+ },
+ {
+  "id": "inf.c.alg.file-mode#001",
+  "template": "inf.c.alg.file-mode",
+  "subject": "informatics",
+  "topic": "algorithms-and-programs",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Каким режимом открыть файл, чтобы дописать строки в его конец, не стирая содержимое?",
+   "options": [
+    "'a'",
+    "'w'",
+    "'r'",
+    "'x'"
+   ],
+   "correct": 0,
+   "solution": "`'a'` — append, дозапись. `'w'` перезаписывает файл с нуля, `'r'` — только чтение."
+  },
+  "kk": {
+   "question": "Ішіндегісін өшірмей, файлдың соңына жол қосып жазу үшін оны қай режимде ашады?",
+   "options": [
+    "'a'",
+    "'w'",
+    "'r'",
+    "'x'"
+   ],
+   "correct": 0,
+   "solution": "`'a'` — append, соңына жазу. `'w'` файлды басынан қайта жазады, `'r'` — тек оқу."
+  }
+ },
+ {
+  "id": "inf.c.log.implication#001",
+  "template": "inf.c.log.implication",
+  "subject": "informatics",
+  "topic": "logic-foundations",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Импликация $A \\to B$ ложна только когда",
+   "options": [
+    "$A = 1,\\ B = 0$",
+    "$A = 0,\\ B = 1$",
+    "$A = 0,\\ B = 0$",
+    "$A = 1,\\ B = 1$"
+   ],
+   "correct": 0,
+   "solution": "«Из истины ложь не следует». Во всех остальных случаях импликация истинна."
+  },
+  "kk": {
+   "question": "$A \\to B$ импликациясы тек қашан жалған?",
+   "options": [
+    "$A = 1,\\ B = 0$",
+    "$A = 0,\\ B = 1$",
+    "$A = 0,\\ B = 0$",
+    "$A = 1,\\ B = 1$"
+   ],
+   "correct": 0,
+   "solution": "«Ақиқаттан жалған шықпайды». Қалған барлық жағдайда импликация ақиқат."
+  }
+ },
+ {
+  "id": "inf.c.log.de-morgan#001",
+  "template": "inf.c.log.de-morgan",
+  "subject": "informatics",
+  "topic": "logic-foundations",
+  "level": "hard",
+  "kind": "single",
+  "ru": {
+   "question": "Выражение $\\lnot(A \\lor B)$ равносильно",
+   "options": [
+    "$\\lnot A \\land \\lnot B$",
+    "$\\lnot A \\lor \\lnot B$",
+    "$A \\land B$",
+    "$\\lnot A \\lor B$"
+   ],
+   "correct": 0,
+   "solution": "Закон де Моргана: отрицание дизъюнкции = конъюнкция отрицаний."
+  },
+  "kk": {
+   "question": "$\\lnot(A \\lor B)$ өрнегі неге мәндес?",
+   "options": [
+    "$\\lnot A \\land \\lnot B$",
+    "$\\lnot A \\lor \\lnot B$",
+    "$A \\land B$",
+    "$\\lnot A \\lor B$"
+   ],
+   "correct": 0,
+   "solution": "Де Морган заңы: дизъюнкцияның терістеуі = терістеулердің конъюнкциясы."
+  }
+ },
+ {
+  "id": "inf.c.log.gates#001",
+  "template": "inf.c.log.gates",
+  "subject": "informatics",
+  "topic": "logic-foundations",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Логический элемент, выход которого равен 1 только когда оба входа равны 1, — это",
+   "options": [
+    "И (AND)",
+    "ИЛИ (OR)",
+    "НЕ (NOT)",
+    "исключающее ИЛИ (XOR)"
+   ],
+   "correct": 0,
+   "solution": "Конъюнктор (И). ИЛИ даёт 1, если хотя бы один вход 1; XOR — если входы разные."
+  },
+  "kk": {
+   "question": "Шығысы тек екі кірісі де 1 болғанда 1-ге тең логикалық элемент —",
+   "options": [
+    "И (AND)",
+    "ИЛИ (OR)",
+    "НЕ (NOT)",
+    "исключающее ИЛИ (XOR)"
+   ],
+   "correct": 0,
+   "solution": "Конъюнктор (ЖӘНЕ). НЕМЕСЕ кемінде бір кіріс 1 болса 1 береді; XOR — кірістер әртүрлі болса."
+  }
+ },
+ {
+  "id": "inf.c.log.priority#001",
+  "template": "inf.c.log.priority",
+  "subject": "informatics",
+  "topic": "logic-foundations",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Какая операция выполняется первой в выражении $A \\lor B \\land \\lnot C$?",
+   "options": [
+    "$\\lnot C$",
+    "$A \\lor B$",
+    "$B \\land \\lnot C$",
+    "по порядку слева направо"
+   ],
+   "correct": 0,
+   "solution": "Порядок: отрицание, конъюнкция, дизъюнкция. Сначала $\\lnot C$, затем $B \\land \\lnot C$, затем $\\lor$."
+  },
+  "kk": {
+   "question": "$A \\lor B \\land \\lnot C$ өрнегінде қай амал бірінші орындалады?",
+   "options": [
+    "$\\lnot C$",
+    "$A \\lor B$",
+    "$B \\land \\lnot C$",
+    "по порядку слева направо"
+   ],
+   "correct": 0,
+   "solution": "Реті: терістеу, конъюнкция, дизъюнкция. Алдымен $\\lnot C$, сосын $B \\land \\lnot C$, сосын $\\lor$."
+  }
+ },
+ {
+  "id": "inf.c.rep.kbyte#001",
+  "template": "inf.c.rep.kbyte",
+  "subject": "informatics",
+  "topic": "information-representation",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "1 Кбайт равен",
+   "options": [
+    "1024 байт",
+    "1000 байт",
+    "1024 бит",
+    "8 бит"
+   ],
+   "correct": 0,
+   "solution": "$1$ Кбайт $= 2^{10}$ байт $= 1024$ байт. 8 бит — это 1 байт."
+  },
+  "kk": {
+   "question": "1 Кбайт неге тең?",
+   "options": [
+    "1024 байт",
+    "1000 байт",
+    "1024 бит",
+    "8 бит"
+   ],
+   "correct": 0,
+   "solution": "$1$ Кбайт $= 2^{10}$ байт $= 1024$ байт. 8 бит — бұл 1 байт."
+  }
+ },
+ {
+  "id": "inf.c.rep.unicode#001",
+  "template": "inf.c.rep.unicode",
+  "subject": "informatics",
+  "topic": "information-representation",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Кодировка, содержащая символы почти всех языков мира, включая казахский алфавит",
+   "options": [
+    "Unicode",
+    "ASCII",
+    "KOI8-R",
+    "CP866"
+   ],
+   "correct": 0,
+   "solution": "ASCII — 128 символов (латиница), KOI8-R и CP866 — однобайтные кириллические таблицы. Буквы ә, ғ, қ, ң, ө, ұ, ү, һ, і есть в Unicode."
+  },
+  "kk": {
+   "question": "Әлемнің барлық дерлік тілдерінің, соның ішінде қазақ әліпбиінің символдарын қамтитын кодтау",
+   "options": [
+    "Unicode",
+    "ASCII",
+    "KOI8-R",
+    "CP866"
+   ],
+   "correct": 0,
+   "solution": "ASCII — 128 символ (латын), KOI8-R және CP866 — бір байтты кирилл кестелері. ә, ғ, қ, ң, ө, ұ, ү, һ, і әріптері Unicode-та бар."
+  }
+ },
+ {
+  "id": "inf.c.rep.vector-raster#001",
+  "template": "inf.c.rep.vector-raster",
+  "subject": "informatics",
+  "topic": "information-representation",
+  "level": "medium",
+  "kind": "multi",
+  "ru": {
+   "question": "Какие форматы файлов хранят векторную графику? Выберите все верные.",
+   "options": [
+    "SVG",
+    "CDR",
+    "JPG",
+    "PNG",
+    "BMP",
+    "GIF"
+   ],
+   "correct": 3,
+   "solution": "SVG и CDR (CorelDRAW) описывают фигуры формулами. JPG, PNG, BMP, GIF — растровые, хранят пиксели."
+  },
+  "kk": {
+   "question": "Қай файл форматтары векторлық графиканы сақтайды? Барлық дұрысын таңдаңыз.",
+   "options": [
+    "SVG",
+    "CDR",
+    "JPG",
+    "PNG",
+    "BMP",
+    "GIF"
+   ],
+   "correct": 3,
+   "solution": "SVG және CDR (CorelDRAW) фигураларды формулалармен сипаттайды. JPG, PNG, BMP, GIF — растрлық, пиксельдерді сақтайды."
+  }
+ },
+ {
+  "id": "inf.c.rep.sound#001",
+  "template": "inf.c.rep.sound",
+  "subject": "informatics",
+  "topic": "information-representation",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Объём оцифрованного звука НЕ зависит от",
+   "options": [
+    "громкости звука",
+    "частоты дискретизации",
+    "глубины кодирования",
+    "длительности записи"
+   ],
+   "correct": 0,
+   "solution": "$I = \\nu \\cdot i \\cdot t \\cdot k$ (частота, бит на отсчёт, время, каналы). Громкость меняет значения отсчётов, но не их число."
+  },
+  "kk": {
+   "question": "Цифрланған дыбыстың көлемі неге тәуелді ЕМЕС?",
+   "options": [
+    "дыбыстың қаттылығына",
+    "дискреттеу жиілігіне",
+    "кодтау тереңдігіне",
+    "жазба ұзақтығына"
+   ],
+   "correct": 0,
+   "solution": "$I = \\nu \\cdot i \\cdot t \\cdot k$ (жиілік, бір есептегі бит, уақыт, арналар). Қаттылық есептердің мәнін өзгертеді, санын емес."
+  }
+ },
+ {
+  "id": "inf.c.num.hex-digits#001",
+  "template": "inf.c.num.hex-digits",
+  "subject": "informatics",
+  "topic": "number-systems",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Какая цифра есть в шестнадцатеричной системе, но отсутствует в десятичной?",
+   "options": [
+    "F",
+    "9",
+    "0",
+    "G"
+   ],
+   "correct": 0,
+   "solution": "Цифры 0–9 и A–F, где $F = 15$. Буквы G в шестнадцатеричной системе нет."
+  },
+  "kk": {
+   "question": "Он алтылық жүйеде бар, бірақ ондықта жоқ цифр қайсы?",
+   "options": [
+    "F",
+    "9",
+    "0",
+    "G"
+   ],
+   "correct": 0,
+   "solution": "0–9 цифрлары және A–F, мұнда $F = 15$. Он алтылық жүйеде G әрпі жоқ."
+  }
+ },
+ {
+  "id": "inf.c.num.even-binary#001",
+  "template": "inf.c.num.even-binary",
+  "subject": "informatics",
+  "topic": "number-systems",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Двоичная запись чётного числа всегда оканчивается на",
+   "options": [
+    "0",
+    "1",
+    "10",
+    "11"
+   ],
+   "correct": 0,
+   "solution": "Последний двоичный разряд — остаток от деления на 2; у чётного он 0."
+  },
+  "kk": {
+   "question": "Жұп санның екілік жазуы әрқашан немен аяқталады?",
+   "options": [
+    "0",
+    "1",
+    "10",
+    "11"
+   ],
+   "correct": 0,
+   "solution": "Соңғы екілік разряд — 2-ге бөлгендегі қалдық; жұп санда ол 0."
+  }
+ },
+ {
+  "id": "inf.c.num.octal-8#001",
+  "template": "inf.c.num.octal-8",
+  "subject": "informatics",
+  "topic": "number-systems",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Какая запись НЕ может быть числом в восьмеричной системе?",
+   "options": [
+    "158",
+    "157",
+    "777",
+    "100"
+   ],
+   "correct": 0,
+   "solution": "В восьмеричной системе цифры 0–7; цифры 8 нет."
+  },
+  "kk": {
+   "question": "Қай жазу сегіздік жүйедегі сан бола АЛМАЙДЫ?",
+   "options": [
+    "158",
+    "157",
+    "777",
+    "100"
+   ],
+   "correct": 0,
+   "solution": "Сегіздік жүйеде 0–7 цифрлары бар; 8 цифры жоқ."
+  }
+ },
+ {
+  "id": "inf.c.dev.cpu-parts#001",
+  "template": "inf.c.dev.cpu-parts",
+  "subject": "informatics",
+  "topic": "computer-devices",
+  "level": "medium",
+  "kind": "multi",
+  "ru": {
+   "question": "Из каких основных частей состоит процессор? Выберите все верные.",
+   "options": [
+    "арифметико-логическое устройство",
+    "устройство управления",
+    "жёсткий диск",
+    "видеокарта",
+    "блок питания",
+    "оперативная память"
+   ],
+   "correct": 3,
+   "solution": "АЛУ выполняет вычисления, устройство управления — команды программы. Плюс регистры и кэш. Память и диск — отдельные устройства."
+  },
+  "kk": {
+   "question": "Процессор қандай негізгі бөліктерден тұрады? Барлық дұрысын таңдаңыз.",
+   "options": [
+    "арифметикалық-логикалық құрылғы",
+    "басқару құрылғысы",
+    "қатқыл диск",
+    "бейнекарта",
+    "қуат блогы",
+    "жедел жад"
+   ],
+   "correct": 3,
+   "solution": "АЛҚ есептеулерді, басқару құрылғысы — бағдарлама командаларын орындайды. Сонымен қатар регистрлер мен кэш. Жад пен диск — бөлек құрылғылар."
+  }
+ },
+ {
+  "id": "inf.c.dev.volatile#001",
+  "template": "inf.c.dev.volatile",
+  "subject": "informatics",
+  "topic": "computer-devices",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Какая память теряет данные при выключении питания?",
+   "options": [
+    "оперативная память (RAM)",
+    "SSD-накопитель",
+    "жёсткий диск (HDD)",
+    "флеш-накопитель"
+   ],
+   "correct": 0,
+   "solution": "RAM энергозависима; SSD, HDD и флешка хранят данные без питания."
+  },
+  "kk": {
+   "question": "Қай жад қуат өшкенде деректерді жоғалтады?",
+   "options": [
+    "жедел жад (RAM)",
+    "SSD-жинақтағыш",
+    "қатқыл диск (HDD)",
+    "флеш-жинақтағыш"
+   ],
+   "correct": 0,
+   "solution": "RAM энергияға тәуелді; SSD, HDD және флешка деректерді қуатсыз сақтайды."
+  }
+ },
+ {
+  "id": "inf.c.dev.output#001",
+  "template": "inf.c.dev.output",
+  "subject": "informatics",
+  "topic": "computer-devices",
+  "level": "easy",
+  "kind": "multi",
+  "ru": {
+   "question": "Какие устройства являются устройствами вывода? Выберите все верные.",
+   "options": [
+    "монитор",
+    "принтер",
+    "колонки",
+    "клавиатура",
+    "сканер",
+    "микрофон"
+   ],
+   "correct": 7,
+   "solution": "Вывод — из компьютера к человеку: изображение, печать, звук. Клавиатура, сканер и микрофон — ввод."
+  },
+  "kk": {
+   "question": "Қай құрылғылар шығару құрылғылары? Барлық дұрысын таңдаңыз.",
+   "options": [
+    "монитор",
+    "принтер",
+    "колонкалар",
+    "пернетақта",
+    "сканер",
+    "микрофон"
+   ],
+   "correct": 7,
+   "solution": "Шығару — компьютерден адамға: кескін, басып шығару, дыбыс. Пернетақта, сканер және микрофон — енгізу."
+  }
+ },
+ {
+  "id": "inf.c.net.ip-valid#001",
+  "template": "inf.c.net.ip-valid",
+  "subject": "informatics",
+  "topic": "networks-and-security",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Какая запись является правильным IP-адресом (IPv4)?",
+   "options": [
+    "192.168.0.255",
+    "192.168.0.256",
+    "10.0.0",
+    "172.16.300.1"
+   ],
+   "correct": 0,
+   "solution": "IPv4 — четыре числа от 0 до 255 через точку. 256 и 300 больше допустимого, в третьем варианте только три числа."
+  },
+  "kk": {
+   "question": "Қай жазу дұрыс IP-адрес (IPv4) болып табылады?",
+   "options": [
+    "192.168.0.255",
+    "192.168.0.256",
+    "10.0.0",
+    "172.16.300.1"
+   ],
+   "correct": 0,
+   "solution": "IPv4 — нүкте арқылы 0-ден 255-ке дейінгі төрт сан. 256 мен 300 рұқсат етілгеннен үлкен, үшінші нұсқада үш сан ғана."
+  }
+ },
+ {
+  "id": "inf.c.net.topology-star#001",
+  "template": "inf.c.net.topology-star",
+  "subject": "informatics",
+  "topic": "networks-and-security",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Топология сети, в которой все компьютеры подключены к одному центральному узлу (коммутатору), —",
+   "options": [
+    "звезда",
+    "шина",
+    "кольцо",
+    "ячеистая"
+   ],
+   "correct": 0,
+   "solution": "«Звезда»: при обрыве одного кабеля работает остальная сеть, но всё зависит от центра. «Шина» — общий кабель, «кольцо» — замкнутая цепь."
+  },
+  "kk": {
+   "question": "Барлық компьютерлер бір орталық түйінге (коммутаторға) қосылған желі топологиясы —",
+   "options": [
+    "жұлдыз",
+    "шина",
+    "сақина",
+    "ұялы"
+   ],
+   "correct": 0,
+   "solution": "«Жұлдыз»: бір кабель үзілсе, қалған желі жұмыс істейді, бірақ бәрі орталыққа тәуелді. «Шина» — ортақ кабель, «сақина» — тұйық тізбек."
+  }
+ },
+ {
+  "id": "inf.c.net.dns#001",
+  "template": "inf.c.net.dns",
+  "subject": "informatics",
+  "topic": "networks-and-security",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Служба DNS",
+   "options": [
+    "переводит доменное имя в IP-адрес",
+    "шифрует передаваемые данные",
+    "раздаёт электронную почту",
+    "защищает от вирусов"
+   ],
+   "correct": 0,
+   "solution": "Пользователь вводит alemprep.kz, а DNS сообщает компьютеру IP-адрес сервера."
+  },
+  "kk": {
+   "question": "DNS қызметі",
+   "options": [
+    "домендік атауды IP-адреске аударады",
+    "берілетін деректерді шифрлайды",
+    "электрондық поштаны таратады",
+    "вирустардан қорғайды"
+   ],
+   "correct": 0,
+   "solution": "Пайдаланушы alemprep.kz енгізеді, ал DNS компьютерге сервердің IP-адресін хабарлайды."
+  }
+ },
+ {
+  "id": "inf.c.net.password#001",
+  "template": "inf.c.net.password",
+  "subject": "informatics",
+  "topic": "networks-and-security",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Какой пароль самый надёжный?",
+   "options": [
+    "kT7#qL2!vR9z",
+    "12345678",
+    "qwerty",
+    "alemprep2026"
+   ],
+   "correct": 0,
+   "solution": "Надёжный пароль — длинный, со строчными и заглавными буквами, цифрами и символами, без слов и дат."
+  },
+  "kk": {
+   "question": "Қай құпиясөз ең сенімді?",
+   "options": [
+    "kT7#qL2!vR9z",
+    "12345678",
+    "qwerty",
+    "alemprep2026"
+   ],
+   "correct": 0,
+   "solution": "Сенімді құпиясөз — ұзын, кіші және бас әріптер, цифрлар мен символдар бар, сөздер мен күндерсіз."
+  }
+ },
+ {
+  "id": "inf.c.sw.system#001",
+  "template": "inf.c.sw.system",
+  "subject": "informatics",
+  "topic": "hardware-and-software",
+  "level": "medium",
+  "kind": "multi",
+  "ru": {
+   "question": "Что относится к системному программному обеспечению? Выберите все верные.",
+   "options": [
+    "операционная система",
+    "драйверы устройств",
+    "текстовый редактор",
+    "браузер",
+    "графический редактор",
+    "компьютерная игра"
+   ],
+   "correct": 3,
+   "solution": "Системное ПО управляет компьютером: ОС, драйверы, утилиты. Редакторы, браузеры и игры — прикладные программы."
+  },
+  "kk": {
+   "question": "Жүйелік бағдарламалық қамтамасыз етуге не жатады? Барлық дұрысын таңдаңыз.",
+   "options": [
+    "операциялық жүйе",
+    "құрылғы драйверлері",
+    "мәтіндік редактор",
+    "браузер",
+    "графикалық редактор",
+    "компьютерлік ойын"
+   ],
+   "correct": 3,
+   "solution": "Жүйелік БҚ компьютерді басқарады: ОЖ, драйверлер, утилиталар. Редакторлар, браузерлер мен ойындар — қолданбалы бағдарламалар."
+  }
+ },
+ {
+  "id": "inf.c.sw.antivirus#001",
+  "template": "inf.c.sw.antivirus",
+  "subject": "informatics",
+  "topic": "hardware-and-software",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Программа-архиватор нужна, чтобы",
+   "options": [
+    "сжимать файлы и объединять их в архив",
+    "удалять вирусы",
+    "набирать тексты",
+    "управлять принтером"
+   ],
+   "correct": 0,
+   "solution": "Архиваторы (WinRAR, 7-Zip) уменьшают объём файлов: ZIP, RAR, 7z."
+  },
+  "kk": {
+   "question": "Мұрағаттауыш бағдарлама не үшін керек?",
+   "options": [
+    "файлдарды қысып, мұрағатқа біріктіру үшін",
+    "вирустарды жою үшін",
+    "мәтін теру үшін",
+    "принтерді басқару үшін"
+   ],
+   "correct": 0,
+   "solution": "Мұрағаттауыштар (WinRAR, 7-Zip) файлдардың көлемін азайтады: ZIP, RAR, 7z."
+  }
+ },
+ {
+  "id": "inf.c.db.price-type#001",
+  "template": "inf.c.db.price-type",
+  "subject": "informatics",
+  "topic": "relational-databases",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "В таблице «Книжный магазин» поле Price содержит значения 1500, 2000. Какой тип данных подходит для этого поля?",
+   "options": [
+    "INT",
+    "DATE",
+    "CHAR",
+    "BOOLEAN"
+   ],
+   "correct": 0,
+   "solution": "Целые числа без дробной части — INT. Даты — DATE, текст — CHAR/VARCHAR. Для цен с копейками — DECIMAL или FLOAT."
+  },
+  "kk": {
+   "question": "«Кітап дүкені» кестесінде Price өрісі 1500, 2000 мәндерін қамтиды. Бұл өріске қай деректер типі сәйкес?",
+   "options": [
+    "INT",
+    "DATE",
+    "CHAR",
+    "BOOLEAN"
+   ],
+   "correct": 0,
+   "solution": "Бөлшек бөлігі жоқ бүтін сандар — INT. Күндер — DATE, мәтін — CHAR/VARCHAR. Тиыны бар бағаларға — DECIMAL не FLOAT."
+  }
+ },
+ {
+  "id": "inf.c.db.record#001",
+  "template": "inf.c.db.record",
+  "subject": "informatics",
+  "topic": "relational-databases",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Строка таблицы реляционной базы данных называется",
+   "options": [
+    "записью",
+    "полем",
+    "ключом",
+    "запросом"
+   ],
+   "correct": 0,
+   "solution": "Строка — запись (объект), столбец — поле (свойство)."
+  },
+  "kk": {
+   "question": "Реляциялық деректер қоры кестесінің жолы қалай аталады?",
+   "options": [
+    "жазба",
+    "өріс",
+    "кілт",
+    "сұраныс"
+   ],
+   "correct": 0,
+   "solution": "Жол — жазба (нысан), баған — өріс (қасиет)."
+  }
+ },
+ {
+  "id": "inf.c.db.foreign-key#001",
+  "template": "inf.c.db.foreign-key",
+  "subject": "informatics",
+  "topic": "relational-databases",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Поле, которое ссылается на первичный ключ другой таблицы, называется",
+   "options": [
+    "внешним ключом",
+    "первичным ключом",
+    "индексом",
+    "атрибутом"
+   ],
+   "correct": 0,
+   "solution": "Внешний ключ (FOREIGN KEY) связывает таблицы: например, `class_id` в таблице учеников ссылается на `id` в таблице классов."
+  },
+  "kk": {
+   "question": "Басқа кестенің алғашқы кілтіне сілтейтін өріс қалай аталады?",
+   "options": [
+    "сыртқы кілт",
+    "алғашқы кілт",
+    "индекс",
+    "атрибут"
+   ],
+   "correct": 0,
+   "solution": "Сыртқы кілт (FOREIGN KEY) кестелерді байланыстырады: мысалы, оқушылар кестесіндегі `class_id` сыныптар кестесіндегі `id`-ге сілтейді."
+  }
+ },
+ {
+  "id": "inf.c.sql.order#001",
+  "template": "inf.c.sql.order",
+  "subject": "informatics",
+  "topic": "database-design-sql",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Какой запрос выведет учеников, отсортированных по убыванию балла?",
+   "options": [
+    "SELECT * FROM pupils ORDER BY score DESC;",
+    "SELECT * FROM pupils ORDER BY score;",
+    "SELECT * FROM pupils SORT BY score DESC;",
+    "SELECT * FROM pupils WHERE score DESC;"
+   ],
+   "correct": 0,
+   "solution": "`ORDER BY ... DESC` — по убыванию, без `DESC` — по возрастанию. Команды `SORT BY` в SQL нет."
+  },
+  "kk": {
+   "question": "Қай сұраныс оқушыларды ұпайы кему ретімен шығарады?",
+   "options": [
+    "SELECT * FROM pupils ORDER BY score DESC;",
+    "SELECT * FROM pupils ORDER BY score;",
+    "SELECT * FROM pupils SORT BY score DESC;",
+    "SELECT * FROM pupils WHERE score DESC;"
+   ],
+   "correct": 0,
+   "solution": "`ORDER BY ... DESC` — кему ретімен, `DESC`-сіз — өсу ретімен. SQL-де `SORT BY` командасы жоқ."
+  }
+ },
+ {
+  "id": "inf.c.sql.count#001",
+  "template": "inf.c.sql.count",
+  "subject": "informatics",
+  "topic": "database-design-sql",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Какая функция SQL вернёт количество строк?",
+   "options": [
+    "COUNT()",
+    "SUM()",
+    "MAX()",
+    "AVG()"
+   ],
+   "correct": 0,
+   "solution": "COUNT считает строки, SUM — сумму, MAX — наибольшее, AVG — среднее."
+  },
+  "kk": {
+   "question": "Қай SQL функциясы жолдар санын қайтарады?",
+   "options": [
+    "COUNT()",
+    "SUM()",
+    "MAX()",
+    "AVG()"
+   ],
+   "correct": 0,
+   "solution": "COUNT жолдарды санайды, SUM — қосынды, MAX — ең үлкені, AVG — орташа."
+  }
+ },
+ {
+  "id": "inf.c.sql.delete-vs-drop#001",
+  "template": "inf.c.sql.delete-vs-drop",
+  "subject": "informatics",
+  "topic": "database-design-sql",
+  "level": "hard",
+  "kind": "single",
+  "ru": {
+   "question": "Чем отличается `DELETE FROM t;` от `DROP TABLE t;`?",
+   "options": [
+    "DELETE удаляет строки, а таблица остаётся; DROP удаляет саму таблицу",
+    "ничем",
+    "DROP удаляет только строки",
+    "DELETE удаляет базу данных целиком"
+   ],
+   "correct": 0,
+   "solution": "После DELETE таблица пустая, но её структура цела; после DROP таблицы нет вообще."
+  },
+  "kk": {
+   "question": "`DELETE FROM t;` мен `DROP TABLE t;` айырмашылығы неде?",
+   "options": [
+    "DELETE жолдарды жояды, кесте қалады; DROP кестенің өзін жояды",
+    "еш айырмашылығы жоқ",
+    "DROP тек жолдарды жояды",
+    "DELETE деректер қорын толық жояды"
+   ],
+   "correct": 0,
+   "solution": "DELETE-тен кейін кесте бос, бірақ құрылымы сақталады; DROP-тан кейін кесте мүлдем жоқ."
+  }
+ },
+ {
+  "id": "inf.c.obj.absolute-ref#001",
+  "template": "inf.c.obj.absolute-ref",
+  "subject": "informatics",
+  "topic": "information-objects",
+  "level": "hard",
+  "kind": "single",
+  "ru": {
+   "question": "В ячейке B1 записана формула `=$A$1*A2`. Её скопировали в ячейку C3. Какая формула получится?",
+   "options": [
+    "=$A$1*B4",
+    "=$A$1*A2",
+    "=$B$3*B4",
+    "=$A$1*B2"
+   ],
+   "correct": 0,
+   "solution": "Абсолютная ссылка `$A$1` не меняется. Относительная `A2` сдвигается вместе с формулой: на 1 столбец вправо и на 2 строки вниз — `B4`."
+  },
+  "kk": {
+   "question": "B1 ұяшығында `=$A$1*A2` формуласы бар. Оны C3 ұяшығына көшірді. Қандай формула шығады?",
+   "options": [
+    "=$A$1*B4",
+    "=$A$1*A2",
+    "=$B$3*B4",
+    "=$A$1*B2"
+   ],
+   "correct": 0,
+   "solution": "`$A$1` абсолют сілтемесі өзгермейді. `A2` салыстырмалы сілтемесі формуламен бірге жылжиды: 1 баған оңға, 2 жол төмен — `B4`."
+  }
+ },
+ {
+  "id": "inf.c.obj.sum#001",
+  "template": "inf.c.obj.sum",
+  "subject": "informatics",
+  "topic": "information-objects",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Какая формула в Excel находит сумму ячеек с A1 по A10?",
+   "options": [
+    "=СУММ(A1:A10)",
+    "=СУММ(A1;A10)",
+    "=СЧЁТ(A1:A10)",
+    "=A1+A10"
+   ],
+   "correct": 0,
+   "solution": "Двоеточие задаёт диапазон. С точкой с запятой сложатся только A1 и A10. СЧЁТ считает количество."
+  },
+  "kk": {
+   "question": "Excel-де A1-ден A10-ға дейінгі ұяшықтардың қосындысын қай формула табады?",
+   "options": [
+    "=СУММ(A1:A10)",
+    "=СУММ(A1;A10)",
+    "=СЧЁТ(A1:A10)",
+    "=A1+A10"
+   ],
+   "correct": 0,
+   "solution": "Қос нүкте ауқымды береді. Нүктелі үтірмен тек A1 мен A10 қосылады. СЧЁТ санын санайды."
+  }
+ },
+ {
+  "id": "inf.c.obj.concat#001",
+  "template": "inf.c.obj.concat",
+  "subject": "informatics",
+  "topic": "information-objects",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "В ячейке A1 записано «Алем», в B1 — «Prep». Что выведет формула `=A1&B1`?",
+   "options": [
+    "АлемPrep",
+    "Алем Prep",
+    "#ЗНАЧ!",
+    "0"
+   ],
+   "correct": 0,
+   "solution": "Оператор `&` склеивает текст без пробела. Для пробела пишут `=A1&\" \"&B1`."
+  },
+  "kk": {
+   "question": "A1 ұяшығында «Алем», B1-де — «Prep». `=A1&B1` формуласы не шығарады?",
+   "options": [
+    "АлемPrep",
+    "Алем Prep",
+    "#ЗНАЧ!",
+    "0"
+   ],
+   "correct": 0,
+   "solution": "`&` операторы мәтінді бос орынсыз жалғайды. Бос орын үшін `=A1&\" \"&B1` жазады."
+  }
+ },
+ {
+  "id": "inf.c.web.img#001",
+  "template": "inf.c.web.img",
+  "subject": "informatics",
+  "topic": "web-design",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Какой тег HTML вставляет изображение?",
+   "options": [
+    "<img>",
+    "<a>",
+    "<picture-src>",
+    "<image>"
+   ],
+   "correct": 0,
+   "solution": "`<img src=\"photo.png\" alt=\"описание\">`. Тега `<image>` в HTML нет."
+  },
+  "kk": {
+   "question": "Қай HTML тегі сурет қояды?",
+   "options": [
+    "<img>",
+    "<a>",
+    "<picture-src>",
+    "<image>"
+   ],
+   "correct": 0,
+   "solution": "`<img src=\"photo.png\" alt=\"сипаттама\">`. HTML-де `<image>` тегі жоқ."
+  }
+ },
+ {
+  "id": "inf.c.web.css-color#001",
+  "template": "inf.c.web.css-color",
+  "subject": "informatics",
+  "topic": "web-design",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Какое CSS-правило делает текст абзацев красным?",
+   "options": [
+    "p { color: red; }",
+    "p { background: red; }",
+    "p { font-color: red; }",
+    "p { text: red; }"
+   ],
+   "correct": 0,
+   "solution": "Цвет текста — свойство `color`. `background` меняет фон, свойств `font-color` и `text` в CSS нет."
+  },
+  "kk": {
+   "question": "Қай CSS ережесі абзац мәтінін қызыл етеді?",
+   "options": [
+    "p { color: red; }",
+    "p { background: red; }",
+    "p { font-color: red; }",
+    "p { text: red; }"
+   ],
+   "correct": 0,
+   "solution": "Мәтін түсі — `color` қасиеті. `background` фонды өзгертеді, CSS-те `font-color` мен `text` қасиеттері жоқ."
+  }
+ },
+ {
+  "id": "inf.c.web.http-https#001",
+  "template": "inf.c.web.http-https",
+  "subject": "informatics",
+  "topic": "web-design",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Чем HTTPS отличается от HTTP?",
+   "options": [
+    "данные передаются в зашифрованном виде",
+    "страницы загружаются только по Wi-Fi",
+    "сайт работает без сервера",
+    "ничем"
+   ],
+   "correct": 0,
+   "solution": "S — Secure: HTTPS шифрует трафик (TLS), его не прочитать по пути."
+  },
+  "kk": {
+   "question": "HTTPS-тің HTTP-ден айырмашылығы неде?",
+   "options": [
+    "деректер шифрланған түрде беріледі",
+    "беттер тек Wi-Fi арқылы жүктеледі",
+    "сайт серверсіз жұмыс істейді",
+    "еш айырмашылығы жоқ"
+   ],
+   "correct": 0,
+   "solution": "S — Secure: HTTPS трафикті шифрлайды (TLS), оны жолда оқу мүмкін емес."
+  }
+ },
+ {
+  "id": "inf.c.it.mvp#001",
+  "template": "inf.c.it.mvp",
+  "subject": "informatics",
+  "topic": "it-trends-and-3d",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "MVP в IT-стартапе — это",
+   "options": [
+    "минимально жизнеспособный продукт для проверки идеи на пользователях",
+    "самый ценный сотрудник команды",
+    "окончательная версия продукта",
+    "инвестор на первом раунде"
+   ],
+   "correct": 0,
+   "solution": "MVP (Minimum Viable Product) — простая версия с главной функцией, чтобы быстро узнать, нужен ли продукт людям."
+  },
+  "kk": {
+   "question": "IT-стартаптағы MVP — бұл",
+   "options": [
+    "идеяны пайдаланушыларда тексеруге арналған ең аз өміршең өнім",
+    "команданың ең құнды қызметкері",
+    "өнімнің соңғы нұсқасы",
+    "бірінші раундтағы инвестор"
+   ],
+   "correct": 0,
+   "solution": "MVP (Minimum Viable Product) — өнім адамдарға керек пе екенін тез білу үшін басты функциясы бар қарапайым нұсқа."
+  }
+ },
+ {
+  "id": "inf.c.it.3d-polygon#001",
+  "template": "inf.c.it.3d-polygon",
+  "subject": "informatics",
+  "topic": "it-trends-and-3d",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "В полигональном 3D-моделировании поверхность модели состоит из",
+   "options": [
+    "многоугольников (полигонов)",
+    "пикселей",
+    "вокселей только кубической формы",
+    "звуковых волн"
+   ],
+   "correct": 0,
+   "solution": "Модель — сетка из вершин, рёбер и граней (чаще треугольников и четырёхугольников). Пиксели — у растровых 2D-изображений."
+  },
+  "kk": {
+   "question": "Полигоналды 3D-модельдеуде модельдің беті неден тұрады?",
+   "options": [
+    "көпбұрыштардан (полигондардан)",
+    "пиксельдерден",
+    "тек текше пішінді воксельдерден",
+    "дыбыс толқындарынан"
+   ],
+   "correct": 0,
+   "solution": "Модель — төбелерден, қабырғалардан және жақтардан (көбінесе үшбұрыштар мен төртбұрыштардан) тұратын тор. Пиксельдер — растрлық 2D-кескіндерде."
+  }
+ },
+ {
+  "id": "inf.c.it.cloud#001",
+  "template": "inf.c.it.cloud",
+  "subject": "informatics",
+  "topic": "it-trends-and-3d",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Что из перечисленного — облачный сервис?",
+   "options": [
+    "Google Drive",
+    "Блокнот (Notepad)",
+    "Калькулятор Windows",
+    "BIOS"
+   ],
+   "correct": 0,
+   "solution": "Google Drive хранит файлы на серверах в интернете — доступ с любого устройства. Остальное работает только на компьютере."
+  },
+  "kk": {
+   "question": "Төмендегілердің қайсысы бұлттық қызмет?",
+   "options": [
+    "Google Drive",
+    "Блокнот (Notepad)",
+    "Калькулятор Windows",
+    "BIOS"
+   ],
+   "correct": 0,
+   "solution": "Google Drive файлдарды интернеттегі серверлерде сақтайды — кез келген құрылғыдан қолжетімді. Қалғандары тек компьютерде жұмыс істейді."
+  }
+ },
+ {
   "id": "inf.hard.ones-in-binary#001",
   "template": "inf.hard.ones-in-binary",
   "subject": "informatics",
