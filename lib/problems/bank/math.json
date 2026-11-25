@@ -1,5 +1,1829 @@
 [
  {
+  "id": "math.c.rad.sqrt-square#001",
+  "template": "math.c.rad.sqrt-square",
+  "subject": "math",
+  "topic": "radicals-and-expressions",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "При $a < 0$ выражение $\\sqrt{a^2}$ равно",
+   "options": [
+    "$-a$",
+    "$a$",
+    "$a^2$",
+    "$\\pm a$"
+   ],
+   "correct": 0,
+   "solution": "$\\sqrt{a^2} = |a|$, а при $a < 0$ модуль $|a| = -a$ (положительное число)."
+  },
+  "kk": {
+   "question": "$a < 0$ болғанда $\\sqrt{a^2}$ өрнегі неге тең?",
+   "options": [
+    "$-a$",
+    "$a$",
+    "$a^2$",
+    "$\\pm a$"
+   ],
+   "correct": 0,
+   "solution": "$\\sqrt{a^2} = |a|$, ал $a < 0$ болғанда $|a| = -a$ (оң сан)."
+  }
+ },
+ {
+  "id": "math.c.rad.odz#001",
+  "template": "math.c.rad.odz",
+  "subject": "math",
+  "topic": "radicals-and-expressions",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Область допустимых значений выражения $\\frac{\\sqrt{x - 2}}{x - 5}$",
+   "options": [
+    "$[2; 5) \\cup (5; +\\infty)$",
+    "$(2; +\\infty)$",
+    "$[2; +\\infty)$",
+    "$(-\\infty; 5) \\cup (5; +\\infty)$"
+   ],
+   "correct": 0,
+   "solution": "Под корнем $x - 2 \\ge 0$, знаменатель $x \\ne 5$. Число 2 входит, 5 — нет."
+  },
+  "kk": {
+   "question": "$\\frac{\\sqrt{x - 2}}{x - 5}$ өрнегінің мүмкін мәндер облысы",
+   "options": [
+    "$[2; 5) \\cup (5; +\\infty)$",
+    "$(2; +\\infty)$",
+    "$[2; +\\infty)$",
+    "$(-\\infty; 5) \\cup (5; +\\infty)$"
+   ],
+   "correct": 0,
+   "solution": "Түбір астында $x - 2 \\ge 0$, бөлім $x \\ne 5$. 2 саны кіреді, 5 — кірмейді."
+  }
+ },
+ {
+  "id": "math.c.rad.irrational#001",
+  "template": "math.c.rad.irrational",
+  "subject": "math",
+  "topic": "radicals-and-expressions",
+  "level": "easy",
+  "kind": "multi",
+  "ru": {
+   "question": "Какие числа иррациональны? Выберите все верные.",
+   "options": [
+    "$\\sqrt{2}$",
+    "$\\pi$",
+    "$\\sqrt{12}$",
+    "$\\sqrt{16}$",
+    "$0{,}(3)$",
+    "$\\frac{22}{7}$"
+   ],
+   "correct": 7,
+   "solution": "$\\sqrt{16} = 4$, $0{,}(3) = \\frac{1}{3}$, $\\frac{22}{7}$ — дробь: все рациональны. $\\sqrt{12} = 2\\sqrt{3}$ — иррационально."
+  },
+  "kk": {
+   "question": "Қай сандар иррационал? Барлық дұрысын таңдаңыз.",
+   "options": [
+    "$\\sqrt{2}$",
+    "$\\pi$",
+    "$\\sqrt{12}$",
+    "$\\sqrt{16}$",
+    "$0{,}(3)$",
+    "$\\frac{22}{7}$"
+   ],
+   "correct": 7,
+   "solution": "$\\sqrt{16} = 4$, $0{,}(3) = \\frac{1}{3}$, $\\frac{22}{7}$ — бөлшек: бәрі рационал. $\\sqrt{12} = 2\\sqrt{3}$ — иррационал."
+  }
+ },
+ {
+  "id": "math.c.rad.rationalize#001",
+  "template": "math.c.rad.rationalize",
+  "subject": "math",
+  "topic": "radicals-and-expressions",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Чтобы избавиться от иррациональности в знаменателе дроби $\\frac{1}{\\sqrt{5} - \\sqrt{3}}$, числитель и знаменатель умножают на",
+   "options": [
+    "$\\sqrt{5} + \\sqrt{3}$",
+    "$\\sqrt{5} - \\sqrt{3}$",
+    "$\\sqrt{15}$",
+    "$\\sqrt{5}$"
+   ],
+   "correct": 0,
+   "solution": "На сопряжённое выражение: $(\\sqrt{5} - \\sqrt{3})(\\sqrt{5} + \\sqrt{3}) = 5 - 3 = 2$ — корни исчезают."
+  },
+  "kk": {
+   "question": "$\\frac{1}{\\sqrt{5} - \\sqrt{3}}$ бөлшегінің бөліміндегі иррационалдықтан арылу үшін алым мен бөлімді неге көбейтеді?",
+   "options": [
+    "$\\sqrt{5} + \\sqrt{3}$",
+    "$\\sqrt{5} - \\sqrt{3}$",
+    "$\\sqrt{15}$",
+    "$\\sqrt{5}$"
+   ],
+   "correct": 0,
+   "solution": "Түйіндес өрнекке: $(\\sqrt{5} - \\sqrt{3})(\\sqrt{5} + \\sqrt{3}) = 5 - 3 = 2$ — түбірлер жойылады."
+  }
+ },
+ {
+  "id": "math.c.pow.zero#001",
+  "template": "math.c.pow.zero",
+  "subject": "math",
+  "topic": "powers",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Чему равно $(-7)^0$?",
+   "options": [
+    "$1$",
+    "$0$",
+    "$-1$",
+    "$-7$"
+   ],
+   "correct": 0,
+   "solution": "Любое ненулевое число в нулевой степени равно 1."
+  },
+  "kk": {
+   "question": "$(-7)^0$ неге тең?",
+   "options": [
+    "$1$",
+    "$0$",
+    "$-1$",
+    "$-7$"
+   ],
+   "correct": 0,
+   "solution": "Нөлге тең емес кез келген санның нөлдік дәрежесі 1-ге тең."
+  }
+ },
+ {
+  "id": "math.c.pow.rules#001",
+  "template": "math.c.pow.rules",
+  "subject": "math",
+  "topic": "powers",
+  "level": "medium",
+  "kind": "multi",
+  "ru": {
+   "question": "Какие равенства верны при $a > 0$? Выберите все верные.",
+   "options": [
+    "$a^3 \\cdot a^4 = a^7$",
+    "$(a^3)^4 = a^{12}$",
+    "$a^{-2} = \\frac{1}{a^2}$",
+    "$a^3 \\cdot a^4 = a^{12}$",
+    "$(a^3)^4 = a^7$",
+    "$a^{-2} = -a^2$"
+   ],
+   "correct": 7,
+   "solution": "При умножении показатели складывают, при возведении в степень — умножают. Отрицательный показатель даёт дробь."
+  },
+  "kk": {
+   "question": "$a > 0$ болғанда қай теңдіктер дұрыс? Барлық дұрысын таңдаңыз.",
+   "options": [
+    "$a^3 \\cdot a^4 = a^7$",
+    "$(a^3)^4 = a^{12}$",
+    "$a^{-2} = \\frac{1}{a^2}$",
+    "$a^3 \\cdot a^4 = a^{12}$",
+    "$(a^3)^4 = a^7$",
+    "$a^{-2} = -a^2$"
+   ],
+   "correct": 7,
+   "solution": "Көбейткенде көрсеткіштер қосылады, дәрежеге шығарғанда — көбейтіледі. Теріс көрсеткіш бөлшек береді."
+  }
+ },
+ {
+  "id": "math.c.pow.log-def#001",
+  "template": "math.c.pow.log-def",
+  "subject": "math",
+  "topic": "powers",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "По определению логарифма $\\log_a b = c$ означает",
+   "options": [
+    "$a^c = b$",
+    "$c^a = b$",
+    "$b^c = a$",
+    "$a \\cdot c = b$"
+   ],
+   "correct": 0,
+   "solution": "Логарифм — показатель степени, в которую нужно возвести основание $a$, чтобы получить $b$."
+  },
+  "kk": {
+   "question": "Логарифм анықтамасы бойынша $\\log_a b = c$ дегеніміз",
+   "options": [
+    "$a^c = b$",
+    "$c^a = b$",
+    "$b^c = a$",
+    "$a \\cdot c = b$"
+   ],
+   "correct": 0,
+   "solution": "Логарифм — $b$-ны алу үшін $a$ негізін шығару керек дәреже көрсеткіші."
+  }
+ },
+ {
+  "id": "math.c.pow.log-sum#001",
+  "template": "math.c.pow.log-sum",
+  "subject": "math",
+  "topic": "powers",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Выражение $\\log_a x + \\log_a y$ равно",
+   "options": [
+    "$\\log_a (xy)$",
+    "$\\log_a (x + y)$",
+    "$\\log_a x \\cdot \\log_a y$",
+    "$\\log_{2a} (xy)$"
+   ],
+   "correct": 0,
+   "solution": "Сумма логарифмов с одним основанием — логарифм произведения."
+  },
+  "kk": {
+   "question": "$\\log_a x + \\log_a y$ өрнегі неге тең?",
+   "options": [
+    "$\\log_a (xy)$",
+    "$\\log_a (x + y)$",
+    "$\\log_a x \\cdot \\log_a y$",
+    "$\\log_{2a} (xy)$"
+   ],
+   "correct": 0,
+   "solution": "Негіздері бірдей логарифмдердің қосындысы — көбейтіндінің логарифмі."
+  }
+ },
+ {
+  "id": "math.c.trig.identity#001",
+  "template": "math.c.trig.identity",
+  "subject": "math",
+  "topic": "trigonometry",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Основное тригонометрическое тождество",
+   "options": [
+    "$\\sin^2\\alpha + \\cos^2\\alpha = 1$",
+    "$\\sin\\alpha + \\cos\\alpha = 1$",
+    "$\\sin^2\\alpha - \\cos^2\\alpha = 1$",
+    "$\\operatorname{tg}\\alpha + \\operatorname{ctg}\\alpha = 1$"
+   ],
+   "correct": 0,
+   "solution": "Следует из теоремы Пифагора на единичной окружности. Верно ещё $\\operatorname{tg}\\alpha \\cdot \\operatorname{ctg}\\alpha = 1$."
+  },
+  "kk": {
+   "question": "Негізгі тригонометриялық тепе-теңдік",
+   "options": [
+    "$\\sin^2\\alpha + \\cos^2\\alpha = 1$",
+    "$\\sin\\alpha + \\cos\\alpha = 1$",
+    "$\\sin^2\\alpha - \\cos^2\\alpha = 1$",
+    "$\\operatorname{tg}\\alpha + \\operatorname{ctg}\\alpha = 1$"
+   ],
+   "correct": 0,
+   "solution": "Бірлік шеңбердегі Пифагор теоремасынан шығады. Сонымен қатар $\\operatorname{tg}\\alpha \\cdot \\operatorname{ctg}\\alpha = 1$."
+  }
+ },
+ {
+  "id": "math.c.trig.signs-q2#001",
+  "template": "math.c.trig.signs-q2",
+  "subject": "math",
+  "topic": "trigonometry",
+  "level": "medium",
+  "kind": "multi",
+  "ru": {
+   "question": "Угол $\\alpha$ во второй четверти. Какие утверждения верны? Выберите все верные.",
+   "options": [
+    "$\\sin\\alpha > 0$",
+    "$\\cos\\alpha < 0$",
+    "$\\operatorname{tg}\\alpha < 0$",
+    "$\\sin\\alpha < 0$",
+    "$\\cos\\alpha > 0$",
+    "$\\operatorname{tg}\\alpha > 0$"
+   ],
+   "correct": 7,
+   "solution": "Во II четверти $x < 0$, $y > 0$: синус положителен, косинус отрицателен, тангенс $\\frac{\\sin}{\\cos}$ отрицателен."
+  },
+  "kk": {
+   "question": "$\\alpha$ бұрышы екінші ширекте. Қай тұжырымдар дұрыс? Барлық дұрысын таңдаңыз.",
+   "options": [
+    "$\\sin\\alpha > 0$",
+    "$\\cos\\alpha < 0$",
+    "$\\operatorname{tg}\\alpha < 0$",
+    "$\\sin\\alpha < 0$",
+    "$\\cos\\alpha > 0$",
+    "$\\operatorname{tg}\\alpha > 0$"
+   ],
+   "correct": 7,
+   "solution": "II ширекте $x < 0$, $y > 0$: синус оң, косинус теріс, тангенс $\\frac{\\sin}{\\cos}$ теріс."
+  }
+ },
+ {
+  "id": "math.c.trig.radians#001",
+  "template": "math.c.trig.radians",
+  "subject": "math",
+  "topic": "trigonometry",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Угол $150°$ в радианах",
+   "options": [
+    "$\\frac{5\\pi}{6}$",
+    "$\\frac{3\\pi}{4}$",
+    "$\\frac{2\\pi}{3}$",
+    "$\\frac{5\\pi}{3}$"
+   ],
+   "correct": 0,
+   "solution": "$150° \\cdot \\frac{\\pi}{180°} = \\frac{5\\pi}{6}$."
+  },
+  "kk": {
+   "question": "$150°$ бұрышы радианмен",
+   "options": [
+    "$\\frac{5\\pi}{6}$",
+    "$\\frac{3\\pi}{4}$",
+    "$\\frac{2\\pi}{3}$",
+    "$\\frac{5\\pi}{3}$"
+   ],
+   "correct": 0,
+   "solution": "$150° \\cdot \\frac{\\pi}{180°} = \\frac{5\\pi}{6}$."
+  }
+ },
+ {
+  "id": "math.c.trig.double#001",
+  "template": "math.c.trig.double",
+  "subject": "math",
+  "topic": "trigonometry",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Формула синуса двойного угла",
+   "options": [
+    "$\\sin 2\\alpha = 2\\sin\\alpha\\cos\\alpha$",
+    "$\\sin 2\\alpha = 2\\sin\\alpha$",
+    "$\\sin 2\\alpha = \\sin^2\\alpha - \\cos^2\\alpha$",
+    "$\\sin 2\\alpha = 1 - 2\\sin^2\\alpha$"
+   ],
+   "correct": 0,
+   "solution": "$\\sin 2\\alpha = 2\\sin\\alpha\\cos\\alpha$. Варианты с квадратами — это формулы $\\cos 2\\alpha$ (с другими знаками)."
+  },
+  "kk": {
+   "question": "Қос бұрыштың синусы формуласы",
+   "options": [
+    "$\\sin 2\\alpha = 2\\sin\\alpha\\cos\\alpha$",
+    "$\\sin 2\\alpha = 2\\sin\\alpha$",
+    "$\\sin 2\\alpha = \\sin^2\\alpha - \\cos^2\\alpha$",
+    "$\\sin 2\\alpha = 1 - 2\\sin^2\\alpha$"
+   ],
+   "correct": 0,
+   "solution": "$\\sin 2\\alpha = 2\\sin\\alpha\\cos\\alpha$. Квадраттары бар нұсқалар — $\\cos 2\\alpha$ формулалары (басқа таңбалармен)."
+  }
+ },
+ {
+  "id": "math.c.trig.range#001",
+  "template": "math.c.trig.range",
+  "subject": "math",
+  "topic": "trigonometry",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Множество значений функции $y = \\sin x$",
+   "options": [
+    "$[-1; 1]$",
+    "$(-\\infty; +\\infty)$",
+    "$[0; 1]$",
+    "$(-1; 1)$"
+   ],
+   "correct": 0,
+   "solution": "Синус — ордината точки единичной окружности, поэтому принимает все значения от $-1$ до $1$ включительно."
+  },
+  "kk": {
+   "question": "$y = \\sin x$ функциясының мәндер жиыны",
+   "options": [
+    "$[-1; 1]$",
+    "$(-\\infty; +\\infty)$",
+    "$[0; 1]$",
+    "$(-1; 1)$"
+   ],
+   "correct": 0,
+   "solution": "Синус — бірлік шеңбер нүктесінің ординатасы, сондықтан $-1$-ден $1$-ге дейінгі (қоса) барлық мәнді қабылдайды."
+  }
+ },
+ {
+  "id": "math.c.alg.square-diff#001",
+  "template": "math.c.alg.square-diff",
+  "subject": "math",
+  "topic": "algebraic-expressions",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Разложите на множители $a^2 - b^2$",
+   "options": [
+    "$(a - b)(a + b)$",
+    "$(a - b)^2$",
+    "$(a + b)^2$",
+    "$(a - b)(b - a)$"
+   ],
+   "correct": 0,
+   "solution": "Формула разности квадратов. $(a - b)^2 = a^2 - 2ab + b^2$ — это другое."
+  },
+  "kk": {
+   "question": "$a^2 - b^2$ өрнегін көбейткіштерге жіктеңіз",
+   "options": [
+    "$(a - b)(a + b)$",
+    "$(a - b)^2$",
+    "$(a + b)^2$",
+    "$(a - b)(b - a)$"
+   ],
+   "correct": 0,
+   "solution": "Квадраттар айырымы формуласы. $(a - b)^2 = a^2 - 2ab + b^2$ — басқа өрнек."
+  }
+ },
+ {
+  "id": "math.c.alg.cube-sum#001",
+  "template": "math.c.alg.cube-sum",
+  "subject": "math",
+  "topic": "algebraic-expressions",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Сумма кубов $a^3 + b^3$ равна",
+   "options": [
+    "$(a + b)(a^2 - ab + b^2)$",
+    "$(a + b)^3$",
+    "$(a + b)(a^2 + ab + b^2)$",
+    "$(a + b)(a^2 - 2ab + b^2)$"
+   ],
+   "correct": 0,
+   "solution": "Во второй скобке — неполный квадрат разности: $a^2 - ab + b^2$."
+  },
+  "kk": {
+   "question": "$a^3 + b^3$ кубтар қосындысы неге тең?",
+   "options": [
+    "$(a + b)(a^2 - ab + b^2)$",
+    "$(a + b)^3$",
+    "$(a + b)(a^2 + ab + b^2)$",
+    "$(a + b)(a^2 - 2ab + b^2)$"
+   ],
+   "correct": 0,
+   "solution": "Екінші жақшада — айырымның толымсыз квадраты: $a^2 - ab + b^2$."
+  }
+ },
+ {
+  "id": "math.c.alg.identity-check#001",
+  "template": "math.c.alg.identity-check",
+  "subject": "math",
+  "topic": "algebraic-expressions",
+  "level": "medium",
+  "kind": "multi",
+  "ru": {
+   "question": "Какие равенства являются тождествами? Выберите все верные.",
+   "options": [
+    "$(a + b)^2 = a^2 + 2ab + b^2$",
+    "$(a - b)^2 = (b - a)^2$",
+    "$(a + b)^2 = a^2 + b^2$",
+    "$(a - b)^3 = (b - a)^3$",
+    "$\\frac{a + b}{a} = b$",
+    "$\\sqrt{a^2 + b^2} = a + b$"
+   ],
+   "correct": 3,
+   "solution": "Квадрат не меняется при смене знака основания, куб — меняет знак. Слагаемые нельзя сокращать, корень из суммы не равен сумме корней."
+  },
+  "kk": {
+   "question": "Қай теңдіктер тепе-теңдік болып табылады? Барлық дұрысын таңдаңыз.",
+   "options": [
+    "$(a + b)^2 = a^2 + 2ab + b^2$",
+    "$(a - b)^2 = (b - a)^2$",
+    "$(a + b)^2 = a^2 + b^2$",
+    "$(a - b)^3 = (b - a)^3$",
+    "$\\frac{a + b}{a} = b$",
+    "$\\sqrt{a^2 + b^2} = a + b$"
+   ],
+   "correct": 3,
+   "solution": "Квадрат негіздің таңбасы өзгергенде өзгермейді, куб — таңбасын өзгертеді. Қосылғыштарды қысқартуға болмайды, қосындының түбірі түбірлер қосындысына тең емес."
+  }
+ },
+ {
+  "id": "math.c.eq.discriminant#001",
+  "template": "math.c.eq.discriminant",
+  "subject": "math",
+  "topic": "linear-quadratic-rational-equations",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Квадратное уравнение не имеет действительных корней, если",
+   "options": [
+    "$D < 0$",
+    "$D = 0$",
+    "$D > 0$",
+    "$a < 0$"
+   ],
+   "correct": 0,
+   "solution": "$D > 0$ — два корня, $D = 0$ — один, $D < 0$ — нет действительных корней."
+  },
+  "kk": {
+   "question": "Квадрат теңдеудің нақты түбірлері болмайды, егер",
+   "options": [
+    "$D < 0$",
+    "$D = 0$",
+    "$D > 0$",
+    "$a < 0$"
+   ],
+   "correct": 0,
+   "solution": "$D > 0$ — екі түбір, $D = 0$ — бір, $D < 0$ — нақты түбір жоқ."
+  }
+ },
+ {
+  "id": "math.c.eq.rational-odz#001",
+  "template": "math.c.eq.rational-odz",
+  "subject": "math",
+  "topic": "linear-quadratic-rational-equations",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Решите уравнение $\\frac{x^2 - 9}{x - 3} = 0$",
+   "options": [
+    "$-3$",
+    "$3$",
+    "$\\pm 3$",
+    "$9$"
+   ],
+   "correct": 0,
+   "solution": "Числитель равен нулю при $x = \\pm 3$, но $x = 3$ обнуляет знаменатель — не входит в ОДЗ. Остаётся $-3$."
+  },
+  "kk": {
+   "question": "$\\frac{x^2 - 9}{x - 3} = 0$ теңдеуін шешіңіз",
+   "options": [
+    "$-3$",
+    "$3$",
+    "$\\pm 3$",
+    "$9$"
+   ],
+   "correct": 0,
+   "solution": "Алым $x = \\pm 3$ болғанда нөлге тең, бірақ $x = 3$ бөлімді нөлге айналдырады — ММО-ға кірмейді. $-3$ қалады."
+  }
+ },
+ {
+  "id": "math.c.eq.linear-infinite#001",
+  "template": "math.c.eq.linear-infinite",
+  "subject": "math",
+  "topic": "linear-quadratic-rational-equations",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Уравнение $ax = b$ имеет бесконечно много решений, если",
+   "options": [
+    "$a = 0,\\ b = 0$",
+    "$a = 0,\\ b \\ne 0$",
+    "$a \\ne 0$",
+    "$b = 0$"
+   ],
+   "correct": 0,
+   "solution": "$0 \\cdot x = 0$ верно при любом $x$. При $a = 0,\\ b \\ne 0$ корней нет, при $a \\ne 0$ корень один."
+  },
+  "kk": {
+   "question": "$ax = b$ теңдеуінің шексіз көп шешімі бар, егер",
+   "options": [
+    "$a = 0,\\ b = 0$",
+    "$a = 0,\\ b \\ne 0$",
+    "$a \\ne 0$",
+    "$b = 0$"
+   ],
+   "correct": 0,
+   "solution": "$0 \\cdot x = 0$ кез келген $x$-те дұрыс. $a = 0,\\ b \\ne 0$ болса түбір жоқ, $a \\ne 0$ болса бір түбір."
+  }
+ },
+ {
+  "id": "math.c.treq.sin-gt1#001",
+  "template": "math.c.treq.sin-gt1",
+  "subject": "math",
+  "topic": "trig-irrational-equations",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Уравнение $\\sin x = 1{,}5$",
+   "options": [
+    "не имеет корней",
+    "имеет один корень",
+    "имеет два корня",
+    "имеет бесконечно много корней"
+   ],
+   "correct": 0,
+   "solution": "$|\\sin x| \\le 1$, поэтому при $|a| > 1$ уравнение $\\sin x = a$ решений не имеет."
+  },
+  "kk": {
+   "question": "$\\sin x = 1{,}5$ теңдеуі",
+   "options": [
+    "түбірі жоқ",
+    "бір түбірі бар",
+    "екі түбірі бар",
+    "шексіз көп түбірі бар"
+   ],
+   "correct": 0,
+   "solution": "$|\\sin x| \\le 1$, сондықтан $|a| > 1$ болса $\\sin x = a$ теңдеуінің шешімі жоқ."
+  }
+ },
+ {
+  "id": "math.c.treq.cos-general#001",
+  "template": "math.c.treq.cos-general",
+  "subject": "math",
+  "topic": "trig-irrational-equations",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Общее решение уравнения $\\cos x = a$ ($|a| \\le 1$)",
+   "options": [
+    "$x = \\pm\\arccos a + 2\\pi n$",
+    "$x = (-1)^n \\arccos a + \\pi n$",
+    "$x = \\arccos a + \\pi n$",
+    "$x = \\pm\\arccos a + \\pi n$"
+   ],
+   "correct": 0,
+   "solution": "Для косинуса — $\\pm$ и период $2\\pi$. Формула с $(-1)^n$ — для синуса."
+  },
+  "kk": {
+   "question": "$\\cos x = a$ ($|a| \\le 1$) теңдеуінің жалпы шешімі",
+   "options": [
+    "$x = \\pm\\arccos a + 2\\pi n$",
+    "$x = (-1)^n \\arccos a + \\pi n$",
+    "$x = \\arccos a + \\pi n$",
+    "$x = \\pm\\arccos a + \\pi n$"
+   ],
+   "correct": 0,
+   "solution": "Косинус үшін — $\\pm$ және период $2\\pi$. $(-1)^n$ бар формула — синус үшін."
+  }
+ },
+ {
+  "id": "math.c.treq.irrational-check#001",
+  "template": "math.c.treq.irrational-check",
+  "subject": "math",
+  "topic": "trig-irrational-equations",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "При решении иррационального уравнения возведением в квадрат обязательно нужно",
+   "options": [
+    "проверить корни подстановкой",
+    "поменять знак неравенства",
+    "найти производную",
+    "ничего дополнительно"
+   ],
+   "correct": 0,
+   "solution": "Возведение в квадрат может дать посторонние корни: $\\sqrt{x} = -2$ после возведения даёт $x = 4$, но это не корень."
+  },
+  "kk": {
+   "question": "Иррационал теңдеуді квадраттау арқылы шешкенде міндетті түрде не істеу керек?",
+   "options": [
+    "түбірлерді қою арқылы тексеру",
+    "теңсіздік таңбасын өзгерту",
+    "туындыны табу",
+    "қосымша ештеңе"
+   ],
+   "correct": 0,
+   "solution": "Квадраттау бөгде түбірлер беруі мүмкін: $\\sqrt{x} = -2$ квадраттағаннан кейін $x = 4$ береді, бірақ бұл түбір емес."
+  }
+ },
+ {
+  "id": "math.c.expeq.domain#001",
+  "template": "math.c.expeq.domain",
+  "subject": "math",
+  "topic": "exponential-log-equations",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "При решении уравнения $\\log_2(x - 1) = 3$ ОДЗ задаётся условием",
+   "options": [
+    "$x > 1$",
+    "$x \\ge 1$",
+    "$x > 0$",
+    "$x \\ne 1$"
+   ],
+   "correct": 0,
+   "solution": "Под логарифмом только положительные числа: $x - 1 > 0$. Ответ уравнения $x = 9$ условию удовлетворяет."
+  },
+  "kk": {
+   "question": "$\\log_2(x - 1) = 3$ теңдеуін шешкенде ММО қандай шартпен беріледі?",
+   "options": [
+    "$x > 1$",
+    "$x \\ge 1$",
+    "$x > 0$",
+    "$x \\ne 1$"
+   ],
+   "correct": 0,
+   "solution": "Логарифм астында тек оң сандар: $x - 1 > 0$. Теңдеудің жауабы $x = 9$ шартты қанағаттандырады."
+  }
+ },
+ {
+  "id": "math.c.expeq.positive#001",
+  "template": "math.c.expeq.positive",
+  "subject": "math",
+  "topic": "exponential-log-equations",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Уравнение $2^x = -4$",
+   "options": [
+    "не имеет корней",
+    "имеет корень $x = -2$",
+    "имеет корень $x = 2$",
+    "имеет два корня"
+   ],
+   "correct": 0,
+   "solution": "Показательная функция $2^x > 0$ при всех $x$ — отрицательных значений не принимает."
+  },
+  "kk": {
+   "question": "$2^x = -4$ теңдеуі",
+   "options": [
+    "түбірі жоқ",
+    "$x = -2$ түбірі бар",
+    "$x = 2$ түбірі бар",
+    "екі түбірі бар"
+   ],
+   "correct": 0,
+   "solution": "$2^x > 0$ көрсеткіштік функциясы барлық $x$ үшін оң — теріс мән қабылдамайды."
+  }
+ },
+ {
+  "id": "math.c.expeq.substitution#001",
+  "template": "math.c.expeq.substitution",
+  "subject": "math",
+  "topic": "exponential-log-equations",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Уравнение $4^x - 3 \\cdot 2^x + 2 = 0$ удобно решать заменой",
+   "options": [
+    "$t = 2^x$",
+    "$t = 4^x$",
+    "$t = x^2$",
+    "$t = \\log_2 x$"
+   ],
+   "correct": 0,
+   "solution": "$4^x = (2^x)^2 = t^2$, получаем $t^2 - 3t + 2 = 0$, $t = 1$ или $2$, откуда $x = 0$ или $1$."
+  },
+  "kk": {
+   "question": "$4^x - 3 \\cdot 2^x + 2 = 0$ теңдеуін қандай алмастырумен шешкен ыңғайлы?",
+   "options": [
+    "$t = 2^x$",
+    "$t = 4^x$",
+    "$t = x^2$",
+    "$t = \\log_2 x$"
+   ],
+   "correct": 0,
+   "solution": "$4^x = (2^x)^2 = t^2$, $t^2 - 3t + 2 = 0$ шығады, $t = 1$ не $2$, бұдан $x = 0$ не $1$."
+  }
+ },
+ {
+  "id": "math.c.sys.parallel#001",
+  "template": "math.c.sys.parallel",
+  "subject": "math",
+  "topic": "linear-nonlinear-systems",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Система $\\begin{cases} 2x + 3y = 5 \\\\ 4x + 6y = 7 \\end{cases}$",
+   "options": [
+    "не имеет решений",
+    "имеет одно решение",
+    "имеет бесконечно много решений",
+    "имеет два решения"
+   ],
+   "correct": 0,
+   "solution": "Коэффициенты пропорциональны ($\\frac{2}{4} = \\frac{3}{6}$), а свободные члены — нет ($\\frac{5}{7}$): прямые параллельны."
+  },
+  "kk": {
+   "question": "$\\begin{cases} 2x + 3y = 5 \\\\ 4x + 6y = 7 \\end{cases}$ жүйесі",
+   "options": [
+    "шешімі жоқ",
+    "бір шешімі бар",
+    "шексіз көп шешімі бар",
+    "екі шешімі бар"
+   ],
+   "correct": 0,
+   "solution": "Коэффициенттер пропорционал ($\\frac{2}{4} = \\frac{3}{6}$), ал бос мүшелер — жоқ ($\\frac{5}{7}$): түзулер параллель."
+  }
+ },
+ {
+  "id": "math.c.sys.graphical#001",
+  "template": "math.c.sys.graphical",
+  "subject": "math",
+  "topic": "linear-nonlinear-systems",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Графически решение системы двух уравнений с двумя переменными — это",
+   "options": [
+    "координаты точек пересечения графиков",
+    "точки пересечения с осью $Ox$",
+    "вершины парабол",
+    "площадь между графиками"
+   ],
+   "correct": 0,
+   "solution": "Точка пересечения удовлетворяет обоим уравнениям сразу."
+  },
+  "kk": {
+   "question": "Екі айнымалысы бар екі теңдеу жүйесінің шешімі графикте — бұл",
+   "options": [
+    "графиктердің қиылысу нүктелерінің координаттары",
+    "$Ox$ осімен қиылысу нүктелері",
+    "параболалардың төбелері",
+    "графиктер арасындағы аудан"
+   ],
+   "correct": 0,
+   "solution": "Қиылысу нүктесі екі теңдеуді де бірден қанағаттандырады."
+  }
+ },
+ {
+  "id": "math.c.sys.special-log#001",
+  "template": "math.c.sys.special-log",
+  "subject": "math",
+  "topic": "special-equation-systems",
+  "level": "hard",
+  "kind": "single",
+  "ru": {
+   "question": "Решая систему $\\begin{cases} \\lg x + \\lg y = 1 \\\\ x - y = 3 \\end{cases}$, первое уравнение заменяют на",
+   "options": [
+    "$xy = 10,\\ x > 0,\\ y > 0$",
+    "$x + y = 10$",
+    "$xy = 1$",
+    "$xy = 10$ без условий"
+   ],
+   "correct": 0,
+   "solution": "$\\lg x + \\lg y = \\lg(xy) = 1$, значит $xy = 10$, но ОДЗ ($x, y > 0$) нужно сохранить. Ответ $(5; 2)$; пара $(-2; -5)$ не подходит."
+  },
+  "kk": {
+   "question": "$\\begin{cases} \\lg x + \\lg y = 1 \\\\ x - y = 3 \\end{cases}$ жүйесін шешкенде бірінші теңдеуді немен алмастырады?",
+   "options": [
+    "$xy = 10,\\ x > 0,\\ y > 0$",
+    "$x + y = 10$",
+    "$xy = 1$",
+    "шартсыз $xy = 10$"
+   ],
+   "correct": 0,
+   "solution": "$\\lg x + \\lg y = \\lg(xy) = 1$, демек $xy = 10$, бірақ ММО-ны ($x, y > 0$) сақтау керек. Жауабы $(5; 2)$; $(-2; -5)$ жұбы жарамайды."
+  }
+ },
+ {
+  "id": "math.c.sys.special-exp#001",
+  "template": "math.c.sys.special-exp",
+  "subject": "math",
+  "topic": "special-equation-systems",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Система $\\begin{cases} 2^x \\cdot 2^y = 32 \\\\ x - y = 1 \\end{cases}$ сводится к линейной",
+   "options": [
+    "$\\begin{cases} x + y = 5 \\\\ x - y = 1 \\end{cases}$",
+    "$\\begin{cases} xy = 5 \\\\ x - y = 1 \\end{cases}$",
+    "$\\begin{cases} x + y = 32 \\\\ x - y = 1 \\end{cases}$",
+    "$\\begin{cases} x + y = 16 \\\\ x - y = 1 \\end{cases}$"
+   ],
+   "correct": 0,
+   "solution": "$2^x \\cdot 2^y = 2^{x + y} = 32 = 2^5$, откуда $x + y = 5$. Решение $(3; 2)$."
+  },
+  "kk": {
+   "question": "$\\begin{cases} 2^x \\cdot 2^y = 32 \\\\ x - y = 1 \\end{cases}$ жүйесі қандай сызықтық жүйеге келтіріледі?",
+   "options": [
+    "$\\begin{cases} x + y = 5 \\\\ x - y = 1 \\end{cases}$",
+    "$\\begin{cases} xy = 5 \\\\ x - y = 1 \\end{cases}$",
+    "$\\begin{cases} x + y = 32 \\\\ x - y = 1 \\end{cases}$",
+    "$\\begin{cases} x + y = 16 \\\\ x - y = 1 \\end{cases}$"
+   ],
+   "correct": 0,
+   "solution": "$2^x \\cdot 2^y = 2^{x + y} = 32 = 2^5$, бұдан $x + y = 5$. Шешімі $(3; 2)$."
+  }
+ },
+ {
+  "id": "math.c.ineq.multiply-neg#001",
+  "template": "math.c.ineq.multiply-neg",
+  "subject": "math",
+  "topic": "inequalities",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "При умножении обеих частей неравенства на отрицательное число",
+   "options": [
+    "знак неравенства меняется на противоположный",
+    "знак не меняется",
+    "неравенство превращается в равенство",
+    "неравенство теряет смысл"
+   ],
+   "correct": 0,
+   "solution": "$-2x > 6 \\Rightarrow x < -3$. При делении на отрицательное число — тоже."
+  },
+  "kk": {
+   "question": "Теңсіздіктің екі жағын теріс санға көбейткенде",
+   "options": [
+    "теңсіздік таңбасы қарама-қарсыға өзгереді",
+    "таңба өзгермейді",
+    "теңсіздік теңдікке айналады",
+    "теңсіздік мағынасын жоғалтады"
+   ],
+   "correct": 0,
+   "solution": "$-2x > 6 \\Rightarrow x < -3$. Теріс санға бөлгенде — дәл солай."
+  }
+ },
+ {
+  "id": "math.c.ineq.exp-base#001",
+  "template": "math.c.ineq.exp-base",
+  "subject": "math",
+  "topic": "inequalities",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Неравенство $\\left(\\frac{1}{2}\\right)^x > \\left(\\frac{1}{2}\\right)^3$ равносильно",
+   "options": [
+    "$x < 3$",
+    "$x > 3$",
+    "$x > \\frac{1}{8}$",
+    "$x \\ge 3$"
+   ],
+   "correct": 0,
+   "solution": "Основание $\\frac{1}{2} < 1$: функция убывает, знак меняется."
+  },
+  "kk": {
+   "question": "$\\left(\\frac{1}{2}\\right)^x > \\left(\\frac{1}{2}\\right)^3$ теңсіздігі мәндес",
+   "options": [
+    "$x < 3$",
+    "$x > 3$",
+    "$x > \\frac{1}{8}$",
+    "$x \\ge 3$"
+   ],
+   "correct": 0,
+   "solution": "Негіз $\\frac{1}{2} < 1$: функция кемиді, таңба өзгереді."
+  }
+ },
+ {
+  "id": "math.c.ineq.square-pos#001",
+  "template": "math.c.ineq.square-pos",
+  "subject": "math",
+  "topic": "inequalities",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Решение неравенства $x^2 + 4 > 0$",
+   "options": [
+    "$(-\\infty; +\\infty)$",
+    "$(-2; 2)$",
+    "$(2; +\\infty)$",
+    "решений нет"
+   ],
+   "correct": 0,
+   "solution": "$x^2 \\ge 0$, поэтому $x^2 + 4 \\ge 4 > 0$ при любом $x$."
+  },
+  "kk": {
+   "question": "$x^2 + 4 > 0$ теңсіздігінің шешімі",
+   "options": [
+    "$(-\\infty; +\\infty)$",
+    "$(-2; 2)$",
+    "$(2; +\\infty)$",
+    "шешімі жоқ"
+   ],
+   "correct": 0,
+   "solution": "$x^2 \\ge 0$, сондықтан кез келген $x$ үшін $x^2 + 4 \\ge 4 > 0$."
+  }
+ },
+ {
+  "id": "math.c.ineq.interval-even#001",
+  "template": "math.c.ineq.interval-even",
+  "subject": "math",
+  "topic": "inequalities",
+  "level": "hard",
+  "kind": "single",
+  "ru": {
+   "question": "При решении методом интервалов знак выражения НЕ меняется при переходе через корень",
+   "options": [
+    "чётной кратности, например $(x - 2)^2$",
+    "нечётной кратности",
+    "любой корень меняет знак",
+    "только отрицательный корень"
+   ],
+   "correct": 0,
+   "solution": "Множитель в чётной степени неотрицателен с обеих сторон от корня — знак сохраняется."
+  },
+  "kk": {
+   "question": "Интервалдар әдісімен шешкенде өрнек таңбасы қай түбір арқылы өткенде ӨЗГЕРМЕЙДІ?",
+   "options": [
+    "жұп еселі түбір, мысалы $(x - 2)^2$",
+    "тақ еселі түбір",
+    "кез келген түбір таңбаны өзгертеді",
+    "тек теріс түбір"
+   ],
+   "correct": 0,
+   "solution": "Жұп дәрежедегі көбейткіш түбірдің екі жағында да теріс емес — таңба сақталады."
+  }
+ },
+ {
+  "id": "math.c.ineqsys.intersection#001",
+  "template": "math.c.ineqsys.intersection",
+  "subject": "math",
+  "topic": "inequality-systems",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Решение системы неравенств — это",
+   "options": [
+    "пересечение решений всех неравенств",
+    "объединение решений",
+    "решение первого неравенства",
+    "разность решений"
+   ],
+   "correct": 0,
+   "solution": "Система требует, чтобы выполнялись все неравенства одновременно — берём общую часть. Объединение — для совокупности."
+  },
+  "kk": {
+   "question": "Теңсіздіктер жүйесінің шешімі — бұл",
+   "options": [
+    "барлық теңсіздік шешімдерінің қиылысуы",
+    "шешімдердің бірігуі",
+    "бірінші теңсіздіктің шешімі",
+    "шешімдердің айырмасы"
+   ],
+   "correct": 0,
+   "solution": "Жүйе барлық теңсіздіктің бір мезгілде орындалуын талап етеді — ортақ бөлікті аламыз. Бірігу — жиынтық үшін."
+  }
+ },
+ {
+  "id": "math.c.ineqsys.empty#001",
+  "template": "math.c.ineqsys.empty",
+  "subject": "math",
+  "topic": "inequality-systems",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Система $\\begin{cases} x > 5 \\\\ x < 2 \\end{cases}$",
+   "options": [
+    "не имеет решений",
+    "$(2; 5)$",
+    "$(-\\infty; 2) \\cup (5; +\\infty)$",
+    "$x = 3{,}5$"
+   ],
+   "correct": 0,
+   "solution": "Нет числа, которое одновременно больше 5 и меньше 2. Ответ из двух лучей — решение совокупности."
+  },
+  "kk": {
+   "question": "$\\begin{cases} x > 5 \\\\ x < 2 \\end{cases}$ жүйесі",
+   "options": [
+    "шешімі жоқ",
+    "$(2; 5)$",
+    "$(-\\infty; 2) \\cup (5; +\\infty)$",
+    "$x = 3{,}5$"
+   ],
+   "correct": 0,
+   "solution": "Бір мезгілде 5-тен үлкен әрі 2-ден кіші сан жоқ. Екі сәулелі жауап — жиынтықтың шешімі."
+  }
+ },
+ {
+  "id": "math.c.prog.formula#001",
+  "template": "math.c.prog.formula",
+  "subject": "math",
+  "topic": "progressions",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Формула $n$-го члена геометрической прогрессии",
+   "options": [
+    "$b_n = b_1 q^{n-1}$",
+    "$b_n = b_1 q^n$",
+    "$b_n = b_1 + (n - 1)q$",
+    "$b_n = b_1 \\cdot nq$"
+   ],
+   "correct": 0,
+   "solution": "Показатель $n - 1$: от первого члена до $n$-го $n - 1$ умножений. Третий вариант — арифметическая прогрессия."
+  },
+  "kk": {
+   "question": "Геометриялық прогрессияның $n$-ші мүшесінің формуласы",
+   "options": [
+    "$b_n = b_1 q^{n-1}$",
+    "$b_n = b_1 q^n$",
+    "$b_n = b_1 + (n - 1)q$",
+    "$b_n = b_1 \\cdot nq$"
+   ],
+   "correct": 0,
+   "solution": "Көрсеткіш $n - 1$: бірінші мүшеден $n$-шіге дейін $n - 1$ көбейту. Үшінші нұсқа — арифметикалық прогрессия."
+  }
+ },
+ {
+  "id": "math.c.prog.infinite#001",
+  "template": "math.c.prog.infinite",
+  "subject": "math",
+  "topic": "progressions",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Сумма бесконечной геометрической прогрессии существует, если",
+   "options": [
+    "$|q| < 1$",
+    "$q > 1$",
+    "$q < 0$",
+    "$|q| \\le 1$"
+   ],
+   "correct": 0,
+   "solution": "Только при $|q| < 1$ члены убывают к нулю и сумма конечна: $S = \\frac{b_1}{1 - q}$."
+  },
+  "kk": {
+   "question": "Шексіз геометриялық прогрессияның қосындысы бар, егер",
+   "options": [
+    "$|q| < 1$",
+    "$q > 1$",
+    "$q < 0$",
+    "$|q| \\le 1$"
+   ],
+   "correct": 0,
+   "solution": "Тек $|q| < 1$ болғанда мүшелер нөлге ұмтылады және қосынды шектеулі: $S = \\frac{b_1}{1 - q}$."
+  }
+ },
+ {
+  "id": "math.c.prog.middle#001",
+  "template": "math.c.prog.middle",
+  "subject": "math",
+  "topic": "progressions",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Числа $x$, $y$, $z$ — последовательные члены арифметической прогрессии. Тогда",
+   "options": [
+    "$2y = x + z$",
+    "$y^2 = xz$",
+    "$y = x \\cdot z$",
+    "$z = 2x - y$"
+   ],
+   "correct": 0,
+   "solution": "Каждый член арифметической прогрессии — среднее арифметическое соседей. $y^2 = xz$ — свойство геометрической."
+  },
+  "kk": {
+   "question": "$x$, $y$, $z$ — арифметикалық прогрессияның қатар мүшелері. Онда",
+   "options": [
+    "$2y = x + z$",
+    "$y^2 = xz$",
+    "$y = x \\cdot z$",
+    "$z = 2x - y$"
+   ],
+   "correct": 0,
+   "solution": "Арифметикалық прогрессияның әр мүшесі — көршілерінің арифметикалық ортасы. $y^2 = xz$ — геометриялықтың қасиеті."
+  }
+ },
+ {
+  "id": "math.c.calc.ln-chain#001",
+  "template": "math.c.calc.ln-chain",
+  "subject": "math",
+  "topic": "calculus-and-modeling",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Производная функции $y = \\ln(4 + 9x)$",
+   "options": [
+    "$\\frac{9}{4 + 9x}$",
+    "$\\frac{1}{4 + 9x}$",
+    "$\\frac{9}{x}$",
+    "$\\frac{9}{\\ln x}$"
+   ],
+   "correct": 0,
+   "solution": "$(\\ln u)' = \\frac{u'}{u}$, $u' = 9$. Без множителя 9 забыта производная внутренней функции."
+  },
+  "kk": {
+   "question": "$y = \\ln(4 + 9x)$ функциясының туындысы",
+   "options": [
+    "$\\frac{9}{4 + 9x}$",
+    "$\\frac{1}{4 + 9x}$",
+    "$\\frac{9}{x}$",
+    "$\\frac{9}{\\ln x}$"
+   ],
+   "correct": 0,
+   "solution": "$(\\ln u)' = \\frac{u'}{u}$, $u' = 9$. 9 көбейткішінсіз ішкі функцияның туындысы ұмытылған."
+  }
+ },
+ {
+  "id": "math.c.calc.integral-exp#001",
+  "template": "math.c.calc.integral-exp",
+  "subject": "math",
+  "topic": "calculus-and-modeling",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Неопределённый интеграл $\\int e^{5x}\\,dx$",
+   "options": [
+    "$0{,}2e^{5x} + C$",
+    "$5e^{5x} + C$",
+    "$e^{5x} + C$",
+    "$5e^x + C$"
+   ],
+   "correct": 0,
+   "solution": "$\\int e^{kx}dx = \\frac{1}{k}e^{kx} + C$, $\\frac{1}{5} = 0{,}2$. $5e^{5x}$ — это производная, а не первообразная."
+  },
+  "kk": {
+   "question": "$\\int e^{5x}\\,dx$ анықталмаған интегралы",
+   "options": [
+    "$0{,}2e^{5x} + C$",
+    "$5e^{5x} + C$",
+    "$e^{5x} + C$",
+    "$5e^x + C$"
+   ],
+   "correct": 0,
+   "solution": "$\\int e^{kx}dx = \\frac{1}{k}e^{kx} + C$, $\\frac{1}{5} = 0{,}2$. $5e^{5x}$ — туынды, алғашқы функция емес."
+  }
+ },
+ {
+  "id": "math.c.calc.extremum#001",
+  "template": "math.c.calc.extremum",
+  "subject": "math",
+  "topic": "calculus-and-modeling",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Точка $x_0$ — точка максимума функции, если при переходе через неё производная",
+   "options": [
+    "меняет знак с «+» на «−»",
+    "меняет знак с «−» на «+»",
+    "равна нулю и не меняет знак",
+    "положительна"
+   ],
+   "correct": 0,
+   "solution": "Функция сначала растёт ($f' > 0$), потом убывает ($f' < 0$) — вершина. С «−» на «+» — минимум."
+  },
+  "kk": {
+   "question": "$x_0$ нүктесі функцияның максимум нүктесі, егер ол арқылы өткенде туынды",
+   "options": [
+    "таңбасын «+»-тен «−»-ке өзгертсе",
+    "таңбасын «−»-тен «+»-ке өзгертсе",
+    "нөлге тең және таңбасын өзгертпесе",
+    "оң болса"
+   ],
+   "correct": 0,
+   "solution": "Функция алдымен өседі ($f' > 0$), сосын кемиді ($f' < 0$) — төбе. «−»-тен «+»-ке — минимум."
+  }
+ },
+ {
+  "id": "math.c.calc.tangent-slope#001",
+  "template": "math.c.calc.tangent-slope",
+  "subject": "math",
+  "topic": "calculus-and-modeling",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Геометрический смысл производной: $f'(x_0)$ равна",
+   "options": [
+    "угловому коэффициенту касательной в точке $x_0$",
+    "значению функции в точке $x_0$",
+    "площади под графиком",
+    "длине касательной"
+   ],
+   "correct": 0,
+   "solution": "$f'(x_0) = \\operatorname{tg}\\alpha = k$ касательной $y = f(x_0) + f'(x_0)(x - x_0)$. Площадь под графиком — интеграл."
+  },
+  "kk": {
+   "question": "Туындының геометриялық мағынасы: $f'(x_0)$ неге тең?",
+   "options": [
+    "$x_0$ нүктесіндегі жанаманың бұрыштық коэффициентіне",
+    "функцияның $x_0$ нүктесіндегі мәніне",
+    "график астындағы ауданға",
+    "жанаманың ұзындығына"
+   ],
+   "correct": 0,
+   "solution": "$f'(x_0) = \\operatorname{tg}\\alpha = k$, жанама $y = f(x_0) + f'(x_0)(x - x_0)$. График астындағы аудан — интеграл."
+  }
+ },
+ {
+  "id": "math.c.calc.derivatives#001",
+  "template": "math.c.calc.derivatives",
+  "subject": "math",
+  "topic": "calculus-and-modeling",
+  "level": "medium",
+  "kind": "multi",
+  "ru": {
+   "question": "Какие равенства верны? Выберите все верные.",
+   "options": [
+    "$(\\sin x)' = \\cos x$",
+    "$(e^x)' = e^x$",
+    "$(x^3)' = 3x^2$",
+    "$(\\cos x)' = \\sin x$",
+    "$(\\ln x)' = x$",
+    "$(x^3)' = x^2$"
+   ],
+   "correct": 7,
+   "solution": "$(\\cos x)' = -\\sin x$, $(\\ln x)' = \\frac{1}{x}$, $(x^n)' = nx^{n-1}$."
+  },
+  "kk": {
+   "question": "Қай теңдіктер дұрыс? Барлық дұрысын таңдаңыз.",
+   "options": [
+    "$(\\sin x)' = \\cos x$",
+    "$(e^x)' = e^x$",
+    "$(x^3)' = 3x^2$",
+    "$(\\cos x)' = \\sin x$",
+    "$(\\ln x)' = x$",
+    "$(x^3)' = x^2$"
+   ],
+   "correct": 7,
+   "solution": "$(\\cos x)' = -\\sin x$, $(\\ln x)' = \\frac{1}{x}$, $(x^n)' = nx^{n-1}$."
+  }
+ },
+ {
+  "id": "math.c.plane.inscribed-angle#001",
+  "template": "math.c.plane.inscribed-angle",
+  "subject": "math",
+  "topic": "plane-figures",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Вписанный угол опирается на дугу $100°$. Чему равен угол?",
+   "options": [
+    "$50°$",
+    "$100°$",
+    "$200°$",
+    "$80°$"
+   ],
+   "correct": 0,
+   "solution": "Вписанный угол равен половине дуги, на которую опирается. Центральный — всей дуге."
+  },
+  "kk": {
+   "question": "Іштей сызылған бұрыш $100°$ доғаға тіреледі. Бұрыш неге тең?",
+   "options": [
+    "$50°$",
+    "$100°$",
+    "$200°$",
+    "$80°$"
+   ],
+   "correct": 0,
+   "solution": "Іштей сызылған бұрыш тірелетін доғаның жартысына тең. Центрлік бұрыш — бүкіл доғаға."
+  }
+ },
+ {
+  "id": "math.c.plane.triangle-sum#001",
+  "template": "math.c.plane.triangle-sum",
+  "subject": "math",
+  "topic": "plane-figures",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Сумма углов выпуклого шестиугольника",
+   "options": [
+    "$720°$",
+    "$360°$",
+    "$540°$",
+    "$1080°$"
+   ],
+   "correct": 0,
+   "solution": "$180°(n - 2) = 180° \\cdot 4 = 720°$."
+  },
+  "kk": {
+   "question": "Дөңес алтыбұрыштың бұрыштарының қосындысы",
+   "options": [
+    "$720°$",
+    "$360°$",
+    "$540°$",
+    "$1080°$"
+   ],
+   "correct": 0,
+   "solution": "$180°(n - 2) = 180° \\cdot 4 = 720°$."
+  }
+ },
+ {
+  "id": "math.c.plane.rhombus#001",
+  "template": "math.c.plane.rhombus",
+  "subject": "math",
+  "topic": "plane-figures",
+  "level": "medium",
+  "kind": "multi",
+  "ru": {
+   "question": "Какие свойства есть у любого ромба? Выберите все верные.",
+   "options": [
+    "диагонали перпендикулярны",
+    "все стороны равны",
+    "диагонали делят углы пополам",
+    "диагонали равны",
+    "все углы прямые",
+    "около него можно описать окружность"
+   ],
+   "correct": 7,
+   "solution": "Равные диагонали, прямые углы и описанная окружность — у квадрата и прямоугольника, а не у любого ромба."
+  },
+  "kk": {
+   "question": "Кез келген ромбта қандай қасиеттер бар? Барлық дұрысын таңдаңыз.",
+   "options": [
+    "диагональдары перпендикуляр",
+    "барлық қабырғалары тең",
+    "диагональдар бұрыштарды қақ бөледі",
+    "диагональдары тең",
+    "барлық бұрыштары тік",
+    "оны сырттай шеңбер сызуға болады"
+   ],
+   "correct": 7,
+   "solution": "Тең диагональдар, тік бұрыштар және сырттай сызылған шеңбер — шаршы мен тіктөртбұрышта, кез келген ромбта емес."
+  }
+ },
+ {
+  "id": "math.c.plane.median-hyp#001",
+  "template": "math.c.plane.median-hyp",
+  "subject": "math",
+  "topic": "plane-figures",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Медиана прямоугольного треугольника, проведённая к гипотенузе, равна",
+   "options": [
+    "половине гипотенузы",
+    "высоте к гипотенузе",
+    "меньшему катету",
+    "гипотенузе"
+   ],
+   "correct": 0,
+   "solution": "Середина гипотенузы — центр описанной окружности, поэтому медиана равна радиусу $\\frac{c}{2}$."
+  },
+  "kk": {
+   "question": "Тікбұрышты үшбұрыштың гипотенузаға жүргізілген медианасы неге тең?",
+   "options": [
+    "гипотенузаның жартысына",
+    "гипотенузаға жүргізілген биіктікке",
+    "кіші катетке",
+    "гипотенузаға"
+   ],
+   "correct": 0,
+   "solution": "Гипотенузаның ортасы — сырттай сызылған шеңбердің центрі, сондықтан медиана радиусқа тең: $\\frac{c}{2}$."
+  }
+ },
+ {
+  "id": "math.c.metric.cos-theorem#001",
+  "template": "math.c.metric.cos-theorem",
+  "subject": "math",
+  "topic": "metric-relations-plane",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Теорема косинусов",
+   "options": [
+    "$a^2 = b^2 + c^2 - 2bc\\cos\\alpha$",
+    "$a^2 = b^2 + c^2 + 2bc\\cos\\alpha$",
+    "$a^2 = b^2 + c^2$",
+    "$\\frac{a}{\\sin\\alpha} = 2R$"
+   ],
+   "correct": 0,
+   "solution": "При $\\alpha = 90°$ превращается в теорему Пифагора. Последний вариант — теорема синусов."
+  },
+  "kk": {
+   "question": "Косинустар теоремасы",
+   "options": [
+    "$a^2 = b^2 + c^2 - 2bc\\cos\\alpha$",
+    "$a^2 = b^2 + c^2 + 2bc\\cos\\alpha$",
+    "$a^2 = b^2 + c^2$",
+    "$\\frac{a}{\\sin\\alpha} = 2R$"
+   ],
+   "correct": 0,
+   "solution": "$\\alpha = 90°$ болғанда Пифагор теоремасына айналады. Соңғы нұсқа — синустар теоремасы."
+  }
+ },
+ {
+  "id": "math.c.metric.perp-vectors#001",
+  "template": "math.c.metric.perp-vectors",
+  "subject": "math",
+  "topic": "metric-relations-plane",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Векторы $\\vec a$ и $\\vec b$ перпендикулярны тогда и только тогда, когда",
+   "options": [
+    "$\\vec a \\cdot \\vec b = 0$",
+    "$|\\vec a| = |\\vec b|$",
+    "$\\vec a = -\\vec b$",
+    "$\\vec a + \\vec b = 0$"
+   ],
+   "correct": 0,
+   "solution": "Скалярное произведение $|\\vec a||\\vec b|\\cos 90° = 0$."
+  },
+  "kk": {
+   "question": "$\\vec a$ және $\\vec b$ векторлары қашан және тек сонда перпендикуляр?",
+   "options": [
+    "$\\vec a \\cdot \\vec b = 0$",
+    "$|\\vec a| = |\\vec b|$",
+    "$\\vec a = -\\vec b$",
+    "$\\vec a + \\vec b = 0$"
+   ],
+   "correct": 0,
+   "solution": "Скаляр көбейтінді $|\\vec a||\\vec b|\\cos 90° = 0$."
+  }
+ },
+ {
+  "id": "math.c.metric.similar-area#001",
+  "template": "math.c.metric.similar-area",
+  "subject": "math",
+  "topic": "metric-relations-plane",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Стороны подобных треугольников относятся как $1 : 3$. Их площади относятся как",
+   "options": [
+    "$1 : 9$",
+    "$1 : 3$",
+    "$1 : 6$",
+    "$1 : 27$"
+   ],
+   "correct": 0,
+   "solution": "Площади подобных фигур относятся как квадрат коэффициента подобия: $3^2 = 9$. Объёмы — как куб."
+  },
+  "kk": {
+   "question": "Ұқсас үшбұрыштардың қабырғалары $1 : 3$ қатынасындай. Олардың аудандары қандай қатынаста?",
+   "options": [
+    "$1 : 9$",
+    "$1 : 3$",
+    "$1 : 6$",
+    "$1 : 27$"
+   ],
+   "correct": 0,
+   "solution": "Ұқсас фигуралардың аудандары ұқсастық коэффициентінің квадратындай: $3^2 = 9$. Көлемдер — кубындай."
+  }
+ },
+ {
+  "id": "math.c.metric.symmetry#001",
+  "template": "math.c.metric.symmetry",
+  "subject": "math",
+  "topic": "metric-relations-plane",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Точка $A(3; -2)$ симметрична относительно оси $Ox$ точке",
+   "options": [
+    "$(3; 2)$",
+    "$(-3; -2)$",
+    "$(-3; 2)$",
+    "$(-2; 3)$"
+   ],
+   "correct": 0,
+   "solution": "При симметрии относительно $Ox$ меняется знак ординаты. Относительно начала координат — обеих координат."
+  },
+  "kk": {
+   "question": "$A(3; -2)$ нүктесі $Ox$ осіне қатысты қай нүктеге симметриялы?",
+   "options": [
+    "$(3; 2)$",
+    "$(-3; -2)$",
+    "$(-3; 2)$",
+    "$(-2; 3)$"
+   ],
+   "correct": 0,
+   "solution": "$Ox$ осіне қатысты симметрияда ордината таңбасы өзгереді. Координаталар басына қатысты — екі координатаның да."
+  }
+ },
+ {
+  "id": "math.c.solid.skew#001",
+  "template": "math.c.solid.skew",
+  "subject": "math",
+  "topic": "solid-figures",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Прямые, которые не пересекаются и не лежат в одной плоскости, называются",
+   "options": [
+    "скрещивающимися",
+    "параллельными",
+    "перпендикулярными",
+    "совпадающими"
+   ],
+   "correct": 0,
+   "solution": "Параллельные прямые лежат в одной плоскости, а скрещивающиеся — нет."
+  },
+  "kk": {
+   "question": "Қиылыспайтын және бір жазықтықта жатпайтын түзулер қалай аталады?",
+   "options": [
+    "айқас",
+    "параллель",
+    "перпендикуляр",
+    "беттесетін"
+   ],
+   "correct": 0,
+   "solution": "Параллель түзулер бір жазықтықта жатады, ал айқас түзулер — жоқ."
+  }
+ },
+ {
+  "id": "math.c.solid.three-perp#001",
+  "template": "math.c.solid.three-perp",
+  "subject": "math",
+  "topic": "solid-figures",
+  "level": "hard",
+  "kind": "single",
+  "ru": {
+   "question": "Теорема о трёх перпендикулярах: прямая в плоскости перпендикулярна наклонной тогда и только тогда, когда она перпендикулярна",
+   "options": [
+    "проекции наклонной на эту плоскость",
+    "самой плоскости",
+    "перпендикуляру к плоскости",
+    "любой прямой плоскости"
+   ],
+   "correct": 0,
+   "solution": "Связывает наклонную и её проекцию — так находят расстояния и углы в пирамидах."
+  },
+  "kk": {
+   "question": "Үш перпендикуляр туралы теорема: жазықтықтағы түзу көлбеуге қашан және тек сонда перпендикуляр болады, егер ол",
+   "options": [
+    "көлбеудің осы жазықтыққа проекциясына перпендикуляр болса",
+    "жазықтықтың өзіне перпендикуляр болса",
+    "жазықтыққа перпендикулярға перпендикуляр болса",
+    "жазықтықтың кез келген түзуіне перпендикуляр болса"
+   ],
+   "correct": 0,
+   "solution": "Көлбеу мен оның проекциясын байланыстырады — пирамидалардағы қашықтықтар мен бұрыштар осылай табылады."
+  }
+ },
+ {
+  "id": "math.c.solid.cone-rotation#001",
+  "template": "math.c.solid.cone-rotation",
+  "subject": "math",
+  "topic": "solid-figures",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "При вращении прямоугольника вокруг одной из сторон получается",
+   "options": [
+    "цилиндр",
+    "конус",
+    "шар",
+    "усечённый конус"
+   ],
+   "correct": 0,
+   "solution": "Сторона-ось становится высотой, соседняя сторона — радиусом основания. Конус — вращение прямоугольного треугольника вокруг катета."
+  },
+  "kk": {
+   "question": "Тіктөртбұрышты бір қабырғасынан айналдырғанда не шығады?",
+   "options": [
+    "цилиндр",
+    "конус",
+    "шар",
+    "қиық конус"
+   ],
+   "correct": 0,
+   "solution": "Ось-қабырға биіктікке, көрші қабырға табан радиусына айналады. Конус — тікбұрышты үшбұрышты катетінен айналдыру."
+  }
+ },
+ {
+  "id": "math.c.space.cone-volume#001",
+  "template": "math.c.space.cone-volume",
+  "subject": "math",
+  "topic": "metric-relations-space",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Объём конуса",
+   "options": [
+    "$V = \\frac{1}{3}\\pi r^2 h$",
+    "$V = \\pi r^2 h$",
+    "$V = \\frac{4}{3}\\pi r^3$",
+    "$V = \\pi r l$"
+   ],
+   "correct": 0,
+   "solution": "Конус — треть цилиндра с тем же основанием и высотой. $\\frac{4}{3}\\pi r^3$ — шар, $\\pi r l$ — боковая поверхность конуса."
+  },
+  "kk": {
+   "question": "Конустың көлемі",
+   "options": [
+    "$V = \\frac{1}{3}\\pi r^2 h$",
+    "$V = \\pi r^2 h$",
+    "$V = \\frac{4}{3}\\pi r^3$",
+    "$V = \\pi r l$"
+   ],
+   "correct": 0,
+   "solution": "Конус — табаны мен биіктігі сондай цилиндрдің үштен бірі. $\\frac{4}{3}\\pi r^3$ — шар, $\\pi r l$ — конустың бүйір беті."
+  }
+ },
+ {
+  "id": "math.c.space.scale-volume#001",
+  "template": "math.c.space.scale-volume",
+  "subject": "math",
+  "topic": "metric-relations-space",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Все рёбра куба увеличили в 2 раза. Объём куба увеличился в",
+   "options": [
+    "8 раз",
+    "2 раза",
+    "4 раза",
+    "6 раз"
+   ],
+   "correct": 0,
+   "solution": "$V = a^3$: $2^3 = 8$. Площадь поверхности выросла бы в 4 раза."
+  },
+  "kk": {
+   "question": "Текшенің барлық қырларын 2 есе арттырды. Текшенің көлемі неше есе артты?",
+   "options": [
+    "8 есе",
+    "2 есе",
+    "4 есе",
+    "6 есе"
+   ],
+   "correct": 0,
+   "solution": "$V = a^3$: $2^3 = 8$. Бет ауданы 4 есе артар еді."
+  }
+ },
+ {
+  "id": "math.c.space.sphere-area#001",
+  "template": "math.c.space.sphere-area",
+  "subject": "math",
+  "topic": "metric-relations-space",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Площадь поверхности шара радиуса $R$",
+   "options": [
+    "$4\\pi R^2$",
+    "$\\pi R^2$",
+    "$\\frac{4}{3}\\pi R^3$",
+    "$2\\pi R$"
+   ],
+   "correct": 0,
+   "solution": "$S = 4\\pi R^2$ — в 4 раза больше площади большого круга. $\\frac{4}{3}\\pi R^3$ — объём, $2\\pi R$ — длина окружности."
+  },
+  "kk": {
+   "question": "$R$ радиусты шардың бет ауданы",
+   "options": [
+    "$4\\pi R^2$",
+    "$\\pi R^2$",
+    "$\\frac{4}{3}\\pi R^3$",
+    "$2\\pi R$"
+   ],
+   "correct": 0,
+   "solution": "$S = 4\\pi R^2$ — үлкен дөңгелек ауданынан 4 есе үлкен. $\\frac{4}{3}\\pi R^3$ — көлем, $2\\pi R$ — шеңбер ұзындығы."
+  }
+ },
+ {
+  "id": "math.c.vsp.length#001",
+  "template": "math.c.vsp.length",
+  "subject": "math",
+  "topic": "vectors-in-space",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Длина вектора $\\vec a(x; y; z)$",
+   "options": [
+    "$\\sqrt{x^2 + y^2 + z^2}$",
+    "$x + y + z$",
+    "$x^2 + y^2 + z^2$",
+    "$\\sqrt{x + y + z}$"
+   ],
+   "correct": 0,
+   "solution": "Пространственная теорема Пифагора: $|\\vec a| = \\sqrt{x^2 + y^2 + z^2}$."
+  },
+  "kk": {
+   "question": "$\\vec a(x; y; z)$ векторының ұзындығы",
+   "options": [
+    "$\\sqrt{x^2 + y^2 + z^2}$",
+    "$x + y + z$",
+    "$x^2 + y^2 + z^2$",
+    "$\\sqrt{x + y + z}$"
+   ],
+   "correct": 0,
+   "solution": "Кеңістіктегі Пифагор теоремасы: $|\\vec a| = \\sqrt{x^2 + y^2 + z^2}$."
+  }
+ },
+ {
+  "id": "math.c.vsp.collinear#001",
+  "template": "math.c.vsp.collinear",
+  "subject": "math",
+  "topic": "vectors-in-space",
+  "level": "medium",
+  "kind": "single",
+  "ru": {
+   "question": "Векторы $\\vec a(2; -4; 6)$ и $\\vec b(1; -2; 3)$",
+   "options": [
+    "коллинеарны и сонаправлены",
+    "перпендикулярны",
+    "коллинеарны и противоположно направлены",
+    "не коллинеарны"
+   ],
+   "correct": 0,
+   "solution": "$\\vec a = 2\\vec b$: координаты пропорциональны с положительным коэффициентом."
+  },
+  "kk": {
+   "question": "$\\vec a(2; -4; 6)$ және $\\vec b(1; -2; 3)$ векторлары",
+   "options": [
+    "коллинеар және бағыттас",
+    "перпендикуляр",
+    "коллинеар және қарама-қарсы бағытталған",
+    "коллинеар емес"
+   ],
+   "correct": 0,
+   "solution": "$\\vec a = 2\\vec b$: координаттар оң коэффициентпен пропорционал."
+  }
+ },
+ {
+  "id": "math.c.vsp.plane-xy#001",
+  "template": "math.c.vsp.plane-xy",
+  "subject": "math",
+  "topic": "vectors-in-space",
+  "level": "easy",
+  "kind": "single",
+  "ru": {
+   "question": "Точка $M(3; 0; -5)$ лежит в координатной плоскости",
+   "options": [
+    "$Oxz$",
+    "$Oxy$",
+    "$Oyz$",
+    "ни в одной"
+   ],
+   "correct": 0,
+   "solution": "Координата $y = 0$ — значит, точка в плоскости $Oxz$."
+  },
+  "kk": {
+   "question": "$M(3; 0; -5)$ нүктесі қай координаттық жазықтықта жатыр?",
+   "options": [
+    "$Oxz$",
+    "$Oxy$",
+    "$Oyz$",
+    "ешқайсысында"
+   ],
+   "correct": 0,
+   "solution": "$y = 0$ координатасы — демек, нүкте $Oxz$ жазықтығында."
+  }
+ },
+ {
   "id": "math.hard.ap-sum-from-two-terms#001",
   "template": "math.hard.ap-sum-from-two-terms",
   "subject": "math",
