@@ -50,7 +50,7 @@ class Template:
     answer: Callable[[P], Value] | None = None
     answers: list[Callable[[P], Value]] | None = None  # для kind="multi"
     kind: str = "single"
-    options: int = 5
+    options: int | None = None  # как в ЕНТ: single — 4 варианта (A–D), multi — 6 (A–F)
     text: dict[str, str] = field(default_factory=dict)  # {"ru": "...", "kk": "..."} — kk можно не давать
     solution: dict[str, str] = field(default_factory=dict)
     unit: str = ""  # «м/с²» — добавляется к каждому варианту
@@ -126,17 +126,21 @@ class TemplateError(ValueError):
     pass
 
 
+def n_options(t: Template) -> int:
+    return t.options if t.options is not None else (4 if t.kind == "single" else 6)
+
+
 def check_template(t: Template) -> None:
     if t.level not in LEVELS:
         raise TemplateError(f"{t.id}: level {t.level!r}")
     if t.kind == "single":
         if t.answer is None or t.answers:
             raise TemplateError(f"{t.id}: для single нужен answer (и не нужен answers)")
-        need = t.options - 1
+        need = n_options(t) - 1
     elif t.kind == "multi":
         if not t.answers or not 2 <= len(t.answers) <= 3 or t.answer is not None:
             raise TemplateError(f"{t.id}: для multi нужно 2–3 answers")
-        need = t.options - len(t.answers)
+        need = n_options(t) - len(t.answers)
     else:
         raise TemplateError(f"{t.id}: kind {t.kind!r}")
     if len(t.distractors) < need:
@@ -174,9 +178,9 @@ def _variant(t: Template, p: P) -> tuple[list[str], int, Value] | None:
         ws = fmt(w, t.decimals)
         if ws not in opts:
             opts.append(ws)
-        if len(opts) == t.options:
+        if len(opts) == n_options(t):
             break
-    if len(opts) < t.options:
+    if len(opts) < n_options(t):
         return None  # ловушки совпали с ответом или друг с другом — такой набор не годится
     return opts, (1 << len(right)) - 1, right[0]
 

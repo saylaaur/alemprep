@@ -15,7 +15,7 @@ const side = z
   .object({
     context: text.optional(),
     question: text,
-    options: z.array(z.string().trim().min(1).max(200)).min(5).max(6),
+    options: z.array(z.string().trim().min(1).max(200)).min(4).max(6),
     /** single — всегда 0 (верный первым, перемешивает сайт); multi — маска верных. */
     correct: z.number().int().min(0),
     solution: text,
