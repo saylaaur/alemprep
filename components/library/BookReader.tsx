@@ -43,10 +43,11 @@ export function BookReader({
       return { key: `p${i}`, node: <BookPageView page={p} tone={tone} className="h-full" />, bg: tone.bg };
     }),
   ];
-  if (halves.length % 2) halves.push({ key: 'end', node: <div className="h-full" />, bg: '#f7f7f2' });
+  const pageCount = halves.length;
+  if (pageCount % 2) halves.push({ key: 'end', node: <div className="h-full" />, bg: '#f7f7f2' });
 
   const spreads = halves.length / 2;
-  const total = wide ? spreads : halves.length;
+  const total = wide ? spreads : pageCount;
   const [pos, setPos] = useState(0);
   const go = useCallback((n: number) => setPos(Math.max(0, Math.min(total - 1, n))), [total]);
 

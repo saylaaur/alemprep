@@ -1,5 +1,6 @@
 """Собирает конспекты из content-studio/books/*_books.py в scripts/data/books/<slug>.json
 и проверяет: slug есть в каталоге, страницы ru и kk совпадают по числу, лимиты схемы соблюдены."""
+import argparse
 import importlib.util
 import json
 import pathlib
@@ -55,14 +56,24 @@ def check_pages(pages: list[dict], where: str) -> list[str]:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Build bilingual book JSON and its local registry.")
+    parser.add_argument("--migration-output", type=pathlib.Path, help="write SQL to a new, unused filename")
+    args = parser.parse_args()
+    if args.migration_output is not None and args.migration_output.exists():
+        parser.error(f"migration output already exists: {args.migration_output}")
+
     books, errs = [], []
     for f in sorted(HERE.glob("*_books.py")):
         spec = importlib.util.spec_from_file_location(f.stem, f)
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         books += mod.BOOKS
+    seen = set()
     for b in books:
         s = b["slug"]
+        if s in seen:
+            errs.append(f"{s}: повторный slug")
+        seen.add(s)
         if s not in SLUGS:
             errs.append(f"{s}: нет в каталоге")
         if len(b["ru"]) != len(b["kk"]):
@@ -75,7 +86,8 @@ def main() -> None:
         data = {"ru": {"pages": b["ru"]}, "kk": {"pages": b["kk"]}}
         (OUT / f"{b['slug']}.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
     write_registry()
-    write_migration(books)
+    if args.migration_output is not None:
+        write_migration(books, args.migration_output)
     print(f"Собрано книг: {len(books)}: {', '.join(b['slug'] for b in books)}")
 
 
@@ -107,10 +119,7 @@ export function bookContentOf(slug: string): RawBookContent | undefined {{
 """)
 
 
-MIGRATION = "0045_first_term_books.sql"
-
-
-def write_migration(books: list[dict]) -> None:
+def write_migration(books: list[dict], path: pathlib.Path) -> None:
     """Миграция заполняет конспекты в базе. Только пустые книги: правки, сделанные в базе, не затираются."""
     lit = lambda v: "'" + json.dumps(v, ensure_ascii=False, separators=(",", ":")).replace("'", "''") + "'::jsonb"
     parts = [
@@ -125,7 +134,8 @@ def write_migration(books: list[dict]) -> None:
             f"    content_kk = {lit({'pages': b['kk']})}\n"
             f"WHERE slug = '{b['slug']}' AND content_ru IS NULL;"
         )
-    (ROOT / "supabase/migrations" / MIGRATION).write_text("\n".join(parts) + "\n")
+    with path.open("x", encoding="utf-8") as migration:
+        migration.write("\n".join(parts) + "\n")
 
 
 if __name__ == "__main__":
