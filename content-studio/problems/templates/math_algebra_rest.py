@@ -279,7 +279,7 @@ TEMPLATES = [
         distractors=[
             lambda p: abs(p.vx) + abs(p.vy),  # сложил координаты
             lambda p: p.L**2,  # забыл корень
-            lambda p: p.vx + p.vy,
+            lambda p: p.L + 1,
             lambda p: abs(abs(p.vx) - abs(p.vy)),
         ],
         decimals=0,
@@ -298,7 +298,7 @@ TEMPLATES = [
         level="medium",
         **VPLANE,
         params={"a1": range(-5, 7), "a2": range(-5, 7), "b1": range(-6, 7)},
-        derived=lambda p: {"m": F(-p.a1 * p.b1, p.a2) if p.a2 else None},
+        derived=lambda p: {"m": F(-p.a1 * p.b1, p.a2) if p.a2 else None, "b1p": f"({p.b1})" if p.b1 < 0 else str(p.b1), "a2m": term(p.a2, "m")},
         where=lambda p: p.a2 != 0 and p.a1 != 0 and p.b1 != 0 and p.m is not None and p.m.denominator == 1 and p.m != 0,
         answer=lambda p: int(p.m),
         distractors=[
@@ -314,8 +314,8 @@ TEMPLATES = [
             "kk": "$m$-нің қандай мәнінде $\\vec{a}([[a1]]; [[a2]])$ және $\\vec{b}([[b1]]; m)$ векторлары перпендикуляр болады?",
         },
         solution={
-            "ru": "Векторы перпендикулярны, когда скалярное произведение равно нулю: $[[a1]] \\cdot ([[b1]]) + [[a2]]m = 0$, $m = [[ans]]$.",
-            "kk": "Скаляр көбейтінді нөлге тең болғанда векторлар перпендикуляр: $[[a1]] \\cdot ([[b1]]) + [[a2]]m = 0$, $m = [[ans]]$.",
+            "ru": "Векторы перпендикулярны, когда скалярное произведение равно нулю: $[[a1]] \\cdot [[b1p]] [[a2m]] = 0$, $m = [[ans]]$.",
+            "kk": "Скаляр көбейтінді нөлге тең болғанда векторлар перпендикуляр: $[[a1]] \\cdot [[b1p]] [[a2m]] = 0$, $m = [[ans]]$.",
         },
     ),
     # Длина вектора в пространстве
@@ -330,7 +330,7 @@ TEMPLATES = [
             lambda p: abs(p.vx) + abs(p.vy) + abs(p.vz),
             lambda p: p.L**2,
             lambda p: (p.vx**2 + p.vy**2) ** 0.5,  # потерял третью координату
-            lambda p: p.vx + p.vy + p.vz,
+            lambda p: abs(p.vx + p.vy + p.vz) or p.L + 2,
             lambda p: p.L + 1,
             lambda p: 2 * p.L,
         ],

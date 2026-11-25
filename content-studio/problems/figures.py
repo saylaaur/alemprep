@@ -148,3 +148,34 @@ def lever(l1_label: str, l2_label: str, f1_label: str, f2_label: str, ratio: flo
 
 def angle_deg(rad: float) -> float:
     return rad * 180 / math.pi
+
+
+def trapezoid(a_label: str, b_label: str, h_label: str, c_label: str | None = None, ratio: float = 0.5) -> str:
+    """Равнобедренная трапеция: нижнее основание a, верхнее b (ratio = b / a), высота h пунктиром, боковая сторона c."""
+    x0, y0, w, hh = 40.0, 165.0, 240.0, 110.0
+    top = w * max(0.25, min(ratio, 0.8))
+    off = (w - top) / 2
+    A, B, C, D = (x0, y0), (x0 + w, y0), (x0 + w - off, y0 - hh), (x0 + off, y0 - hh)
+    body = poly([A, B, C, D], fill="#ecfdf5")
+    body += line(D[0], D[1], D[0], y0, dash=True, color=MUTED)
+    body += poly([(D[0], y0 - 12), (D[0] + 12, y0 - 12), (D[0] + 12, y0)], w=1.2, color=MUTED, closed=False)
+    body += text(x0 + w / 2, y0 + 22, a_label) + text(x0 + w / 2, y0 - hh - 10, b_label)
+    body += text(D[0] + 6, y0 - hh / 2 + 5, h_label, anchor="start")
+    if c_label:
+        body += text(x0 + w - off / 2 + 10, y0 - hh / 2, c_label, anchor="start")
+    return svg(320, 200, body)
+
+
+def pyramid(a_label: str, h_label: str, f_label: str | None = None) -> str:
+    """Правильная четырёхугольная пирамида: сторона основания a, высота h, апофема f."""
+    A, B, C, D = (40, 175), (230, 175), (290, 130), (100, 130)
+    O = ((A[0] + C[0]) / 2, (A[1] + C[1]) / 2)
+    S = (O[0], 25)
+    M = ((A[0] + B[0]) / 2, 175)
+    body = poly([A, B, C, S], fill="#ecfdf5") + line(*A, *S) + line(*B, *S) + line(*C, *S)
+    body += line(*A, *D, dash=True, color=MUTED) + line(*D, *C, dash=True, color=MUTED) + line(*D, *S, dash=True, color=MUTED)
+    body += line(*S, *O, dash=True, color=ACCENT) + line(*O, *M, dash=True, color=MUTED)
+    body += text((A[0] + B[0]) / 2, 196, a_label) + text(O[0] + 5, 108, h_label, size=13, anchor="start", color=ACCENT).replace("<text ", "<text stroke='white' stroke-width='4' paint-order='stroke' ")
+    if f_label:
+        body += line(*S, *M, color=ACCENT, w=1.5) + text(S[0] + 0.85 * (M[0] - S[0]) - 6, S[1] + 0.85 * (M[1] - S[1]) + 2, f_label, anchor="end", italic=True)
+    return svg(320, 210, body)

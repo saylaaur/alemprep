@@ -22,6 +22,8 @@ Num = int | float | Fraction
 Value = Num | str  # вариант ответа: число или готовая строка («(2; +∞)», «Мнимое»)
 Params = dict[str, Num]
 
+from kk_words import KK_WORDS  # noqa: E402
+
 LEVELS = ("easy", "medium", "hard")
 
 
@@ -110,12 +112,17 @@ def fmt_tex(x: Value, decimals: int = 2) -> str:
 
 
 _PH = re.compile(r"\[\[(\w+)\]\]")
+ROUNDED: list[tuple[str, float, int]] = []  # см. fill(): build.py падает, если список не пуст
 
 
 def fill(s: str, p: P, ans: Value, decimals: int, tex: bool) -> str:
     def rep(m: re.Match[str]) -> str:
         k = m.group(1)
         v = ans if k == "ans" else p[k]
+        if isinstance(v, (float, Fraction)) and abs(round(float(v), decimals) - float(v)) > 1e-9:
+            ROUNDED.append((k, float(v), decimals))  # число в тексте округлилось — условие исказится
+        if tex and isinstance(v, str) and v.startswith("$") and v.endswith("$") and v.count("$") == 2:
+            v = v[1:-1]  # ответ уже формула ($\\frac{1}{2}$), а стоит внутри $…$ — без лишних долларов
         return fmt_tex(v, decimals) if tex else fmt(v, decimals)
 
     return _PH.sub(rep, s)
@@ -128,6 +135,30 @@ def fill_mixed(s: str, p: P, ans: Value, decimals: int) -> str:
 
 
 # ---------- генерация ----------
+
+# ---------- согласование русских слов с числом: «2 раза», «5 раз», «4 страницы» ----------
+_FORMS = [
+    ("раз", "раза", "раз"),
+    ("страница", "страницы", "страниц"),
+    ("строка", "строки", "строк"),
+    ("символ", "символа", "символов"),
+    ("цвет", "цвета", "цветов"),
+    ("полное колебание", "полных колебания", "полных колебаний"),
+    ("период", "периода", "периодов"),
+]
+_FORM_OF = {w: f for f in _FORMS for w in f}
+_FORM_OF["периода(ов)"] = _FORMS[-1]
+_AGREE = re.compile(r"(?<![\d,.{^])(\d+)(\$?) (" + "|".join(sorted(map(re.escape, _FORM_OF), key=len, reverse=True)) + r")(?![а-яё(])")
+
+
+def ru_agree(s: str) -> str:
+    def rep(m: re.Match[str]) -> str:
+        n = int(m.group(1))
+        one, few, many = _FORM_OF[m.group(3)]
+        w = one if n % 10 == 1 and n % 100 != 11 else few if 2 <= n % 10 <= 4 and not 12 <= n % 100 <= 14 else many
+        return f"{m.group(1)}{m.group(2)} {w}"
+    return _AGREE.sub(rep, s)
+
 
 class TemplateError(ValueError):
     pass
@@ -242,10 +273,10 @@ MATCH_CORRECT = 0 + 8 * 1  # верные стоят первыми: строк�
 
 def _side(t: Template, lang: str, p: P, ans: Value, opts: list[str], mask: int) -> dict:
     unit = t.unit_kk if (lang == "kk" and t.unit_kk) else t.unit
-    fill = lambda s: fill_mixed(s, p, ans, t.decimals)
+    fill = lambda s: (ru_agree if lang == "ru" else str)(fill_mixed(s, p, ans, t.decimals))
     out = {
         "question": fill(t.text[lang]),
-        "options": [(t.options_kk.get(o, o) if lang == "kk" else o) + (f" {unit}" if unit else "") for o in opts],
+        "options": [(t.options_kk.get(o, KK_WORDS.get(o, o)) if lang == "kk" else o) + (f" {unit}" if unit else "") for o in opts],
         # перемешивает сайт
         "correct": 0 if t.kind == "single" else MATCH_CORRECT if t.kind == "match" else mask,
         "solution": fill(t.solution[lang]),
@@ -273,7 +304,8 @@ def generate(t: Template, seed: int = 0) -> list[dict]:
         opts, mask, ans = v
         _check_names(t, p)
         q_ru = fill_mixed(t.text["ru"], p, ans, t.decimals)
-        key = q_ru + (t.figure(p) if t.figure is not None else "")  # с рисунком одинаковый текст — разные задачи
+        # с рисунком (или со строками соответствия / другими вариантами) одинаковый текст — разные задачи
+        key = q_ru + (t.figure(p) if t.figure is not None else "") + "|".join(fill_mixed(r, p, ans, t.decimals) for r in t.rows.get("ru", [])) + "|".join(opts)
         if key in seen:
             continue
         seen.add(key)
@@ -343,7 +375,7 @@ def generate_context(c: Context, seed: int = 0) -> list[dict]:
         parts = [_variant(q, p) for q in c.questions]
         if any(v is None for v in parts):
             continue  # блок берём только целиком
-        ctx_ru = fill_mixed(c.context["ru"], p, 0, 2)
+        ctx_ru = ru_agree(fill_mixed(c.context["ru"], p, 0, 2))
         key = ctx_ru + (c.figure(p) if c.figure is not None else "")
         if key in seen:
             continue

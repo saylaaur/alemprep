@@ -19,7 +19,8 @@ describe('банк задач', () => {
       for (const side of [it.ru, it.kk].filter(Boolean) as BankItem['ru'][]) {
         expect(new Set(side.options).size, it.id).toBe(side.options.length);
       }
-      const key = `${it.template}|${it.ru.context ?? ''}|${it.ru.question}|${it.figure ?? ''}`;
+      // как в engine.py: одинаковый текст с разными строками соответствия, рисунком или вариантами — разные задачи
+      const key = `${it.template}|${it.ru.context ?? ''}|${it.ru.question}|${it.figure ?? ''}|${(it.ru.rows ?? []).join('|')}|${it.ru.options.join('|')}`;
       expect(q.has(key), it.id).toBe(false);
       q.add(key);
     }
@@ -29,7 +30,9 @@ describe('банк задач', () => {
     for (const it of BANK) {
       for (const side of [it.ru, it.kk].filter(Boolean) as BankItem['ru'][]) {
         for (const s of [side.context ?? '', side.question, side.solution, ...side.options]) {
-          for (const m of s.match(/\$[^$]*\$/g) ?? []) expect(CYR.test(m.replace(/\\text\{[^}]*\}/g, '')), `${it.id}: ${m}`).toBe(false);
+          // код (`…`, ```…```) KaTeX не трогает — как MathText на сайте
+          const text = s.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]+`/g, '');
+          for (const m of text.match(/\$[^$]*\$/g) ?? []) expect(CYR.test(m.replace(/\\text\{[^}]*\}/g, '')), `${it.id}: ${m}`).toBe(false);
         }
       }
     }

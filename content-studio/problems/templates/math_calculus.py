@@ -81,7 +81,7 @@ TEMPLATES = [
         answer=lambda p: lin(p.k, p.y0 - p.k * p.x0),
         distractors=[
             lambda p: lin(p.k, p.y0),  # забыл сдвиг: y = f(x0) + f'(x0)·x
-            lambda p: lin(p.y0, p.k - p.y0 * p.x0) if p.y0 != 0 else "нет",  # перепутал f(x0) и f'(x0)
+            lambda p: lin(p.y0, p.k - p.y0 * p.x0) if p.y0 != 0 else lin(p.k + 1, p.y0 - (p.k + 1) * p.x0),  # перепутал f(x0) и f'(x0)
             lambda p: lin(p.k, p.y0 + p.k * p.x0),  # ошибка знака в (x − x0)
             lambda p: lin(p.x0 + p.b, p.y0 - (p.x0 + p.b) * p.x0),  # производная x² как x
             lambda p: lin(-p.k, p.y0 + p.k * p.x0),

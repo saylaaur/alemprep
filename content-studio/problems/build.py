@@ -20,6 +20,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(HERE))
 
+import engine  # noqa: E402
 from engine import Context, Template, generate, generate_context  # noqa: E402
 
 SUBJECTS = ("math", "physics", "informatics")
@@ -65,7 +66,11 @@ def main() -> None:
         if not isinstance(t, Context):
             # Чистка: однотипных лёгких задач меньше, чтобы набор из 15 не состоял из одной и той же формулы.
             t.variants = min(t.variants, CAP[t.level])
+        engine.ROUNDED.clear()
         items = generate_context(t) if isinstance(t, Context) else generate(t)
+        if engine.ROUNDED:
+            k, v, d = engine.ROUNDED[0]
+            raise SystemExit(f"{t.id}: в тексте число {k} = {v} округлилось до {d} знаков — увеличьте decimals или поменяйте числа")
         if len(items) < MIN_VARIANTS and t.params:
             weak.append(f"{t.id}: {len(items)}")
         bank[t.subject].extend(items)

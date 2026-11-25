@@ -51,7 +51,7 @@ TEMPLATES = [
         distractors=[
             lambda p: p.i * 2,
             lambda p: p.i + 1,
-            lambda p: 2**p.i // 8 if 2**p.i // 8 not in (p.i, p.i * 2, p.i + 1) else p.i + 3,
+            lambda p: 2**p.i // 8 if 2**p.i // 8 >= 1 and 2**p.i // 8 not in (p.i, p.i * 2, p.i + 1) else p.i + 3,
             lambda p: p.i - 1 if p.i > 1 else 3,
         ],
         decimals=0,
@@ -150,7 +150,7 @@ TEMPLATES = [
         derived=lambda p: {"q": p.x // p.y, "r": p.x % p.y},
         answer=lambda p: p.x // p.y + p.x % p.y,
         distractors=[
-            lambda p: p.x // p.y * p.x % p.y if p.x // p.y * p.x % p.y != p.x // p.y + p.x % p.y else p.x // p.y + p.x % p.y + 2,
+            lambda p: (p.x // p.y) * (p.x % p.y),
             lambda p: p.x // p.y,
             lambda p: p.x % p.y,
             lambda p: p.x // p.y + p.x % p.y + 1,
@@ -186,7 +186,7 @@ TEMPLATES = [
         },
         solution={
             "ru": "Удваиваем $[[a]]$, пока значение меньше $[[n]]$. Считаем шаги: тело выполнится $[[ans]]$ раз.",
-            "kk": "$[[a]]$ санын $[[n]]$-нен кіші болғанша екі еселейміз. Қадамдарды санаймыз: дене $[[ans]]$ рет орындалады.",
+            "kk": "`k < [[n]]` шарты орындалғанша $[[a]]$ санын екі еселей береміз. Қадамдарды санаймыз: дене $[[ans]]$ рет орындалады.",
         },
     ),
 ]

@@ -66,13 +66,13 @@ TEMPLATES = [
     Template(
         id="math.hard.integral-area", **H("math", "calculus-and-modeling"),
         params={"a": [1, 2, 3, 4, 5, 6], "k": [1, 2, 3]},
-        derived=lambda p: {"K": "" if p.k == 1 else str(p.k)},
+        derived=lambda p: {"K": "" if p.k == 1 else str(p.k), "K2": str(2 * p.k)},
         answer=lambda p: frac(Fraction(p.k * p.a**3, 3)),
         distractors=[lambda p: frac(Fraction(p.k * p.a**2, 2)), lambda p: frac(Fraction(p.k * p.a**3, 1)), lambda p: frac(Fraction(2 * p.k * p.a, 1))],
         text={"ru": "Найдите площадь фигуры, ограниченной графиком $y = [[K]]x^2$, осью $Ox$ и прямой $x = [[a]]$.",
               "kk": "$y = [[K]]x^2$ графигімен, $Ox$ осімен және $x = [[a]]$ түзуімен шектелген фигураның ауданын табыңыз."},
-        solution={"ru": "$S = \\int_0^{[[a]]} [[K]]x^2\\,dx = [[K]]\\frac{x^3}{3}\\Big|_0^{[[a]]}$, ответ: [[ans]]. Ловушка: $2x$ — производная, а не первообразная.",
-                  "kk": "$S = \\int_0^{[[a]]} [[K]]x^2\\,dx = [[K]]\\frac{x^3}{3}\\Big|_0^{[[a]]}$, жауабы: [[ans]]. Абай болыңыз: $2x$ — туынды, алғашқы функция емес."},
+        solution={"ru": "$S = \\int_0^{[[a]]} [[K]]x^2\\,dx = [[K]]\\frac{x^3}{3}\\Big|_0^{[[a]]}$, ответ: [[ans]]. Ловушка: $[[K2]]x$ — производная, а не первообразная.",
+                  "kk": "$S = \\int_0^{[[a]]} [[K]]x^2\\,dx = [[K]]\\frac{x^3}{3}\\Big|_0^{[[a]]}$, жауабы: [[ans]]. Абай болыңыз: $[[K2]]x$ — туынды, алғашқы функция емес."},
     ),
     # ---------- Физика ----------
     Template(

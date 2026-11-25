@@ -74,6 +74,7 @@ TEMPLATES = [
         **LS,
         params={"p0": [1.2, 1.7, 2.0, 2.3, 3.2, 4.2], "pct": [20, 25, 40, 50, 60, 75, 80]},
         derived=lambda p: {"pv": round(p.p0 * p.pct / 100, 4)},
+        where=lambda p: abs(p.pv * 100 - round(p.pv * 100)) < 1e-9,
         answer=lambda p: p.pct,
         distractors=[
             lambda p: round(100 * p.p0 / p.pv, 2),  # перевернул отношение
@@ -177,7 +178,7 @@ TEMPLATES = [
             lambda p: p.U1 * p.N1 / p.N2,  # перевернул отношение витков
             lambda p: p.U1,
             lambda p: p.U1 * p.N2,
-            lambda p: p.U1 + p.N2 - p.N1,
+            lambda p: p.U1 * (p.N2 / p.N1) ** 2,  # возвёл отношение в квадрат
         ],
         decimals=2,
         unit="В",
@@ -272,7 +273,6 @@ TEMPLATES = [
         answer=lambda p: 70 * p.r,
         distractors=[
             lambda p: 35 * p.r,  # взял половину постоянной
-            lambda p: 70 + p.r,
             lambda p: 7 * p.r,
             lambda p: 700 * p.r,
         ],

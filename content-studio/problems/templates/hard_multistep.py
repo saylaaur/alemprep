@@ -145,6 +145,7 @@ TEMPLATES = [
         ],
         decimals=1,
         unit="Дж",
+        valid=lambda p, x: x > 0,  # отрицательный ответ ученик отбросит сразу
         text={
             "ru": "Брусок массой $[[m]]$ кг соскальзывает с высоты $[[h]]$ м и у основания имеет скорость $[[v]]$ м/с. Начальная скорость равна нулю. Найдите модуль работы силы трения. ($g = 10$ м/с²)",
             "kk": "Массасы $[[m]]$ кг білеуше $[[h]]$ м биіктіктен сырғанап түсіп, табанында $[[v]]$ м/с жылдамдыққа ие болады. Бастапқы жылдамдығы нөлге тең. Үйкеліс күшінің жұмысының модулін табыңыз. ($g = 10$ м/с²)",
@@ -234,7 +235,7 @@ TEMPLATES = [
         id="inf.hard.nested-loop",
         **T("informatics", "python-programming"),
         params={"n": [4, 5, 6, 7, 8, 9, 10, 12, 15, 20], "start": [0, 1]},
-        derived=lambda p: {},
+        derived=lambda p: {"lo": "i" if p.start == 0 else f"i + {p.start}"},
         answer=lambda p: sum(len(range(i + p.start, p.n)) for i in range(p.n)),
         distractors=[
             lambda p: p.n * p.n,  # посчитал, что внутренний цикл всегда полный
@@ -244,8 +245,8 @@ TEMPLATES = [
         ],
         decimals=0,
         text={
-            "ru": "Что выведет программа?\n\n```python\nc = 0\nfor i in range([[n]]):\n    for j in range(i + [[start]], [[n]]):\n        c += 1\nprint(c)\n```",
-            "kk": "Бағдарлама не шығарады?\n\n```python\nc = 0\nfor i in range([[n]]):\n    for j in range(i + [[start]], [[n]]):\n        c += 1\nprint(c)\n```",
+            "ru": "Что выведет программа?\n\n```python\nc = 0\nfor i in range([[n]]):\n    for j in range([[lo]], [[n]]):\n        c += 1\nprint(c)\n```",
+            "kk": "Бағдарлама не шығарады?\n\n```python\nc = 0\nfor i in range([[n]]):\n    for j in range([[lo]], [[n]]):\n        c += 1\nprint(c)\n```",
         },
         solution={
             "ru": "При каждом $i$ внутренний цикл выполняется $[[n]] - i - [[start]]$ раз (если это число положительно). Складываем по всем $i$ от $0$ до $[[n]] - 1$: $[[ans]]$.",
