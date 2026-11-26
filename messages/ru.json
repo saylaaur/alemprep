@@ -190,7 +190,8 @@
     },
     "questionTitle": "Задание",
     "reviewTitle": "Разбор задачи",
-    "answerRequired": "Заполни ответ, чтобы его проверить."
+    "answerRequired": "Заполни ответ, чтобы его проверить.",
+    "keyboardHint": "1–{last} — выбрать ответ · Enter — проверить"
   },
   "brand": {
     "name": "AlemPrep",

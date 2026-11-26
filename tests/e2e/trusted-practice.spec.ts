@@ -226,12 +226,38 @@ test('foreign session injected into a local draft cannot load a question or revi
   await expect(page.getByText('PRIVATE_EXPLANATION_MARKER')).toHaveCount(0);
 });
 
+test('number keys choose answers and Enter checks then advances', async ({ page }) => {
+  const { actor, slug } = await lesson();
+  await loginAs(page, actor);
+  await page.goto(`/ru/practice/topic/${slug}`);
+  const first = page.getByRole('radio', { name: 'A four', exact: true });
+  const second = page.getByRole('radio', { name: 'B five', exact: true });
+  const check = page.getByRole('button', { name: 'Проверить', exact: true });
+  await expect(first).toBeEnabled();
+  await page.keyboard.press('Enter');
+  await expect(check).toBeDisabled();
+  await page.keyboard.press('2');
+  await expect(second).toHaveAttribute('aria-checked', 'true');
+  await second.focus();
+  await page.keyboard.press('1');
+  await expect(first).toHaveAttribute('aria-checked', 'true');
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('learning-score')).toHaveText('1 / 1');
+  await expect(page.getByRole('heading', { name: 'Разбор задачи', exact: true })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(first).toBeEnabled();
+  await expect(first).toHaveAttribute('aria-checked', 'false');
+  await expect(page.getByRole('region', { name: 'Задание', exact: true })).toBeFocused();
+  expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE user_id = $1', [actor.id])).toBe(1);
+  expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id])).toBe(2);
+});
+
 test('skip is explicit and the next task starts a new server session', async ({ page }) => {
   const { actor, slug } = await lesson();
   await loginAs(page, actor);
   await page.goto(`/ru/practice/topic/${slug}`);
   await expect(page.getByRole('button', { name: 'Проверить', exact: true })).toBeDisabled();
-  await page.getByRole('button', { name: 'Пропустить', exact: true }).click();
+  await page.getByRole('button', { name: 'Пропустить', exact: true }).press('Enter');
   await expect(page.getByTestId('learning-score')).toHaveText('0 / 1');
   await expect(page.getByRole('heading', { name: 'Разбор задачи', exact: true })).toBeFocused();
   await expect(page.getByRole('button', { name: 'Проверить', exact: true })).toHaveCount(0);
@@ -247,9 +273,14 @@ test('Kazakh multi-answer practice renders and reviews a public DTO', async ({ p
   const { actor, slug } = await lesson('multi', 'kk');
   await loginAs(page, actor);
   await page.goto(`/kk/practice/topic/${slug}`);
-  await page.getByRole('checkbox', { name: 'A four' }).click();
-  await page.getByRole('checkbox', { name: 'B five' }).click();
-  await page.getByRole('button', { name: 'Тексеру', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: 'A four' })).toBeEnabled();
+  await page.keyboard.press('1');
+  await page.keyboard.press('2');
+  await page.keyboard.press('1');
+  await expect(page.getByRole('checkbox', { name: 'A four' })).toHaveAttribute('aria-checked', 'false');
+  await expect(page.getByRole('checkbox', { name: 'B five' })).toHaveAttribute('aria-checked', 'true');
+  await page.keyboard.press('1');
+  await page.keyboard.press('Enter');
   await expect(page.getByText('PRIVATE_EXPLANATION_MARKER')).toBeVisible();
   await expect(page.getByTestId('learning-score')).toHaveText('2 / 2');
   await expect(page.getByRole('checkbox', { name: 'A four' })).toHaveAccessibleName('A four Дұрыс нұсқа');

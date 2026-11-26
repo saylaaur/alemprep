@@ -190,7 +190,8 @@
     },
     "questionTitle": "Тапсырма",
     "reviewTitle": "Тапсырманы талдау",
-    "answerRequired": "Тексеру үшін жауапты толық енгіз."
+    "answerRequired": "Тексеру үшін жауапты толық енгіз.",
+    "keyboardHint": "1–{last} — жауап таңдау · Enter — тексеру"
   },
   "brand": {
     "name": "AlemPrep",

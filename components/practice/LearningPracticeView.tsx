@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -197,6 +197,45 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
   };
   const item = session?.items[0];
   const answerReady = item ? hasCompleteAnswer(item.question, answer) : false;
+  const options = item && item.question.type !== 'matching' && 'options' in item.question.body
+    ? item.question.body.options
+    : null;
+  const onPracticeKey = useEffectEvent((event: KeyboardEvent) => {
+    if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const target = event.target;
+    // Leave native Enter and number keys to links, other buttons, selects and graph controls.
+    const questionHasOptionFocus = target instanceof HTMLElement
+      && questionSection.current?.contains(target)
+      && target.matches('[role="radio"], [role="checkbox"]');
+    if (target !== document.body && target !== document.documentElement
+      && target !== questionSection.current && target !== reviewHeading.current && !questionHasOptionFocus) return;
+
+    if (event.key === 'Enter' && ((phase === 'active' && answerReady) || phase === 'review')) {
+      event.preventDefault();
+      if (event.repeat) return;
+      if (phase === 'review') nextQuestion();
+      else checkAnswer('submit');
+      return;
+    }
+
+    if (phase !== 'active' || !options || !/^[1-9]$/.test(event.key)) return;
+    const option = options[Number(event.key) - 1];
+    if (!option) return;
+    event.preventDefault();
+    if (event.repeat) return;
+    const draft = pending.current?.answer;
+    const selected = Array.isArray(draft) ? draft : [];
+    changeAnswer(item?.question.type === 'multi'
+      ? selected.includes(option.id) ? selected.filter((id) => id !== option.id) : [...selected, option.id]
+      : option.id);
+  });
+
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => onPracticeKey(event);
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
   const reviewed = review?.items[0];
   const correct = reviewed?.gradingBody.correct;
   const correctText = typeof correct === 'string' ? correct : Array.isArray(correct) ? correct.join(', ') : correct ? Object.entries(correct).map(([key, value]) => `${key}: ${value}`).join('; ') : '';
@@ -216,7 +255,7 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
       {phase === 'active' && <div className="space-y-2 border-t pt-4">
         {!answerReady && <p className="text-sm text-muted-foreground">{t('answerRequired')}</p>}
         <div className="flex flex-wrap items-center gap-2">
-          <Button className="min-h-11 w-full sm:w-auto" disabled={!answerReady} onClick={() => checkAnswer('submit')}>
+          <Button className="min-h-11 w-full sm:w-auto" disabled={!answerReady} aria-keyshortcuts="Enter" onClick={() => checkAnswer('submit')}>
             {t('submit')}
           </Button>
           <Button variant="ghost" onClick={() => checkAnswer('skip')}>{t('skip')}</Button>
@@ -226,6 +265,11 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
             </Button>
           )}
         </div>
+        {options && options.length > 0 && (
+          <p className="hidden text-xs text-muted-foreground [@media(hover:hover)_and_(pointer:fine)]:block">
+            {t('keyboardHint', { last: Math.min(options.length, 9) })}
+          </p>
+        )}
       </div>}
     </section>}
     {phase === 'active' && item && graphFor === item.id && <div className="rounded-2xl border bg-card p-4 sm:p-5">
@@ -251,7 +295,7 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
       {reviewed.explanation && <ContentBlocks blocks={reviewed.explanation.blocks} />}
       {item && <TaskGraph key={item.id} stem={item.question.body.stem} stemBlocks={item.question.body.stem_blocks} />}
       <div className="border-t pt-4">
-        <Button className="min-h-11 w-full sm:w-auto" onClick={nextQuestion}>
+        <Button className="min-h-11 w-full sm:w-auto" aria-keyshortcuts="Enter" onClick={nextQuestion}>
           {t('next')}
           <ChevronRight className="size-4" aria-hidden />
         </Button>
