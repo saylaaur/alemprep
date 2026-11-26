@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { useRouter } from '@/i18n/routing';
-import type { BookState } from '@/lib/supabase/queries/books';
+import { useEffect, useRef } from 'react';
+import { Link } from '@/i18n/routing';
+import type { BookState } from '@/lib/books/state';
 
-export type RingBook = { slug: string; name: string; subject: string; state: BookState };
-export type Ring = { key: string; name: string; books: RingBook[]; empty: string };
+type RingBook = { slug: string; name: string; state: BookState };
 
 /** Книга ещё идёт по графику 1-3-7-10-14-30-60 — светится жёлтым. */
 const inSchedule = (s: BookState) => s === 'due' || s === 'scheduled';
@@ -29,45 +27,9 @@ function colors(state: BookState): [string, string] {
 
 /**
  * Кольцо книг как у CLOU: каждая книга — тонкая карточка на наклонённом эллипсе.
- * Крутится само, от прокрутки страницы и пальцем; подписи предметов следуют за кольцом.
+ * Крутится само, от прокрутки страницы и пальцем.
  */
-export function BookRings({ rings, hint }: { rings: Ring[]; hint: string }) {
-  const [active, setActive] = useState(0);
-  const ring = rings[active] ?? rings[0];
-  return (
-    <div>
-      <div role="tablist" className="mb-2 flex max-w-full overflow-x-auto px-3 [scrollbar-width:none]">
-        <div className="mx-auto flex shrink-0 gap-0.5 rounded-full bg-muted/60 p-1 backdrop-blur-xl">
-          {rings.map((r, i) => (
-            <button
-              key={r.key}
-              type="button"
-              role="tab"
-              aria-selected={i === active}
-              onClick={() => setActive(i)}
-              className={cn(
-                'whitespace-nowrap rounded-full px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-150 sm:px-3.5 sm:text-sm',
-                i === active ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {r.name}
-              <span className="ml-1 text-xs text-muted-foreground">{r.books.length}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-      {ring.books.length === 0 ? (
-        <div className="grid h-[clamp(200px,30vw,320px)] place-items-center px-6 text-center text-sm text-muted-foreground">{ring.empty}</div>
-      ) : (
-        <BookRing key={ring.key} books={ring.books} />
-      )}
-      <p className="px-4 text-center text-[13px] text-muted-foreground">{hint}</p>
-    </div>
-  );
-}
-
-function BookRing({ books }: { books: RingBook[] }) {
-  const router = useRouter();
+export function BookRing({ books }: { books: RingBook[] }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const hover = useRef(false);
@@ -160,7 +122,7 @@ function BookRing({ books }: { books: RingBook[] }) {
   return (
     <div
         ref={stageRef}
-        className="relative h-[clamp(300px,46vw,560px)] cursor-grab touch-pan-y select-none overflow-hidden [perspective:1700px] active:cursor-grabbing"
+        className="relative h-[clamp(220px,36vw,420px)] cursor-grab touch-pan-y select-none overflow-hidden [perspective:1700px] active:cursor-grabbing"
       >
         <div ref={ringRef} className="absolute left-1/2 top-1/2 h-0 w-0 [transform-style:preserve-3d]">
           {books.map((b) => {
@@ -180,18 +142,19 @@ function BookRing({ books }: { books: RingBook[] }) {
               </span>
             );
             return (
-              <button
+              <Link
                 key={b.slug}
-                type="button"
+                href={{ pathname: '/library/[book]', params: { book: b.slug } }}
+                prefetch={false}
+                aria-label={b.name}
                 title={b.name}
-                onClick={() => router.push({ pathname: '/library/[book]', params: { book: b.slug } })}
                 onPointerEnter={() => (hover.current = true)}
                 onPointerLeave={() => (hover.current = false)}
                 className="absolute [transform-style:preserve-3d]"
               >
                 {face}
                 <span className="absolute inset-0 [transform:rotateY(180deg)] [transform-style:preserve-3d]">{face}</span>
-              </button>
+              </Link>
             );
           })}
       </div>
