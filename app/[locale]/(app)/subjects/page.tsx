@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@/i18n/routing';
 import { getSubjectsWithCounts, subjectName } from '@/lib/supabase/queries';
 import { getSubjectIcon } from '@/lib/icons';
@@ -30,6 +30,7 @@ export default async function SubjectsPage({
             return (
               <Link
                 key={s.id}
+                className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 href={{ pathname: '/subjects/[subject]', params: { subject: s.slug } }}
               >
                 <Card className="h-full transition-colors hover:border-primary/40">
@@ -45,7 +46,6 @@ export default async function SubjectsPage({
                       {t('questionsCount', { count: s.question_count })}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent />
                 </Card>
               </Link>
             );

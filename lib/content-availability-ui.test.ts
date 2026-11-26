@@ -25,6 +25,7 @@ vi.mock('@/lib/supabase/queries', () => ({
 
 import { ContentUnavailable } from '@/components/content/ContentUnavailable';
 import SubjectTopicsPage from '@/app/[locale]/(app)/subjects/[subject]/page';
+import { TodayView } from '@/components/today/TodayView';
 
 beforeEach(() => { vi.stubGlobal('React', React); });
 
@@ -48,5 +49,35 @@ describe.each(['ru', 'kk'] as const)('%s content availability UI', locale => {
     expect(html).toContain('aria-disabled="true"');
     expect(html).not.toContain(`href="/${locale}/practice/topic/empty-topic"`);
     expect(html).toContain(`href="/${locale}/practice/topic/available-topic"`);
+  });
+});
+
+describe.each(['ru', 'kk'] as const)('%s Today primary action', locale => {
+  const baseline = {
+    locale, name: 'Example', dailyGoal: null, examDate: null, targetScore: null, baselineScore: null,
+    g: null, lessons: null, local: false, hasPracticeTopics: true,
+  };
+
+  it('gives due books the only primary action', async () => {
+    state.locale = locale;
+    const html = renderToStaticMarkup(await TodayView({
+      ...baseline, books: { due: [{ slug: 'algebra', name: 'Algebra', subjectName: 'Math', overdueDays: 1 }], reviewedToday: 0 },
+    }));
+    expect(Array.from(html.matchAll(/data-testid="today-primary-action"/g))).toHaveLength(1);
+    expect(html).toContain(`href="/${locale}/review"`);
+    expect(html).not.toContain(`href="/${locale}/subjects"`);
+    expect(html).not.toContain(`href="/${locale}/weekly"`);
+  });
+
+  it.each([
+    { local: false, hasPracticeTopics: true, route: 'subjects' },
+    { local: false, hasPracticeTopics: false, route: 'practice' },
+    { local: true, hasPracticeTopics: false, route: 'problems' },
+  ])('offers $route when there are no due books', async ({ local, hasPracticeTopics, route }) => {
+    state.locale = locale;
+    const html = renderToStaticMarkup(await TodayView({ ...baseline, local, hasPracticeTopics, books: null }));
+    expect(Array.from(html.matchAll(/data-testid="today-primary-action"/g))).toHaveLength(1);
+    expect(html).toContain(`href="/${locale}/${route}"`);
+    expect(html).not.toContain(`href="/${locale}/weekly"`);
   });
 });

@@ -1,9 +1,9 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@/i18n/routing';
-import { ArrowRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import {
   getSubjectBySlug,
   getTopicsForSubject,
@@ -11,6 +11,7 @@ import {
   topicName,
 } from '@/lib/supabase/queries';
 import { availableTopicsFirst, groupTopicsBySection } from '@/lib/topics';
+import { cn } from '@/lib/utils';
 import type { Locale } from '@/types/db';
 
 function sectionTitle(
@@ -61,23 +62,29 @@ export default async function SubjectTopicsPage({
               {section.topics.map((topic) => {
                 const available = topic.question_count > 0;
                 const card = (
-                  <Card className={available ? 'h-full transition-colors hover:border-primary/40' : 'h-full bg-card/50'}>
-                    <CardHeader>
-                      <CardTitle className="text-base">{topicName(topic, locale as Locale)}</CardTitle>
-                      <CardDescription>{t('questionsCount', { count: topic.question_count })}</CardDescription>
+                  <Card className={cn('h-full', available ? 'transition-colors group-hover:border-primary/50 group-hover:bg-card/90' : 'bg-card/50')}>
+                    <CardHeader className="flex-row items-center justify-between gap-4 space-y-0">
+                      <div className="min-w-0 space-y-1.5">
+                        <CardTitle className="text-base leading-snug">{topicName(topic, locale as Locale)}</CardTitle>
+                        <CardDescription>
+                          {available ? t('questionsCount', { count: topic.question_count }) : availabilityText('unavailableLabel')}
+                        </CardDescription>
+                      </div>
+                      {available && <ChevronRight className="size-5 shrink-0 text-primary" aria-hidden />}
                     </CardHeader>
-                    <CardContent>
-                      {available ? (
-                        <div className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-                          {t('startTopic')}<ArrowRight className="h-3.5 w-3.5" />
-                        </div>
-                      ) : <p className="text-sm text-muted-foreground">{availabilityText('unavailableLabel')}</p>}
-                    </CardContent>
                   </Card>
                 );
                 return available ? (
-                  <Link key={topic.id} href={{ pathname: '/practice/topic/[topic]', params: { topic: topic.slug } }}>{card}</Link>
-                ) : <div key={topic.id} aria-disabled="true">{card}</div>;
+                  <Link
+                    key={topic.id}
+                    href={{ pathname: '/practice/topic/[topic]', params: { topic: topic.slug } }}
+                    className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {card}
+                  </Link>
+                ) : (
+                  <div key={topic.id} aria-disabled="true">{card}</div>
+                );
               })}
             </div>
           </section>

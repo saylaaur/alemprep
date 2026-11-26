@@ -19,7 +19,7 @@ test('a signed-in pupil can open the content library and keep a claimed book', a
     await page.goto('/kk/practice');
     const tabs = page.locator('nav[data-hide-in-focus]');
     await expect(tabs.locator('a')).toHaveCount(4);
-    for (const href of ['subjects', 'problems', 'full-practice', 'visualization']) {
+    for (const href of ['subjects', 'problems', 'full-practice', 'weekly', 'visualization']) {
       await expect(page.locator(`main a[href="/kk/${href}"]`)).toBeVisible();
     }
     await tabs.locator('a[href="/kk/materials"]').click();

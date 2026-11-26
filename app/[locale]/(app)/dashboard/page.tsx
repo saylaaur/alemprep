@@ -3,7 +3,6 @@ import {
   getProfile,
   getGamification,
   getSubjectsWithCounts,
-  getWeeklyTestSummary,
   getDiagnosticBaseline,
   displayName,
 } from '@/lib/supabase/queries';
@@ -32,11 +31,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const contentEnabled = isContentEnabled(topicsOnly);
   const withPlan = !local && Boolean(profile?.second_subject) && !topicsOnly;
 
-  const [tDash, g, subjects, weeklyTest, baseline, books] = await Promise.all([
+  const [tDash, g, subjects, baseline, books] = await Promise.all([
     getTranslations('dashboard'),
     localState ? Promise.resolve(localGamification(localState)) : userId ? getGamification(userId) : Promise.resolve(null),
     local ? Promise.resolve([]) : getSubjectsWithCounts(l),
-    userId && withPlan ? getWeeklyTestSummary(userId) : Promise.resolve(null),
     userId && withPlan ? getDiagnosticBaseline(userId) : Promise.resolve(null),
     userId && contentEnabled ? getBookReviewsToday(userId, l).catch(() => null) : Promise.resolve(null),
   ]);
@@ -51,8 +49,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       baselineScore={baseline?.score ?? null}
       g={g}
       lessons={localState ? { done: Math.min(activityOn(localState, localDateStr()).lessons, DAILY_LESSON_GOAL), total: DAILY_LESSON_GOAL } : null}
-      subjects={subjects}
-      weeklyTest={weeklyTest}
+      local={local}
+      hasPracticeTopics={subjects.some((subject) => subject.question_count > 0)}
       books={books}
     />
   );
