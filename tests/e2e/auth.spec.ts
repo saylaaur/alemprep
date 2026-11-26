@@ -44,6 +44,11 @@ test('uses a local Supabase session to enter the protected dashboard', async ({ 
   await expect(rail).toHaveCSS('width', '64px');
   await today.hover();
   await expect(rail).toHaveCSS('width', '256px');
+  const todayBox = (await today.boundingBox())!;
+  await page.mouse.move(0, todayBox.y + todayBox.height / 2);
+  // Wait through the leave delay and collapse transition.
+  await page.waitForTimeout(650);
+  await expect(rail).toHaveCSS('width', '256px');
   await page.mouse.move(600, 200);
   await expect(rail).toHaveCSS('width', '64px');
   await page.locator('aside').getByRole('button', { name: 'Аккаунт', exact: true }).click();

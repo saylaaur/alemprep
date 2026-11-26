@@ -8,13 +8,27 @@ test('a signed-in pupil can open the content library and keep a claimed book', a
     process.env.NEXT_PUBLIC_CONTENT_V1_ENABLED !== 'true' || process.env.PILOT_TOPICS_ONLY === 'true',
     'requires the supplementary content flag outside the school pilot',
   );
+  await page.goto('/kk/materials');
+  await expect(page).toHaveURL(/\/kk\/login\?next=%2Fkk%2Fmaterials$/);
   const db = await createDbHarness();
   try {
     const pupil = await db.actor('content-library-e2e');
     await db.execute("UPDATE public.profiles SET second_subject = 'physics' WHERE id = $1", [pupil.id]);
     await loginAs(page, pupil);
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/kk/practice');
+    const tabs = page.locator('nav[data-hide-in-focus]');
+    await expect(tabs.locator('a')).toHaveCount(4);
+    for (const href of ['subjects', 'problems', 'full-practice', 'visualization']) {
+      await expect(page.locator(`main a[href="/kk/${href}"]`)).toBeVisible();
+    }
+    await tabs.locator('a[href="/kk/materials"]').click();
+    await expect(page).toHaveURL(/\/kk\/materials$/);
+    await expect(page.locator('main a[href="/kk/videos"]')).toBeVisible();
+    await expect(page.locator('main a[href="/kk/library"]')).toBeVisible();
+
     await page.goto('/kk/library/newton-laws');
+    await expect(tabs.locator('a[href="/kk/materials"]')).toHaveAttribute('aria-current', 'page');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await page.getByRole('button', { name: 'Кітапты алу', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Карточкалар арқылы қайталау', exact: true })).toBeVisible();

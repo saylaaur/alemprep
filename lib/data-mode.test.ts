@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getDataMode, isContentEnabled, isLocalMode, isLocalUnsupportedPath } from './data-mode';
+import { getDataMode, isContentEnabled, isContentPath, isLocalMode, isLocalUnsupportedPath } from './data-mode';
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -26,13 +26,18 @@ describe('local unsupported paths', () => {
   });
 
   it('keeps the supported sections open', () => {
-    for (const p of ['/ru', '/ru/dashboard', '/kk/videos/newton-laws', '/ru/library/newton-laws', '/ru/progress', '/ru/settings', '/ru/login', '/ru/visualization']) {
+    for (const p of ['/ru', '/ru/dashboard', '/kk/practice', '/ru/materials', '/kk/videos/newton-laws', '/ru/library/newton-laws', '/ru/progress', '/ru/settings', '/ru/login', '/ru/visualization']) {
       expect(isLocalUnsupportedPath(p), p).toBe(false);
     }
   });
 });
 
 describe('supplementary content rollout', () => {
+  it('gates the Materials hub with the rest of the supplementary content', () => {
+    expect(isContentPath('/kk/materials')).toBe(true);
+    expect(isContentPath('/ru/practice')).toBe(false);
+  });
+
   it('requires hosted opt-in and keeps the verified school pilot focused', () => {
     vi.stubEnv('NEXT_PUBLIC_DATA_MODE', 'supabase');
     vi.stubEnv('NEXT_PUBLIC_CONTENT_V1_ENABLED', '');

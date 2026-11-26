@@ -1,57 +1,71 @@
 import {
-  LayoutDashboard,
   BookOpen,
+  FolderOpen,
+  FunctionSquare,
+  LayoutDashboard,
   LibraryBig,
+  LineChart,
+  Pencil,
   PlayCircle,
   Timer,
-  LineChart,
   Users,
-  FunctionSquare,
-  FolderOpen,
-  type LucideIcon,
 } from 'lucide-react';
 import { isContentEnabled, isLocalMode } from '@/lib/data-mode';
 
-export type NavItem = {
-  href: '/dashboard' | '/videos' | '/library' | '/problems' | '/subjects' | '/full-practice' | '/progress';
-  labelKey: 'dashboard' | 'videos' | 'library' | 'problems' | 'subjects' | 'fullPractice' | 'progress';
-  icon: LucideIcon;
-};
-
-export const navItems: NavItem[] = [
+const navItems = [
   { href: '/dashboard', labelKey: 'dashboard', icon: LayoutDashboard },
-  { href: '/videos', labelKey: 'videos', icon: PlayCircle },
-  { href: '/library', labelKey: 'library', icon: LibraryBig },
-  { href: '/problems', labelKey: 'problems', icon: FolderOpen },
-  { href: '/subjects', labelKey: 'subjects', icon: BookOpen },
-  { href: '/full-practice', labelKey: 'fullPractice', icon: Timer },
+  { href: '/practice', labelKey: 'practice', icon: Pencil },
+  { href: '/materials', labelKey: 'materials', icon: LibraryBig },
   { href: '/progress', labelKey: 'progress', icon: LineChart },
-];
+] as const;
 
-/** Без базы не работает тренажёр по предметам — его в меню нет (пробник работает на вопросах уроков). */
-const LOCAL_HIDDEN: ReadonlyArray<string> = ['/subjects'];
-const CONTENT_NAV: ReadonlyArray<string> = ['/library', '/videos', '/problems'];
+export function visibleNavItems(topicsOnly: boolean) {
+  return navItems.filter((item) => item.href !== '/materials' || isContentEnabled(topicsOnly));
+}
 
-/** Пилот «только темы» прячет пробник: его попытки не видны учителю. */
-export function visibleNavItems(topicsOnly: boolean, local: boolean = isLocalMode()): NavItem[] {
-  const contentEnabled = isContentEnabled(topicsOnly);
-  return navItems.filter((item) => {
-    if (!contentEnabled && CONTENT_NAV.includes(item.href)) return false;
-    if (local && LOCAL_HIDDEN.includes(item.href)) return false;
-    if (topicsOnly && item.href === '/full-practice') return false;
+const teacherItem = { href: '/teacher', labelKey: 'teacher', icon: Users } as const;
+
+export function visibleExtraNavItems(isTeacher: boolean) {
+  return isTeacher && !isLocalMode() ? [teacherItem] : [];
+}
+
+const practiceLinks = [
+  { href: '/subjects', labelKey: 'byTopic', descriptionKey: 'byTopic', icon: BookOpen },
+  { href: '/problems', labelKey: 'problemBank', descriptionKey: 'problemBank', icon: FolderOpen },
+  { href: '/full-practice', labelKey: 'fullPractice', descriptionKey: 'exam', icon: Timer },
+  { href: '/visualization', labelKey: 'visualization', descriptionKey: 'graphs', icon: FunctionSquare },
+] as const;
+
+export const materialLinks = [
+  { href: '/videos', labelKey: 'videos', descriptionKey: 'videos', icon: PlayCircle },
+  { href: '/library', labelKey: 'library', descriptionKey: 'library', icon: LibraryBig },
+] as const;
+
+export type SectionLink = (typeof practiceLinks)[number] | (typeof materialLinks)[number];
+
+export function visiblePracticeLinks(topicsOnly: boolean) {
+  return practiceLinks.filter(({ href }) => {
+    if (href === '/subjects') return !isLocalMode();
+    if (href === '/problems') return isContentEnabled(topicsOnly);
+    if (href === '/full-practice') return !topicsOnly;
     return true;
   });
 }
 
-export const extraNavItems = [
-  { href: '/visualization', labelKey: 'visualization', icon: FunctionSquare },
-  { href: '/teacher', labelKey: 'teacher', icon: Users },
-] as const;
+const practiceSections = [...practiceLinks.map(({ href }) => href), '/weekly', '/diagnostic'];
+const materialSections = [...materialLinks.map(({ href }) => href), '/review'];
 
-/** Дополнительные пункты: «Кабинет учителя» — только учителю и только с базой. */
-export function visibleExtraNavItems(isTeacher: boolean, local: boolean = isLocalMode()) {
-  return extraNavItems.filter((item) => {
-    if (local && item.href !== '/visualization') return false;
-    return item.href !== '/teacher' || isTeacher;
-  });
+function isInSection(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
+export function isNavItemActive(pathname: string, href: string): boolean {
+  if (isInSection(pathname, href)) return true;
+  if (href === '/practice') return practiceSections.some((prefix) => isInSection(pathname, prefix));
+  if (href === '/materials') return materialSections.some((prefix) => isInSection(pathname, prefix));
+  return false;
+}
+
+export function isImmersivePracticePath(pathname: string): boolean {
+  return isInSection(pathname, '/practice/topic') || isInSection(pathname, '/full-practice');
 }

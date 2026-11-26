@@ -15,9 +15,18 @@ test('pilot topics-only mode hides assessments on mobile and redirects every ass
     await expect(page.locator(`a[href="/${locale}/full-practice"]`)).toHaveCount(0);
     await expect(page.locator(`a[href="/${locale}/diagnostic"]`)).toHaveCount(0);
     await expect(page.locator(`a[href="/${locale}/weekly"]`)).toHaveCount(0);
-    // The desktop sidebar exists but is hidden at phone width; use the tab bar.
-    await expect(page.locator(`a[href="/${locale}/subjects"]`).last()).toBeVisible();
-    for (const route of ['library', 'videos', 'problems', 'review']) {
+    const tabs = page.locator('nav[data-hide-in-focus]');
+    await expect(tabs.locator(`a[href="/${locale}/practice"]`)).toBeVisible();
+    await expect(tabs.locator('a')).toHaveCount(3);
+
+    await page.goto(`/${locale}/practice`);
+    const practice = page.locator('main');
+    await expect(practice.locator(`a[href="/${locale}/subjects"]`)).toBeVisible();
+    await expect(practice.locator(`a[href="/${locale}/visualization"]`)).toBeVisible();
+    await expect(practice.locator(`a[href="/${locale}/problems"], a[href="/${locale}/full-practice"]`)).toHaveCount(0);
+    await expect(tabs.locator(`a[href="/${locale}/practice"]`)).toHaveAttribute('aria-current', 'page');
+
+    for (const route of ['materials', 'library', 'videos', 'problems', 'review']) {
       await expect(page.locator(`a[href="/${locale}/${route}"]`)).toHaveCount(0);
       await page.goto(`/${locale}/${route}`);
       await expect(page).toHaveURL(new RegExp(`/${locale}/dashboard$`));

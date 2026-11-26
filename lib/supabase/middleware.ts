@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PROTECTED_PREFIXES = ['/dashboard', '/videos', '/library', '/problems', '/review', '/subjects', '/full-practice', '/progress', '/settings', '/practice', '/admin', '/onboarding', '/diagnostic', '/weekly', '/teacher', '/join-class', '/join', '/visualization'];
+const PROTECTED_PREFIXES = ['/dashboard', '/materials', '/videos', '/library', '/problems', '/review', '/subjects', '/full-practice', '/progress', '/settings', '/practice', '/admin', '/onboarding', '/diagnostic', '/weekly', '/teacher', '/join-class', '/join', '/visualization'];
 
 export function isProtectedPath(pathname: string): boolean {
   const pathWithoutLocale = pathname.replace(/^\/(ru|kk)/, '') || '/';

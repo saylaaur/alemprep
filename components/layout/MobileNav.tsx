@@ -1,190 +1,57 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { ChevronLeft, GraduationCap, Users } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
-import { AccountMenu } from './AccountMenu';
 import type { Profile } from '@/types/db';
-import { visibleNavItems, visibleExtraNavItems } from './nav-items';
-import { GraduationCap, Menu, X } from 'lucide-react';
+import { AccountMenu } from './AccountMenu';
+import { isImmersivePracticePath, isNavItemActive } from './nav-items';
+
+const ICON_LINK = 'grid size-11 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25';
 
 export function MobileNav({
   profile,
   email,
   isTeacher = false,
-  topicsOnly = false,
 }: {
   profile: Profile | null;
   email: string | null;
   isTeacher?: boolean;
-  topicsOnly?: boolean;
 }) {
-  const tNav = useTranslations('nav');
+  const t = useTranslations('nav');
   const tBrand = useTranslations('brand');
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const drawerRef = useRef<HTMLDivElement>(null);
-  const openButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Close drawer on route change
-  useEffect(() => { setOpen(false); }, [pathname]);
-
-  // Prevent body scroll when drawer is open
-  useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [open]);
-
-  // Escape + фокус-trap. Пока drawer открыт: при открытии фокус уходит внутрь
-  // панели, Tab/Shift+Tab циклятся по её фокусируемым элементам и не сбегают на
-  // фон, а при закрытии фокус возвращается на кнопку-бургер. (Закрытый drawer
-  // выведен из tab-порядка через inert.)
-  useEffect(() => {
-    if (!open) return;
-    const drawer = drawerRef.current;
-    // Кнопка-бургер стабильна между открытием/закрытием — снимок для cleanup.
-    const trigger = openButtonRef.current;
-
-    const focusable = (): HTMLElement[] =>
-      drawer
-        ? Array.from(
-            drawer.querySelectorAll<HTMLElement>(
-              'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            )
-          )
-        : [];
-
-    // Фокус внутрь панели при открытии.
-    focusable()[0]?.focus();
-
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(false);
-        return;
-      }
-      if (e.key !== 'Tab') return;
-      const items = focusable();
-      if (items.length === 0) return;
-      const first = items[0];
-      const last = items[items.length - 1];
-      const active = document.activeElement as HTMLElement | null;
-      if (e.shiftKey) {
-        if (active === first || !drawer?.contains(active)) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else if (active === last || !drawer?.contains(active)) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handler);
-    return () => {
-      document.removeEventListener('keydown', handler);
-      // Возврат фокуса на триггер при закрытии.
-      trigger?.focus();
-    };
-  }, [open]);
+  const inTeacherCabinet = isNavItemActive(pathname, '/teacher');
 
   return (
-    <>
-      {/* Top bar (mobile only) */}
-      <header className="sticky top-0 z-30 grid h-14 grid-cols-[44px_1fr_44px] items-center border-b bg-background/80 px-2 backdrop-blur-xl md:hidden">
-        <button
-          ref={openButtonRef}
-          type="button"
-          aria-label={tNav('openMenu')}
-          aria-expanded={open}
-          onClick={() => { setAccountOpen(false); setOpen(true); }}
-          className="grid h-11 w-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"
+    <header className="sticky top-0 z-30 grid h-14 grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b bg-background/80 px-2 backdrop-blur-xl md:hidden">
+      {isImmersivePracticePath(pathname) ? (
+        <Link href="/practice" aria-label={t('backToPractice')} className={ICON_LINK}>
+          <ChevronLeft className="size-5" aria-hidden />
+        </Link>
+      ) : isTeacher ? (
+        <Link
+          href="/teacher"
+          aria-label={t('teacher')}
+          aria-current={inTeacherCabinet ? 'page' : undefined}
+          className={cn(ICON_LINK, inTeacherCabinet && 'bg-primary/15 text-primary')}
         >
-          <Menu className="h-5 w-5" />
-        </button>
-        <div className="flex items-center justify-center gap-2">
-          <div className="grid h-6 w-6 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <GraduationCap className="h-3.5 w-3.5" />
-          </div>
-          <span className="text-[15px] font-semibold tracking-tight">{tBrand('name')}</span>
-        </div>
-        <AccountMenu profile={profile} email={email} open={accountOpen} setOpen={setAccountOpen} />
-      </header>
+          <Users className="size-5" aria-hidden />
+        </Link>
+      ) : null}
 
-      {/* Overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
-          onClick={() => setOpen(false)}
-          aria-hidden
-        />
-      )}
-
-      {/* Drawer */}
-      <div
-        ref={drawerRef}
-        inert={!open}
-        aria-hidden={!open}
-        className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r bg-card transition-transform duration-300 ease-smooth motion-reduce:transition-none md:hidden',
-          open ? 'translate-x-0' : '-translate-x-full'
-        )}
-        role="dialog"
-        aria-modal="true"
-        aria-label={tNav('menu')}
-      >
-        {/* Drawer header */}
-        <div className="flex h-14 items-center justify-between border-b px-5">
-          <div className="flex items-center gap-2.5">
-            <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground shadow-primary">
-              <GraduationCap className="h-4 w-4" />
-            </div>
-            <span className="text-[15px] font-semibold tracking-tight">{tBrand('name')}</span>
-          </div>
-          <button
-            type="button"
-            aria-label={tNav('closeMenu')}
-            onClick={() => setOpen(false)}
-            className="grid h-11 w-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Nav items */}
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          {[...visibleNavItems(topicsOnly), ...visibleExtraNavItems(isTeacher)].map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                aria-current={isActive ? 'page' : undefined}
-                className={cn(
-                  'group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 focus-visible:ring-4 focus-visible:ring-ring/25',
-                  isActive
-                    ? 'bg-primary/10 text-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                )}
-              >
-                {isActive && (
-                  <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary" />
-                )}
-                <Icon
-                  className={cn(
-                    'h-[18px] w-[18px] transition-colors',
-                    isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
-                  )}
-                />
-                {tNav(item.labelKey)}
-              </Link>
-            );
-          })}
-        </nav>
+      <div className="col-start-2 row-start-1 flex items-center justify-center gap-2">
+        <span className="grid size-6 place-items-center rounded-lg bg-primary text-primary-foreground">
+          <GraduationCap className="size-3.5" aria-hidden />
+        </span>
+        <span className="text-[15px] font-semibold tracking-tight">{tBrand('name')}</span>
       </div>
-    </>
+      <div className="col-start-3 row-start-1">
+        <AccountMenu profile={profile} email={email} open={accountOpen} setOpen={setAccountOpen} />
+      </div>
+    </header>
   );
 }

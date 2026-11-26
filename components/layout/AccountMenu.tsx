@@ -90,7 +90,7 @@ export function AccountMenu({
           </span>
         )}
         {desktop && (
-          <span aria-hidden className={cn('truncate pl-2 pr-3 transition-opacity motion-reduce:transition-none', !expanded && 'opacity-0')}>
+          <span aria-hidden className={cn('truncate pl-2 pr-3 transition-opacity duration-200 motion-reduce:transition-none', expanded ? 'delay-75 motion-reduce:delay-0' : 'opacity-0')}>
             {t('account')}
           </span>
         )}
