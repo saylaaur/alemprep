@@ -160,6 +160,60 @@ def ru_agree(s: str) -> str:
     return _AGREE.sub(rep, s)
 
 
+# ---------- казахские окончания после чисел: «5-тен», «6-дан», «16-шы», «4-ке» ----------
+_KK_UNITS = ["нөл", "бір", "екі", "үш", "төрт", "бес", "алты", "жеті", "сегіз", "тоғыз"]
+_KK_TENS = ["", "он", "жиырма", "отыз", "қырық", "елу", "алпыс", "жетпіс", "сексен", "тоқсан"]
+_BACK, _FRONT = set("аоұы"), set("әеөүіэи")
+_VOICELESS = set("кқпстфхцчшщбвгд")
+_NASAL = set("мнң")
+_VOICED = set("жз")
+
+
+def kk_last_word(n: int) -> str:
+    """Последнее слово в казахском чтении числа: 16 → «алты», 20 → «жиырма», 300 → «жүз»."""
+    if n % 10:
+        return _KK_UNITS[n % 10]
+    if n == 0:
+        return "нөл"
+    if n % 100:
+        return _KK_TENS[n % 100 // 10]
+    if n % 1000:
+        return "жүз"
+    if n % 1_000_000:
+        return "мың"
+    return "миллион"
+
+
+def kk_suffix(word: str, kind: str) -> str:
+    back = next((c in _BACK for c in reversed(word) if c in _BACK | _FRONT), False)
+    last = word[-1]
+    vowel = last in _BACK | _FRONT
+    a, e_ = ("а", "ы") if back else ("е", "і")
+    if kind == "dat":
+        return ("қ" if back else "к") + a if last in _VOICELESS else ("ғ" if back else "г") + a
+    if kind == "abl":
+        return ("т" if last in _VOICELESS else "н" if last in _NASAL else "д") + a + "н"
+    if kind == "acc":
+        return ("н" if vowel else "т" if last in _VOICELESS else "д") + e_
+    if kind == "gen":
+        return ("н" if vowel or last in _NASAL else "т" if last in _VOICELESS else "д") + e_ + "ң"
+    if kind == "ins":
+        return "м" + ("е") + "н" if vowel or last in _NASAL or last in "лрйу" else ("б" if last in _VOICED else "п") + "ен"
+    if kind == "loc":
+        return ("т" if last in _VOICELESS else "н" if False else "д") + a
+    return "ш" + e_  # порядковое: «5-ші», «6-шы»
+
+
+_KK_KIND = {**{s: "dat" for s in ("ге", "ға", "ке", "қа")}, **{s: "abl" for s in ("ден", "дан", "тен", "тан", "нен", "нан")},
+            **{s: "acc" for s in ("ні", "ны", "ді", "ды", "ті", "ты")}, **{s: "gen" for s in ("нің", "ның", "дің", "дың", "тің", "тың")},
+            **{s: "ins" for s in ("мен", "пен", "бен")}, **{s: "ord" for s in ("ші", "шы")}, **{s: "loc" for s in ("де", "да", "те", "та")}}
+_KK_AGREE = re.compile(r"(\d+)(\$?)-(" + "|".join(sorted(_KK_KIND, key=len, reverse=True)) + r")(?![а-яәғқңөұүһі])")
+
+
+def kk_agree(s: str) -> str:
+    return _KK_AGREE.sub(lambda m: f"{m.group(1)}{m.group(2)}-{kk_suffix(kk_last_word(int(m.group(1)[-7:])), _KK_KIND[m.group(3)])}", s)
+
+
 class TemplateError(ValueError):
     pass
 
@@ -273,7 +327,7 @@ MATCH_CORRECT = 0 + 8 * 1  # верные стоят первыми: строк�
 
 def _side(t: Template, lang: str, p: P, ans: Value, opts: list[str], mask: int) -> dict:
     unit = t.unit_kk if (lang == "kk" and t.unit_kk) else t.unit
-    fill = lambda s: (ru_agree if lang == "ru" else str)(fill_mixed(s, p, ans, t.decimals))
+    fill = lambda s: (ru_agree if lang == "ru" else kk_agree)(fill_mixed(s, p, ans, t.decimals))
     out = {
         "question": fill(t.text[lang]),
         "options": [(t.options_kk.get(o, KK_WORDS.get(o, o)) if lang == "kk" else o) + (f" {unit}" if unit else "") for o in opts],
@@ -396,7 +450,7 @@ def generate_context(c: Context, seed: int = 0) -> list[dict]:
                 "ru": {"context": ctx_ru, **_side(q, "ru", p, ans, opts, mask)},
             }
             if "kk" in c.context and "kk" in q.text and "kk" in q.solution:
-                item["kk"] = {"context": fill_mixed(c.context["kk"], p, 0, 2), **_side(q, "kk", p, ans, opts, mask)}
+                item["kk"] = {"context": kk_agree(fill_mixed(c.context["kk"], p, 0, 2)), **_side(q, "kk", p, ans, opts, mask)}
             fig = q.figure or c.figure
             if fig is not None:
                 item["figure"] = fig(p)
