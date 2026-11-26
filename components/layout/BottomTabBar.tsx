@@ -7,7 +7,7 @@ import { navItems, visibleNavItems } from './nav-items';
 
 /** Короткие подписи для таб-бара (полные — в сайдбаре/дровере). */
 const TAB_LABEL: Record<(typeof navItems)[number]['href'], string> = {
-  '/dashboard': 'home',
+  '/dashboard': 'dashboard',
   '/videos': 'videos',
   '/library': 'library',
   '/problems': 'problems',

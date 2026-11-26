@@ -6,7 +6,6 @@ import {
   Timer,
   LineChart,
   Users,
-  UserPlus,
   FunctionSquare,
   FolderOpen,
   type LucideIcon,
@@ -46,11 +45,10 @@ export function visibleNavItems(topicsOnly: boolean, local: boolean = isLocalMod
 
 export const extraNavItems = [
   { href: '/visualization', labelKey: 'visualization', icon: FunctionSquare },
-  { href: '/join-class', labelKey: 'joinClass', icon: UserPlus },
   { href: '/teacher', labelKey: 'teacher', icon: Users },
 ] as const;
 
-/** Дополнительные пункты: «Кабинет учителя» — только учителю; вступление в класс и кабинет — только с базой. */
+/** Дополнительные пункты: «Кабинет учителя» — только учителю и только с базой. */
 export function visibleExtraNavItems(isTeacher: boolean, local: boolean = isLocalMode()) {
   return extraNavItems.filter((item) => {
     if (local && item.href !== '/visualization') return false;
