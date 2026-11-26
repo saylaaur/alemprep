@@ -24,7 +24,7 @@ export function AppShell({
       <AppBackdrop />
       <Sidebar profile={profile} email={email} isTeacher={isTeacher} topicsOnly={topicsOnly} />
       <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
-        <MobileNav profile={profile} email={email} isTeacher={isTeacher} topicsOnly={topicsOnly} />
+        <MobileNav profile={profile} email={email} isTeacher={isTeacher} />
         {/* нижний отступ на моб. — под таб-бар (плавающий таб-бар + отступ) */}
         <main className="flex-1 pb-[96px] md:pb-0">{children}</main>
       </div>

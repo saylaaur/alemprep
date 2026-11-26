@@ -11,6 +11,8 @@ export const routing = defineRouting({
     '/login': '/login',
     '/onboarding': '/onboarding',
     '/dashboard': '/dashboard',
+    '/practice': '/practice',
+    '/materials': '/materials',
     '/videos': '/videos',
     '/videos/[lesson]': '/videos/[lesson]',
     '/library': '/library',

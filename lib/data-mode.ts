@@ -16,7 +16,7 @@ export function isContentEnabled(topicsOnly = process.env.PILOT_TOPICS_ONLY === 
   return isLocalMode() || (!topicsOnly && process.env.NEXT_PUBLIC_CONTENT_V1_ENABLED === 'true');
 }
 
-const CONTENT_ROUTE = /^\/(?:ru|kk)\/(?:library|videos|problems|review)(?:\/|$)/;
+const CONTENT_ROUTE = /^\/(?:ru|kk)\/(?:materials|library|videos|problems|review)(?:\/|$)/;
 
 export function isContentPath(pathname: string): boolean {
   return CONTENT_ROUTE.test(pathname);
@@ -32,7 +32,7 @@ export function isLocalMode(): boolean {
  */
 const LOCAL_UNSUPPORTED_PREFIXES = [
   '/subjects',
-  '/practice',
+  '/practice/topic',
   '/onboarding',
   '/teacher',
   '/join',

@@ -18,7 +18,11 @@ test('new app routes redirect signed-out visitors to login', async ({ page }) =>
 test('teacher creates invite, pupil joins, roster refreshes and foreign class stays hidden', async ({ page }) => {
   const school = await seedPilotSchoolPair(db);
   await loginAs(page, school.teacherA);
-  await page.goto('/ru/teacher');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/ru/dashboard');
+  await page.getByRole('link', { name: 'Кабинет учителя', exact: true }).click();
+  await expect(page).toHaveURL(/\/ru\/teacher$/);
+  await page.setViewportSize({ width: 1280, height: 720 });
   await expect(page.getByRole('heading', { name: 'Кабинет учителя' })).toBeVisible();
   await page.getByRole('link', { name: /Synthetic RU A/ }).click();
   await expect(page.getByRole('heading', { name: 'Synthetic RU A' })).toBeVisible();
