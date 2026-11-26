@@ -187,7 +187,10 @@
       "rate-limited": "Сұраулар тым көп. Сәл күтіп, қайталаңыз.",
       "temporarily-unavailable": "Сервермен байланысу мүмкін болмады. Қайта көріңіз.",
       "storage-unavailable": "Браузерде жауапты сақтау мүмкін болмады. Деректерді сақтауға рұқсат беріп, бетті жаңартыңыз."
-    }
+    },
+    "questionTitle": "Тапсырма",
+    "reviewTitle": "Тапсырманы талдау",
+    "answerRequired": "Тексеру үшін жауапты толық енгіз."
   },
   "brand": {
     "name": "AlemPrep",
@@ -238,7 +241,8 @@
     "materials": "Материалдар",
     "byTopic": "Тақырып бойынша",
     "problemBank": "Есептер банкі",
-    "backToPractice": "Жаттығуға оралу"
+    "backToPractice": "Жаттығуға оралу",
+    "weeklyTest": "Апталық тест"
   },
   "sections": {
     "byTopic": "Пән мен тақырыпты таңдап, жаттығуды баста.",
@@ -246,7 +250,8 @@
     "exam": "ҰБТ форматындағы уақыт шектеуі бар сынақты тапсыр.",
     "graphs": "Функцияның графигін салып, оның қасиеттерін зертте.",
     "videos": "Қолжетімді тақырыптар бойынша бейнесабақтарды көр.",
-    "library": "Конспектілерді оқып, өткен тақырыптарды қайтала."
+    "library": "Конспектілерді оқып, өткен тақырыптарды қайтала.",
+    "weeklyTest": "Осы аптаның тестін ашып, алдыңғы нәтижелерді көр."
   },
   "auth": {
     "signIn": "Кіру",
@@ -349,7 +354,6 @@
     "dailyGoalProgress": "{total} есептен {done}",
     "activeSubjects": "Сенің пәндерің",
     "continuePractice": "Жалғастыру",
-    "startPractice": "Бастау",
     "streak": "Қатарынан",
     "streakDays": "{count, plural, =0 {0 күн} other {# күн}} қатарынан",
     "streakWord": "{count, plural, other {күн қатарынан}}",
@@ -369,7 +373,6 @@
     "weeklyTestAvailable": "Жаңа тест қолжетімді",
     "weeklyTestDone": "Бұл аптада өтілді",
     "weeklyTestNextIn": "келесі тест {days, plural, other {# күннен}} кейін",
-    "weeklyTestStart": "Тестті өту",
     "weeklyTestLastScore": "Балл: {score}",
     "weeklyTestDelta": "өткен аптаға {delta}",
     "weakTopics": "Әлсіз тақырыптар",
@@ -453,7 +456,6 @@
     "informatics": "Информатика",
     "topicsCount": "{count, plural, =0 {тақырыптар жоқ} other {# тақырып}}",
     "questionsCount": "{count, plural, =0 {есептер жоқ} other {# есеп}}",
-    "startTopic": "Шешу",
     "otherTopics": "Басқа"
   },
   "practice": {
@@ -698,7 +700,10 @@
     "booksDue": "Қайталайтын кітаптар",
     "bookSub": "{subject} · {when}",
     "weakTitle": "Пысықтау керек тақырыптар",
-    "reviewCta": "Бүгін қайтала · {count}"
+    "reviewCta": "Бүгін қайтала · {count}",
+    "openProblemBank": "Есептер банкін ашу",
+    "choosePracticeTopic": "Тақырыпты таңдау",
+    "openPractice": "Жаттығуды ашу"
   },
   "library": {
     "title": "Кітапхана",

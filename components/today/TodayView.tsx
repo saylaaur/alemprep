@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { CalendarClock, Flame } from 'lucide-react';
+import { ArrowRight, CalendarClock } from 'lucide-react';
 import type { Gamification } from '@/lib/supabase/queries';
 import { daysUntilExam, projectedPairScore } from '@/lib/plan';
 import { EXAM_PAIR_MAX_SCORE } from '@/lib/exam';
@@ -9,6 +9,7 @@ import { ActivityRings, type RingValue } from './ActivityRings';
 import { StreakWidget } from './StreakWidget';
 import { weekDates } from '@/lib/week';
 import { QuoteWidget } from './QuoteWidget';
+import { Button } from '@/components/ui/button';
 import type { Locale } from '@/types/db';
 
 const WIDGET = 'glass flex min-w-0 flex-col overflow-hidden rounded-3xl p-5';
@@ -22,8 +23,8 @@ export type TodayViewProps = {
   /** Балл диагностики (null — диагностики ещё не было). */
   baselineScore: number | null;
   g: Gamification | null;
-  subjects: ReadonlyArray<{ id: string; slug: string }>;
-  weeklyTest: { availableThisWeek: boolean } | null;
+  local: boolean;
+  hasPracticeTopics: boolean;
   /** Кольцо «Уроки»: null — раздел ещё не подключён к данным (подпись «скоро»). */
   lessons: RingValue;
   /** Книги к повторению сегодня и сколько повторено. */
@@ -42,8 +43,8 @@ export async function TodayView({
   targetScore,
   baselineScore,
   g,
-  subjects,
-  weeklyTest,
+  local,
+  hasPracticeTopics,
   lessons,
   books,
 }: TodayViewProps) {
@@ -75,6 +76,18 @@ export async function TodayView({
   const freezes = g?.streakFreezes ?? 0;
   const record = g?.longestStreak ?? 0;
 
+  const dueCount = books?.due.length ?? 0;
+  let nextAction: { href: '/review' | '/problems' | '/subjects' | '/practice'; label: string };
+  if (dueCount > 0) {
+    nextAction = { href: '/review', label: t('reviewCta', { count: dueCount }) };
+  } else if (local) {
+    nextAction = { href: '/problems', label: t('openProblemBank') };
+  } else if (hasPracticeTopics) {
+    nextAction = { href: '/subjects', label: t('choosePracticeTopic') };
+  } else {
+    nextAction = { href: '/practice', label: t('openPractice') };
+  }
+
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-96px)] max-w-4xl flex-col justify-center gap-8 px-4 py-10 sm:px-6 md:min-h-dvh lg:px-8">
       <div>
@@ -82,20 +95,12 @@ export async function TodayView({
         <h1 className="mt-2 text-balance text-[clamp(36px,7vw,80px)] font-extrabold leading-[0.95] tracking-[-0.045em]">
           {tDash('greeting', { name })}
         </h1>
-        {(subjects.length > 0 || weeklyTest?.availableThisWeek) && (
-          <div className="mt-5 flex flex-wrap gap-2">
-            {subjects.length > 0 && (
-              <Link href="/subjects" className="inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">
-                {tDash('startPractice')}
-              </Link>
-            )}
-            {weeklyTest?.availableThisWeek && (
-              <Link href="/weekly" className="glass inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold">
-                {tDash('weeklyTestStart')}
-              </Link>
-            )}
-          </div>
-        )}
+        <Button asChild className="mt-5 min-h-11">
+          <Link href={nextAction.href} data-testid="today-primary-action">
+            {nextAction.label}
+            <ArrowRight className="size-4" aria-hidden />
+          </Link>
+        </Button>
       </div>
 
       <div className="grid gap-3.5 sm:grid-cols-2">
@@ -111,15 +116,6 @@ export async function TodayView({
               books ? { done: books.reviewedToday, total: books.reviewedToday + books.due.length } : null,
             ]}
           />
-          {books && books.due.length > 0 && (
-            <Link
-              href="/review"
-              className="mt-4 inline-flex items-center justify-center gap-2 self-center rounded-full bg-streak px-5 py-2.5 text-sm font-semibold text-[#2b1100] shadow-[0_0_18px_hsl(var(--streak)/0.4)] transition-[transform,filter] duration-150 ease-apple hover:brightness-105 active:scale-[0.97]"
-            >
-              <Flame className="h-4 w-4 fill-current" aria-hidden="true" />
-              {t('reviewCta', { count: books.due.length })}
-            </Link>
-          )}
         </div>
 
         {/* Серия */}

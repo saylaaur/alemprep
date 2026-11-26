@@ -187,7 +187,10 @@
       "rate-limited": "Слишком много запросов. Подождите немного и повторите.",
       "temporarily-unavailable": "Не удалось связаться с сервером. Повторите попытку.",
       "storage-unavailable": "Не удалось сохранить черновик в браузере. Разрешите хранение данных и обновите страницу."
-    }
+    },
+    "questionTitle": "Задание",
+    "reviewTitle": "Разбор задачи",
+    "answerRequired": "Заполни ответ, чтобы его проверить."
   },
   "brand": {
     "name": "AlemPrep",
@@ -238,7 +241,8 @@
     "materials": "Материалы",
     "byTopic": "По темам",
     "problemBank": "Банк задач",
-    "backToPractice": "К практике"
+    "backToPractice": "К практике",
+    "weeklyTest": "Еженедельный тест"
   },
   "sections": {
     "byTopic": "Выбери предмет и тему, чтобы начать тренировку.",
@@ -246,7 +250,8 @@
     "exam": "Попробуй пробник в формате ЕНТ с таймером.",
     "graphs": "Построй график функции и исследуй её свойства.",
     "videos": "Смотри видеоуроки по доступным темам.",
-    "library": "Читай конспекты и повторяй пройденное."
+    "library": "Читай конспекты и повторяй пройденное.",
+    "weeklyTest": "Открой тест на эту неделю и посмотри прошлые результаты."
   },
   "auth": {
     "signIn": "Войти",
@@ -349,7 +354,6 @@
     "dailyGoalProgress": "{done} из {total} задач",
     "activeSubjects": "Твои предметы",
     "continuePractice": "Продолжить",
-    "startPractice": "Начать",
     "streak": "Серия",
     "streakDays": "{count, plural, =0 {0 дней} one {# день} few {# дня} other {# дней}} подряд",
     "streakWord": "{count, plural, =0 {дней подряд} one {день подряд} few {дня подряд} other {дней подряд}}",
@@ -369,7 +373,6 @@
     "weeklyTestAvailable": "Доступен новый тест",
     "weeklyTestDone": "Пройден на этой неделе",
     "weeklyTestNextIn": "следующий {days, plural, one {через # день} few {через # дня} other {через # дней}}",
-    "weeklyTestStart": "Пройти тест",
     "weeklyTestLastScore": "Балл: {score}",
     "weeklyTestDelta": "{delta} к прошлой неделе",
     "weakTopics": "Слабые темы",
@@ -453,7 +456,6 @@
     "informatics": "Информатика",
     "topicsCount": "{count, plural, =0 {нет тем} one {# тема} few {# темы} other {# тем}}",
     "questionsCount": "{count, plural, =0 {нет задач} one {# задача} few {# задачи} other {# задач}}",
-    "startTopic": "Решать",
     "otherTopics": "Другое"
   },
   "practice": {
@@ -698,7 +700,10 @@
     "booksDue": "Книги к повторению",
     "bookSub": "{subject} · {when}",
     "weakTitle": "Темы, которые стоит подтянуть",
-    "reviewCta": "Повторить сегодня · {count}"
+    "reviewCta": "Повторить сегодня · {count}",
+    "openProblemBank": "Открыть банк задач",
+    "choosePracticeTopic": "Выбрать тему",
+    "openPractice": "Открыть практику"
   },
   "library": {
     "title": "Библиотека",

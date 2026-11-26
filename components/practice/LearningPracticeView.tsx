@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { ChevronRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { startTopicLearning, readLearningState, submitTopicLearning, readLearningReview } from '@/lib/supabase/learning-actions';
 import { PENDING_KEY, createPending, restorePending, bindSession, freezeSubmit, updateDraft, hasCompleteAnswer, type PendingLearning } from '@/lib/learning/pending';
@@ -33,6 +34,9 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
   const [answer, setAnswer] = useState<Answer>(null);
   const [review, setReview] = useState<LearningReview | null>(null);
   const pending = useRef<PendingLearning | null>(null);
+  const questionSection = useRef<HTMLElement>(null);
+  const reviewHeading = useRef<HTMLHeadingElement>(null);
+  const focusTarget = useRef<'question' | 'review' | null>(null);
   const busy = useRef(false);
   const reviewReadInProgress = useRef(false);
   const generation = useRef(0);
@@ -51,6 +55,7 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
     };
     const invalidate = () => {
       generation.current++;
+      focusTarget.current = null;
       clear();
       setSession(null); setReview(null); setAnswer(null);
       setFault('unauthenticated'); setPhase('error');
@@ -123,6 +128,8 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
     run.current = async (intent) => {
       if (!live() || busy.current) return;
       busy.current = true;
+      if (intent === 'submit' || intent === 'skip') setPhase('submitting');
+      if (intent === 'next') setPhase('loading');
       try {
         reviewReadInProgress.current = false;
         // A server prop scopes local storage; Auth is rechecked on every delivery.
@@ -160,6 +167,26 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
     };
   }, [owner, locale, topicSlug]);
 
+  useEffect(() => {
+    if (focusTarget.current === 'review' && phase === 'review') {
+      reviewHeading.current?.focus();
+      focusTarget.current = null;
+    }
+    if (focusTarget.current === 'question' && phase === 'active') {
+      questionSection.current?.focus();
+      focusTarget.current = null;
+    }
+  }, [phase]);
+
+  const checkAnswer = (intent: 'submit' | 'skip') => {
+    focusTarget.current = 'review';
+    void run.current(intent);
+  };
+  const nextQuestion = () => {
+    focusTarget.current = 'question';
+    void run.current('next');
+  };
+
   const changeAnswer = (value: Answer) => {
     if (busy.current || phase !== 'active' || !pending.current || pending.current.submit) return;
     const updated = updateDraft(pending.current, value);
@@ -169,13 +196,15 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
     } catch { setFault('storage-unavailable'); setPhase('error'); }
   };
   const item = session?.items[0];
+  const answerReady = item ? hasCompleteAnswer(item.question, answer) : false;
   const reviewed = review?.items[0];
   const correct = reviewed?.gradingBody.correct;
   const correctText = typeof correct === 'string' ? correct : Array.isArray(correct) ? correct.join(', ') : correct ? Object.entries(correct).map(([key, value]) => `${key}: ${value}`).join('; ') : '';
 
   return <section className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-8">
     <h1 className="text-2xl font-semibold tracking-tight">{topicName}</h1>
-    {item && <div className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7">
+    {item && <section ref={questionSection} tabIndex={-1} aria-label={t('questionTitle')}
+      className="scroll-mt-20 space-y-5 rounded-2xl border bg-card p-5 outline-none focus-visible:ring-2 focus-visible:ring-ring sm:p-7">
       {item.question.context && <ContentBlocks blocks={item.question.context.blocks} />}
       <QuestionStem body={item.question.body} />
       <fieldset disabled={phase !== 'active'} className="min-w-0">
@@ -184,12 +213,21 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
             ? { correct, correctLabel: t('correctOption'), incorrectLabel: t('incorrectSelection') } : undefined}
           labels={{ matchingPlaceholder: inputLabels('matchingPlaceholder'), matchingSelectFor: (value) => t('matchingSelectFor', { item: value }), multiGroup: t('multiGroup') }} />
       </fieldset>
-    </div>}
-    {phase === 'active' && item && <div className="flex flex-wrap gap-3">
-      <Button disabled={!hasCompleteAnswer(item.question, answer)} onClick={() => void run.current('submit')}>{t('submit')}</Button>
-      <Button variant="outline" onClick={() => void run.current('skip')}>{t('skip')}</Button>
-      {GRAPH_TOOL_TOPICS.has(topicSlug) && <Button variant="outline" aria-expanded={graphFor === item.id} onClick={() => setGraphFor(graphFor === item.id ? null : item.id)}>{graphText(graphFor === item.id ? 'closeTool' : 'openTool')}</Button>}
-    </div>}
+      {phase === 'active' && <div className="space-y-2 border-t pt-4">
+        {!answerReady && <p className="text-sm text-muted-foreground">{t('answerRequired')}</p>}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button className="min-h-11 w-full sm:w-auto" disabled={!answerReady} onClick={() => checkAnswer('submit')}>
+            {t('submit')}
+          </Button>
+          <Button variant="ghost" onClick={() => checkAnswer('skip')}>{t('skip')}</Button>
+          {GRAPH_TOOL_TOPICS.has(topicSlug) && (
+            <Button variant="ghost" aria-expanded={graphFor === item.id} onClick={() => setGraphFor(graphFor === item.id ? null : item.id)}>
+              {graphText(graphFor === item.id ? 'closeTool' : 'openTool')}
+            </Button>
+          )}
+        </div>
+      </div>}
+    </section>}
     {phase === 'active' && item && graphFor === item.id && <div className="rounded-2xl border bg-card p-4 sm:p-5">
       <GraphTool key={item.id} idPrefix={`graph-${item.id}`} hint={graphText('practiceHint')} />
     </div>}
@@ -199,13 +237,25 @@ export function LearningPracticeView({ owner, locale, topicSlug, topicName }: {
       <SaveStatus>{t(`errors.${fault}`)}</SaveStatus>
       {!['unauthenticated', 'forbidden', 'storage-unavailable'].includes(fault) && <Button onClick={() => void run.current(terminal.includes(fault) ? 'next' : 'resume')}>{t(terminal.includes(fault) ? 'newTask' : 'retry')}</Button>}
     </div>}
-    {phase === 'review' && review && reviewed && <div className="space-y-4 rounded-2xl border bg-card p-5">
-      <SaveStatus>{t('saved')}</SaveStatus>
-      <p data-testid="learning-score" className="text-2xl font-semibold">{reviewed.points} / {reviewed.maxPoints}</p>
+    {phase === 'review' && review && reviewed && <section aria-labelledby="learning-review-title" className="space-y-4 rounded-2xl border bg-card p-5 sm:p-7">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h2 id="learning-review-title" ref={reviewHeading} tabIndex={-1} className="scroll-mt-20 text-xl font-semibold focus:outline-none">
+            {t('reviewTitle')}
+          </h2>
+          <SaveStatus>{t('saved')}</SaveStatus>
+        </div>
+        <p data-testid="learning-score" className="text-xl font-semibold tabular-nums">{reviewed.points} / {reviewed.maxPoints}</p>
+      </div>
       <p>{t('correctAnswer')} <MathText text={correctText} /></p>
       {reviewed.explanation && <ContentBlocks blocks={reviewed.explanation.blocks} />}
       {item && <TaskGraph key={item.id} stem={item.question.body.stem} stemBlocks={item.question.body.stem_blocks} />}
-      <Button onClick={() => void run.current('next')}>{t('next')}</Button>
-    </div>}
+      <div className="border-t pt-4">
+        <Button className="min-h-11 w-full sm:w-auto" onClick={nextQuestion}>
+          {t('next')}
+          <ChevronRight className="size-4" aria-hidden />
+        </Button>
+      </div>
+    </section>}
   </section>;
 }

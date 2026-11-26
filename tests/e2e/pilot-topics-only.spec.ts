@@ -23,7 +23,7 @@ test('pilot topics-only mode hides assessments on mobile and redirects every ass
     const practice = page.locator('main');
     await expect(practice.locator(`a[href="/${locale}/subjects"]`)).toBeVisible();
     await expect(practice.locator(`a[href="/${locale}/visualization"]`)).toBeVisible();
-    await expect(practice.locator(`a[href="/${locale}/problems"], a[href="/${locale}/full-practice"]`)).toHaveCount(0);
+    await expect(practice.locator(`a[href="/${locale}/problems"], a[href="/${locale}/full-practice"], a[href="/${locale}/weekly"]`)).toHaveCount(0);
     await expect(tabs.locator(`a[href="/${locale}/practice"]`)).toHaveAttribute('aria-current', 'page');
 
     for (const route of ['materials', 'library', 'videos', 'problems', 'review']) {

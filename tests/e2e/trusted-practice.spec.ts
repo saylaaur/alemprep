@@ -233,9 +233,13 @@ test('skip is explicit and the next task starts a new server session', async ({ 
   await expect(page.getByRole('button', { name: 'Проверить', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Пропустить', exact: true }).click();
   await expect(page.getByTestId('learning-score')).toHaveText('0 / 1');
+  await expect(page.getByRole('heading', { name: 'Разбор задачи', exact: true })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Проверить', exact: true })).toHaveCount(0);
   expect(await db.scalar('SELECT given_answer FROM public.attempts WHERE user_id = $1', [actor.id])).toBeNull();
   await page.getByRole('button', { name: 'Следующая задача', exact: true }).click();
   await expect(page.getByRole('radio', { name: 'A four' })).toBeEnabled();
+  await expect(page.getByRole('region', { name: 'Задание', exact: true })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Следующая задача', exact: true })).toHaveCount(0);
   expect(await db.scalar<number>('SELECT count(*)::int FROM public.sessions WHERE user_id = $1', [actor.id])).toBe(2);
 });
 

@@ -8,6 +8,7 @@ import {
   Pencil,
   PlayCircle,
   Timer,
+  CalendarDays,
   Users,
 } from 'lucide-react';
 import { isContentEnabled, isLocalMode } from '@/lib/data-mode';
@@ -33,6 +34,7 @@ const practiceLinks = [
   { href: '/subjects', labelKey: 'byTopic', descriptionKey: 'byTopic', icon: BookOpen },
   { href: '/problems', labelKey: 'problemBank', descriptionKey: 'problemBank', icon: FolderOpen },
   { href: '/full-practice', labelKey: 'fullPractice', descriptionKey: 'exam', icon: Timer },
+  { href: '/weekly', labelKey: 'weeklyTest', descriptionKey: 'weeklyTest', icon: CalendarDays },
   { href: '/visualization', labelKey: 'visualization', descriptionKey: 'graphs', icon: FunctionSquare },
 ] as const;
 
@@ -43,16 +45,17 @@ export const materialLinks = [
 
 export type SectionLink = (typeof practiceLinks)[number] | (typeof materialLinks)[number];
 
-export function visiblePracticeLinks(topicsOnly: boolean) {
+export function visiblePracticeLinks(topicsOnly: boolean, hasWeeklyPlan: boolean) {
   return practiceLinks.filter(({ href }) => {
     if (href === '/subjects') return !isLocalMode();
     if (href === '/problems') return isContentEnabled(topicsOnly);
     if (href === '/full-practice') return !topicsOnly;
+    if (href === '/weekly') return !topicsOnly && hasWeeklyPlan;
     return true;
   });
 }
 
-const practiceSections = [...practiceLinks.map(({ href }) => href), '/weekly', '/diagnostic'];
+const practiceSections = [...practiceLinks.map(({ href }) => href), '/diagnostic'];
 const materialSections = [...materialLinks.map(({ href }) => href), '/review'];
 
 function isInSection(pathname: string, prefix: string): boolean {
