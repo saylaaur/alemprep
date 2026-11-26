@@ -110,7 +110,7 @@ TEMPLATES = [
               lambda p: f"def f(n):\n    if n <= 0:\n        return {p.k}\n    return f(n - 1) + n\n\nprint(f({p.n}))",
               lambda p: f"print({p.n} + {p.k})"],
              "Разворачиваем вызовы: $f(n) = f(n - 1) + n$ до $f(1) = [[k]]$, затем складываем на обратном ходе: $f([[n]]) = [[k]] + 2 + \\dots + [[n]] = [[ans]]$.",
-             "Шақыруларды ашамыз: $f(n) = f(n - 1) + n$, $f(1) = [[k]]$ болғанша, сосын кері жолда қосамыз: $f([[n]]) = [[k]] + 2 + \\dots + [[n]] = [[ans]]$."),
+             "Шақыруларды ашамыз: $f(n) = f(n - 1) + n$, $f(1) = [[k]]$ болғанша, сосын кері жүрісте қосамыз: $f([[n]]) = [[k]] + 2 + \\dots + [[n]] = [[ans]]$."),
     code_tpl("py.max-index", "algorithms-and-programs", "medium",
              {"a": [3, 8, 1], "b": [9, 4, 6], "c": [2, 7, 5], "d": [10, 0, 11]},
              lambda p: f"a = [{p.a}, {p.b}, {p.c}, {p.d}]\nm = 0\nfor i in range(1, len(a)):\n    if a[i] > a[m]:\n        m = i\nprint(m)",
@@ -331,7 +331,7 @@ CONTEXTS = [
         where=lambda p: len({r[3] for r in pupils(p.seed)}) >= 4 and sum(1 for r in pupils(p.seed) if r[2] == "10А") >= 1,
         context={
             "ru": "В базе данных школы есть таблица `pupils` с результатами пробного ЕНТ:\n\n```\n[[tbl]]\n```",
-            "kk": "Мектептің деректер қорында сынақ ҰБТ нәтижелері бар `pupils` кестесі бар:\n\n```\n[[tbl]]\n```",
+            "kk": "Мектептің деректер қорында сынақ ҰБТ нәтижелері жазылған `pupils` кестесі бар:\n\n```\n[[tbl]]\n```",
         },
         questions=[
             Q("Что вернёт запрос `SELECT COUNT(*) FROM pupils WHERE class = '10А';`?", "`SELECT COUNT(*) FROM pupils WHERE class = '10А';` сұранысы не қайтарады?",
@@ -416,7 +416,7 @@ TEMPLATES += [
               lambda p: f"a = [x for x in range({p.a}, {p.b}) if x % {p.m} == 0]\nprint(len(a), sum(a))",
               lambda p: f"a = [x * {p.k} for x in range({p.a}, {p.b})]\nprint(len(a), sum(a))"],
              "Генератор списка берёт $x$ из `range`, оставляет только кратные, и каждое умножает. `len` — количество, `sum` — сумма.",
-             "Тізім генераторы `range`-тен $x$ алып, тек еселілерін қалдырады да, әрқайсысын көбейтеді. `len` — саны, `sum` — қосындысы."),
+             "Тізім генераторы `range`-ден $x$ алып, тек еселілерін қалдырады да, әрқайсысын көбейтеді. `len` — саны, `sum` — қосындысы."),
     code_tpl("py.nested-if-range", "python-programming", "easy",
              {"x": [3, 7, 12, 15, 18, 25, 30, 41], "a": [5, 10], "b": [20, 25]},
              lambda p: f'x = {p.x}\nif x < {p.a}:\n    print("low")\nelif x < {p.b}:\n    print("ok")\nelse:\n    print("high")',
