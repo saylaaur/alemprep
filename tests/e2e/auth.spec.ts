@@ -36,7 +36,17 @@ test('uses a local Supabase session to enter the protected dashboard', async ({ 
   await page.goto('/ru/dashboard');
 
   await expect(page).toHaveURL(/\/ru\/dashboard$/);
-  await page.locator('aside button[aria-expanded=false]').click();
+
+  const sidebar = page.locator('aside');
+  const today = sidebar.getByRole('link', { name: 'Сегодня' });
+  const rail = sidebar.locator('div.glass').first();
+  await expect(today).toHaveAttribute('aria-current', 'page');
+  await expect(rail).toHaveCSS('width', '64px');
+  await today.hover();
+  await expect(rail).toHaveCSS('width', '256px');
+  await page.mouse.move(600, 200);
+  await expect(rail).toHaveCSS('width', '64px');
+  await page.locator('aside').getByRole('button', { name: 'Аккаунт', exact: true }).click();
   await expect(page.getByText(actor.email).first()).toBeVisible();
 });
 
@@ -51,7 +61,7 @@ test('clears account A before account B uses the shared browser', async ({ page 
 
   await loginAs(page, a);
   await page.goto('/ru/dashboard');
-  await page.locator('aside button[aria-expanded=false]').click();
+  await page.locator('aside').getByRole('button', { name: 'Аккаунт', exact: true }).click();
   await expect(page.getByText(a.email).first()).toBeVisible();
   await page.getByRole('button', { name: 'Выйти' }).first().click();
   await expect(page).not.toHaveURL(/\/dashboard$/);

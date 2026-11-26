@@ -4,16 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
-import { signOut } from '@/lib/supabase/auth-actions';
-import { clearContentProgress } from '@/lib/lessons/progress';
-import { clearAllSavedExams } from '@/lib/exam-storage';
-import { clearPendingLearning } from '@/lib/learning/browser-storage';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { LanguageSwitcher } from '@/components/language-switcher';
-import { SoundRow } from '@/components/sound/SoundProvider';
+import { AccountMenu } from './AccountMenu';
 import type { Profile } from '@/types/db';
 import { visibleNavItems, visibleExtraNavItems } from './nav-items';
-import { GraduationCap, LogOut, Menu, X, Flame } from 'lucide-react';
+import { GraduationCap, Menu, X } from 'lucide-react';
 
 export function MobileNav({
   profile,
@@ -27,10 +21,10 @@ export function MobileNav({
   topicsOnly?: boolean;
 }) {
   const tNav = useTranslations('nav');
-  const tSound = useTranslations('lessons.sound');
   const tBrand = useTranslations('brand');
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const openButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -95,39 +89,27 @@ export function MobileNav({
     };
   }, [open]);
 
-  const displayName = profile?.full_name?.trim() || email || '';
-  const initial = (displayName[0] ?? '?').toUpperCase();
-  const streak = profile?.current_streak ?? 0;
-
   return (
     <>
-      {/* Top bar (mobile only): бургер · бренд · стрик */}
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-2 backdrop-blur-xl md:hidden">
+      {/* Top bar (mobile only) */}
+      <header className="sticky top-0 z-30 grid h-14 grid-cols-[44px_1fr_44px] items-center border-b bg-background/80 px-2 backdrop-blur-xl md:hidden">
         <button
           ref={openButtonRef}
           type="button"
           aria-label={tNav('openMenu')}
           aria-expanded={open}
-          onClick={() => setOpen(true)}
+          onClick={() => { setAccountOpen(false); setOpen(true); }}
           className="grid h-11 w-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"
         >
           <Menu className="h-5 w-5" />
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           <div className="grid h-6 w-6 place-items-center rounded-lg bg-primary text-primary-foreground">
             <GraduationCap className="h-3.5 w-3.5" />
           </div>
           <span className="text-[15px] font-semibold tracking-tight">{tBrand('name')}</span>
         </div>
-        <div className="flex items-center gap-1">
-          <LanguageSwitcher compact />
-          {streak > 0 ? (
-            <div className="flex h-9 items-center gap-1.5 rounded-full bg-streak/12 px-2.5">
-              <Flame className="h-4 w-4 fill-streak text-streak" />
-              <span className="font-mono text-sm font-bold tabular-nums text-streak">{streak}</span>
-            </div>
-          ) : null}
-        </div>
+        <AccountMenu profile={profile} email={email} open={accountOpen} setOpen={setAccountOpen} />
       </header>
 
       {/* Overlay */}
@@ -143,8 +125,9 @@ export function MobileNav({
       <div
         ref={drawerRef}
         inert={!open}
+        aria-hidden={!open}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r bg-card transition-transform duration-300 ease-smooth md:hidden',
+          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r bg-card transition-transform duration-300 ease-smooth motion-reduce:transition-none md:hidden',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
         role="dialog"
@@ -178,6 +161,8 @@ export function MobileNav({
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setOpen(false)}
+                aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   'group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 focus-visible:ring-4 focus-visible:ring-ring/25',
                   isActive
@@ -199,42 +184,6 @@ export function MobileNav({
             );
           })}
         </nav>
-
-        {/* Footer */}
-        <div className="border-t p-3 space-y-1">
-          <div className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm min-h-[44px]">
-            {profile?.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={profile.avatar_url} alt="" className="h-8 w-8 rounded-full ring-2 ring-border" />
-            ) : (
-              <div className="grid h-8 w-8 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary ring-2 ring-primary/15">
-                {initial}
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="truncate text-sm font-medium">{displayName}</div>
-              {email && profile?.full_name && (
-                <div className="truncate text-xs text-muted-foreground">{email}</div>
-              )}
-            </div>
-          </div>
-
-          <ThemeToggle />
-          <SoundRow labelOn={tSound('on')} labelOff={tSound('off')} />
-          <LanguageSwitcher />
-
-          {/* Прогресс пробника в localStorage — чистим при выходе, чтобы он
-              не достался следующему аккаунту на этом устройстве. */}
-          <form action={signOut} onSubmit={() => { clearPendingLearning(); clearAllSavedExams(); clearContentProgress(); }}>
-            <button
-              type="submit"
-              className="flex w-full min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-200 hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25"
-            >
-              <LogOut className="h-[18px] w-[18px]" />
-              {tNav('signOut')}
-            </button>
-          </form>
-        </div>
       </div>
     </>
   );
