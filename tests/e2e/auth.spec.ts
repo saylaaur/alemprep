@@ -68,6 +68,7 @@ test('clears account A before account B uses the shared browser', async ({ page 
 
   await loginAs(page, b);
   await page.goto('/ru/dashboard');
+  await page.locator('aside').getByRole('button', { name: 'Аккаунт', exact: true }).click();
   await expect(page.getByText(b.email).first()).toBeVisible();
   await expect(page.getByText(a.email)).toHaveCount(0);
 });
