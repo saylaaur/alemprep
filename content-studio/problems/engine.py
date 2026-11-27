@@ -327,6 +327,11 @@ MATCH_CORRECT = 0 + 8 * 1  # верные стоят первыми: строк�
 
 def _side(t: Template, lang: str, p: P, ans: Value, opts: list[str], mask: int) -> dict:
     unit = t.unit_kk if (lang == "kk" and t.unit_kk) else t.unit
+    if lang == "kk":  # строковый ответ в разборе — тоже по-казахски
+        tr = lambda v: t.options_kk.get(v, KK_WORDS.get(v, v)) if isinstance(v, str) else v
+        ans = tr(ans)
+        if "ans1" in p:
+            p = P({**p, "ans1": tr(p["ans1"]), "ans2": tr(p["ans2"])})
     fill = lambda s: (ru_agree if lang == "ru" else kk_agree)(fill_mixed(s, p, ans, t.decimals))
     out = {
         "question": fill(t.text[lang]),
