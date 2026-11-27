@@ -13,23 +13,23 @@ type Palette = {
 /** Тёмная тема — глубокий зелёный; светлая — мягкая мятная версия того же рисунка. */
 const PALETTES: Record<'dark' | 'light', Palette> = {
   dark: {
-    base: '#070908',
-    glow: 'rgba(15,59,43,.9)',
+    base: '#07110e',
+    glow: 'rgba(17,66,48,.76)',
     composite: 'screen',
     ribbons: [
-      [0.2, 'rgba(15,90,62,.95)', 'rgba(43,201,143,.95)', 'rgba(15,90,62,0)'],
-      [0.11, 'rgba(43,201,143,0)', 'rgba(120,240,190,.9)', 'rgba(43,201,143,.6)'],
-      [0.04, 'rgba(255,255,255,0)', 'rgba(255,255,255,.95)', 'rgba(255,255,255,0)'],
+      [0.23, 'rgba(12,81,55,.9)', 'rgba(24,169,111,.92)', 'rgba(13,82,56,0)'],
+      [0.13, 'rgba(27,154,101,0)', 'rgba(73,180,126,.72)', 'rgba(25,143,96,.48)'],
+      [0.035, 'rgba(199,238,215,0)', 'rgba(199,238,215,.43)', 'rgba(199,238,215,0)'],
     ],
   },
   light: {
     base: '#f1f8f4',
-    glow: 'rgba(43,201,143,.28)',
+    glow: 'rgba(59,175,129,.23)',
     composite: 'source-over',
     ribbons: [
-      [0.2, 'rgba(43,201,143,0)', 'rgba(43,201,143,.55)', 'rgba(150,230,195,.25)'],
-      [0.11, 'rgba(180,240,215,.0)', 'rgba(120,225,180,.6)', 'rgba(43,201,143,.3)'],
-      [0.04, 'rgba(255,255,255,0)', 'rgba(255,255,255,.95)', 'rgba(255,255,255,0)'],
+      [0.23, 'rgba(43,182,128,0)', 'rgba(43,182,128,.47)', 'rgba(150,223,186,.23)'],
+      [0.13, 'rgba(180,240,215,0)', 'rgba(132,216,170,.48)', 'rgba(43,181,124,.28)'],
+      [0.035, 'rgba(250,255,252,0)', 'rgba(250,255,252,.72)', 'rgba(250,255,252,0)'],
     ],
   },
 };
@@ -172,7 +172,7 @@ export function AppBackdrop() {
 
   return (
     <div aria-hidden className="app-backdrop pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <canvas ref={canvasRef} className="absolute left-[-6%] top-0 w-[112%] blur-[28px] saturate-[1.15] motion-safe:will-change-transform" />
+      <canvas ref={canvasRef} className="absolute left-[-6%] top-0 w-[112%] blur-[34px] motion-safe:will-change-transform" />
     </div>
   );
 }

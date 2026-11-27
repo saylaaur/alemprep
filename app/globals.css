@@ -122,10 +122,8 @@
 
   body {
     @apply bg-background text-foreground font-sans;
-    font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1, 'cv11' 1;
   }
 
-  /* Headings: tighter optical tracking */
   h1, h2, h3, h4 {
     @apply tracking-tight;
     text-wrap: balance;
@@ -199,6 +197,12 @@
       radial-gradient(ellipse 60% 72% at 6% 105%, hsl(158 54% 56% / 0.35), transparent),
       radial-gradient(ellipse 42% 45% at 70% 78%, hsl(168 51% 68% / 0.18), transparent),
       linear-gradient(145deg, #f5faf7, #e4f0ea);
+  }
+  .app-backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(hsl(var(--background) / 0.68), transparent 45%);
   }
   .dark .app-backdrop {
     background:

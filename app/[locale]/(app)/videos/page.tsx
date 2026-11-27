@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Clock, Play } from 'lucide-react';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Link } from '@/i18n/routing';
 import { LESSONS, resolveLesson } from '@/lib/lessons/catalog';
 import { fill } from '@/lib/lessons/progress';
@@ -14,13 +15,9 @@ export default async function VideosPage({ params }: { params: Promise<{ locale:
   const lessons = LESSONS.map((l) => resolveLesson(l, locale as Locale));
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{t('title')}</h1>
-        <p className="mt-2 max-w-2xl text-muted-foreground">{t('subtitle')}</p>
-      </div>
-
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <>
+      <PageHeader className="max-w-6xl" title={t('title')} subtitle={t('subtitle')} />
+      <ul className="mx-auto grid max-w-6xl gap-4 px-4 py-6 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">
         {lessons.map((l) => (
           <li key={l.id}>
             <Link
@@ -47,7 +44,7 @@ export default async function VideosPage({ params }: { params: Promise<{ locale:
         ))}
       </ul>
 
-      <p className="text-sm text-muted-foreground">{t('soon')}</p>
-    </div>
+      <p className="mx-auto max-w-6xl px-4 pb-6 text-sm text-foreground/80 sm:px-6 lg:px-8">{t('soon')}</p>
+    </>
   );
 }

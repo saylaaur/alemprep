@@ -15,13 +15,18 @@ export default async function TeacherGroupPage({ params }: { params: Promise<{ l
   const result = await getTeacherRoster(groupId);
   if ('error' in result) {
     if (result.error === 'not-found') notFound();
-    return <><PageHeader title={t('title')} /><p role="alert" className="p-6">{t('unavailable')}</p></>;
+    return (
+      <>
+        <PageHeader className="max-w-6xl" title={t('title')} />
+        <p role="alert" className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">{t('unavailable')}</p>
+      </>
+    );
   }
   const roster = result.data;
   const summary = summarizeRoster(roster);
   const time = (value: string) => new Intl.DateTimeFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Almaty' }).format(new Date(value));
   return <>
-    <PageHeader title={roster.group.name} subtitle={roster.group.schoolName} action={<a href={`/${locale}/teacher/groups/${groupId}`} className="rounded-lg border px-4 py-2 text-sm">{t('refresh')}</a>} />
+    <PageHeader className="max-w-6xl" title={roster.group.name} subtitle={roster.group.schoolName} action={<a href={`/${locale}/teacher/groups/${groupId}`} className="rounded-xl border bg-card/80 px-4 py-2 text-sm font-medium hover:bg-card">{t('refresh')}</a>} />
     <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       <Link href="/teacher" className="text-sm text-primary">← {t('allGroups')}</Link>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -50,7 +50,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ locale:
 
   return (
     <>
-      <PageHeader title={t('title')} subtitle={t('subtitle')} />
+      <PageHeader className="max-w-3xl" title={t('title')} subtitle={t('subtitle')} />
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
         <ReviewQueue items={items} dateLocale={l === 'kk' ? 'kk-KZ' : 'ru-RU'} labels={labels} cardLabels={cardLabels} />
       </div>

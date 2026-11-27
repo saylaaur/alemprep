@@ -50,7 +50,7 @@ export default async function LandingPage({
         >
           <h1
             id="landing-title"
-            className="text-balance text-[clamp(2.5rem,7vw,4.75rem)] font-extrabold leading-[1.02] tracking-[-0.055em]"
+            className="text-balance text-[clamp(2.5rem,7vw,4.75rem)] font-bold leading-[1.09] tracking-[-0.025em]"
           >
             {t('title')}
           </h1>

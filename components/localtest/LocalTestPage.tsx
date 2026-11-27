@@ -68,7 +68,7 @@ export async function LocalTestPage({ kind, locale }: { kind: TestKind; locale: 
 
   return (
     <>
-      <PageHeader title={t(titleKey)} subtitle={t('subtitle')} />
+      <PageHeader className="max-w-3xl" title={t(titleKey)} subtitle={t('subtitle')} />
       <div className="mx-auto grid max-w-3xl gap-5 px-4 py-6 sm:px-6 lg:px-8">
         <nav aria-label={t('tabsLabel')} className="grid grid-cols-3 gap-1 rounded-full bg-muted p-1">
           {TABS.map((tab) => (
