@@ -45,14 +45,14 @@ export function ProblemCatalog({ subjects }: { subjects: SubjectFolder[] }) {
             className="h-11 w-full rounded-xl border bg-background pl-10 pr-3 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
           />
         </label>
-        <div role="group" aria-label={t('subjectFilter')} className="flex flex-wrap gap-1.5">
+        <div role="group" aria-label={t('subjectFilter')} className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
           {filters.map(({ slug, name }) => (
             <Button
               key={slug}
               type="button"
               variant={subjectSlug === slug ? 'default' : 'ghost'}
               size="sm"
-              className="min-h-11"
+              className="min-h-11 min-w-0 whitespace-normal"
               aria-pressed={subjectSlug === slug}
               onClick={() => setSubjectSlug(slug)}
             >
