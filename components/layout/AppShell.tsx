@@ -20,7 +20,6 @@ export function AppShell({
 }) {
   return (
     <div className="relative isolate flex min-h-dvh">
-      {/* Один длинный градиент за всеми экранами */}
       <AppBackdrop />
       <Sidebar profile={profile} email={email} isTeacher={isTeacher} topicsOnly={topicsOnly} />
       <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">

@@ -15,7 +15,7 @@ import { signOut } from '@/lib/supabase/auth-actions';
 import { cn } from '@/lib/utils';
 import type { Profile } from '@/types/db';
 
-const ROW = 'flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25';
+const ROW = 'flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors duration-200 ease-apple hover:bg-accent/60 hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25';
 
 export function AccountMenu({
   profile,
@@ -76,7 +76,7 @@ export function AccountMenu({
         aria-controls={id}
         onClick={() => setOpen((current) => !current)}
         className={cn(
-          'grid h-11 items-center rounded-2xl text-left text-sm font-medium transition-colors hover:bg-foreground/10 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-ring/25',
+          'grid h-11 items-center rounded-2xl text-left text-sm font-medium transition-colors duration-200 ease-apple hover:bg-foreground/10 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-ring/25',
           desktop ? 'w-full grid-cols-[44px_minmax(0,1fr)]' : 'w-11 place-items-center',
           open && 'bg-foreground/10',
         )}
@@ -90,7 +90,7 @@ export function AccountMenu({
           </span>
         )}
         {desktop && (
-          <span aria-hidden className={cn('truncate pl-2 pr-3 transition-opacity duration-200 motion-reduce:transition-none', expanded ? 'delay-75 motion-reduce:delay-0' : 'opacity-0')}>
+          <span aria-hidden className={cn('truncate pl-2 pr-3 transition-opacity duration-150 ease-apple motion-reduce:transition-none', expanded ? 'delay-75 motion-reduce:delay-0' : 'opacity-0')}>
             {t('account')}
           </span>
         )}
@@ -101,7 +101,7 @@ export function AccountMenu({
         aria-label={t('account')}
         hidden={!open}
         className={cn(
-          'glass absolute z-40 w-64 overflow-y-auto rounded-3xl !bg-background/95 p-2.5',
+          'glass glass-chrome absolute z-40 w-64 overflow-y-auto rounded-3xl !bg-background/95 p-2.5 shadow-md motion-safe:animate-fade-in',
           desktop
             ? 'left-full top-0 ml-2 max-h-[calc(100dvh-2.5rem)]'
             : 'right-2 top-full mt-2 max-h-[calc(100dvh-4.5rem)] max-w-[calc(100vw-1rem)]',
