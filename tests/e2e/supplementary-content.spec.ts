@@ -78,3 +78,44 @@ test('a signed-in pupil can open the content library and keep a claimed book', a
     await db.close();
   }
 });
+
+test('a pupil can filter the problem bank and open a topic or lesson', async ({ page }) => {
+  test.skip(
+    process.env.NEXT_PUBLIC_CONTENT_V1_ENABLED !== 'true' || process.env.PILOT_TOPICS_ONLY === 'true',
+    'requires the supplementary content flag outside the school pilot',
+  );
+  const db = await createDbHarness();
+  try {
+    const pupil = await db.actor('problem-catalog-e2e');
+    await db.execute("UPDATE public.profiles SET second_subject = 'physics' WHERE id = $1", [pupil.id]);
+    await loginAs(page, pupil);
+    await page.setViewportSize({ width: 320, height: 740 });
+
+    await page.goto('/ru/problems');
+    const search = page.getByRole('searchbox', { name: 'Поиск по темам' });
+    const lesson = page.locator('main a[href="/ru/videos/newton-laws"]');
+    await search.fill('  НЬЮТОН  ');
+    await expect(lesson).toBeVisible();
+    const math = page.getByRole('button', { name: 'Математика', exact: true });
+    await math.click();
+    await expect(math).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('status').filter({ hasText: 'Темы не найдены' })).toBeVisible();
+    await expect(lesson).toHaveCount(0);
+    await page.getByRole('button', { name: 'Физика', exact: true }).click();
+    await lesson.click();
+    await expect(page).toHaveURL(/\/ru\/videos\/newton-laws$/);
+
+    await page.goto('/kk/problems');
+    const kazakhSearch = page.getByRole('searchbox', { name: 'Тақырып іздеу' });
+    await kazakhSearch.fill('  РАДИКАЛ  ');
+    await page.getByRole('button', { name: 'Математика', exact: true }).click();
+    await expect(page.getByRole('region', { name: 'Физика', exact: true })).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    const topic = page.locator('main a[href="/kk/problems/radicals-and-expressions"]');
+    await topic.focus();
+    await topic.press('Enter');
+    await expect(page).toHaveURL(/\/kk\/problems\/radicals-and-expressions$/);
+  } finally {
+    await db.close();
+  }
+});

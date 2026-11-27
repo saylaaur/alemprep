@@ -976,15 +976,19 @@
     }
   },
   "problems": {
-    "title": "Задачи",
-    "subtitle": "Все задачи ЕНТ по предметам и темам. Сейчас {count, plural, one {# задача} few {# задачи} other {# задач}} — база пополняется с каждым уроком.",
+    "title": "Банк задач",
+    "subtitle": "{count, plural, one {# задача} few {# задачи} other {# задач}} для подготовки к ЕНТ.",
     "count": "{count, plural, one {# задача} few {# задачи} other {# задач}}",
-    "empty": "пусто",
+    "search": "Поиск по темам",
+    "subjectFilter": "Показать задачи по предмету",
+    "allSubjects": "Все предметы",
+    "topicsFound": "{count, plural, one {# тема} few {# темы} many {# тем} other {# темы}}",
+    "noMatches": "Темы не найдены. Попробуй изменить запрос или выбрать другой предмет.",
+    "noProblems": "Задачи пока не добавлены.",
     "setTitle": "Набор {n} из {total}",
     "setDoneTitle": "Набор решён",
     "setDoneText": "Верно {correct} из {total}. Возьми следующий набор или вернись к темам.",
     "nextSet": "Следующие 15",
-    "prevSet": "Предыдущие",
-    "open": "Решать"
+    "prevSet": "Предыдущие"
   }
 }
