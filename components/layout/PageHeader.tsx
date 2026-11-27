@@ -8,7 +8,7 @@ export function PageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-20 flex flex-wrap items-end justify-between gap-4 border-b border-foreground/10 bg-background/30 px-4 py-4 backdrop-blur-2xl sm:px-6 sm:py-5 lg:px-8 lg:py-6">
+    <header className="glass-chrome sticky top-0 z-20 flex flex-wrap items-end justify-between gap-4 border-b border-foreground/10 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {subtitle ? (

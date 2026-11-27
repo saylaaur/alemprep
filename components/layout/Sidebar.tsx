@@ -10,7 +10,7 @@ import { AccountMenu } from './AccountMenu';
 import { isNavItemActive, visibleNavItems, visibleExtraNavItems } from './nav-items';
 
 const STORAGE_KEY = 'alemprep:nav-open';
-const ROW = 'grid h-11 w-full grid-cols-[44px_minmax(0,1fr)] items-center rounded-2xl text-left text-sm font-medium transition-colors focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-ring/25';
+const ROW = 'grid h-11 w-full grid-cols-[44px_minmax(0,1fr)] items-center rounded-2xl text-left text-sm font-medium transition-colors duration-200 ease-apple focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-ring/25';
 
 export function Sidebar({
   profile,
@@ -52,7 +52,7 @@ export function Sidebar({
   };
 
   const open = pinned || hovered || keyboardWithin || accountOpen;
-  const labelClass = cn('truncate pl-2 pr-3 transition-opacity duration-200 motion-reduce:transition-none', open ? 'delay-75 motion-reduce:delay-0' : 'opacity-0');
+  const labelClass = cn('truncate pl-2 pr-3 transition-opacity duration-150 ease-apple motion-reduce:transition-none', open ? 'delay-75 motion-reduce:delay-0' : 'opacity-0');
   const items = [...visibleNavItems(topicsOnly), ...visibleExtraNavItems(isTeacher)];
   const PinIcon = pinned ? PinOff : Pin;
 
@@ -66,7 +66,11 @@ export function Sidebar({
         }}
         onPointerLeave={(event) => {
           if (event.pointerType !== 'mouse') return;
-          leaveTimer.current = setTimeout(() => setHovered(false), 220);
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            setHovered(false);
+            return;
+          }
+          leaveTimer.current = setTimeout(() => setHovered(false), 160);
         }}
         onFocus={(event) => {
           if (event.target.matches(':focus-visible')) setKeyboardWithin(true);
@@ -78,8 +82,8 @@ export function Sidebar({
       >
         <div
           className={cn(
-            'glass flex max-h-[calc(100dvh-1.5rem)] flex-col rounded-[28px] px-[9px] py-2.5 transition-[width,background-color] duration-[380ms] ease-apple motion-reduce:transition-none',
-            open ? 'w-64 bg-background/85' : 'w-16',
+            'glass glass-chrome flex max-h-[calc(100dvh-1.5rem)] flex-col rounded-[28px] px-[9px] py-2.5 transition-[width,background-color] duration-300 ease-apple motion-reduce:transition-none',
+            open ? 'w-64 bg-background/95' : 'w-16',
           )}
         >
           <div className="grid h-11 shrink-0 grid-cols-[44px_minmax(0,1fr)] items-center">

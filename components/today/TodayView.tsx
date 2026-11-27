@@ -130,24 +130,23 @@ export async function TodayView({
           record={record > 0 ? t('streakRecordShort', { count: record }) : null}
         />
 
-        {/* До ЕНТ */}
-        <div className={`${WIDGET} min-h-[170px]`}>
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-            <CalendarClock className="h-3.5 w-3.5" />
+        <div className="glass flex flex-wrap items-center justify-between gap-3 rounded-3xl px-5 py-4 sm:col-span-2">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <CalendarClock className="size-4 shrink-0" aria-hidden />
             {t('examTitle')}
           </div>
           {examDays !== null ? (
-            <>
-              <div className="mt-auto font-mono text-[56px] font-bold leading-none tabular-nums">{examDays}</div>
-              <div className="mt-1.5 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="text-2xl font-semibold tabular-nums">{examDays}</span>
+              <span className="text-sm text-muted-foreground">
                 {tPlan('daysUnit', { count: examDays })} · {tPlan('examWeeksUnit', { count: Math.floor(examDays / 7) })}
-              </div>
+              </span>
               {projected !== null && (
-                <div className="mt-0.5 text-sm text-muted-foreground">{t('examProjection', { projected, target })}</div>
+                <span className="text-sm text-muted-foreground">{t('examProjection', { projected, target })}</span>
               )}
-            </>
+            </div>
           ) : (
-            <Link href="/settings" className="mt-auto text-sm underline-offset-4 hover:underline">
+            <Link href="/settings" className="rounded-sm text-sm font-medium text-primary underline-offset-4 hover:underline">
               {t('examNoDate')}
             </Link>
           )}

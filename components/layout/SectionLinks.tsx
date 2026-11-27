@@ -21,16 +21,16 @@ export async function SectionLinks({
           <li key={href}>
             <Link
               href={href}
-              className="glass group flex h-full min-h-28 items-start gap-3 rounded-3xl bg-card/60 p-4 transition-colors hover:bg-card/90 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-ring/40 sm:gap-4 sm:p-5"
+              className="glass group flex h-full min-h-28 items-start gap-3 rounded-3xl p-4 transition-[background-color,border-color,box-shadow] duration-200 ease-apple hover:border-primary/30 hover:bg-card hover:shadow-sm focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-ring/40 sm:gap-4 sm:p-5"
             >
               <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/15 text-primary">
                 <Icon className="size-5" aria-hidden />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold leading-snug text-foreground">{t(labelKey)}</span>
-                <span className="mt-1 block text-sm leading-relaxed text-foreground/75">{description(descriptionKey)}</span>
+                <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">{description(descriptionKey)}</span>
               </span>
-              <ChevronRight aria-hidden className="mt-1.5 size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
+              <ChevronRight aria-hidden className="mt-1.5 size-4 shrink-0 text-muted-foreground transition-[color,transform] duration-200 ease-apple group-hover:text-primary motion-safe:group-hover:translate-x-0.5" />
             </Link>
           </li>
         ))}

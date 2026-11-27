@@ -9,7 +9,7 @@ import type { Profile } from '@/types/db';
 import { AccountMenu } from './AccountMenu';
 import { isImmersivePracticePath, isNavItemActive } from './nav-items';
 
-const ICON_LINK = 'grid size-11 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25';
+const ICON_LINK = 'grid size-11 place-items-center rounded-xl text-muted-foreground transition-colors duration-200 ease-apple hover:bg-accent hover:text-foreground focus-visible:ring-4 focus-visible:ring-ring/25';
 
 export function MobileNav({
   profile,
@@ -27,7 +27,7 @@ export function MobileNav({
   const inTeacherCabinet = isNavItemActive(pathname, '/teacher');
 
   return (
-    <header className="sticky top-0 z-30 grid h-14 grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b bg-background/80 px-2 backdrop-blur-xl md:hidden">
+    <header className="glass-chrome sticky top-0 z-30 grid h-14 grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b px-2 md:hidden">
       {isImmersivePracticePath(pathname) ? (
         <Link href="/practice" aria-label={t('backToPractice')} className={ICON_LINK}>
           <ChevronLeft className="size-5" aria-hidden />

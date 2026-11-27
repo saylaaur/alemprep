@@ -53,6 +53,9 @@ test('uses a local Supabase session to enter the protected dashboard', async ({ 
   await expect(rail).toHaveCSS('width', '64px');
   await page.locator('aside').getByRole('button', { name: 'Аккаунт', exact: true }).click();
   await expect(page.getByText(actor.email).first()).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(rail).toHaveCSS('transition-property', 'none');
 });
 
 test('clears account A before account B uses the shared browser', async ({ page }) => {
