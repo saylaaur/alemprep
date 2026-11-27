@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { TopicPractice } from '@/components/problems/TopicPractice';
 import { buildLessonLabels } from '@/lib/lessons/labels';
@@ -47,34 +47,15 @@ export default async function TopicProblemsPage({
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{info?.name ?? topic}</h1>
       </header>
       <TopicPractice
-        key={`${topic}-${set}`}
+        key={`${storageTopic}-${set}`}
+        topic={topic}
+        setIndex={set}
+        availableSets={total}
         storageKey={`alemprep:topic:${storageTopic}:set${set}:v1`}
         problems={problems}
         labels={labels}
         activityUrl={isLocalMode() ? '/api/local/activity' : undefined}
       />
-      <nav className="flex items-center justify-between gap-2">
-        {set > 0 ? (
-          <Link
-            href={{ pathname: '/problems/[topic]', params: { topic }, query: { set: String(set - 1) } }}
-            className="inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <ChevronLeft className="h-4 w-4" aria-hidden />
-            {t('prevSet')}
-          </Link>
-        ) : (
-          <span />
-        )}
-        {set + 1 < total && (
-          <Link
-            href={{ pathname: '/problems/[topic]', params: { topic }, query: { set: String(set + 1) } }}
-            className="inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-          >
-            {t('nextSet')}
-            <ChevronRight className="h-4 w-4" aria-hidden />
-          </Link>
-        )}
-      </nav>
     </div>
   );
 }
