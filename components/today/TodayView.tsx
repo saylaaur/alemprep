@@ -92,7 +92,7 @@ export async function TodayView({
     <div className="mx-auto flex min-h-[calc(100dvh-96px)] max-w-4xl flex-col justify-center gap-8 px-4 py-10 sm:px-6 md:min-h-dvh lg:px-8">
       <div>
         <div className="text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{dateLabel}</div>
-        <h1 className="mt-2 text-balance text-[clamp(36px,7vw,80px)] font-extrabold leading-[0.95] tracking-[-0.045em]">
+        <h1 className="mt-2 text-balance text-[clamp(36px,7vw,80px)] font-bold leading-[1.06] tracking-[-0.025em]">
           {tDash('greeting', { name })}
         </h1>
         <Button asChild className="mt-5 min-h-11">

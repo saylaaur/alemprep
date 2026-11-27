@@ -7,5 +7,5 @@ export default async function VisualizationPage({ params }: { params: Promise<{ 
   setRequestLocale(locale);
   const t = await getTranslations('visualization');
   const apiKey = process.env.DESMOS_ENABLED === 'true' ? process.env.NEXT_PUBLIC_DESMOS_API_KEY?.trim() || null : null;
-  return <><PageHeader title={t('title')} subtitle={t('subtitle')} /><VisualizationWorkspace apiKey={apiKey} /></>;
+  return <><PageHeader className="max-w-6xl" title={t('title')} subtitle={t('subtitle')} /><VisualizationWorkspace apiKey={apiKey} /></>;
 }

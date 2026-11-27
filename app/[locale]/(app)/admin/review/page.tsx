@@ -38,9 +38,9 @@ export default async function AdminReviewPage({
 
   return (
     <>
-      <PageHeader title={t('title')} subtitle={subtitle} />
+      <PageHeader className="max-w-3xl" title={t('title')} subtitle={subtitle} />
 
-      <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-3xl">
+      <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6 lg:p-8">
         {questions.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t('noQuestions')}</p>
         ) : (

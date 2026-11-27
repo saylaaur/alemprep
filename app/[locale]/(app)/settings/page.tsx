@@ -37,7 +37,7 @@ export default async function SettingsPage({
 
   return (
     <>
-      <PageHeader title={t('title')} subtitle={t('subtitle')} />
+      <PageHeader className="max-w-2xl" title={t('title')} subtitle={t('subtitle')} />
       <SettingsView
         locale={locale as Locale}
         displayName={name}
@@ -49,7 +49,7 @@ export default async function SettingsPage({
         targetScore={profile?.target_score ?? MIN_TARGET_SCORE}
       />
       {showTelegram && (
-        <div className="mx-auto max-w-3xl px-4 pb-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl px-4 pb-8 sm:px-6 lg:px-8">
           <TelegramCard
             linked={telegramLinked}
             labels={{

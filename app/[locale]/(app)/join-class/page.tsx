@@ -13,5 +13,12 @@ export default async function JoinClassPage({
   const { code } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations('teacher');
-  return <><PageHeader title={t('joinTitle')} /><div className="p-4 sm:p-8"><JoinClass initialCode={typeof code === 'string' ? code : ''} /></div></>;
+  return (
+    <div className="px-4 sm:px-6 lg:px-8">
+      <PageHeader className="max-w-lg px-0 sm:px-0 lg:px-0" title={t('joinTitle')} />
+      <div className="py-6">
+        <JoinClass initialCode={typeof code === 'string' ? code : ''} />
+      </div>
+    </div>
+  );
 }

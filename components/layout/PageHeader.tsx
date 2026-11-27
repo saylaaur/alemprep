@@ -1,18 +1,27 @@
+import { cn } from '@/lib/utils';
+
 export function PageHeader({
   title,
   subtitle,
   action,
+  className,
 }: {
   title: string;
   subtitle?: string;
   action?: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <header className="glass-chrome sticky top-0 z-20 flex flex-wrap items-end justify-between gap-4 border-b border-foreground/10 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+    <header
+      className={cn(
+        'mx-auto flex w-full max-w-5xl flex-wrap items-end justify-between gap-x-6 gap-y-3 px-4 pb-1 pt-6 sm:px-6 sm:pt-9 lg:px-8 lg:pt-11',
+        className,
+      )}
+    >
+      <div className="min-w-0">
+        <h1 className="break-words text-3xl font-bold leading-tight sm:text-4xl">{title}</h1>
         {subtitle ? (
-          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground/80 sm:text-base">{subtitle}</p>
         ) : null}
       </div>
       {action}

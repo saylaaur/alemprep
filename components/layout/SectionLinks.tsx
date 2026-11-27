@@ -16,7 +16,7 @@ export async function SectionLinks({
   return (
     <>
       <PageHeader title={t(section)} />
-      <ul className="mx-auto grid w-full max-w-5xl gap-4 px-4 py-6 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-10">
+      <ul className="mx-auto grid w-full max-w-5xl gap-4 px-4 pb-10 pt-5 sm:px-6 sm:pt-6 lg:grid-cols-2 lg:px-8">
         {links.map(({ href, icon: Icon, labelKey, descriptionKey }) => (
           <li key={href}>
             <Link

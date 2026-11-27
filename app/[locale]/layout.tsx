@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono, Lora } from 'next/font/google';
+import { JetBrains_Mono, Lora, Nunito_Sans } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -10,7 +10,7 @@ import 'katex/dist/katex.min.css';
 import '../globals.css';
 
 // cyrillic-ext — казахские буквы (ә, ғ, қ, ң, ө, ұ, ү, һ, і).
-const inter = Inter({
+const nunitoSans = Nunito_Sans({
   subsets: ['latin', 'cyrillic', 'cyrillic-ext'],
   variable: '--font-sans',
   display: 'swap',
@@ -67,7 +67,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={cn(inter.variable, lora.variable, jetbrainsMono.variable)}
+      className={cn(nunitoSans.variable, lora.variable, jetbrainsMono.variable)}
     >
       <body className={cn('min-h-dvh antialiased font-sans')}>
         <ThemeProvider

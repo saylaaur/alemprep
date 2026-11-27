@@ -45,11 +45,12 @@ export default async function SubjectTopicsPage({
   return (
     <>
       <PageHeader
+        className="max-w-6xl"
         title={subjectName(subject, locale as Locale)}
         subtitle={t('topicsSubtitle')}
       />
 
-      <div className="space-y-8 p-4 sm:p-6 lg:p-8">
+      <div className="mx-auto max-w-6xl space-y-8 p-4 sm:p-6 lg:p-8">
         {topics.every((topic) => topic.question_count === 0) && (
           <p className="rounded-xl border bg-card/70 backdrop-blur-xl p-5 text-sm text-muted-foreground">{availabilityText('topicDescription')}</p>
         )}
