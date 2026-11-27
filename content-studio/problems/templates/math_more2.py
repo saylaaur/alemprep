@@ -139,7 +139,7 @@ TEMPLATES = [
         answer=lambda p: iv(p.b - abs(p.a), p.b + abs(p.a), "[", "]"),
         distractors=[lambda p: iv(-abs(p.a), abs(p.a), "[", "]") if p.b else iv(p.b - abs(p.a) + 1, p.b + abs(p.a) + 1, "[", "]"), lambda p: iv(p.b - 1, p.b + 1, "[", "]"), lambda p: iv(p.b - abs(p.a), p.b + abs(p.a))],
         text={"ru": "Найдите множество значений функции $y = [[f]]$.", "kk": "$y = [[f]]$ функциясының мәндер жиынын табыңыз."},
-        solution={"ru": "$-1 \\le \\[[fn]] x \\le 1$, поэтому $[[f]]$ меняется от $[[b]] - [[absa]]$ до $[[b]] + [[absa]]$ (знак $a$ не важен). Ответ: [[ans]].",
+        solution={"ru": "$-1 \\le \\[[fn]] x \\le 1$, поэтому $[[f]]$ меняется от $[[b]] - [[absa]]$ до $[[b]] + [[absa]]$ (знак коэффициента перед $\\[[fn]] x$ не важен). Ответ: [[ans]].",
                   "kk": "$-1 \\le \\[[fn]] x \\le 1$, сондықтан $[[f]]$ өрнегі $[[b]] - [[absa]]$ мәнінен $[[b]] + [[absa]]$ мәніне дейін өзгереді (тригонометриялық функцияның алдындағы коэффициенттің таңбасы маңызды емес). Жауабы: [[ans]]."},
     ),
     Template(
@@ -206,11 +206,12 @@ TEMPLATES = [
     Template(
         id="math.n.alg.reciprocal-square", **T("algebraic-expressions", "medium"),
         params={"k": [3, 4, 5, 6, 7, 8, 9, 10, -3, -4, -5]},
+        derived=lambda p: {"kq": f"({p.k})" if p.k < 0 else str(p.k)},
         answer=lambda p: p.k ** 2 - 2,
         distractors=[lambda p: p.k ** 2, lambda p: p.k ** 2 + 2, lambda p: 2 * p.k - 2, lambda p: p.k ** 2 - 1],
         decimals=0, spread=None, variants=11,
         text={"ru": "Известно, что $a + \\frac{1}{a} = [[k]]$. Найдите $a^2 + \\frac{1}{a^2}$.", "kk": "$a + \\frac{1}{a} = [[k]]$ екені белгілі. $a^2 + \\frac{1}{a^2}$ мәнін табыңыз."},
-        solution={"ru": "Возводим в квадрат: $a^2 + 2 + \\frac{1}{a^2} = [[k]]^2$, откуда $a^2 + \\frac{1}{a^2} = [[ans]]$.", "kk": "Теңдіктің екі жағын квадраттаймыз: $a^2 + 2 + \\frac{1}{a^2} = [[k]]^2$, осыдан $a^2 + \\frac{1}{a^2} = [[ans]]$."},
+        solution={"ru": "Возводим в квадрат: $a^2 + 2 + \\frac{1}{a^2} = [[kq]]^2$, откуда $a^2 + \\frac{1}{a^2} = [[ans]]$.", "kk": "Теңдіктің екі жағын квадраттаймыз: $a^2 + 2 + \\frac{1}{a^2} = [[kq]]^2$, осыдан $a^2 + \\frac{1}{a^2} = [[ans]]$."},
     ),
     Template(
         id="math.n.sys.line-parabola", **T("linear-nonlinear-systems", "medium"),
@@ -218,7 +219,8 @@ TEMPLATES = [
         derived=lambda p: {"D": p.k ** 2 + 4 * (p.m - p.c), "pf": "x^2 " + term(p.c), "lf": (lead(p.k, "x") + " " + term(p.m)).strip() if p.k else str(p.m)},
         where=lambda p: p.c != 0,
         answer=lambda p: 2 if p.D > 0 else 1 if p.D == 0 else 0,
-        distractors=[lambda p: 0 if p.D > 0 else 2, lambda p: 1 if p.D != 0 else 2 if p.D == 0 else 0, lambda p: 3],
+        distractors=[lambda p: 0 if p.D > 0 else 2, lambda p: 1 if p.D != 0 else 2 if p.D == 0 else 0, lambda p: "бесконечно много"],
+        options_kk={"бесконечно много": "шексіз көп"},
         decimals=0, spread=None,
         text={"ru": "Сколько общих точек имеют графики $y = [[pf]]$ и $y = [[lf]]$?", "kk": "$y = [[pf]]$ және $y = [[lf]]$ графиктерінің неше ортақ нүктесі бар?"},
         solution={"ru": "Приравниваем: $x^2 [[ct]] = [[lf]]$, то есть $[[lhs]] = 0$. Дискриминант $D = [[D]]$: при $D > 0$ — две точки, $D = 0$ — одна, $D < 0$ — ни одной. Ответ: $[[ans]]$.",
@@ -254,12 +256,13 @@ TEMPLATES = [
     Template(
         id="math.n.plane.parallelogram-area", **T("plane-figures", "easy"),
         params={"a": [4, 5, 6, 8, 10, 12], "b": [3, 5, 7, 9, 10, 14], "ang": [30, 150, 90]},
+        derived=lambda p: {"note": "" if p.ang == 90 else " ($\\sin 30^\\circ = \\sin 150^\\circ = \\frac{1}{2}$)"},
         where=lambda p: p.a != p.b,
         answer=lambda p: p.a * p.b if p.ang == 90 else F(p.a * p.b, 2),
         distractors=[lambda p: p.a * p.b if p.ang != 90 else F(p.a * p.b, 2), lambda p: F(p.a * p.b, 4), lambda p: 2 * (p.a + p.b), lambda p: p.a + p.b],
         decimals=1,
         text={"ru": "Стороны параллелограмма $[[a]]$ и $[[b]]$, угол между ними $[[ang]]^\\circ$. Найдите площадь.", "kk": "Параллелограмның қабырғалары $[[a]]$ және $[[b]]$, олардың арасындағы бұрыш $[[ang]]^\\circ$. Ауданын табыңыз."},
-        solution={"ru": "$S = ab\\sin\\alpha = [[a]] \\cdot [[b]] \\cdot \\sin [[ang]]^\\circ = [[ans]]$ ($\\sin 30^\\circ = \\sin 150^\\circ = \\frac{1}{2}$).", "kk": "$S = ab\\sin\\alpha = [[a]] \\cdot [[b]] \\cdot \\sin [[ang]]^\\circ = [[ans]]$ ($\\sin 30^\\circ = \\sin 150^\\circ = \\frac{1}{2}$)."},
+        solution={"ru": "$S = ab\\sin\\alpha = [[a]] \\cdot [[b]] \\cdot \\sin [[ang]]^\\circ = [[ans]]$[[note]].", "kk": "$S = ab\\sin\\alpha = [[a]] \\cdot [[b]] \\cdot \\sin [[ang]]^\\circ = [[ans]]$[[note]]."},
     ),
     Template(
         id="math.n.plane.sector", **T("plane-figures", "medium"),
@@ -349,7 +352,7 @@ TEMPLATES = [
     # ---------- степени и корни ----------
     Template(
         id="math.n.pow.compare-largest", **T("powers", "medium"),
-        params={"e": [(60, 40, 24), (30, 20, 12), (90, 60, 36), (100, 60, 40), (40, 30, 20), (300, 200, 120), (21, 14, 9), (48, 30, 20)]},
+        params={"e": [(60, 40, 24), (30, 20, 12), (90, 60, 36), (100, 60, 40), (40, 30, 20), (300, 200, 120), (30, 20, 10), (48, 30, 20)]},
         derived=lambda p: {"vals": [(f"$2^{{{p.e[0]}}}$", p.e[0] * math.log(2)), (f"$3^{{{p.e[1]}}}$", p.e[1] * math.log(3)), (f"$5^{{{p.e[2]}}}$", p.e[2] * math.log(5))]},
         where=lambda p: (lambda v: sorted(v)[-1] - sorted(v)[-2] > 0.02)([x[1] for x in p.vals]),
         answer=lambda p: max(p.vals, key=lambda v: v[1])[0],
@@ -485,7 +488,7 @@ CONTEXTS = [
     Context(
         id="math.ctx.water-tank", **T("metric-relations-space"),
         params={"r": [1, 2, 3], "h": [2, 3, 4, 5], "q": [100, 150, 200, 250]},
-        derived=lambda p: {"V": p.r * p.r * p.h, "L": round(3.14 * p.r * p.r * p.h * 1000), "t": round(3.14 * p.r * p.r * p.h * 1000 / p.q)},
+        derived=lambda p: {"V": p.r * p.r * p.h, "L": round(3.14 * p.r * p.r * p.h * 1000), "t": math.ceil(3.14 * p.r * p.r * p.h * 1000 / p.q)},
         context={"ru": "На ферме стоит цилиндрический бак для воды: радиус основания $[[r]]$ м, высота $[[h]]$ м. Насос подаёт $[[q]]$ л воды в минуту. Принять $\\pi \\approx 3{,}14$, $1$ м³ $= 1000$ л.",
                  "kk": "Фермада су сақтауға арналған цилиндр пішінді бак тұр: табанының радиусы $[[r]]$ м, биіктігі $[[h]]$ м. Сорғы минутына $[[q]]$ л су береді. $\\pi \\approx 3{,}14$, $1$ м³ $= 1000$ л деп алыңыз."},
         questions=[
@@ -495,9 +498,9 @@ CONTEXTS = [
             Q("Сколько литров воды вмещает бак?", "Бакқа неше литр су сыяды?",
               lambda p: p.L, [lambda p: round(p.L / 1000), lambda p: round(3.14 * 2 * p.r * p.h * 1000), lambda p: p.V * 1000],
               "$V \\approx 3{,}14 \\cdot [[V]]$ м³, то есть $[[ans]]$ л.", "$V \\approx 3{,}14 \\cdot [[V]]$ м³, яғни $[[ans]]$ л.", decimals=0, unit="л"),
-            Q("За сколько минут насос наполнит пустой бак?", "Сорғы бос бакты неше минутта толтырады?",
+            Q("За сколько минут насос наполнит пустой бак? Ответ округлите вверх до целого числа минут.", "Сорғы бос бакты неше минутта толтырады? Жауапты бүтін минутқа дейін жоғары қарай дөңгелектеңіз.",
               lambda p: p.t, [lambda p: round(p.L * p.q / 1000), lambda p: round(p.t / 60), lambda p: round(p.V * 1000 / p.q)],
-              "$t = \\frac{[[L]]}{[[q]]} \\approx [[ans]]$ мин.", "$t = \\frac{[[L]]}{[[q]]} \\approx [[ans]]$ мин.", decimals=0, unit="мин"),
+              "$t = \\frac{[[L]]}{[[q]]}$; чтобы бак наполнился полностью, округляем вверх: $[[ans]]$ мин.", "$t = \\frac{[[L]]}{[[q]]}$; бак толық толуы үшін жоғары қарай дөңгелектейміз: $[[ans]]$ мин.", decimals=0, unit="мин"),
             Q("Бак красят снаружи: боковую поверхность и крышку. Найдите площадь покраски (выразите через $\\pi$).", "Бактың сыртын бояйды: бүйір бетін және қақпағын. Боялатын беттің ауданын табыңыз ($\\pi$ арқылы өрнектеңіз).",
               lambda p: pi_ans(2 * p.r * p.h + p.r * p.r), [lambda p: pi_ans(2 * p.r * p.h + 2 * p.r * p.r), lambda p: pi_ans(2 * p.r * p.h), lambda p: pi_ans(p.r * p.h + p.r * p.r)],
               "$S = 2\\pi rh + \\pi r^2 = 2\\pi \\cdot [[r]] \\cdot [[h]] + \\pi \\cdot [[r]]^2 =$ [[ans]] м². Дно не красят.", "$S = 2\\pi rh + \\pi r^2 = 2\\pi \\cdot [[r]] \\cdot [[h]] + \\pi \\cdot [[r]]^2 =$ [[ans]] м². Түбі боялмайды."),
@@ -506,7 +509,7 @@ CONTEXTS = [
     ),
     Context(
         id="math.ctx.taxi", **T("linear-quadratic-rational-equations"),
-        params={"a1": [300, 400, 500, 600], "b1": [120, 150, 180], "a2": [0, 100, 200], "b2": [200, 220, 250, 300]},
+        params={"a1": [300, 400, 500, 600], "b1": [120, 150, 180], "a2": [100, 150, 200], "b2": [200, 220, 250, 300]},
         derived=lambda p: {"x0": F(p.a1 - p.a2, p.b2 - p.b1)},
         where=lambda p: p.b2 > p.b1 and p.a1 > p.a2 and F(p.a1 - p.a2, p.b2 - p.b1).denominator == 1 and 2 <= F(p.a1 - p.a2, p.b2 - p.b1) <= 10,
         context={"ru": "Два такси в Шымкенте: «Жол» — посадка $[[a1]]$ тенге и $[[b1]]$ тенге за каждый километр; «Сапар» — посадка $[[a2]]$ тенге и $[[b2]]$ тенге за километр.",
@@ -521,7 +524,7 @@ CONTEXTS = [
             Q("На сколько тенге отличаются стоимости поездки на 15 км в этих двух такси?", "Осы екі таксидегі 15 км жол ақыларының айырмасы неше теңге?",
               lambda p: abs((p.a2 + 15 * p.b2) - (p.a1 + 15 * p.b1)), [lambda p: abs(p.b2 - p.b1) * 15, lambda p: abs(p.a1 - p.a2), lambda p: abs((p.a2 + 15 * p.b2) - (p.a1 + 15 * p.b1)) + abs(p.a1 - p.a2)],
               "«Жол»: $[[a1]] + 15 \\cdot [[b1]]$, «Сапар»: $[[a2]] + 15 \\cdot [[b2]]$. Разность: $[[ans]]$ тенге.", "«Жол»: $[[a1]] + 15 \\cdot [[b1]]$, «Сапар»: $[[a2]] + 15 \\cdot [[b2]]$. Айырмасы: $[[ans]]$ теңге.", decimals=0, unit="тенге", unit_kk="теңге"),
-            Q("Сколько километров можно проехать в такси «Сапар» на $2000$ тенге (целое число)?", "«Сапар» таксиімен $2000$ теңгеге ең көп дегенде неше километр жүруге болады (бүтін санмен)?",
+            Q("Какое наибольшее целое число километров можно проехать в такси «Сапар» на $2000$ тенге?", "«Сапар» таксиімен $2000$ теңгеге ең көп дегенде неше километр жүруге болады (бүтін санмен)?",
               lambda p: (2000 - p.a2) // p.b2, [lambda p: 2000 // p.b2 if 2000 // p.b2 != (2000 - p.a2) // p.b2 else (2000 - p.a2) // p.b2 + 1, lambda p: (2000 - p.a1) // p.b1, lambda p: (2000 - p.a2) // p.b2 + 1 if 2000 // p.b2 == (2000 - p.a2) // p.b2 else (2000 - p.a2) // p.b2 - 1],
               "$[[a2]] + [[b2]]x \\le 2000$, $x \\le \\frac{2000 - [[a2]]}{[[b2]]}$, наибольшее целое: $[[ans]]$ км.", "$[[a2]] + [[b2]]x \\le 2000$, $x \\le \\frac{2000 - [[a2]]}{[[b2]]}$, ең үлкен бүтін сан: $[[ans]]$ км.", decimals=0, unit="км"),
         ],
@@ -532,7 +535,7 @@ CONTEXTS = [
         params={"t": range(len(TRIPLES))},
         derived=lambda p: (lambda d, h, L: {"d": d, "h": h, "L": L})(*TRIPLES[p.t]),
         where=lambda p: p.h > p.d,
-        figure=lambda p: right_triangle(f"{p.h} м", f"{p.d} м", f"{p.L} м", ratio=p.h / p.d),
+        figure=lambda p: right_triangle("h", f"{p.d} м", f"{p.L} м", ratio=p.h / p.d),
         context={"ru": "Лестница длиной $[[L]]$ м приставлена к стене дома. Нижний конец лестницы стоит на расстоянии $[[d]]$ м от стены, стена вертикальна (см. рисунок).",
                  "kk": "Ұзындығы $[[L]]$ м баспалдақ үйдің қабырғасына сүйеп қойылған. Баспалдақтың төменгі ұшы қабырғадан $[[d]]$ м қашықтықта тұр, қабырға тік (суретті қараңыз)."},
         questions=[
