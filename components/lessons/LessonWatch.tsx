@@ -45,20 +45,20 @@ export function LessonWatch({
   giftBook?: () => Promise<{ ok: boolean; dueOn?: string | null }>;
   dateLocale?: string;
 }) {
-  const [progress, setProgress] = useState<LessonProgress>(EMPTY_PROGRESS);
-  const loaded = useRef(false);
+  const [savedProgress, setProgress] = useState<LessonProgress | null>(null);
+  const progress = savedProgress ?? EMPTY_PROGRESS;
   const [forced, setForced] = useState(false);
 
   useEffect(() => {
     setProgress(loadProgress(lesson.id, accountId));
-    loaded.current = true;
   }, [lesson.id, accountId]);
 
   const update = useCallback(
     (fn: (p: LessonProgress) => LessonProgress) => {
       setProgress((prev) => {
+        if (prev === null) return prev;
         const next = fn(prev);
-        if (loaded.current) saveProgress(lesson.id, next, accountId);
+        saveProgress(lesson.id, next, accountId);
         return next;
       });
     },
@@ -100,7 +100,7 @@ export function LessonWatch({
   const closed = isTopicClosed(lesson.problems, progress);
 
   useEffect(() => {
-    if (!closed || !loaded.current || !giftBook || giftAsked.current) return;
+    if (!closed || !giftBook || giftAsked.current) return;
     giftAsked.current = true;
     void enqueue(async () => {
       try {
@@ -156,6 +156,7 @@ export function LessonWatch({
           <PracticeSection
             problems={lesson.problems}
             progress={progress}
+            ready={savedProgress !== null}
             onAnswer={(id, i) => {
               if (progress.answers[id] === undefined) reportActivity('problem');
               update((p) => ({ ...p, answers: { ...p.answers, [id]: i } }));

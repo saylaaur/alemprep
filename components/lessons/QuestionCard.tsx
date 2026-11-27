@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type Ref } from 'react';
 import { Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MathText } from '@/components/math/MathText';
@@ -27,6 +27,8 @@ export function QuestionCard({
   selected,
   revealed,
   onSelect,
+  optionDraft,
+  feedbackRef,
   levelLabels,
   heading,
   solutionLabel,
@@ -40,6 +42,8 @@ export function QuestionCard({
   selected: number | undefined;
   revealed: boolean;
   onSelect?: (index: number) => void;
+  optionDraft?: { value: number | undefined; onChoose: (index: number) => void };
+  feedbackRef?: Ref<HTMLDivElement>;
   levelLabels?: LessonLabels['practice']['levels'];
   heading: string;
   solutionLabel: string;
@@ -54,6 +58,13 @@ export function QuestionCard({
   const isRight = answered && selected === q.correct;
   const multi = q.multi === true;
   const bit = (i: number) => 1 << i;
+  const choice = selected ?? optionDraft?.value;
+  const choose = (index: number) => {
+    if (optionDraft) optionDraft.onChoose(index);
+    else if (!multi) onSelect?.(index);
+    else if (!answered) setDraft((value) => value ^ bit(index));
+  };
+
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-muted-foreground">
@@ -73,7 +84,7 @@ export function QuestionCard({
       <div className="mt-4 grid gap-2" role="group">
         {q.options.map((opt, i) => {
           const isCorrect = multi ? (q.correct & bit(i)) !== 0 : i === q.correct;
-          const chosen = multi ? ((answered ? selected : draft) & bit(i)) !== 0 : selected === i;
+          const chosen = multi ? ((choice ?? draft) & bit(i)) !== 0 : choice === i;
           const right = revealed && answered && isCorrect;
           const bad = revealed && answered && chosen && !isCorrect;
           return (
@@ -81,14 +92,15 @@ export function QuestionCard({
               key={i}
               type="button"
               data-sound="off"
+              data-practice-option={optionDraft ? true : undefined}
               disabled={disabled || (revealed && answered)}
-              onClick={() => (multi ? !answered && setDraft((d) => d ^ bit(i)) : onSelect?.(i))}
+              onClick={() => choose(i)}
               aria-pressed={chosen}
               className={cn(
                 'flex w-full items-center gap-3 rounded-2xl border px-3.5 py-3 text-left text-[15px] transition-[transform,background-color,border-color,opacity] duration-150 ease-apple active:scale-[0.985] disabled:pointer-events-none',
                 'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/25',
-                !answered && !(multi && chosen) && 'border-border bg-card/70 backdrop-blur-xl hover:border-primary/50 hover:bg-accent',
-                !answered && multi && chosen && 'border-primary bg-primary/10',
+                !answered && !chosen && 'border-border bg-card/70 backdrop-blur-xl hover:border-primary/50 hover:bg-accent',
+                !answered && chosen && 'border-primary bg-primary/10',
                 !revealed && chosen && 'border-primary bg-primary/10',
                 !revealed && answered && !chosen && 'border-border bg-card/70 backdrop-blur-xl hover:border-primary/50 hover:bg-accent',
                 right && 'border-success bg-success/10',
@@ -113,7 +125,7 @@ export function QuestionCard({
         })}
       </div>
 
-      {multi && !answered && (
+      {multi && !answered && !optionDraft && (
         <Button className="mt-3" onClick={() => onSelect?.(draft)} disabled={disabled || draft === 0}>
           {checkLabel}
         </Button>
@@ -122,7 +134,9 @@ export function QuestionCard({
       {revealed && answered && (
         <div
           role="status"
-          className={cn('mt-4 animate-fade-in rounded-2xl p-4 text-[15px] leading-relaxed', isRight ? 'bg-success/10' : 'bg-destructive/10')}
+          ref={feedbackRef}
+          tabIndex={feedbackRef ? -1 : undefined}
+          className={cn('mt-4 scroll-mt-24 scroll-mb-28 animate-fade-in rounded-2xl p-4 text-[15px] leading-relaxed', isRight ? 'bg-success/10' : 'bg-destructive/10')}
         >
           <div className={cn('mb-1 text-sm font-semibold', isRight ? 'text-success' : 'text-destructive')}>{isRight ? rightLabel : wrongLabel}</div>
           <div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">{solutionLabel}</div>
