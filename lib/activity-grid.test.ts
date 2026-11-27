@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { activityLevel, activitySummary, buildActivityGrid } from './activity-grid';
 
-const NOW = new Date(2026, 10, 16, 15, 0); // пн, 16 ноября 2026
+const NOW = new Date('2026-11-16T10:00:00Z'); // пн, 16 ноября 2026
 
 describe('buildActivityGrid', () => {
   it('covers exactly the last 60 days, weeks start on Monday', () => {
@@ -13,6 +13,16 @@ describe('buildActivityGrid', () => {
     expect(inside[59].isToday).toBe(true);
     for (const w of weeks) expect(w.days).toHaveLength(7);
     expect(new Date(`${weeks[0].days[0].date}T12:00:00`).getDay()).toBe(1);
+  });
+
+  it('advances the activity window at midnight in Almaty', () => {
+    const activity = [{ date: '2026-11-17', count: 2 }];
+    const before = buildActivityGrid(activity, 60, new Date('2026-11-16T18:59:59Z'));
+    const after = buildActivityGrid(activity, 60, new Date('2026-11-16T19:00:00Z'));
+    expect(before.flatMap((week) => week.days).find((cell) => cell.isToday)?.date).toBe('2026-11-16');
+    expect(after.flatMap((week) => week.days).find((cell) => cell.isToday)).toMatchObject({
+      date: '2026-11-17', count: 2, outside: false,
+    });
   });
 
   it('puts counts on the right days and marks month starts', () => {

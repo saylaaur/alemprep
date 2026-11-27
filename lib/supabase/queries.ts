@@ -25,7 +25,7 @@ import {
 } from '@/lib/gamification';
 import { DIAGNOSTIC_PAIR_MAX_SCORE } from '@/lib/exam';
 import { WEEKLY_PAIR_MAX_SCORE, isSameIsoWeek, nextIsoWeekMonday } from '@/lib/weekly';
-import { buildTrajectory, type TrajectoryPoint, type TrajectorySessionMode } from '@/lib/progress';
+import { buildTrajectory, PROGRESS_ATTEMPT_LIMIT, type TrajectoryPoint, type TrajectorySessionMode } from '@/lib/progress';
 import type { BaselineTopicStat } from '@/lib/plan';
 import type { QuestionType } from '@/types/db';
 import type { Profile, Subject, Topic, Locale, Question, ContextContent } from '@/types/db';
@@ -311,7 +311,9 @@ export async function getProgressData(): Promise<ProgressData | null> {
       .from('attempts')
       .select('id, is_correct, attempted_at, question_id')
       .eq('user_id', user.id)
-      .order('attempted_at', { ascending: false }),
+      .order('attempted_at', { ascending: false })
+      .order('id', { ascending: false })
+      .limit(PROGRESS_ATTEMPT_LIMIT),
     supabase
       .from('profiles')
       .select('current_streak')
@@ -319,6 +321,8 @@ export async function getProgressData(): Promise<ProgressData | null> {
       .maybeSingle(),
     supabase.from('topics').select('id, name_ru, name_kk'),
   ]);
+
+  if (attemptsRes.error) throw new Error('Could not load practice attempts');
 
   const currentStreak =
     (profileRes.data as { current_streak: number } | null)?.current_streak ?? 0;
@@ -370,7 +374,7 @@ export async function getProgressData(): Promise<ProgressData | null> {
     ([date, count]) => ({ date, count })
   );
 
-  // Topic accuracy (all time), sorted weakest → strongest
+  // Topic accuracy in the same attempt window, lowest accuracy first.
   const topicStatsMap = new Map<string, TopicStat>();
   for (const a of allAttempts) {
     const topicId = questionToTopic.get(a.question_id);

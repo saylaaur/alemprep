@@ -81,6 +81,20 @@ test('public-only delivery, draft reload, server review, and submitted reload', 
   await page.reload();
   await expect(page.getByText('PRIVATE_EXPLANATION_MARKER')).toBeVisible();
   expect(await db.scalar<number>('SELECT count(*)::int FROM public.attempts WHERE user_id = $1', [actor.id])).toBe(1);
+
+  await page.setViewportSize({ width: 320, height: 750 });
+  await page.goto('/kk/progress');
+  const overview = page.getByRole('region', { name: 'Жаттығу нәтижелері' });
+  await expect(overview.getByText('Талпыныстар', { exact: true })).toBeVisible();
+  await expect(overview.getByText('1 ішінен 0', { exact: true })).toBeVisible();
+  await expect(overview.getByRole('link')).toHaveAttribute('href', '/kk/subjects');
+  await expect(page.getByRole('region', { name: 'Тақырыптар бойынша нәтижелер' }).getByText('Test topic')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Белсенділік' }).getByText('Соңғы 60 күн')).toBeVisible();
+  const history = page.locator('main details').filter({ hasText: 'Соңғы әрекеттер' });
+  await expect(history.getByRole('list')).toBeHidden();
+  await history.locator('summary').press('Enter');
+  await expect(history.getByText('Test topic')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
 test('lost delivery freezes the answer and retries the identical submit', async ({ page }) => {

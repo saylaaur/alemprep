@@ -26,6 +26,7 @@ export function TrajectoryChart({
   /** Доля 0..1 — если задана, рисуется пунктирная целевая линия. */
   targetPercent?: number;
   labels: {
+    title: string;
     diagnostic: string;
     week: (n: number) => string;
     target: string;
@@ -52,7 +53,7 @@ export function TrajectoryChart({
 
   return (
     <div className="w-full overflow-x-auto">
-      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full" role="img" aria-label={labels.diagnostic}>
+      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full" role="img" aria-label={labels.title}>
         {targetY != null && (
           <>
             <line
