@@ -7,6 +7,8 @@
 import { DIAGNOSTIC_PAIR_MAX_SCORE } from '@/lib/exam';
 import { WEEKLY_PAIR_MAX_SCORE } from '@/lib/weekly';
 
+export const PROGRESS_ATTEMPT_LIMIT = 1000;
+
 export type TrajectorySessionMode = 'diagnostic' | 'weekly';
 
 export type TrajectorySessionInput = {

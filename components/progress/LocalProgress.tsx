@@ -1,10 +1,11 @@
 import { getTranslations } from 'next-intl/server';
-import { BookOpen, BookMarked, CalendarCheck, Flame, Footprints, Library, Repeat, Trophy, TrendingUp, Award, type LucideIcon } from 'lucide-react';
+import { BookOpen, BookMarked, CalendarCheck, Flame, Footprints, Library, Repeat, Trophy, TrendingUp, type LucideIcon } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ActivityBars } from '@/components/progress/ActivityBars';
+import { ProgressDisclosure } from '@/components/progress/ProgressDisclosure';
 import { addDays } from '@/lib/books/schedule';
 import { REVIEW_INTERVALS_DAYS } from '@/lib/books/schedule';
 import { localProgress, type LocalAchievementKey } from '@/lib/local/progress';
@@ -78,8 +79,8 @@ export async function LocalProgress({ locale }: { locale: Locale }) {
   return (
     <>
       <PageHeader title={t('title')} subtitle={tl('subtitle')} />
-      <div className="space-y-8 p-4 sm:p-6 lg:p-8">
-        <section className="grid grid-cols-3 gap-2.5 sm:gap-4">
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+        <section className="grid grid-cols-2 gap-2.5 min-[400px]:grid-cols-3 sm:gap-4">
           <Card>
             <CardContent className="flex items-center gap-4 p-3.5 sm:p-5">
               <div className="hidden h-11 w-11 shrink-0 place-items-center rounded-xl bg-streak/12 sm:grid">
@@ -101,7 +102,7 @@ export async function LocalProgress({ locale }: { locale: Locale }) {
               <p className="mt-0.5 text-xs text-muted-foreground">{tl('activeDaysSub', { total: p.windowDays })}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="col-span-2 min-[400px]:col-span-1">
             <CardContent className="p-3.5 sm:p-5">
               <p className="text-xs text-muted-foreground sm:text-sm">{tl('books')}</p>
               <p className="mt-1 font-mono text-3xl font-bold tabular-nums">{p.booksReceived}</p>
@@ -156,40 +157,6 @@ export async function LocalProgress({ locale }: { locale: Locale }) {
         )}
 
         <section>
-          <h2 className={cn(SECTION_TITLE, 'flex items-center gap-1.5')}>
-            <Award className="h-4 w-4 text-badge-gold" />
-            {t('badgesTitle')}
-            <span className="ml-1 font-normal normal-case">
-              · {earnedCount} / {p.achievements.length}
-            </span>
-          </h2>
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
-            {p.achievements.map(({ key, earned }) => {
-              const Icon = ICONS[key];
-              return (
-                <div key={key} className={cn('flex flex-col items-start gap-2.5 rounded-2xl border p-3.5 sm:flex-row sm:gap-3 sm:p-4', earned ? 'border-badge-gold/30 bg-badge-gold/[0.06]' : 'opacity-60')}>
-                  <div
-                    className={cn(
-                      'grid h-11 w-11 shrink-0 place-items-center rounded-xl',
-                      earned ? 'bg-badge-gold/15 text-badge-gold ring-1 ring-inset ring-badge-gold/35' : 'bg-muted text-muted-foreground'
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold">{ta(`${key}.title`)}</div>
-                    <div className="mt-0.5 text-xs leading-snug text-muted-foreground">{ta(`${key}.desc`)}</div>
-                    <div className={cn('mt-1.5 text-[11px]', earned ? 'text-badge-gold' : 'text-muted-foreground/70')}>
-                      {earned ? ta('earned') : ta('locked')}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        <section>
           <h2 className={SECTION_TITLE}>{tl('booksListTitle')}</h2>
           {books.length === 0 ? (
             <Card>
@@ -237,6 +204,34 @@ export async function LocalProgress({ locale }: { locale: Locale }) {
             </ul>
           )}
         </section>
+
+        <ProgressDisclosure title={t('badgesTitle')} summary={`${earnedCount} / ${p.achievements.length}`}>
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
+            {p.achievements.map(({ key, earned }) => {
+              const Icon = ICONS[key];
+              return (
+                <div key={key} className={cn('flex flex-col items-start gap-2.5 rounded-2xl border p-3.5 sm:flex-row sm:gap-3 sm:p-4', earned ? 'border-badge-gold/30 bg-badge-gold/[0.06]' : 'opacity-60')}>
+                  <div
+                    className={cn(
+                      'grid h-11 w-11 shrink-0 place-items-center rounded-xl',
+                      earned ? 'bg-badge-gold/15 text-badge-gold ring-1 ring-inset ring-badge-gold/35' : 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold">{ta(`${key}.title`)}</div>
+                    <div className="mt-0.5 text-xs leading-snug text-muted-foreground">{ta(`${key}.desc`)}</div>
+                    <div className={cn('mt-1.5 text-[11px]', earned ? 'text-badge-gold' : 'text-muted-foreground/70')}>
+                      {earned ? ta('earned') : ta('locked')}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ProgressDisclosure>
+
       </div>
     </>
   );

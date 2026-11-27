@@ -26,6 +26,12 @@ test('pilot topics-only mode hides assessments on mobile and redirects every ass
     await expect(practice.locator(`a[href="/${locale}/problems"], a[href="/${locale}/full-practice"], a[href="/${locale}/weekly"]`)).toHaveCount(0);
     await expect(tabs.locator(`a[href="/${locale}/practice"]`)).toHaveAttribute('aria-current', 'page');
 
+    await page.goto(`/${locale}/progress`);
+    const progress = page.locator('main');
+    await expect(progress.getByRole('link')).toHaveAttribute('href', `/${locale}/subjects`);
+    await expect(progress.getByRole('heading', { level: 2 })).toHaveText(locale === 'ru' ? 'Ещё нет активности' : 'Белсенділік жоқ');
+    await expect(progress.locator('details')).toHaveCount(0);
+
     for (const route of ['materials', 'library', 'videos', 'problems', 'review']) {
       await expect(page.locator(`a[href="/${locale}/${route}"]`)).toHaveCount(0);
       await page.goto(`/${locale}/${route}`);

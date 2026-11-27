@@ -20,15 +20,15 @@ export function buildActivityGrid(
   now: Date = new Date()
 ): ActivityWeek[] {
   const byDate = new Map(daily.map((d) => [d.date, d.count]));
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const today = new Date(`${localDateStr(now)}T00:00:00Z`);
   const start = new Date(today);
-  start.setDate(today.getDate() - (days - 1));
+  start.setUTCDate(today.getUTCDate() - (days - 1));
 
-  const mondayIndex = (d: Date) => (d.getDay() + 6) % 7;
+  const mondayIndex = (d: Date) => (d.getUTCDay() + 6) % 7;
   const gridStart = new Date(start);
-  gridStart.setDate(start.getDate() - mondayIndex(start));
+  gridStart.setUTCDate(start.getUTCDate() - mondayIndex(start));
   const gridEnd = new Date(today);
-  gridEnd.setDate(today.getDate() + (6 - mondayIndex(today)));
+  gridEnd.setUTCDate(today.getUTCDate() + (6 - mondayIndex(today)));
 
   const weeks: ActivityWeek[] = [];
   let lastMonth = -1;
@@ -36,14 +36,14 @@ export function buildActivityGrid(
     const week: ActivityCell[] = [];
     let monthStart: number | null = null;
     for (let i = 0; i < 7; i++) {
-      const date = localDateStr(cursor);
+      const date = cursor.toISOString().slice(0, 10);
       const outside = cursor < start || cursor > today;
-      if (!outside && cursor.getMonth() !== lastMonth) {
-        monthStart = cursor.getMonth();
-        lastMonth = cursor.getMonth();
+      if (!outside && cursor.getUTCMonth() !== lastMonth) {
+        monthStart = cursor.getUTCMonth();
+        lastMonth = cursor.getUTCMonth();
       }
       week.push({ date, count: outside ? 0 : (byDate.get(date) ?? 0), outside, isToday: cursor.getTime() === today.getTime() });
-      cursor.setDate(cursor.getDate() + 1);
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
     }
     weeks.push({ monthStart, days: week });
   }
